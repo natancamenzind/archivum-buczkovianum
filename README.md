@@ -1,0 +1,37 @@
+# Archivum Buczkovianum
+
+A digital archive of the work of **Leopold Buczkowski**. It brings together typescripts,
+manuscript notes, secondary texts and contextual materials, and connects them through tags, so
+readers can follow a motif from one passage to every other place it appears.
+
+> **Status:** early development. The Django skeleton is in place; the archive is being built
+> story by story.
+
+## Stack
+
+Django (API, editor panel, public site), PostgreSQL (data and full-text search), and React +
+TypeScript for the public website. No Docker, Celery, Redis or Elasticsearch.
+
+## Getting started
+
+You need Python 3.12+, [uv](https://docs.astral.sh/uv/) and a running PostgreSQL server.
+
+```bash
+make setup                 # install dependencies and pre-commit hooks
+cp .env.example .env       # then set SECRET_KEY and DATABASE_URL
+uv run python backend/manage.py migrate
+make dev                   # http://localhost:8000, editor panel at /admin/
+```
+
+Run `make check` (lint, type check, tests) before every commit.
+
+## Documentation
+
+- [`docs/PROJECT_BRIEF.md`](docs/PROJECT_BRIEF.md): the idea, the users and the content model.
+- [`docs/user-stories.md`](docs/user-stories.md): what we are building.
+- [`docs/architecture.md`](docs/architecture.md): data model, search and API.
+- [`AGENTS.md`](AGENTS.md): how we work. Read it before contributing.
+
+## License
+
+[MIT](LICENSE)
