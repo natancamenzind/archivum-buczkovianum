@@ -1,0 +1,13 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+backend/staticfiles/
+backend/media/
+.DS_Store
+.claude/
+.serena/
