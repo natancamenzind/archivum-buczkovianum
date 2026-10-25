@@ -105,8 +105,8 @@ A plain-text document is shown as text, with fragments highlighted as in point 2
 
 ### US-RA-02 — Featured fragment on the home page (Should)
 
-1. One fragment card (R-10), picked at random from the visible fragments marked featured (US-WR-09 AC6). Counter: "1 z ".
-2. Below it, "Wszystkie fragmenty „” (n)" opens search on the Fragmenty tab filtered to that fragment's work (US-RA-16).
+1. One fragment card (R-10), picked at random from the visible fragments marked featured (US-WR-09 AC6). Counter: "1 z <all visible fragments>".
+2. Below it, "Wszystkie fragmenty „<work>” (n)" opens search on the Fragmenty tab filtered to that fragment's work (US-RA-16).
 
 ### US-RA-03 — Footer
 
@@ -116,7 +116,7 @@ A plain-text document is shown as text, with fragments highlighted as in point 2
 
 Shows what we know about a work, key information first.
 
-1. Hero: "Utwór · Leopold Buczkowski · ", title, description.
+1. Hero: "Utwór · Leopold Buczkowski · <year of first edition>", title, description.
 2. Context column: editions by year, each with year, publisher and place. The earliest is labelled "pierwsze wydanie".
 3. Main column, in order:
    1. "Fragmenty maszynopisu": a preview (R-09) of the main typescript's fragments, as fragment cards (R-10);
@@ -138,7 +138,7 @@ Shows what we know about a work, key information first.
 
 Shows everything connected to a tag.
 
-1. Hero: "Tag ·  wystąpień w  utworach" (with Polish plural forms), title, description (a biography or a short scholarly note). The tag kind is not shown.
+1. Hero: "Tag · <n> wystąpień w <m> utworach" (with Polish plural forms), title, description (a biography or a short scholarly note). The tag kind is not shown.
 2. Context column: "Utwory", every work the tag refers to, by first edition. Each shows year, title and how many of its fragments carry the tag.
 3. Main column, in order:
    1. "Fragmenty z tagiem": every visible fragment with the tag, as fragment cards (R-10), ordered by the work's first edition, then by position in the text;
@@ -149,7 +149,7 @@ Shows everything connected to a tag.
 
 ### US-RA-08 — Typescript page
 
-1. Hero: "Maszynopis ·  · ", title, optional description.
+1. Hero: "Maszynopis · <shelfmark> · <year of the work>", title, optional description.
 2. Context column: the work (R-03) with year and fragment count; "Maszynopisy utworu", all typescripts of the same work with shelfmark and title, the current one marked.
 3. Main column, in order:
    1. "Skan maszynopisu": the reader (R-11); the counter shows the page count;
@@ -174,7 +174,7 @@ Shows everything connected to a tag.
 
 Not in Figma; uses the secondary text page layout.
 
-1. Hero: "Zapisek · ", title, optional description.
+1. Hero: "Zapisek · <shelfmark>", title, optional description.
 2. Context column: related works (R-03).
 3. Main column, in order:
    1. the content, by type:
@@ -334,7 +334,7 @@ Everything happens in Django admin. Every image field requires a text alternativ
 ### US-WR-14 — Manage institutions
 
 1. An institution has an abbreviation (required, unique, e.g. "ML") and a full name (e.g. "Muzeum Literatury").
-2. Shelfmarks are always shown as ", sygn. ", built from the two fields, never typed as one string.
+2. Shelfmarks are always shown as "<abbreviation>, sygn. <number>", built from the two fields, never typed as one string.
 
 ---
 
