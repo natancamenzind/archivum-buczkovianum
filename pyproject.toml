@@ -1,0 +1,56 @@
+[project]
+name = "buczkovianum"
+version = "0.1.0"
+description = "Archivum Buczkovianum: a digital archive of Leopold Buczkowski's work."
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.2,<5.3",
+    "djangorestframework>=3.16",
+    "drf-spectacular>=0.28",
+    "django-prose-editor[sanitize]>=0.11",
+    "django-storages[s3]>=1.14",
+    "whitenoise>=6.9",
+    "psycopg[binary]>=3.2",
+    "dj-database-url>=2.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.10",
+    "pytest-cov>=6.0",
+    "factory-boy>=3.3",
+    "ruff>=0.11",
+    "mypy>=1.15",
+    "django-stubs[compatible-mypy]>=5.2",
+    "djangorestframework-stubs[compatible-mypy]>=3.16",
+    "pre-commit>=4.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["backend"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "DJ", "SIM", "RUF"]
+
+[tool.mypy]
+strict = true
+mypy_path = "backend"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+pythonpath = ["backend"]
+testpaths = ["backend"]
+addopts = "--cov=backend --cov-report=term-missing --cov-fail-under=90"
+
+[tool.coverage.run]
+omit = ["backend/manage.py", "backend/config/wsgi.py", "*/migrations/*"]
