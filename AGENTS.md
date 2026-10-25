@@ -68,7 +68,7 @@ All code is tested. There are no exceptions for small changes.
 
 - Code, comments, docstrings and commit messages are in English. Polish UI copy lives in `frontend/src/copy/pl.ts`, never inline in components.
 - No Django signals. Side effects go in the model's `save()` and `delete()`.
-- No bulk QuerySet operations (`update`, `bulk_create`, `bulk_update`, `delete`) on `Publishable` models or `Document`, except in migrations and management commands (architecture §6).
+- No bulk QuerySet operations (`update`, `bulk_create`, `bulk_update`, `delete`) on `Publishable` models, `Document` or `Fragment`, except in migrations and management commands (architecture §6).
 - No new dependencies without approval. Name and justify any new dependency in the PR.
 - No Replit services in code (database, auth, object storage). Configuration comes only from environment variables.
 - No Celery, Redis, Elasticsearch or Docker.
