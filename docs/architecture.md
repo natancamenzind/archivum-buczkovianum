@@ -144,10 +144,10 @@ The scan page a fragment starts on is the index of the last `page_offsets` entry
 **Re-anchoring.** When `Document.text` changes, each fragment is checked:
 
 1. if `text[start:end] == quote`, nothing happens;
-2. otherwise, if `quote` occurs exactly once in the new text, the offsets are moved there;
+2. otherwise, if `quote` occurs exactly once in the new text, the offsets are moved there and `needs_review = True`, so a moved fragment is never silent (US-WR-09 AC4);
 3. otherwise, `needs_review = True`.
 
-Fragments are never deleted automatically.
+Fragments are never deleted automatically, and only the editor clears `needs_review`.
 
 **Rendering.** The frontend receives `text` and the fragment ranges. It splits the text at every range boundary into non-overlapping segments, and renders each segment as a `<span>` carrying the IDs of the fragments that cover it. No editor library is involved on the public side.
 
