@@ -4,6 +4,10 @@ import os
 from pathlib import Path
 
 import dj_database_url
+import django_stubs_ext
+
+# Makes Django generics such as `ModelAdmin[Work]` subscriptable at runtime, for mypy.
+django_stubs_ext.monkeypatch()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -30,6 +34,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     "django_prose_editor",
+    "archive",
 ]
 
 MIDDLEWARE = [
