@@ -1,0 +1,635 @@
+"""Domain model of the archive (docs/architecture.md, section 4).
+
+Editors work only in Django admin, so every rule that keeps the data consistent lives here:
+in field definitions, database constraints, `clean()` and `save()`. There are no signals.
+"""
+
+from bisect import bisect_right
+from collections.abc import Collection
+from typing import Any, Self
+
+from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.validators import FileExtensionValidator
+from django.db import models, transaction
+from django.db.models import F, Min, Q
+from django.utils.text import Truncator
+from django.utils.translation import gettext_lazy as _
+
+IMAGE_EXTENSIONS = FileExtensionValidator(["jpg", "jpeg", "png", "webp"])
+PDF_EXTENSION = FileExtensionValidator(["pdf"])
+
+
+def format_shelfmark(institution: "Institution | None", number: str) -> str:
+    """Display form of a shelfmark, e.g. "ML, sygn. 1618" (US-WR-14 AC2)."""
+    if not number:
+        return ""
+    if institution is None:
+        return f"sygn. {number}"
+    return f"{institution.abbreviation}, sygn. {number}"
+
+
+# --- Shared behaviour -------------------------------------------------------------------
+
+
+class BaseModel(models.Model):
+    """Base of every model: timestamps, and a text alternative for every image (R-12).
+
+    Any file field `X` with a companion `X_alt` field must have `X_alt` filled when `X` is set.
+    """
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+    def clean(self) -> None:
+        super().clean()
+        errors = {}
+        for field in self._meta.get_fields():
+            alt_name = f"{field.name}_alt"
+            if (
+                isinstance(field, models.FileField)
+                and hasattr(self, alt_name)
+                and getattr(self, field.name)
+                and not getattr(self, alt_name).strip()
+            ):
+                errors[alt_name] = _("Describe the image for readers who cannot see it.")
+        if errors:
+            raise ValidationError(errors)
+
+
+class Status(models.TextChoices):
+    DRAFT = "draft", _("Draft")
+    PUBLISHED = "published", _("Published")
+
+
+class Publishable(BaseModel):
+    """A public entity with its own page. Only published entities are public (R-06)."""
+
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.DRAFT,
+        help_text=_("Only published items are visible to the public."),
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        abstract = True
+        ordering = ("title",)
+
+    def __str__(self) -> str:
+        return self.title
+
+
+class Taggable(models.Model):
+    """Tags on the whole item (US-WR-10)."""
+
+    tags: "models.ManyToManyField[Tag, Any]" = models.ManyToManyField(
+        "Tag", blank=True, related_name="%(class)ss"
+    )
+
+    class Meta:
+        abstract = True
+
+
+class Archival(models.Model):
+    """An item held by an institution under a shelfmark, optionally with a text (`Document`)."""
+
+    document_required = False
+
+    institution = models.ForeignKey(
+        "Institution",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="%(class)ss",
+    )
+    shelfmark = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text=_("Number only, e.g. 1618. The institution is chosen separately."),
+    )
+    document = models.OneToOneField(
+        "Document",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="%(class)s",
+        help_text=_("The scan and OCR text, or the plain text, of this item."),
+    )
+
+    class Meta:
+        abstract = True
+
+    @property
+    def shelfmark_display(self) -> str:
+        return format_shelfmark(self.institution, self.shelfmark)
+
+    def required_document_kind(self) -> str | None:
+        """The kind of `Document` this item's text must be, or None for any kind."""
+        return None
+
+    def clean(self) -> None:
+        super().clean()
+        if self.document is None:
+            if self.document_required:
+                raise ValidationError({"document": _("This item needs a text.")})
+            return
+        if self.document.owner not in (None, self):
+            raise ValidationError({"document": _("This text already belongs to another item.")})
+        kind = self.required_document_kind()
+        if kind and self.document.kind != kind:
+            raise ValidationError(
+                {"document": _("Choose a text of kind “%s”.") % Document.Kind(kind).label}
+            )
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        """Delete the item together with its document, which has no meaning on its own."""
+        document = self.document
+        with transaction.atomic():
+            result = super().delete(*args, **kwargs)
+            if document is not None:
+                document.delete()
+        return result
+
+
+class ContentKind(models.TextChoices):
+    IMAGE = "image", _("Image")
+    DOCUMENT = "document", _("Document file")
+    EXTERNAL_MEDIA = "external_media", _("External audio or video link")
+    OCR_TEXT = "ocr_text", _("OCR text (scan + OCR file)")
+    PLAIN_TEXT = "plain_text", _("Plain text")
+
+
+# The field that holds each kind of content.
+CONTENT_FIELDS: dict[str, str] = {
+    ContentKind.IMAGE: "image",
+    ContentKind.DOCUMENT: "file",
+    ContentKind.EXTERNAL_MEDIA: "external_url",
+    ContentKind.OCR_TEXT: "document",
+    ContentKind.PLAIN_TEXT: "document",
+}
+
+
+class MediaContent(Archival):
+    """Content of a note or contextual material: exactly one kind (US-WR-05 AC2, US-WR-07 AC2)."""
+
+    content_kind = models.CharField(max_length=20, choices=ContentKind.choices)
+    image = models.FileField(upload_to="content/", blank=True, validators=[IMAGE_EXTENSIONS])
+    image_alt = models.CharField(max_length=255, blank=True)
+    file = models.FileField(upload_to="content/", blank=True)
+    external_url = models.URLField(blank=True)
+
+    class Meta:
+        abstract = True
+
+    def required_document_kind(self) -> str | None:
+        text_kinds: dict[str, str] = {
+            ContentKind.OCR_TEXT: Document.Kind.OCR,
+            ContentKind.PLAIN_TEXT: Document.Kind.PLAIN,
+        }
+        return text_kinds.get(self.content_kind)
+
+    def clean(self) -> None:
+        super().clean()
+        chosen = CONTENT_FIELDS.get(self.content_kind)
+        if chosen is None:
+            return
+        errors = {}
+        for field in set(CONTENT_FIELDS.values()):
+            filled = bool(getattr(self, field))
+            if field == chosen and not filled:
+                errors[field] = _("Required for this kind of content.")
+            if field != chosen and filled:
+                errors[field] = _("Leave this empty for this kind of content.")
+        if errors:
+            raise ValidationError(errors)
+
+
+# --- Entities ---------------------------------------------------------------------------
+
+
+class Institution(BaseModel):
+    abbreviation = models.CharField(max_length=20, unique=True, help_text=_("E.g. ML."))
+    name = models.CharField(max_length=255, help_text=_("E.g. Muzeum Literatury."))
+
+    class Meta:
+        ordering = ("abbreviation",)
+
+    def __str__(self) -> str:
+        return self.abbreviation
+
+
+class Tag(Publishable):
+    class Kind(models.TextChoices):
+        KEYWORD = "keyword", _("Buczkowski's keyword")
+        INTERPRETATION = "interpretation", _("Interpretation")
+
+    title = models.CharField(_("name"), max_length=255, unique=True)
+    slug = models.SlugField(max_length=255, unique=True)
+    kind = models.CharField(
+        max_length=20,
+        choices=Kind.choices,
+        help_text=_("Only for filtering in the editor panel. Never public."),
+    )
+    related = models.ManyToManyField("self", blank=True, help_text=_("Works both ways."))
+
+    def get_absolute_url(self) -> str:
+        return f"/tags/{self.slug}"
+
+    def usages(self, limit: int = 20) -> list[models.Model]:
+        """Up to `limit` items carrying this tag. A tag in use cannot be deleted (US-WR-08 AC3)."""
+        items: list[models.Model] = []
+        for relation in self._meta.related_objects:
+            if len(items) >= limit:
+                break
+            if relation.many_to_many and relation.field.name == "tags":
+                manager = getattr(self, relation.get_accessor_name() or "")
+                items += manager.all()[: limit - len(items)]
+        return items
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        usages = self.usages()
+        if usages:
+            raise models.ProtectedError(
+                _("The tag is in use: %s") % ", ".join(str(item) for item in usages),
+                set(usages),
+            )
+        return super().delete(*args, **kwargs)
+
+
+class WorkQuerySet(models.QuerySet["Work"]):
+    def with_year(self) -> "WorkQuerySet":
+        """Annotate the year of the first edition and order by it, as everywhere on the site."""
+        return self.annotate(year=Min("editions__year")).order_by(
+            F("year").asc(nulls_last=True), "title"
+        )
+
+
+class Work(Publishable, Taggable):
+    slug = models.SlugField(max_length=255, unique=True, help_text=_("Part of the page address."))
+    genre = models.CharField(max_length=100, blank=True, help_text=_("E.g. powieść."))
+    cover_image = models.FileField(upload_to="works/", blank=True, validators=[IMAGE_EXTENSIONS])
+    cover_image_alt = models.CharField(max_length=255, blank=True)
+
+    objects = WorkQuerySet.as_manager()
+
+    def get_absolute_url(self) -> str:
+        return f"/works/{self.slug}"
+
+
+class Edition(BaseModel):
+    work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="editions")
+    publisher = models.CharField(max_length=255)
+    place = models.CharField(max_length=255)
+    year = models.PositiveSmallIntegerField()
+    cover_image = models.FileField(upload_to="editions/", blank=True, validators=[IMAGE_EXTENSIONS])
+    cover_image_alt = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ("year",)
+
+    def __str__(self) -> str:
+        return f"{self.publisher}, {self.place} {self.year}"
+
+
+class Typescript(Publishable, Taggable, Archival):
+    document_required = True
+
+    work = models.ForeignKey(Work, on_delete=models.PROTECT, related_name="typescripts")
+    is_main = models.BooleanField(
+        _("main typescript"),
+        default=False,
+        help_text=_("One per work. Marking this one unmarks the previous one."),
+    )
+
+    class Meta:
+        ordering = ("shelfmark", "title")
+        constraints = (
+            models.UniqueConstraint(
+                fields=["work"], condition=Q(is_main=True), name="one_main_typescript_per_work"
+            ),
+        )
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        with transaction.atomic():
+            if self.is_main:
+                previous = Typescript.objects.filter(work_id=self.work_id, is_main=True)
+                for other in previous.exclude(pk=self.pk):
+                    other.is_main = False
+                    other.save(update_fields=["is_main", "updated_at"])
+            super().save(*args, **kwargs)
+
+    def get_absolute_url(self) -> str:
+        return f"/typescripts/{self.pk}"
+
+    def validate_constraints(self, exclude: Collection[str] | None = None) -> None:
+        """Skip "one main typescript per work" here: `save()` unmarks the previous one first."""
+        super().validate_constraints(exclude={*(exclude or ()), "is_main"})
+
+    def required_document_kind(self) -> str | None:
+        return Document.Kind.OCR
+
+
+class Note(Publishable, Taggable, MediaContent):
+    works = models.ManyToManyField(Work, related_name="notes")
+
+    def get_absolute_url(self) -> str:
+        return f"/notes/{self.pk}"
+
+
+class SecondaryText(Publishable, Taggable, Archival):
+    class Kind(models.TextChoices):
+        LETTER = "letter", _("Letter")
+        REVIEW = "review", _("Review")
+        STUDY = "study", _("Study")
+        RECORDING = "recording", _("Recording")
+        OTHER = "other", _("Other")
+
+    document_required = True
+
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    author = models.CharField(max_length=255, blank=True)
+    source = models.CharField(
+        max_length=500, blank=True, help_text=_("Publisher, place, year, pages, as one line.")
+    )
+    letter_date = models.DateField(null=True, blank=True, help_text=_("For letters."))
+    sender = models.CharField(max_length=255, blank=True, help_text=_("For letters."))
+    recipient = models.CharField(max_length=255, blank=True, help_text=_("For letters."))
+    works = models.ManyToManyField(
+        Work, through="SecondaryTextWorkLink", related_name="secondary_texts"
+    )
+
+    def get_absolute_url(self) -> str:
+        return f"/secondary-texts/{self.pk}"
+
+
+class ContextualMaterial(Publishable, Taggable, MediaContent):
+    works = models.ManyToManyField(Work, through="MaterialWorkLink", related_name="materials")
+
+    def get_absolute_url(self) -> str:
+        return f"/materials/{self.pk}"
+
+
+class SecondaryTextWorkLink(BaseModel, Taggable):
+    """A secondary text's link to a work. Its tags appear on the work page (US-RA-05)."""
+
+    secondary_text = models.ForeignKey(
+        SecondaryText, on_delete=models.CASCADE, related_name="work_links"
+    )
+    work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="secondary_text_links")
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=["secondary_text", "work"], name="unique_secondary_text_work"
+            ),
+        )
+
+    def __str__(self) -> str:
+        return f"{self.secondary_text} ↔ {self.work}"
+
+
+class MaterialWorkLink(BaseModel, Taggable):
+    """A contextual material's link to a work. Its tags appear on the work page (US-RA-05)."""
+
+    material = models.ForeignKey(
+        ContextualMaterial, on_delete=models.CASCADE, related_name="work_links"
+    )
+    work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="material_links")
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(fields=["material", "work"], name="unique_material_work"),
+        )
+
+    def __str__(self) -> str:
+        return f"{self.material} ↔ {self.work}"
+
+
+# --- Texts and fragments (architecture section 4.4) -------------------------------------
+
+
+class Document(BaseModel):
+    """The text of an archival item: a scan with its OCR text, or a plain text."""
+
+    class Kind(models.TextChoices):
+        OCR = "ocr", _("Scan + OCR text")
+        PLAIN = "plain", _("Plain text")
+
+    kind = models.CharField(max_length=10, choices=Kind.choices)
+    scan = models.FileField(
+        upload_to="scans/", blank=True, validators=[PDF_EXTENSION], help_text=_("PDF file.")
+    )
+    text = models.TextField(blank=True)
+    page_offsets = ArrayField(models.PositiveIntegerField(), default=list, editable=False)
+
+    _saved_text: str | None = None
+    _saved_page_offsets: list[int] | None = None
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def __str__(self) -> str:
+        owner = self.owner
+        return str(owner) if owner else f"{self.get_kind_display()} #{self.pk}"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        text_changed = self._saved_text not in (None, self.text)
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            if text_changed:
+                for fragment in self.fragments.all():
+                    fragment.reanchor(self.text)
+        self._saved_text = self.text
+        self._saved_page_offsets = list(self.page_offsets)
+
+    @classmethod
+    def from_db(
+        cls, db: str | None, field_names: Collection[str], values: Collection[Any], **kwargs: Any
+    ) -> Self:
+        """Remember the stored text, to tell later whether it changed."""
+        document = super().from_db(db, field_names, values, **kwargs)
+        document._saved_text = document.__dict__.get("text")
+        document._saved_page_offsets = document.__dict__.get("page_offsets")
+        return document
+
+    @classmethod
+    def owner_accessors(cls) -> list[str]:
+        """Names of the reverse links from a document to every kind of `Archival` item."""
+        return [
+            relation.get_accessor_name() or ""
+            for relation in cls._meta.related_objects
+            if relation.one_to_one and issubclass(relation.related_model, Archival)
+        ]
+
+    @property
+    def owner(self) -> Archival | None:
+        """The typescript, note, secondary text or contextual material holding this text."""
+        for accessor in self.owner_accessors():
+            try:
+                owner: Archival = getattr(self, accessor)
+            except ObjectDoesNotExist:
+                continue
+            return owner
+        return None
+
+    def set_ocr_text(self, raw: str) -> None:
+        """Load Tesseract plain-text output: pages separated by a form feed (`\\f`)."""
+        pages = raw.removesuffix("\f").split("\f")
+        offsets, position = [], 0
+        for page in pages:
+            offsets.append(position)
+            position += len(page)
+        self.text = "".join(pages)
+        self.page_offsets = offsets
+
+    @property
+    def page_count(self) -> int:
+        return len(self.page_offsets)
+
+    def page_number(self, offset: int) -> int | None:
+        """1-based scan page on which the character at `offset` lies, or None without a scan."""
+        if not self.page_offsets:
+            return None
+        return bisect_right(self.page_offsets, offset)
+
+    def clean(self) -> None:
+        super().clean()
+        if self.kind == self.Kind.OCR and not self.scan:
+            raise ValidationError({"scan": _("An OCR text needs its scan.")})
+        if self.kind == self.Kind.PLAIN and self.scan:
+            raise ValidationError({"scan": _("A plain text has no scan.")})
+        if (
+            self.kind == self.Kind.OCR
+            and self._saved_text not in (None, self.text)
+            and self._saved_page_offsets == self.page_offsets
+        ):
+            raise ValidationError(
+                {"text": _("Upload a new OCR file to change an OCR text, so pages stay aligned.")}
+            )
+
+
+class Fragment(BaseModel, Taggable):
+    """A tagged character range of a document's text. Fragments may overlap freely."""
+
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name="fragments")
+    start = models.PositiveIntegerField(editable=False)
+    end = models.PositiveIntegerField(editable=False)
+    quote = models.TextField(editable=False, help_text=_("The selected text."))
+    location = models.CharField(max_length=255, blank=True, help_text=_("E.g. rozdział I."))
+    shelfmark = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text=_("Number only, e.g. 1618.0009; institution from the document."),
+    )
+    description = models.TextField(blank=True)
+    is_featured = models.BooleanField(
+        _("featured"),
+        default=False,
+        help_text=_("Shown first in previews and on the home page."),
+    )
+    needs_review = models.BooleanField(
+        default=False,
+        help_text=_("The text changed and the fragment was not found again."),
+    )
+
+    class Meta:
+        ordering = ("document", "start", "end")
+        constraints = (
+            models.CheckConstraint(condition=Q(end__gt=F("start")), name="fragment_not_empty"),
+        )
+
+    def __str__(self) -> str:
+        return Truncator(self.quote).chars(60)
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if not self.quote:
+            self.quote = self.document.text[self.start : self.end]
+        super().save(*args, **kwargs)
+
+    @property
+    def start_page(self) -> int | None:
+        return self.document.page_number(self.start)
+
+    @property
+    def shelfmark_display(self) -> str:
+        owner = self.document.owner
+        return format_shelfmark(owner.institution if owner else None, self.shelfmark)
+
+    def clean(self) -> None:
+        super().clean()
+        # Offsets are set once, by the tagger. Later only re-anchoring moves them.
+        if self._state.adding and self.end > len(self.document.text):
+            raise ValidationError(_("The fragment goes past the end of the text."))
+
+    def reanchor(self, text: str) -> None:
+        """Follow the quote after the document text changed (US-WR-09 AC4).
+
+        The fragment is moved only when its quote occurs exactly once in the new text.
+        Otherwise it is flagged for review. It is never deleted. A flagged fragment whose
+        quote is found again is unflagged.
+        """
+        before = (self.start, self.end, self.needs_review)
+        position = self.start
+        if text[self.start : self.end] != self.quote:
+            position = text.find(self.quote)
+            if text.find(self.quote, position + 1) != -1:
+                position = -1  # The quote occurs more than once.
+        self.needs_review = position == -1
+        if not self.needs_review:
+            self.start, self.end = position, position + len(self.quote)
+        if (self.start, self.end, self.needs_review) != before:
+            self.save()
+
+
+# --- Site content -----------------------------------------------------------------------
+
+
+class SiteSettings(BaseModel):
+    """Editable texts of the home, footer and About pages. There is exactly one row."""
+
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    intro_text = models.TextField(blank=True, help_text=_("Introduction on the home page."))
+    portrait = models.FileField(upload_to="site/", blank=True, validators=[IMAGE_EXTENSIONS])
+    portrait_alt = models.CharField(max_length=255, blank=True)
+    funding_note = models.TextField(blank=True, help_text=_("Shown in the footer."))
+    about_intro = models.TextField(blank=True, help_text=_("Introduction on the About page."))
+    about_project = models.TextField(blank=True, help_text=_("“O projekcie” on the About page."))
+
+    class Meta:
+        verbose_name = _("site settings")
+        verbose_name_plural = _("site settings")
+
+    def __str__(self) -> str:
+        return str(_("Site settings"))
+
+    @classmethod
+    def load(cls) -> "SiteSettings":
+        settings, _created = cls.objects.get_or_create(pk=1)
+        return settings
+
+
+class TeamMember(BaseModel):
+    class Group(models.TextChoices):
+        LEADERSHIP = "leadership", _("Project leadership")
+        TEAM = "team", _("Team members")
+        SITE = "site", _("Website development")
+
+    name = models.CharField(max_length=255)
+    role = models.CharField(max_length=255, blank=True)
+    bio = models.TextField(blank=True)
+    group = models.CharField(max_length=20, choices=Group.choices)
+    order = models.PositiveSmallIntegerField(
+        default=0, help_text=_("Lower numbers are shown first.")
+    )
+
+    class Meta:
+        ordering = ("order", "name")
+
+    def __str__(self) -> str:
+        return self.name

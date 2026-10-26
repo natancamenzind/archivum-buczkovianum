@@ -62,6 +62,9 @@ All code is tested. There are no exceptions for small changes.
 - Python: every function is fully annotated. Checked by mypy `--strict` with `django-stubs` and `djangorestframework-stubs`.
 - TypeScript: `strict: true`, no `any`.
 - Formatting and linting: Ruff for Python; ESLint (`typescript-eslint`) and Prettier for TypeScript.
+- Django generics (`ModelAdmin[Work]`, `TabularInline[Edition, Work]`) work at runtime because settings call `django_stubs_ext.monkeypatch()`.
+- factory_boy declarations are untyped, so `*.tests.factories` modules are exempt from mypy's `disallow_untyped_calls` (one override in `pyproject.toml`).
+- Ruff also checks migrations. After `makemigrations`, write `dependencies` and `operations` as tuples (RUF012) and run `ruff format`.
 - Never add `# type: ignore`, `# noqa`, `@ts-ignore`, `@ts-expect-error`, `eslint-disable` or `as any`, and never edit linter or type-checker config. If a suppression seems unavoidable, stop and ask. An approved suppression names the specific rule and carries a comment explaining why.
 
 ## Code rules

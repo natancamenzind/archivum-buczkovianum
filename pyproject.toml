@@ -12,6 +12,7 @@ dependencies = [
     "whitenoise>=6.9",
     "psycopg[binary]>=3.2",
     "dj-database-url>=2.3",
+    "django-stubs-ext>=5.2",
 ]
 
 [dependency-groups]
@@ -42,6 +43,11 @@ select = ["E", "W", "F", "I", "B", "UP", "DJ", "SIM", "RUF"]
 strict = true
 mypy_path = "backend"
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+
+# factory_boy declarations (Sequence, SubFactory, ...) are untyped.
+[[tool.mypy.overrides]]
+module = "*.tests.factories"
+disallow_untyped_calls = false
 
 [tool.django-stubs]
 django_settings_module = "config.settings"
