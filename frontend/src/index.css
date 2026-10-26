@@ -1,0 +1,75 @@
+@import "tailwindcss";
+/* Design tokens and `.text-*` styles exported from Figma (design/README.md). Never edited here. */
+@import "../../design/tokens/tokens.css";
+
+/*
+ * The Tailwind theme contains only the design tokens, so a colour, spacing, radius, shadow or
+ * font size that is not a token has no utility. Utility names follow the token names:
+ *   --color-bg-page    → bg-page          --color-text-secondary → text-secondary
+ *   --color-border-*   → border-*         --color-icon-*         → text-icon-*
+ *   --space-16         → p-16, gap-16 …   --layout-page-margin   → px-page
+ *   --radius-s/m/l     → rounded-sm/md/lg
+ *   --shadow-karta / --shadow-uniesiony / --shadow-dokument → shadow-card / -raised / -document
+ * (Tailwind already has rounded-s/-l, and a theme variable cannot reuse its token's name.)
+ * Typography uses the `.text-lora-*` and `.text-cousine-*` classes from tokens.css directly.
+ */
+@theme inline {
+  --color-*: initial;
+  --spacing-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --text-*: initial;
+
+  --background-color-page: var(--color-bg-page);
+  --background-color-card: var(--color-bg-card);
+  --background-color-subtle: var(--color-bg-subtle);
+  --background-color-media: var(--color-bg-media);
+  --background-color-inverse: var(--color-bg-inverse);
+  --background-color-accent: var(--color-bg-accent);
+  --background-color-accent-subtle: var(--color-bg-accent-subtle);
+  --background-color-accent-hover: var(--color-bg-accent-hover);
+
+  --text-color-primary: var(--color-text-primary);
+  --text-color-secondary: var(--color-text-secondary);
+  --text-color-accent: var(--color-text-accent);
+  --text-color-accent-hover: var(--color-text-accent-hover);
+  --text-color-inverse: var(--color-text-inverse);
+  --text-color-inverse-secondary: var(--color-text-inverse-secondary);
+  --text-color-icon-primary: var(--color-icon-primary);
+  --text-color-icon-accent: var(--color-icon-accent);
+  --text-color-icon-inverse: var(--color-icon-inverse);
+
+  --border-color-subtle: var(--color-border-subtle);
+  --border-color-accent: var(--color-border-accent);
+  --border-color-accent-subtle: var(--color-border-accent-subtle);
+  --border-color-accent-inverse: var(--color-border-accent-inverse);
+
+  --spacing-0: 0px;
+  --spacing-4: var(--space-4);
+  --spacing-8: var(--space-8);
+  --spacing-12: var(--space-12);
+  --spacing-16: var(--space-16);
+  --spacing-24: var(--space-24);
+  --spacing-32: var(--space-32);
+  --spacing-48: var(--space-48);
+  --spacing-64: var(--space-64);
+  --spacing-page: var(--layout-page-margin);
+  --spacing-page-mobile: var(--layout-page-margin-mobile);
+  --spacing-card: var(--layout-card-padding);
+  --spacing-card-mobile: var(--layout-card-padding-mobile);
+
+  --radius-sm: var(--radius-s);
+  --radius-md: var(--radius-m);
+  --radius-lg: var(--radius-l);
+
+  --shadow-card: var(--shadow-karta);
+  --shadow-raised: var(--shadow-uniesiony);
+  --shadow-document: var(--shadow-dokument);
+}
+
+@layer base {
+  body {
+    background-color: var(--color-bg-page);
+    color: var(--color-text-primary);
+  }
+}

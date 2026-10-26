@@ -20,6 +20,7 @@ Run everything from the repo root.
 | `make lint` | Ruff (lint + format check), ESLint, Prettier check |
 | `make typecheck` | mypy (strict) and `tsc --noEmit` |
 | `make check` | All of the above. Must pass before every commit. |
+| `make test-backend`, `make lint-frontend`, … | One side only: `test`, `lint` and `typecheck` each have a `-backend` and a `-frontend` target. |
 | `make api-client` | Regenerate `frontend/src/api/` from the OpenAPI schema |
 
 ## Workflow
@@ -56,6 +57,7 @@ All code is tested. There are no exceptions for small changes.
 - Tools: Vitest and Testing Library.
 - Test what the user sees and does, not component internals.
 - Mock the API at the network level with MSW, never by mocking modules.
+- Helpers live in `frontend/src/test/`: `renderRoute(url)` renders a page through the real routes, and every component test expects `axeViolations(container)` to be empty (R-12).
 
 ## Types and linting
 
@@ -77,6 +79,7 @@ All code is tested. There are no exceptions for small changes.
 - No Celery, Redis, Elasticsearch or Docker.
 - Never edit `frontend/src/api/` by hand. Run `make api-client` instead.
 - UI is built from shadcn/ui components, following the Figma designs. Use Tailwind theme tokens; no hardcoded colours or sizes.
+  The Tailwind theme holds only the tokens from `design/tokens/tokens.css` (mapping in `frontend/src/index.css`), and typography uses the `.text-*` classes from that file.
 
 ## Definition of done
 

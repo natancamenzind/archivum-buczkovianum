@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_prose_editor",
     "archive",
+    "site_shell",
 ]
 
 MIDDLEWARE = [
@@ -83,6 +84,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# The built frontend (`npm run build`): site_shell serves its index.html, and its assets are static
+# files under STATIC_URL. Listed only once built, so a backend-only checkout gets no warning.
+FRONTEND_DIST_DIR = BASE_DIR.parent / "frontend" / "dist"
+STATICFILES_DIRS = [FRONTEND_DIST_DIR] if FRONTEND_DIST_DIR.is_dir() else []
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 

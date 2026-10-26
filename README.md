@@ -4,8 +4,8 @@ A digital archive of the work of **Leopold Buczkowski**. It brings together type
 manuscript notes, secondary texts and contextual materials, and connects them through tags, so
 readers can follow a motif from one passage to every other place it appears.
 
-> **Status:** early development. The Django skeleton is in place; the archive is being built
-> story by story.
+> **Status:** early development. The Django and React skeletons are in place; the archive is
+> being built story by story.
 
 ## Stack
 
@@ -14,16 +14,25 @@ TypeScript for the public website. No Docker, Celery, Redis or Elasticsearch.
 
 ## Getting started
 
-You need Python 3.12+, [uv](https://docs.astral.sh/uv/) and a running PostgreSQL server.
+You need Python 3.12+, [uv](https://docs.astral.sh/uv/), Node.js 22+ with npm, and a running
+PostgreSQL server.
 
 ```bash
-make setup                 # install dependencies and pre-commit hooks
+make setup                 # install Python and npm dependencies, and pre-commit hooks
 cp .env.example .env       # then set SECRET_KEY and DATABASE_URL
 uv run python backend/manage.py migrate
-make dev                   # http://localhost:8000, editor panel at /admin/
+make dev                   # Django and Vite together
 ```
 
-Run `make check` (lint, type check, tests) before every commit.
+Open the site at http://localhost:5173 (Vite, with hot reload). Vite passes `/api/`, `/admin/`,
+`/static/` and `/media/` on to Django at http://localhost:8000, so the editor panel is at
+http://localhost:5173/admin/ too.
+
+To see the site as production serves it, build the frontend with `npm --prefix frontend run build`
+and open http://localhost:8000: Django then serves the built `index.html` for every page URL.
+
+After changing the API, run `make api-client` and commit the regenerated `frontend/src/api/`.
+Run `make check` (lint, type check, tests for both sides) before every commit.
 
 ## Documentation
 
