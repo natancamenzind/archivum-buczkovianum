@@ -7,23 +7,24 @@ export interface PluralForms {
   many: string;
 }
 
+const pluralRules = new Intl.PluralRules("pl");
+
 /**
- * The plural form for a whole number `count`.
+ * The plural form for `count`, by the Polish rules of `Intl.PluralRules`.
  *
  * "few" is used when the last digit is 2–4, except for 12–14 (22 fragmenty, 12 fragmentów).
- * Every other count except 1, including 0, takes "many".
+ * Every other count except 1, including 0, takes "many". Fractions ("other" in Polish) are not
+ * counts the UI shows, so they take "many" too.
  */
 export function plural(count: number, forms: PluralForms): string {
-  const n = Math.abs(count);
-  if (n === 1) {
-    return forms.one;
+  switch (pluralRules.select(count)) {
+    case "one":
+      return forms.one;
+    case "few":
+      return forms.few;
+    default:
+      return forms.many;
   }
-  const lastDigit = n % 10;
-  const lastTwoDigits = n % 100;
-  if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
-    return forms.few;
-  }
-  return forms.many;
 }
 
 /** A count with its noun, e.g. "24 fragmenty". */

@@ -35,9 +35,9 @@ export function HomePage() {
 
   return (
     <main className="flex flex-col gap-24 p-page-mobile md:p-page">
-      <h1 className="text-lora-tytul-strony">{copy.siteName}</h1>
-      <p className="text-lora-wstep text-secondary">{copy.home.lead}</p>
-      <p className="text-cousine-metadane text-secondary" role="status">
+      <h1 className="text-lora-tytul-strony-mobile md:text-lora-tytul-strony">{copy.siteName}</h1>
+      <p className="text-lora-wstep text-muted-foreground">{copy.home.lead}</p>
+      <p className="text-cousine-metadane text-muted-foreground" role="status">
         {apiInfo.isPending && copy.home.apiLoading}
         {apiInfo.isSuccess && copy.home.apiReady(apiInfo.data.title, apiInfo.data.version)}
         {apiInfo.isError && copy.home.apiError}

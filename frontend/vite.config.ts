@@ -16,9 +16,9 @@ export default defineConfig(({ command }) => ({
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
   server: {
-    proxy: Object.fromEntries(
-      ["/api", "/admin", "/media", "/static"].map((prefix) => [prefix, DJANGO_URL]),
-    ),
+    // Same prefixes as backend/site_shell/urls.py: `/apiary` is a page, `/api` and `/api/…` are not.
+    // A key starting with `^` is a regular expression.
+    proxy: { "^/(api|admin|static|media)(/|\\?|$)": DJANGO_URL },
   },
   test: {
     environment: "jsdom",
@@ -26,7 +26,7 @@ export default defineConfig(({ command }) => ({
     css: false,
     coverage: {
       provider: "v8",
-      include: ["src/**/*.{ts,tsx}"],
+      include: ["src/**/*.{ts,tsx}", "tailwind-tokens.ts"],
       // The generated client, test helpers and the browser entry point are not unit-tested.
       exclude: ["src/api/**", "src/test/**", "src/main.tsx", "src/**/*.test.{ts,tsx}"],
       thresholds: { lines: 90, functions: 90, branches: 90, statements: 90 },

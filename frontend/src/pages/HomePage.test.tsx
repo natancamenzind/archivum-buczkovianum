@@ -40,8 +40,9 @@ describe("HomePage", () => {
   it("says so when the API answers without the expected data", async () => {
     server.use(http.get(SCHEMA_URL, () => HttpResponse.json({ paths: {} })));
 
-    renderRoute("/");
+    const { container } = renderRoute("/");
 
     expect(await screen.findByText("Nie udało się połączyć z archiwum.")).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
   });
 });

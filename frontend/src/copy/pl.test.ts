@@ -31,6 +31,10 @@ describe("plural", () => {
     expect(plural(0, nouns.fragment)).toBe("fragmentów");
   });
 
+  it("uses the 'many' form for fractions", () => {
+    expect(plural(1.5, nouns.fragment)).toBe("fragmentów");
+  });
+
   it("uses the form of the absolute value for negative counts", () => {
     expect(plural(-1, nouns.fragment)).toBe("fragment");
     expect(plural(-3, nouns.fragment)).toBe("fragmenty");

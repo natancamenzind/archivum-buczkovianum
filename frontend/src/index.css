@@ -1,17 +1,38 @@
 @import "tailwindcss";
-/* Design tokens and `.text-*` styles exported from Figma (design/README.md). Never edited here. */
-@import "../../design/tokens/tokens.css";
+/* Design tokens from Figma (design/README.md): custom properties, and the `.text-*` typography
+   styles as utilities, so `md:text-lora-tytul-strony` works. */
+@plugin "../tailwind-tokens.ts";
 
 /*
  * The Tailwind theme contains only the design tokens, so a colour, spacing, radius, shadow or
- * font size that is not a token has no utility. Utility names follow the token names:
- *   --color-bg-page    → bg-page          --color-text-secondary → text-secondary
- *   --color-border-*   → border-*         --color-icon-*         → text-icon-*
- *   --space-16         → p-16, gap-16 …   --layout-page-margin   → px-page
- *   --radius-s/m/l     → rounded-sm/md/lg
- *   --shadow-karta / --shadow-uniesiony / --shadow-dokument → shadow-card / -raised / -document
- * (Tailwind already has rounded-s/-l, and a theme variable cannot reuse its token's name.)
- * Typography uses the `.text-lora-*` and `.text-cousine-*` classes from tokens.css directly.
+ * font size that is not a token has no utility.
+ *
+ * Colours use the shadcn/ui names, so its components work as generated, plus a few for the
+ * design's own surfaces. Every colour utility takes them (bg-, text-, border-, ring-, outline-,
+ * fill-, stroke-, divide-, caret-, placeholder:…).
+ *
+ *   name                      token                          name             token
+ *   background                --color-bg-page                foreground       --color-text-primary
+ *   card, popover             --color-bg-card                *-foreground¹    --color-text-primary
+ *   muted, secondary          --color-bg-subtle              muted-foreground --color-text-secondary
+ *   media                     --color-bg-media               primary-foreground, inverse-foreground
+ *   inverse                   --color-bg-inverse                               --color-text-inverse
+ *   primary                   --color-bg-accent              inverse-muted-foreground
+ *   primary-hover             --color-bg-accent-hover                          --color-text-inverse-secondary
+ *   accent                    --color-bg-accent-subtle       accent-foreground --color-text-accent
+ *   border, input             --color-border-subtle          accent-foreground-hover
+ *   ring, accent-border       --color-border-accent                           --color-text-accent-hover
+ *   accent-border-subtle      --color-border-accent-subtle   icon             --color-icon-primary
+ *   inverse-border            --color-border-accent-inverse  accent-icon      --color-icon-accent
+ *                                                            inverse-icon     --color-icon-inverse
+ *   ¹ card-, popover- and secondary-foreground.
+ *   The design has no destructive colour, so shadcn's `destructive` is not defined.
+ *
+ * Other scales follow the token names:
+ *   --space-16 → p-16, gap-16 …        --layout-page-margin → px-page (also page-mobile, card…)
+ *   --radius-s/m/l → rounded-sm/md/lg  (Tailwind already has rounded-s and rounded-l)
+ *   --shadow-karta / -uniesiony / -dokument → shadow-card / -raised / -document
+ * A theme variable cannot reuse its token's name, hence the renames.
  */
 @theme inline {
   --color-*: initial;
@@ -20,29 +41,35 @@
   --shadow-*: initial;
   --text-*: initial;
 
-  --background-color-page: var(--color-bg-page);
-  --background-color-card: var(--color-bg-card);
-  --background-color-subtle: var(--color-bg-subtle);
-  --background-color-media: var(--color-bg-media);
-  --background-color-inverse: var(--color-bg-inverse);
-  --background-color-accent: var(--color-bg-accent);
-  --background-color-accent-subtle: var(--color-bg-accent-subtle);
-  --background-color-accent-hover: var(--color-bg-accent-hover);
-
-  --text-color-primary: var(--color-text-primary);
-  --text-color-secondary: var(--color-text-secondary);
-  --text-color-accent: var(--color-text-accent);
-  --text-color-accent-hover: var(--color-text-accent-hover);
-  --text-color-inverse: var(--color-text-inverse);
-  --text-color-inverse-secondary: var(--color-text-inverse-secondary);
-  --text-color-icon-primary: var(--color-icon-primary);
-  --text-color-icon-accent: var(--color-icon-accent);
-  --text-color-icon-inverse: var(--color-icon-inverse);
-
-  --border-color-subtle: var(--color-border-subtle);
-  --border-color-accent: var(--color-border-accent);
-  --border-color-accent-subtle: var(--color-border-accent-subtle);
-  --border-color-accent-inverse: var(--color-border-accent-inverse);
+  --color-background: var(--color-bg-page);
+  --color-foreground: var(--color-text-primary);
+  --color-card: var(--color-bg-card);
+  --color-card-foreground: var(--color-text-primary);
+  --color-popover: var(--color-bg-card);
+  --color-popover-foreground: var(--color-text-primary);
+  --color-primary: var(--color-bg-accent);
+  --color-primary-hover: var(--color-bg-accent-hover);
+  --color-primary-foreground: var(--color-text-inverse);
+  --color-secondary: var(--color-bg-subtle);
+  --color-secondary-foreground: var(--color-text-primary);
+  --color-muted: var(--color-bg-subtle);
+  --color-muted-foreground: var(--color-text-secondary);
+  --color-accent: var(--color-bg-accent-subtle);
+  --color-accent-foreground: var(--color-text-accent);
+  --color-accent-foreground-hover: var(--color-text-accent-hover);
+  --color-border: var(--color-border-subtle);
+  --color-input: var(--color-border-subtle);
+  --color-ring: var(--color-border-accent);
+  --color-accent-border: var(--color-border-accent);
+  --color-accent-border-subtle: var(--color-border-accent-subtle);
+  --color-media: var(--color-bg-media);
+  --color-inverse: var(--color-bg-inverse);
+  --color-inverse-foreground: var(--color-text-inverse);
+  --color-inverse-muted-foreground: var(--color-text-inverse-secondary);
+  --color-inverse-border: var(--color-border-accent-inverse);
+  --color-icon: var(--color-icon-primary);
+  --color-accent-icon: var(--color-icon-accent);
+  --color-inverse-icon: var(--color-icon-inverse);
 
   --spacing-0: 0px;
   --spacing-4: var(--space-4);

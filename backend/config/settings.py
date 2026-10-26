@@ -88,6 +88,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # files under STATIC_URL. Listed only once built, so a backend-only checkout gets no warning.
 FRONTEND_DIST_DIR = BASE_DIR.parent / "frontend" / "dist"
 STATICFILES_DIRS = [FRONTEND_DIST_DIR] if FRONTEND_DIST_DIR.is_dir() else []
+# Files whose name carries a content hash are cached forever: Vite's build output
+# (assets/index-B2gSypW-.js) and the copies collectstatic hashes (base.6b1c3d0e4f5a.css).
+WHITENOISE_IMMUTABLE_FILE_TEST = r"/(assets/[^/]+-[\w-]{8}|[^/]+\.[0-9a-f]{12})\.\w+$"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
