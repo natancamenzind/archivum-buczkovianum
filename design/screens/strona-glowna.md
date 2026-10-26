@@ -1,0 +1,55 @@
+# Strona główna
+
+Viewport: desktop, 1440px wide. Preview: `../previews/screens/strona-glowna.png`
+
+- box "Strona główna" · flex-column · gap 0px · 1440px × 2361px · bg var(--color-bg-page)
+  - **Nagłówek serwisu [Rozmiar=Desktop]** {Rozmiar=“Desktop”} · flex-row · padding 0px var(--layout-page-margin) 0px var(--layout-page-margin) · justify space-between · align center · w fill, h 88px · bg var(--color-bg-page) · border-bottom 1px var(--color-border-subtle)
+  - box "Nagłówek strony głównej" · flex-row · gap 0px · padding var(--space-64) var(--layout-page-margin) var(--space-64) var(--layout-page-margin) · align end · w fill, h 440px · bg linear-gradient(#211e1af0 0%, #211e1ab8 50%, #211e1a33 100%) over image(assets/images/naglowek-strony-glownej-642bf583.*, crop) over var(--color-bg-inverse)
+    - box "Wprowadzenie" · flex-column · gap var(--space-16) · w 640px, h hug
+      - box "Ornament" · w 40px, h 1px · bg var(--color-border-accent-inverse) · overflow hidden
+      - text "Tytuł" · w fill, h hug · .text-lora-display · color var(--color-text-inverse) · “Archivum Buczkovianum”
+      - text "Opis" · w fill, h hug · .text-lora-wstep · color var(--color-text-inverse) · “Archiwum literackie Leopolda Buczkowskiego: utwory, maszynopisy, zapiski i fragmenty połączone tagami.”
+      - text "Statystyki" · w fill, h hug · .text-cousine-etykieta · color var(--color-text-inverse-secondary) · “4 utwory · 62 fragmenty · 12 tagów”
+  - box "Treść" · flex-column · gap var(--space-32) · padding var(--space-48) var(--layout-page-margin) var(--space-64) var(--layout-page-margin) · w fill, h hug
+    - box "Utwory" · flex-column · gap var(--space-24) · padding var(--layout-card-padding) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+      - **Nagłówek sekcji** {Pokaż licznik=true, Pokaż opis=true, Opis=“Wszystkie utwory w archiwum, w kolejności wydania”, Licznik=“4”, Tytuł=“Utwory”} · flex-column · gap var(--space-8) · padding 0px 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - box "Siatka utworów" · flex-row · gap var(--space-24) · w fill, h hug
+        - **Karta utworu [Stan=Domyślny]** {Fragmenty=“24 fragmenty”, Autor=“Leopold Buczkowski”, Tytuł=“Wertepy”, Kategoria i rok=“Powieść · 1947”, Stan=“Domyślny”} · flex-column · gap var(--space-12) · padding var(--space-16) · w fill, h 440px · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+        - **Karta utworu [Stan=Domyślny]** {Fragmenty=“18 fragmentów”, Autor=“Leopold Buczkowski”, Tytuł=“Czarny potok”, Kategoria i rok=“Powieść · 1954”, Stan=“Domyślny”} · flex-column · gap var(--space-12) · padding var(--space-16) · w fill, h 440px · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+        - **Karta utworu [Stan=Domyślny]** {Fragmenty=“12 fragmentów”, Autor=“Leopold Buczkowski”, Tytuł=“Dorycki krużganek”, Kategoria i rok=“Powieść · 1957”, Stan=“Domyślny”} · flex-column · gap var(--space-12) · padding var(--space-16) · w fill, h 440px · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+        - **Karta utworu [Stan=Domyślny]** {Fragmenty=“8 fragmentów”, Autor=“Leopold Buczkowski”, Tytuł=“Pierwsza świetność”, Kategoria i rok=“Powieść · 1966”, Stan=“Domyślny”} · flex-column · gap var(--space-12) · padding var(--space-16) · w fill, h 440px · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+    - box "Wybrany fragment" · flex-column · gap var(--space-24) · padding var(--layout-card-padding) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+      - **Nagłówek sekcji** {Pokaż licznik=true, Pokaż opis=true, Opis=“Wybór redakcji”, Licznik=“1 z 62”, Tytuł=“Wybrany fragment”} · flex-column · gap var(--space-8) · padding 0px 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - **Fragment / Maszynopis** {Pokaż tagi=true, Opis=“Grzybniak leczy chorych podczas zimowej epidemii tyfusu w Dolinoszczęsnej.”, Sygnatura=“ML, sygn. 1618.0009”, Pozycja=“Wertepy · fragment 01 · rozdział I”} · flex-column · gap var(--space-12) · padding 0px 0px var(--space-24) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - **Link ze strzałką [Stan=Domyślny]** {Etykieta=“Wszystkie fragmenty „Wertepów” (24)”, Stan=“Domyślny”} · flex-row · gap var(--space-4) · align center · w hug, h hug
+    - box "Chmura tagów" · flex-column · gap var(--space-24) · padding var(--layout-card-padding) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+      - **Nagłówek sekcji** {Pokaż licznik=true, Pokaż opis=true, Opis=“Wielkość nazwy odpowiada liczbie wystąpień, w pięciu stopniach”, Licznik=“12”, Tytuł=“Chmura tagów”} · flex-column · gap var(--space-8) · padding 0px 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - box "Chmura" · flex-column · gap var(--space-4) · padding var(--space-32) · align center · w fill, h hug · bg var(--color-bg-subtle) · radius var(--radius-m)
+        - box "Rząd chmury" · flex-row · gap var(--space-32) · justify center · w hug, h hug
+          - box "Tag / Pisanie (3)" · flex-column · gap 0px · padding 16px 0px 8px 0px · w hug, h hug
+            - text "Pisanie" · .text-chmura-tagow-1 · color var(--color-text-primary) · “Pisanie”
+          - box "Tag / Podole (15)" · flex-column · gap 0px · padding 0px 0px 24px 0px · w hug, h hug
+            - text "Podole" · .text-chmura-tagow-3 · color var(--color-text-primary) · “Podole”
+          - box "Tag / Las (6)" · flex-column · gap 0px · padding 12px 0px 12px 0px · w hug, h hug
+            - text "Las" · .text-chmura-tagow-2 · color var(--color-text-primary) · “Las”
+          - box "Tag / Szkoła (3)" · flex-column · gap 0px · padding 20px 0px 4px 0px · w hug, h hug
+            - text "Szkoła" · .text-chmura-tagow-1 · color var(--color-text-primary) · “Szkoła”
+        - box "Rząd chmury" · flex-row · gap var(--space-32) · justify center · w hug, h hug
+          - box "Tag / Epidemia (7)" · flex-column · gap 0px · padding 8px 0px 16px 0px · w hug, h hug
+            - text "Epidemia" · .text-chmura-tagow-2 · color var(--color-text-primary) · “Epidemia”
+          - box "Tag / Wieś (24)" · flex-column · gap 0px · padding 0px 0px 24px 0px · w hug, h hug
+            - text "Wieś" · .text-chmura-tagow-4 · color var(--color-text-accent) · “Wieś”
+          - box "Tag / Wojna (31)" · flex-column · gap 0px · padding 4px 0px 20px 0px · w hug, h hug
+            - text "Wojna" · .text-chmura-tagow-5 · color var(--color-text-accent) · “Wojna”
+          - box "Tag / Pamięć (18)" · flex-column · gap 0px · padding 12px 0px 12px 0px · w hug, h hug
+            - text "Pamięć" · .text-chmura-tagow-4 · color var(--color-text-accent) · “Pamięć”
+          - box "Tag / Zima (2)" · flex-column · gap 0px · padding 20px 0px 4px 0px · w hug, h hug
+            - text "Zima" · .text-chmura-tagow-1 · color var(--color-text-primary) · “Zima”
+        - box "Rząd chmury" · flex-row · gap var(--space-32) · justify center · w hug, h hug
+          - box "Tag / Stodoła (2)" · flex-column · gap 0px · padding 4px 0px 20px 0px · w hug, h hug
+            - text "Stodoła" · .text-chmura-tagow-1 · color var(--color-text-primary) · “Stodoła”
+          - box "Tag / Ucieczka (11)" · flex-column · gap 0px · padding 0px 0px 24px 0px · w hug, h hug
+            - text "Ucieczka" · .text-chmura-tagow-3 · color var(--color-text-primary) · “Ucieczka”
+          - box "Tag / Dezerter (4)" · flex-column · gap 0px · padding 12px 0px 12px 0px · w hug, h hug
+            - text "Dezerter" · .text-chmura-tagow-2 · color var(--color-text-primary) · “Dezerter”
+  - **Stopka [Rozmiar=Desktop]** {Rozmiar=“Desktop”} · flex-row · padding 0px var(--layout-page-margin) 0px var(--layout-page-margin) · justify space-between · align center · w fill, h 88px · bg var(--color-bg-page) · border-top 1px var(--color-border-subtle)

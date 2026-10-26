@@ -1,0 +1,57 @@
+# Wyszukiwanie — wyniki
+
+Viewport: desktop, 1440px wide. Preview: `../previews/screens/wyszukiwanie-wyniki.png`
+
+- box "Wyszukiwanie — wyniki" · flex-column · gap 0px · 1440px × 2013px · bg var(--color-bg-page)
+  - **Nagłówek serwisu [Rozmiar=Desktop]** {Rozmiar=“Desktop”} · flex-row · padding 0px var(--layout-page-margin) 0px var(--layout-page-margin) · justify space-between · align center · w fill, h 88px · bg var(--color-bg-page) · border-bottom 1px var(--color-border-subtle)
+  - box "Wyszukiwanie" · flex-column · gap var(--space-12) · padding var(--space-48) var(--layout-page-margin) 0px var(--layout-page-margin) · w fill, h hug
+    - **Pole wyszukiwania [Stan=Wypełnione]** {Wartość=“Dezerter”, Stan=“Wypełnione”} · flex-row · gap var(--space-12) · padding 0px var(--space-8) 0px var(--space-16) · align center · w 880px, h 56px · bg var(--color-bg-card) · border 1px var(--color-border-accent) · radius var(--radius-s)
+    - box "Pomoc" · flex-row · justify space-between · w 880px, h hug
+      - text "Zakres" · .text-cousine-metadane-male · color var(--color-text-secondary) · “Przeszukiwane: tytuły, opisy, transkrypcje i tagi”
+      - text "Wskazówka" · .text-cousine-metadane-male · color var(--color-text-secondary) · “Dokładna fraza: użyj cudzysłowu, np. „dezerter w stodole””
+  - box "Zakładki" · flex-row · gap var(--space-32) · padding var(--space-24) var(--layout-page-margin) 0px var(--layout-page-margin) · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+    - **Zakładka [Stan=Aktywna]** {Liczba=“7”, Etykieta=“Wszystko”, Stan=“Aktywna”} · flex-row · gap var(--space-8) · padding var(--space-12) 0px var(--space-12) 0px · align center · w hug, h hug · border-bottom 2px var(--color-border-accent)
+    - **Zakładka [Stan=Domyślna]** {Liczba=“2”, Etykieta=“Utwory”, Stan=“Domyślna”} · flex-row · gap var(--space-8) · padding var(--space-12) 0px var(--space-12) 0px · align center · w hug, h hug
+    - **Zakładka [Stan=Domyślna]** {Liczba=“3”, Etykieta=“Fragmenty”, Stan=“Domyślna”} · flex-row · gap var(--space-8) · padding var(--space-12) 0px var(--space-12) 0px · align center · w hug, h hug
+    - **Zakładka [Stan=Domyślna]** {Liczba=“1”, Etykieta=“Zapiski”, Stan=“Domyślna”} · flex-row · gap var(--space-8) · padding var(--space-12) 0px var(--space-12) 0px · align center · w hug, h hug
+    - **Zakładka [Stan=Domyślna]** {Liczba=“1”, Etykieta=“Tagi”, Stan=“Domyślna”} · flex-row · gap var(--space-8) · padding var(--space-12) 0px var(--space-12) 0px · align center · w hug, h hug
+  - box "Treść" · flex-row · gap var(--space-48) · padding var(--space-32) var(--layout-page-margin) var(--space-48) var(--layout-page-margin) · w fill, h hug
+    - box "Filtry" · flex-column · gap var(--space-32) · w 240px, h hug
+      - box "Utwór" · flex-column · gap var(--space-8) · w fill, h hug
+        - **Nagłówek kolumny** {Pokaż liczbę=true, Liczba=“2”, Etykieta=“Utwór”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Pole wyboru [Zaznaczone=Nie]** {Pokaż liczbę=true, Liczba=“2”, Etykieta=“Wertepy”, Zaznaczone=“Nie”} · flex-row · gap var(--space-8) · align center · w hug, h hug
+        - **Pole wyboru [Zaznaczone=Nie]** {Pokaż liczbę=true, Liczba=“1”, Etykieta=“Czarny potok”, Zaznaczone=“Nie”} · flex-row · gap var(--space-8) · align center · w hug, h hug
+      - box "Dostępność" · flex-column · gap var(--space-8) · w fill, h hug
+        - **Nagłówek kolumny** {Pokaż liczbę=false, Liczba=“3”, Etykieta=“Dostępność”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Pole wyboru [Zaznaczone=Nie]** {Pokaż liczbę=true, Liczba=“3”, Etykieta=“Ze skanem”, Zaznaczone=“Nie”} · flex-row · gap var(--space-8) · align center · w hug, h hug
+        - **Pole wyboru [Zaznaczone=Nie]** {Pokaż liczbę=true, Liczba=“0”, Etykieta=“Z transkrypcją”, Zaznaczone=“Nie”} · flex-row · gap var(--space-8) · align center · w hug, h hug
+      - box "Okres" · flex-column · gap var(--space-8) · w fill, h hug
+        - **Nagłówek kolumny** {Pokaż liczbę=false, Liczba=“3”, Etykieta=“Okres”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Lista rozwijana** {Wartość=“Wszystkie lata”} · flex-row · padding var(--space-8) var(--space-12) var(--space-8) var(--space-12) · justify space-between · align center · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-accent) · radius var(--radius-s)
+    - box "Wyniki" · flex-column · gap var(--space-24) · w fill, h hug
+      - box "Nagłówek wyników" · flex-row · justify space-between · align end · w fill, h hug
+        - box "Tytuł" · flex-column · gap var(--space-4) · w hug, h hug
+          - text "Tytuł" · .text-lora-tytul-sekcji · color var(--color-text-primary) · “Wyniki dla „Dezerter””
+          - text "Liczba" · .text-cousine-metadane-male · color var(--color-text-secondary) · “7 wyników we wszystkich kategoriach”
+        - box "Sortowanie" · flex-row · gap var(--space-8) · align center · w hug, h hug
+          - text "Etykieta" · .text-cousine-metadane · color var(--color-text-secondary) · “Sortuj”
+          - **Lista rozwijana** {Wartość=“Trafność”} · flex-row · padding var(--space-8) var(--space-12) var(--space-8) var(--space-12) · justify space-between · align center · w 220px, h hug · bg var(--color-bg-card) · border 1px var(--color-border-accent) · radius var(--radius-s)
+      - box "Utwory" · flex-column · gap var(--space-24) · padding var(--layout-card-padding) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+        - **Nagłówek sekcji** {Pokaż licznik=true, Pokaż opis=false, Opis=“Wybór redakcji, w kolejności tekstu”, Licznik=“2”, Tytuł=“Utwory”} · flex-column · gap var(--space-8) · padding 0px 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - box "Lista" · flex-column · gap 0px · w fill, h hug
+          - **Wynik wyszukiwania / Utwór** {Dopasowanie=“2 fragmenty z tagiem”, Opis=“Leopold Buczkowski · powieść · 1947”, Tytuł=“Wertepy”} · flex-row · gap var(--space-16) · padding var(--space-16) 0px var(--space-16) 0px · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+          - **Wynik wyszukiwania / Utwór** {Dopasowanie=“1 fragment z tagiem”, Opis=“Leopold Buczkowski · powieść · 1954”, Tytuł=“Czarny potok”} · flex-row · gap var(--space-16) · padding var(--space-16) 0px var(--space-16) 0px · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - box "Fragmenty" · flex-column · gap var(--space-24) · padding var(--layout-card-padding) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+        - **Nagłówek sekcji** {Pokaż licznik=true, Pokaż opis=false, Opis=“Wybór redakcji, w kolejności tekstu”, Licznik=“3”, Tytuł=“Fragmenty”} · flex-column · gap var(--space-8) · padding 0px 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - box "Lista" · flex-column · gap 0px · w fill, h hug
+          - **Wynik wyszukiwania / Fragment** {Sygnatura=“ML, sygn. 1618.0009”, Opis=“Fragment oznaczony tagiem „Dezerter”. Skan i miejsce w tekście utworu.”, Tytuł=“Wertepy — fragment 01”, Ścieżka=“Wertepy · maszynopis”} · flex-column · gap var(--space-8) · padding var(--space-16) 0px var(--space-16) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+          - **Wynik wyszukiwania / Fragment** {Sygnatura=“ML, sygn. 1618.0019”, Opis=“Fragment oznaczony tagiem „Dezerter”. Skan i miejsce w tekście utworu.”, Tytuł=“Wertepy — fragment 03”, Ścieżka=“Wertepy · maszynopis”} · flex-column · gap var(--space-8) · padding var(--space-16) 0px var(--space-16) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+          - **Wynik wyszukiwania / Fragment** {Sygnatura=“ML, sygn. 1609.0012”, Opis=“Fragment oznaczony tagiem „Dezerter”. Skan i miejsce w tekście utworu.”, Tytuł=“Czarny potok — fragment 02”, Ścieżka=“Czarny potok · maszynopis”} · flex-column · gap var(--space-8) · padding var(--space-16) 0px var(--space-16) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - box "Zapiski" · flex-column · gap var(--space-24) · padding var(--layout-card-padding) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+        - **Nagłówek sekcji** {Pokaż licznik=true, Pokaż opis=false, Opis=“Wybór redakcji, w kolejności tekstu”, Licznik=“1”, Tytuł=“Zapiski”} · flex-column · gap var(--space-8) · padding 0px 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Wynik wyszukiwania / Zapisek** {Dopasowanie=“Zapisek z tagiem”, Opis=“Zapisek · ML, sygn. 1678.0104”, Tytuł=“Notes 18”} · flex-row · gap var(--space-16) · padding var(--space-16) 0px var(--space-16) 0px · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - box "Tagi" · flex-column · gap var(--space-24) · padding var(--layout-card-padding) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+        - **Nagłówek sekcji** {Pokaż licznik=true, Pokaż opis=false, Opis=“Wybór redakcji, w kolejności tekstu”, Licznik=“1”, Tytuł=“Tagi”} · flex-column · gap var(--space-8) · padding 0px 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Wynik wyszukiwania / Tag** {Liczba=“4 wystąpienia”, Opis=“Postać dezertera w prozie Buczkowskiego: fragmenty utworów i zapiski połączone wspólnym motywem.”, Tytuł=“Dezerter”} · flex-column · gap var(--space-8) · padding var(--space-16) 0px var(--space-16) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - text "Podsumowanie" · .text-cousine-metadane-male · color var(--color-text-secondary) · “Wyświetlono 7 z 7 wyników”
+  - **Stopka [Rozmiar=Desktop]** {Rozmiar=“Desktop”} · flex-row · padding 0px var(--layout-page-margin) 0px var(--layout-page-margin) · justify space-between · align center · w fill, h 88px · bg var(--color-bg-page) · border-top 1px var(--color-border-subtle)
