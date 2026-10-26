@@ -33,7 +33,7 @@ Run everything from the repo root.
 
 The core is `backend/archive/`, `backend/search/`, `backend/api/` and all migrations. Core changes require the core owner's review, enforced by CODEOWNERS.
 
-Frontend work uses the API as it is. If an endpoint lacks data a page needs, say so in the PR. Do not change the backend to get it.
+A page story's PR builds that page's own endpoint, and the core owner reviews it (`docs/plan.md`, D11). Beyond that, frontend work uses the API as it is. If another endpoint lacks data a page needs, say so in the PR. Do not change the backend to get it.
 
 ## Tests
 
