@@ -15,6 +15,7 @@ from archive.models import (
     Fragment,
     Institution,
     MaterialWorkLink,
+    MediaContent,
     Note,
     SecondaryText,
     SecondaryTextWorkLink,
@@ -28,10 +29,12 @@ from archive.models import (
 # Bulk deletes skip each object's `delete()` and its side effects (architecture section 6).
 admin.site.disable_action("delete_selected")
 
-# Django 6.0 makes https the default scheme for URLs typed without one; opt in now.
-HTTPS_URL_FIELDS: dict[type[models.Field[Any, Any]], dict[str, Any]] = {
-    models.URLField: {"assume_scheme": "https"},
-}
+
+class MediaContentAdmin[M: MediaContent](admin.ModelAdmin[M]):
+    # Django 6.0 makes https the default scheme for URLs typed without one; opt in now.
+    formfield_overrides: ClassVar[dict[type[models.Field[Any, Any]], dict[str, Any]]] = {
+        models.URLField: {"assume_scheme": "https"},
+    }
 
 
 @admin.register(Institution)
@@ -82,8 +85,7 @@ class TypescriptAdmin(admin.ModelAdmin[Typescript]):
 
 
 @admin.register(Note)
-class NoteAdmin(admin.ModelAdmin[Note]):
-    formfield_overrides = HTTPS_URL_FIELDS
+class NoteAdmin(MediaContentAdmin[Note]):
     list_display = ("title", "content_kind", "shelfmark", "status", "updated_at")
     list_filter = ("status", "content_kind", "works")
     search_fields = ("title", "shelfmark")
@@ -116,8 +118,7 @@ class MaterialWorkLinkInline(admin.TabularInline[MaterialWorkLink, ContextualMat
 
 
 @admin.register(ContextualMaterial)
-class ContextualMaterialAdmin(admin.ModelAdmin[ContextualMaterial]):
-    formfield_overrides = HTTPS_URL_FIELDS
+class ContextualMaterialAdmin(MediaContentAdmin[ContextualMaterial]):
     list_display = ("title", "content_kind", "shelfmark", "status", "updated_at")
     list_filter = ("status", "content_kind")
     search_fields = ("title", "shelfmark")
