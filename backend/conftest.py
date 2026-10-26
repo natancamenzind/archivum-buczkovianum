@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 from pytest_django.fixtures import Settings
 
@@ -9,3 +11,10 @@ def _plain_static_storage(settings: Settings) -> None:
         **settings.STORAGES,
         "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
     }
+
+
+@pytest.fixture(autouse=True)
+def _static_root(settings: Settings, tmp_path: Path) -> None:
+    """WhiteNoise warns when STATIC_ROOT is missing, and tests run without collectstatic."""
+    settings.STATIC_ROOT = tmp_path / "staticfiles"
+    settings.STATIC_ROOT.mkdir()
