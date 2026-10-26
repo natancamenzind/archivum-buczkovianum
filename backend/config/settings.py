@@ -117,3 +117,6 @@ SPECTACULAR_SETTINGS = {
 }
 
 SEARCH_TS_CONFIG = "polish"
+
+# How many items a section preview shows before its "all" link (R-09).
+PREVIEW_LIMIT = 2
