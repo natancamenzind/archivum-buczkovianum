@@ -1,0 +1,44 @@
+# Wyszukiwanie — ładowanie
+
+Viewport: desktop, 1440px wide. Preview: `../previews/screens/wyszukiwanie-ladowanie.png`
+
+- box "Wyszukiwanie — ładowanie" · flex-column · gap 0px · 1440px × 1107px · bg var(--color-bg-page)
+  - **Nagłówek serwisu [Rozmiar=Desktop]** {Rozmiar=“Desktop”} · flex-row · padding 0px var(--layout-page-margin) 0px var(--layout-page-margin) · justify space-between · align center · w fill, h 88px · bg var(--color-bg-page) · border-bottom 1px var(--color-border-subtle)
+  - box "Wyszukiwanie" · flex-column · gap var(--space-12) · padding var(--space-48) var(--layout-page-margin) 0px var(--layout-page-margin) · w fill, h hug
+    - **Pole wyszukiwania [Stan=Wypełnione]** {Wartość=“Dezerter”, Stan=“Wypełnione”} · flex-row · gap var(--space-12) · padding 0px var(--space-8) 0px var(--space-16) · align center · w 880px, h 56px · bg var(--color-bg-card) · border 1px var(--color-border-accent) · radius var(--radius-s)
+    - box "Pomoc" · flex-row · justify space-between · w 880px, h hug
+      - text "Zakres" · .text-cousine-metadane-male · color var(--color-text-secondary) · “Przeszukiwane: tytuły, opisy, transkrypcje i tagi”
+      - text "Wskazówka" · .text-cousine-metadane-male · color var(--color-text-secondary) · “Dokładna fraza: użyj cudzysłowu, np. „dezerter w stodole””
+  - box "Zakładki" · flex-row · gap var(--space-32) · padding var(--space-24) var(--layout-page-margin) 0px var(--layout-page-margin) · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+    - **Zakładka [Stan=Aktywna]** {Liczba=“–”, Etykieta=“Wszystko”, Stan=“Aktywna”} · flex-row · gap var(--space-8) · padding var(--space-12) 0px var(--space-12) 0px · align center · w hug, h hug · border-bottom 2px var(--color-border-accent)
+    - **Zakładka [Stan=Domyślna]** {Liczba=“–”, Etykieta=“Utwory”, Stan=“Domyślna”} · flex-row · gap var(--space-8) · padding var(--space-12) 0px var(--space-12) 0px · align center · w hug, h hug
+    - **Zakładka [Stan=Domyślna]** {Liczba=“–”, Etykieta=“Fragmenty”, Stan=“Domyślna”} · flex-row · gap var(--space-8) · padding var(--space-12) 0px var(--space-12) 0px · align center · w hug, h hug
+    - **Zakładka [Stan=Domyślna]** {Liczba=“–”, Etykieta=“Zapiski”, Stan=“Domyślna”} · flex-row · gap var(--space-8) · padding var(--space-12) 0px var(--space-12) 0px · align center · w hug, h hug
+    - **Zakładka [Stan=Domyślna]** {Liczba=“–”, Etykieta=“Tagi”, Stan=“Domyślna”} · flex-row · gap var(--space-8) · padding var(--space-12) 0px var(--space-12) 0px · align center · w hug, h hug
+  - box "Treść" · flex-row · gap var(--space-48) · padding var(--space-32) var(--layout-page-margin) var(--space-48) var(--layout-page-margin) · w fill, h hug
+    - box "Filtry" · flex-column · gap var(--space-32) · w 240px, h hug · opacity 40%
+      - box "Utwór" · flex-column · gap var(--space-8) · w fill, h hug
+        - **Nagłówek kolumny** {Pokaż liczbę=true, Liczba=“2”, Etykieta=“Utwór”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Pole wyboru [Zaznaczone=Nie]** {Pokaż liczbę=true, Liczba=“2”, Etykieta=“Wertepy”, Zaznaczone=“Nie”} · flex-row · gap var(--space-8) · align center · w hug, h hug
+        - **Pole wyboru [Zaznaczone=Nie]** {Pokaż liczbę=true, Liczba=“1”, Etykieta=“Czarny potok”, Zaznaczone=“Nie”} · flex-row · gap var(--space-8) · align center · w hug, h hug
+      - box "Dostępność" · flex-column · gap var(--space-8) · w fill, h hug
+        - **Nagłówek kolumny** {Pokaż liczbę=false, Liczba=“3”, Etykieta=“Dostępność”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Pole wyboru [Zaznaczone=Nie]** {Pokaż liczbę=true, Liczba=“3”, Etykieta=“Ze skanem”, Zaznaczone=“Nie”} · flex-row · gap var(--space-8) · align center · w hug, h hug
+        - **Pole wyboru [Zaznaczone=Nie]** {Pokaż liczbę=true, Liczba=“0”, Etykieta=“Z transkrypcją”, Zaznaczone=“Nie”} · flex-row · gap var(--space-8) · align center · w hug, h hug
+      - box "Okres" · flex-column · gap var(--space-8) · w fill, h hug
+        - **Nagłówek kolumny** {Pokaż liczbę=false, Liczba=“3”, Etykieta=“Okres”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Lista rozwijana** {Wartość=“Wszystkie lata”} · flex-row · padding var(--space-8) var(--space-12) var(--space-8) var(--space-12) · justify space-between · align center · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-accent) · radius var(--radius-s)
+    - box "Wyniki" · flex-column · gap var(--space-24) · w fill, h hug
+      - box "Nagłówek wyników" · flex-row · justify space-between · align end · w fill, h hug
+        - box "Tytuł" · flex-column · gap var(--space-4) · w hug, h hug
+          - text "Tytuł" · .text-lora-tytul-sekcji · color var(--color-text-primary) · “Wyniki dla „Dezerter””
+          - text "Liczba" · .text-lora-glosa · color var(--color-text-secondary) · “Przeszukuję utwory, fragmenty, zapiski i tagi…”
+        - box "Sortowanie" · flex-row · gap var(--space-8) · align center · w hug, h hug · opacity 40%
+          - text "Etykieta" · .text-cousine-metadane · color var(--color-text-secondary) · “Sortuj”
+          - **Lista rozwijana** {Wartość=“Trafność”} · flex-row · padding var(--space-8) var(--space-12) var(--space-8) var(--space-12) · justify space-between · align center · w 220px, h hug · bg var(--color-bg-card) · border 1px var(--color-border-accent) · radius var(--radius-s)
+      - box "Szkielet wyników" · flex-column · gap 0px · padding var(--layout-card-padding) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+        - **Wynik wyszukiwania / Szkielet [Faza=1]** {Faza=“1”} · flex-column · gap 10px · padding var(--space-16) 0px var(--space-16) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Wynik wyszukiwania / Szkielet [Faza=1]** {Faza=“1”} · flex-column · gap 10px · padding var(--space-16) 0px var(--space-16) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Wynik wyszukiwania / Szkielet [Faza=1]** {Faza=“1”} · flex-column · gap 10px · padding var(--space-16) 0px var(--space-16) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Wynik wyszukiwania / Szkielet [Faza=1]** {Faza=“1”} · flex-column · gap 10px · padding var(--space-16) 0px 0px 0px · w fill, h hug
+  - **Stopka [Rozmiar=Desktop]** {Rozmiar=“Desktop”} · flex-row · padding 0px var(--layout-page-margin) 0px var(--layout-page-margin) · justify space-between · align center · w fill, h 88px · bg var(--color-bg-page) · border-top 1px var(--color-border-subtle)

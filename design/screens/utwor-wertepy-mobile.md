@@ -1,0 +1,34 @@
+# Utwór — Wertepy (mobile)
+
+Viewport: mobile, 390px wide. Preview: `../previews/screens/utwor-wertepy-mobile.png`
+
+- box "Utwór — Wertepy (mobile)" · flex-column · gap 0px · 390px × 2469px · bg var(--color-bg-page)
+  - **Nagłówek serwisu [Rozmiar=Mobile]** {Rozmiar=“Mobile”} · flex-row · padding 0px var(--layout-page-margin-mobile) 0px var(--layout-page-margin-mobile) · justify space-between · align center · w fill, h 64px · bg var(--color-bg-page) · border-bottom 1px var(--color-border-subtle)
+  - **Nagłówek strony [Rozmiar=Mobile]** {Pokaż opis=true, Opis=“Pierwsza powieść Leopolda Buczkowskiego, wydana w 1947 roku. Sceny z codziennego życia podolskiej wsi w dwudziestoleciu międzywojennym.”, Tytuł=“Wertepy”, Etykieta=“Utwór · 1947”, Rozmiar=“Mobile”} · flex-column · gap var(--space-16) · padding var(--space-32) var(--layout-page-margin-mobile) var(--space-24) var(--layout-page-margin-mobile) · w fill, h hug · bg var(--color-bg-inverse) · paper grain (noise, white @4%)
+  - box "Treść" · flex-column · gap var(--space-24) · padding var(--space-24) var(--layout-page-margin-mobile) var(--space-32) var(--layout-page-margin-mobile) · w fill, h hug
+    - box "Fragmenty maszynopisu" · flex-column · gap var(--space-24) · padding var(--layout-card-padding-mobile) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+      - **Nagłówek sekcji** {Pokaż licznik=true, Pokaż opis=false, Opis=“Wybór redakcji, w kolejności tekstu”, Licznik=“1 z 24”, Tytuł=“Fragmenty maszynopisu”} · flex-column · gap var(--space-8) · padding 0px 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - **Fragment / Maszynopis** {Pokaż tagi=true, Opis=“Grzybniak leczy chorych podczas zimowej epidemii tyfusu w Dolinoszczęsnej.”, Sygnatura=“ML, sygn. 1618.0009”, Pozycja=“Fragment 01 · rozdział I”} · flex-column · gap var(--space-12) · padding 0px 0px var(--space-24) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - **Link ze strzałką [Stan=Domyślny]** {Etykieta=“Wszystkie fragmenty (24)”, Stan=“Domyślny”} · flex-row · gap var(--space-4) · align center · w hug, h hug
+    - box "Maszynopisy" · flex-column · gap var(--space-24) · padding var(--layout-card-padding-mobile) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+      - **Nagłówek sekcji** {Pokaż licznik=true, Pokaż opis=false, Opis=“Wybór redakcji, w kolejności tekstu”, Licznik=“2”, Tytuł=“Maszynopisy”} · flex-column · gap var(--space-8) · padding 0px 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - box "Lista" · flex-column · gap 0px · w fill, h hug
+        - **Wiersz listy** {Tytuł=“Pierwsza wersja, ML, sygn. 1618”, Nr=“01”} · flex-row · padding var(--space-12) 0px var(--space-12) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Wiersz listy** {Tytuł=“Druga wersja, ML, sygn. 1619”, Nr=“02”} · flex-row · padding var(--space-12) 0px var(--space-12) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+    - box "Wydania" · flex-column · gap var(--space-8) · w fill, h hug
+      - **Nagłówek kolumny** {Pokaż liczbę=true, Liczba=“3”, Etykieta=“Wydania”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - **Element listy bocznej [Stan=Domyślny]** {Pokaż opis=true, Tytuł=“Gebethner i Wolff”, Opis=“Warszawa · pierwsze wydanie”, Rok=“1947”, Stan=“Domyślny”} · flex-column · gap var(--space-4) · padding var(--space-8) 0px var(--space-8) var(--space-12) · w fill, h hug · border-left 1px var(--color-border-subtle)
+      - **Element listy bocznej [Stan=Domyślny]** {Pokaż opis=true, Tytuł=“Państwowy Instytut Wydawniczy”, Opis=“Warszawa”, Rok=“1957”, Stan=“Domyślny”} · flex-column · gap var(--space-4) · padding var(--space-8) 0px var(--space-8) var(--space-12) · w fill, h hug · border-left 1px var(--color-border-subtle)
+      - **Element listy bocznej [Stan=Domyślny]** {Pokaż opis=true, Tytuł=“Wydawnictwo Literackie”, Opis=“Kraków”, Rok=“1973”, Stan=“Domyślny”} · flex-column · gap var(--space-4) · padding var(--space-8) 0px var(--space-8) var(--space-12) · w fill, h hug · border-left 1px var(--color-border-subtle)
+    - box "Tagi" · flex-column · gap var(--space-8) · w fill, h hug
+      - **Nagłówek kolumny** {Pokaż liczbę=true, Liczba=“6”, Etykieta=“Tagi”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - box "Tagi" · flex-row wrap · gap var(--space-8) · w fill, h hug
+        - **Tag [Stan=Domyślny]** {Nazwa=“Wieś”, Stan=“Domyślny”} · flex-row · gap 0px · padding var(--space-4) var(--space-12) var(--space-4) var(--space-12) · w hug, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-full)
+        - **Tag [Stan=Domyślny]** {Nazwa=“Wojna”, Stan=“Domyślny”} · flex-row · gap 0px · padding var(--space-4) var(--space-12) var(--space-4) var(--space-12) · w hug, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-full)
+        - **Tag [Stan=Domyślny]** {Nazwa=“Podole”, Stan=“Domyślny”} · flex-row · gap 0px · padding var(--space-4) var(--space-12) var(--space-4) var(--space-12) · w hug, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-full)
+        - **Tag [Stan=Domyślny]** {Nazwa=“Epidemia”, Stan=“Domyślny”} · flex-row · gap 0px · padding var(--space-4) var(--space-12) var(--space-4) var(--space-12) · w hug, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-full)
+        - **Tag [Stan=Domyślny]** {Nazwa=“Dezerter”, Stan=“Domyślny”} · flex-row · gap 0px · padding var(--space-4) var(--space-12) var(--space-4) var(--space-12) · w hug, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-full)
+        - **Tag [Stan=Domyślny]** {Nazwa=“Pamięć”, Stan=“Domyślny”} · flex-row · gap 0px · padding var(--space-4) var(--space-12) var(--space-4) var(--space-12) · w hug, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-full)
+  - box "Materiały kontekstowe" · flex-column · gap 0px · padding 0px var(--layout-page-margin-mobile) var(--space-32) var(--layout-page-margin-mobile) · w fill, h hug
+    - **Materiały kontekstowe [Rozmiar=Mobile]** {Rozmiar=“Mobile”} · flex-column · gap var(--space-24) · w fill, h hug
+  - **Stopka [Rozmiar=Mobile]** {Rozmiar=“Mobile”} · flex-column · gap 0px · w fill, h hug · bg var(--color-bg-page) · border-top 1px var(--color-border-subtle)
