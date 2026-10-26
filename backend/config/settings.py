@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_prose_editor",
     "archive",
+    "search",
 ]
 
 MIDDLEWARE = [
