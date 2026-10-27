@@ -93,6 +93,13 @@ export const copy = {
     loading: "Wczytuję utwory…",
     error: "Nie udało się wczytać utworów. Spróbuj ponownie później.",
   },
+  /** The typescripts list (US-RA-19). */
+  typescripts: {
+    title: "Maszynopisy",
+    description: "Jednostki archiwalne z maszynopisami utworów, pogrupowane według utworu.",
+    loading: "Wczytuję maszynopisy…",
+    error: "Nie udało się wczytać maszynopisów. Spróbuj ponownie później.",
+  },
   notFound: {
     title: "Nie znaleziono strony",
     body: "Pod tym adresem nie ma żadnej strony.",

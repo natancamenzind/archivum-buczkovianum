@@ -57,6 +57,26 @@ export interface paths {
         patch: operations["editor_fragments_partial_update"];
         trace?: never;
     };
+    "/api/typescripts/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The typescripts list (US-RA-19): published typescripts grouped by their published work,
+         *     works by first edition. A work without published typescripts has no group (R-02).
+         */
+        get: operations["typescripts_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/works/": {
         parameters: {
             query?: never;
@@ -129,6 +149,22 @@ export interface components {
             readonly name: string;
             readonly role: string;
             readonly bio: string;
+        };
+        /** @description A work's group on the typescripts list (US-RA-19 AC2), from a work with `with_year()`. */
+        TypescriptGroup: {
+            slug: string;
+            title: string;
+            genre: string;
+            /** @description The year of the first edition; null without editions. */
+            year: number | null;
+            /** @description By shelfmark, as numbers. */
+            typescripts: components["schemas"]["TypescriptRow"][];
+        };
+        TypescriptRow: {
+            readonly id: number;
+            readonly title: string;
+            /** @description E.g. "ML, sygn. 1618"; may be empty. */
+            readonly shelfmark: string;
         };
         /**
          * @description The work card (US-RA-01 AC3), from a queryset with `with_year()` and
@@ -263,6 +299,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EditorFragment"];
+                };
+            };
+        };
+    };
+    typescripts_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TypescriptGroup"][];
                 };
             };
         };
