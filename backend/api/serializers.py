@@ -32,10 +32,10 @@ class TeamGroupSerializer(serializers.Serializer[TeamGroup]):
 
 
 class AboutPageSerializer(serializers.Serializer[AboutPage]):
-    """US-RA-13. Texts are plain text until step 10 makes them rich text."""
+    """US-RA-13. `intro` and `project` are rich text: HTML, sanitized when an editor saves it."""
 
-    intro = serializers.CharField(allow_blank=True)
-    project = serializers.CharField(allow_blank=True)
+    intro = serializers.CharField(allow_blank=True, help_text="HTML.")
+    project = serializers.CharField(allow_blank=True, help_text="HTML.")
     team = TeamGroupSerializer(
         many=True, help_text="Groups that have members, in the order of TeamMember.Group."
     )

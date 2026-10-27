@@ -82,8 +82,8 @@ WORKS = [
     WorkData(
         "wertepy",
         "Wertepy",
-        "Pierwsza powieść Leopolda Buczkowskiego, wydana w 1947 roku. Sceny z codziennego życia "
-        "podolskiej wsi w dwudziestoleciu międzywojennym.",
+        "<p>Pierwsza powieść Leopolda Buczkowskiego, wydana w 1947 roku. Sceny z codziennego "
+        "życia podolskiej wsi w <em>dwudziestoleciu międzywojennym</em>.</p>",
         [
             ("Gebethner i Wolff", "Warszawa", 1947),
             ("Państwowy Instytut Wydawniczy", "Warszawa", 1957),
@@ -97,21 +97,21 @@ WORKS = [
     WorkData(
         "czarny-potok",
         "Czarny potok",
-        "[Opis utworu: dwa, trzy zdania.]",
+        "<p>[Opis utworu: dwa, trzy zdania.]</p>",
         [("Państwowy Instytut Wydawniczy", "Warszawa", 1954)],
         [TypescriptData("Maszynopis", "1609", "czarny-potok-1609", 18, is_main=True)],
     ),
     WorkData(
         "dorycki-kruzganek",
         "Dorycki krużganek",
-        "[Opis utworu: dwa, trzy zdania.]",
+        "<p>[Opis utworu: dwa, trzy zdania.]</p>",
         [("Państwowy Instytut Wydawniczy", "Warszawa", 1957)],
         [TypescriptData("Maszynopis", "1625", "dorycki-kruzganek-1625", 12, is_main=True)],
     ),
     WorkData(
         "pierwsza-swietnosc",
         "Pierwsza świetność",
-        "[Opis utworu: dwa, trzy zdania.]",
+        "<p>[Opis utworu: dwa, trzy zdania.]</p>",
         [("Państwowy Instytut Wydawniczy", "Warszawa", 1966)],
         [TypescriptData("Maszynopis", "1640", "pierwsza-swietnosc-1640", 8, is_main=True)],
     ),
@@ -203,7 +203,7 @@ class Command(BaseCommand):
         note = saved(
             Note(
                 title="Notes 18 · karta 4",
-                description="Notatka z notesu 18 o postaci dezertera.",
+                description="<p>Notatka z notesu 18 o postaci dezertera.</p>",
                 institution=institution,
                 shelfmark="1678.0104",
                 content_kind=ContentKind.IMAGE,
@@ -218,7 +218,7 @@ class Command(BaseCommand):
             SecondaryText(
                 title="List nr 32",
                 kind=SecondaryText.Kind.LETTER,
-                description="Transkrypcja listu z zachowaniem układu oryginału.",
+                description="<p>Transkrypcja listu z zachowaniem układu oryginału.</p>",
                 author="Leopold Buczkowski",
                 sender="Leopold Buczkowski",
                 letter_date=date(1947, 10, 1),
@@ -329,15 +329,16 @@ class Command(BaseCommand):
     def load_site_content(self) -> None:
         site = SiteSettings.load()
         site.intro_text = (
-            "Archiwum literackie Leopolda Buczkowskiego: utwory, maszynopisy, zapiski i fragmenty "
-            "połączone tagami."
+            "<p>Archiwum literackie Leopolda Buczkowskiego: utwory, maszynopisy, zapiski "
+            "i fragmenty połączone tagami.</p>"
         )
         site.portrait = image(PORTRAIT)
         site.portrait_alt = "Leopold Buczkowski, portret."
         site.about_intro = site.intro_text
         site.about_project = (
-            "[Opis projektu: cel archiwum, zakres zbiorów, instytucje partnerskie i źródło "
-            "finansowania. Dwa, trzy akapity.]"
+            "<p>[Opis projektu: <strong>cel archiwum</strong> i zakres zbiorów.]</p>"
+            "<ul><li><p>[Instytucja partnerska]</p></li><li><p>[Źródło finansowania]</p></li></ul>"
+            '<p>[Więcej o projekcie na <a href="https://example.org/">stronie partnera</a>.]</p>'
         )
         saved(site)
         for order, group in enumerate(TeamMember.Group):

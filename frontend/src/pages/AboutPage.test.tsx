@@ -11,8 +11,8 @@ type AboutData = components["schemas"]["AboutPage"];
 const ABOUT_URL = "*/api/about/";
 
 const ABOUT: AboutData = {
-  intro: "Archiwum literackie Leopolda Buczkowskiego.",
-  project: "Cel archiwum i zakres zbiorów.\n\nInstytucje partnerskie i finansowanie.",
+  intro: "<p>Archiwum literackie Leopolda Buczkowskiego.</p>",
+  project: "<p>Cel archiwum i zakres zbiorów.</p><p>Instytucje partnerskie i finansowanie.</p>",
   team: [
     {
       group: "leadership",
@@ -103,8 +103,34 @@ describe("AboutPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("US-WR-12 AC1: the introduction and the project text render their formatting", async () => {
+    mockAbout({
+      intro: "<p>Archiwum <em>literackie</em>.</p>",
+      project:
+        "<h3>Cel</h3><p><strong>Zakres</strong> zbiorów.</p>" +
+        '<ul><li><p>Muzeum</p></li></ul><p>Zob. <a href="https://example.org/">partner</a>.</p>',
+    });
+
+    const { container } = renderRoute("/about");
+
+    await screen.findByRole("heading", { level: 2, name: "O projekcie" });
+    const hero = screen
+      .getByRole("heading", { level: 1, name: "O archiwum" })
+      .closest<HTMLElement>("[data-slot=page-header]");
+    expect(hero?.querySelector("em")).toHaveTextContent("literackie");
+    const project = section("O projekcie");
+    expect(within(project).getByRole("heading", { level: 3, name: "Cel" })).toBeVisible();
+    expect(within(project).getByText("Zakres").tagName).toBe("STRONG");
+    expect(within(project).getByRole("listitem")).toHaveTextContent("Muzeum");
+    expect(within(project).getByRole("link", { name: "partner" })).toHaveAttribute(
+      "href",
+      "https://example.org/",
+    );
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
   it("US-RA-13 AC3: without project text, 'O projekcie' is hidden (R-02)", async () => {
-    mockAbout({ project: "\n\n" });
+    mockAbout({ project: "" });
 
     renderRoute("/about");
 

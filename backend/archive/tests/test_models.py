@@ -825,3 +825,68 @@ class TestSiteContent:
 
         # Assert
         assert members == [str(first), str(second)]
+
+
+# Bold, italic, a link, a list and a heading: what the toolbar offers (architecture section 5).
+RICH_TEXT = (
+    "<h3>Wstęp</h3><p><strong>Pierwsza</strong> <em>powieść</em>, "
+    '<a href="https://example.org/">źródło</a>.</p><ul><li><p>Punkt</p></li></ul>'
+)
+UNSAFE_TEXT = '<p onclick="steal()">Opis<script>steal()</script></p><img src="x.png">'
+
+
+@pytest.mark.django_db
+class TestRichText:
+    @pytest.mark.parametrize(
+        "factory",
+        [
+            WorkFactory,
+            TagFactory,
+            TypescriptFactory,
+            NoteFactory,
+            SecondaryTextFactory,
+            ContextualMaterialFactory,
+        ],
+    )
+    def test_us_wr_03_ac1_descriptions_keep_the_toolbar_formatting(
+        self, factory: type[WorkFactory]
+    ) -> None:
+        # Arrange
+        entity = factory.create(description=RICH_TEXT)
+
+        # Act
+        entity.full_clean()
+
+        # Assert
+        assert entity.description == RICH_TEXT
+
+    def test_us_wr_08_ac1_a_tag_description_is_sanitized(self) -> None:
+        # Arrange
+        tag = TagFactory.create(description=UNSAFE_TEXT)
+
+        # Act
+        tag.full_clean()
+
+        # Assert
+        assert tag.description == "<p>Opis</p>"
+
+    @pytest.mark.parametrize("field", ["intro_text", "about_intro", "about_project"])
+    def test_us_wr_12_ac1_site_texts_are_rich_text(self, field: str) -> None:
+        # Arrange
+        settings = SiteSettingsFactory.create(**{field: RICH_TEXT + UNSAFE_TEXT})
+
+        # Act
+        settings.full_clean()
+
+        # Assert
+        assert getattr(settings, field) == RICH_TEXT + "<p>Opis</p>"
+
+    def test_an_empty_editor_saves_an_empty_description(self) -> None:
+        # Arrange: the editor always holds at least one paragraph.
+        work = WorkFactory.create(description="<p></p>")
+
+        # Act
+        work.full_clean()
+
+        # Assert
+        assert work.description == ""

@@ -18,11 +18,25 @@ from django.db.models import Expression, F, Func, OuterRef, Q, Subquery, Value
 from django.utils.text import Truncator
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
+from django_prose_editor.fields import ProseEditorField
 
-from search.models import EntityType, IndexedContent, SearchEntry, Weight
+from search.models import EntityType, IndexedContent, SearchEntry, Weight, html_to_text
 
 IMAGE_EXTENSIONS = FileExtensionValidator(["jpg", "jpeg", "png", "webp"])
 PDF_EXTENSION = FileExtensionValidator(["pdf"])
+
+# The rich text editor's toolbar (architecture section 5). The same list is the allowlist that
+# sanitizes the HTML on the server. Headings start at h3: the page title and section titles above
+# a description are h1 and h2.
+RICH_TEXT_EXTENSIONS: dict[str, Any] = {
+    "Bold": True,
+    "Italic": True,
+    "Link": {"enableTarget": False},
+    "BulletList": True,
+    "OrderedList": True,
+    "ListItem": True,
+    "Heading": {"levels": [3, 4]},
+}
 
 
 def format_shelfmark(institution: "Institution | None", number: str) -> str:
@@ -112,7 +126,7 @@ class Publishable(BaseModel):
         help_text=_("Only published items are visible to the public."),
     )
     title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    description = ProseEditorField(extensions=RICH_TEXT_EXTENSIONS, sanitize=True, blank=True)
 
     search_type: ClassVar[EntityType]
     # Defined by every concrete model.
@@ -276,7 +290,7 @@ class Archival(models.Model):
             url=self.get_absolute_url(),
             texts=[
                 (self.title, Weight.TITLE),
-                (self.description, Weight.DESCRIPTION),
+                (html_to_text(self.description), Weight.DESCRIPTION),
                 (text, Weight.TEXT),
             ],
             work_ids=work_ids,
@@ -437,7 +451,7 @@ class Tag(Publishable):
         return IndexedContent(
             title=self.title,
             url=self.get_absolute_url(),
-            texts=[(self.title, Weight.TITLE), (self.description, Weight.QUOTE)],
+            texts=[(self.title, Weight.TITLE), (html_to_text(self.description), Weight.QUOTE)],
             work_ids=work_ids,
             decades=decades,
         )
@@ -571,7 +585,10 @@ class Work(Publishable, Taggable):
         return IndexedContent(
             title=self.title,
             url=self.get_absolute_url(),
-            texts=[(self.title, Weight.TITLE), (self.description, Weight.DESCRIPTION)],
+            texts=[
+                (self.title, Weight.TITLE),
+                (html_to_text(self.description), Weight.DESCRIPTION),
+            ],
             work_ids=[self.pk],
             decades=search_filters(Work.objects.filter(pk=self.pk))[1],
         )
@@ -1013,11 +1030,26 @@ class SiteSettings(BaseModel):
     """Editable texts of the home and About pages. There is exactly one row."""
 
     id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
-    intro_text = models.TextField(blank=True, help_text=_("Introduction on the home page."))
+    intro_text = ProseEditorField(
+        extensions=RICH_TEXT_EXTENSIONS,
+        sanitize=True,
+        blank=True,
+        help_text=_("Introduction on the home page."),
+    )
     portrait = models.FileField(upload_to="site/", blank=True, validators=[IMAGE_EXTENSIONS])
     portrait_alt = models.CharField(max_length=255, blank=True)
-    about_intro = models.TextField(blank=True, help_text=_("Introduction on the About page."))
-    about_project = models.TextField(blank=True, help_text=_("“O projekcie” on the About page."))
+    about_intro = ProseEditorField(
+        extensions=RICH_TEXT_EXTENSIONS,
+        sanitize=True,
+        blank=True,
+        help_text=_("Introduction on the About page."),
+    )
+    about_project = ProseEditorField(
+        extensions=RICH_TEXT_EXTENSIONS,
+        sanitize=True,
+        blank=True,
+        help_text=_("“O projekcie” on the About page."),
+    )
 
     class Meta:
         verbose_name = _("site settings")

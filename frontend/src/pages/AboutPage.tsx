@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { components } from "@/api/schema";
 import { ColumnHeader } from "@/components/ColumnHeader";
 import { PageHeader } from "@/components/PageHeader";
+import { RichText } from "@/components/RichText";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { copy } from "@/copy/pl";
@@ -22,14 +23,6 @@ async function fetchAbout(): Promise<AboutData> {
 
 function hasText(text: string): boolean {
   return text.trim() !== "";
-}
-
-/** Plain text until step 10 makes it rich text: blank lines separate paragraphs. */
-function paragraphs(text: string): string[] {
-  return text
-    .split(/\n\s*\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
 }
 
 /** "Osoba" in design/components/. An empty role or biography is not rendered (R-02). */
@@ -70,7 +63,7 @@ function Team({ groups }: { groups: TeamGroup[] }) {
 export function AboutPage() {
   const about = useQuery({ queryKey: ["about"], queryFn: fetchAbout });
   const intro = about.data?.intro ?? "";
-  const project = paragraphs(about.data?.project ?? "");
+  const project = about.data?.project ?? "";
   const team = about.data?.team ?? [];
 
   return (
@@ -78,7 +71,7 @@ export function AboutPage() {
       <PageHeader
         label={copy.siteName}
         title={copy.about.title}
-        description={hasText(intro) ? intro : undefined}
+        description={hasText(intro) ? <RichText html={intro} /> : undefined}
       />
       <div className="px-page-mobile py-24 md:px-page md:pt-48 md:pb-64">
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-32">
@@ -87,16 +80,10 @@ export function AboutPage() {
               {about.isPending ? copy.about.loading : copy.about.error}
             </p>
           )}
-          {project.length > 0 && (
+          {hasText(project) && (
             <Card>
               <SectionHeader title={copy.about.project} />
-              <div className="flex flex-col gap-16">
-                {project.map((paragraph, index) => (
-                  <p key={index} className="text-lora-tekst text-foreground">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
+              <RichText html={project} className="text-lora-tekst text-foreground" />
             </Card>
           )}
           {team.length > 0 && <Team groups={team} />}

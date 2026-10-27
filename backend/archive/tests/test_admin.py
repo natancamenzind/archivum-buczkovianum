@@ -1,9 +1,13 @@
+from typing import Any
+
 import pytest
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.db.models import Model
+from django.forms import ModelForm
 from django.test import Client, RequestFactory
 from django.urls import reverse
+from django_prose_editor.fields import ProseEditorFormField
 from pytest_django import DjangoAssertNumQueries
 
 from archive.models import Document, Fragment, SiteSettings, Status, Tag
@@ -170,3 +174,63 @@ class TestEditorPanel:
             "about_intro",
             "about_project",
         ]
+
+
+@pytest.mark.django_db
+class TestRichTextInThePanel:
+    @pytest.mark.parametrize(
+        "model", ["work", "tag", "typescript", "note", "secondarytext", "contextualmaterial"]
+    )
+    def test_us_wr_03_ac1_descriptions_use_the_rich_text_editor(
+        self, admin_client: Client, model: str
+    ) -> None:
+        # Act
+        response = admin_client.get(reverse(f"admin:archive_{model}_add"))
+
+        # Assert
+        assert is_rich_text(response.context["adminform"].form, "description")
+
+    def test_us_wr_12_ac1_about_and_home_texts_use_the_rich_text_editor(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        SiteSettingsFactory.create()
+
+        # Act
+        response = admin_client.get(reverse("admin:archive_sitesettings_change", args=[1]))
+
+        # Assert
+        form = response.context["adminform"].form
+        assert [name for name in form.fields if is_rich_text(form, name)] == [
+            "intro_text",
+            "about_intro",
+            "about_project",
+        ]
+
+    def test_us_wr_12_ac1_saving_the_about_page_sanitizes_its_texts(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        SiteSettingsFactory.create()
+        url = reverse("admin:archive_sitesettings_change", args=[1])
+        data = {
+            "intro_text": "<p>Wstęp</p>",
+            "portrait_alt": "",
+            "about_intro": '<p onclick="steal()">O archiwum</p>',
+            "about_project": "<p><strong>Cel</strong></p><script>steal()</script>",
+        }
+
+        # Act
+        response = admin_client.post(url, data)
+
+        # Assert
+        assert response.status_code == 302
+        settings = SiteSettings.load()
+        assert (settings.about_intro, settings.about_project) == (
+            "<p>O archiwum</p>",
+            "<p><strong>Cel</strong></p>",
+        )
+
+
+def is_rich_text(form: ModelForm[Any], name: str) -> bool:
+    return isinstance(form.fields[name], ProseEditorFormField)

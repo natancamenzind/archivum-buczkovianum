@@ -24,23 +24,23 @@ class TestAboutEndpoint:
 
     def test_us_ra_13_ac2_returns_the_introduction(self, client: Client) -> None:
         # Arrange
-        SiteSettingsFactory.create(about_intro="Archiwum twórczości Leopolda Buczkowskiego.")
+        SiteSettingsFactory.create(about_intro="<p>Archiwum <em>Buczkowskiego</em>.</p>")
 
         # Act
         response = client.get(reverse("about"))
 
         # Assert
-        assert response.json()["intro"] == "Archiwum twórczości Leopolda Buczkowskiego."
+        assert response.json()["intro"] == "<p>Archiwum <em>Buczkowskiego</em>.</p>"
 
     def test_us_ra_13_ac3_returns_the_project_text(self, client: Client) -> None:
         # Arrange
-        SiteSettingsFactory.create(about_project="Cel archiwum.\n\nZakres zbiorów.")
+        SiteSettingsFactory.create(about_project="<p>Cel archiwum.</p><p>Zakres zbiorów.</p>")
 
         # Act
         response = client.get(reverse("about"))
 
         # Assert
-        assert response.json()["project"] == "Cel archiwum.\n\nZakres zbiorów."
+        assert response.json()["project"] == "<p>Cel archiwum.</p><p>Zakres zbiorów.</p>"
 
     def test_us_ra_13_ac4_groups_come_in_the_story_order(self, client: Client) -> None:
         # Arrange

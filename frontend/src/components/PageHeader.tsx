@@ -25,10 +25,11 @@ export function PageHeader({ label, title, description }: PageHeaderProps) {
       <h1 className="text-lora-tytul-strony-mobile text-inverse-foreground md:text-lora-tytul-strony">
         {title}
       </h1>
+      {/* A div, not <p>: a rich text description brings its own paragraphs. */}
       {description !== undefined && (
-        <p className="text-lora-glosa text-inverse-foreground md:max-w-3xl md:text-lora-wstep">
+        <div className="text-lora-glosa text-inverse-foreground md:max-w-3xl md:text-lora-wstep">
           {description}
-        </p>
+        </div>
       )}
     </div>
   );

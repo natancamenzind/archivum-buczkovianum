@@ -46,9 +46,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description US-RA-13. Texts are plain text until step 10 makes them rich text. */
+        /** @description US-RA-13. `intro` and `project` are rich text: HTML, sanitized when an editor saves it. */
         AboutPage: {
+            /** @description HTML. */
             intro: string;
+            /** @description HTML. */
             project: string;
             /** @description Groups that have members, in the order of TeamMember.Group. */
             team: components["schemas"]["TeamGroup"][];
