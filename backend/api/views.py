@@ -173,17 +173,18 @@ def search_results(request: Request) -> Response:
 
     fragment_ids = [hit.entry.entity_id for hit in hits.get(EntityType.FRAGMENT, [])]
     owners = Document.owner_accessors()
-    fragments = (
-        Fragment.objects.with_number()
+    by_pk = (
+        Fragment.objects.visible()
+        .with_number()
         .select_related(*(f"document__{owner}__institution" for owner in owners))
         .prefetch_related(Prefetch("tags", Tag.objects.published()))
         .in_bulk(fragment_ids)
     )
+    fragments = [by_pk[pk] for pk in fragment_ids if pk in by_pk]
     page = SearchPage(
-        total=results.total,
         works=found(Work.objects.with_year(), hits.get(EntityType.WORK, [])),
         tags=found(Tag.objects.with_occurrences(), hits.get(EntityType.TAG, [])),
-        fragments=[fragments[pk] for pk in fragment_ids if pk in fragments],
+        fragments=fragments,
         notes=found(Note.objects.select_related("institution"), hits.get(EntityType.NOTE, [])),
         typescripts=found(
             Typescript.objects.select_related("institution"), hits.get(EntityType.TYPESCRIPT, [])
@@ -198,7 +199,10 @@ def search_results(request: Request) -> Response:
         ),
         suggested_tags=results.suggested_tags,
     )
-    context = {"work_fragments": results.work_fragments}
+    context = {
+        "work_fragments": results.work_fragments,
+        "works": source_works(fragments, list(Work.objects.published().with_year())),
+    }
     return Response(SearchPageSerializer(page, context=context).data)
 
 

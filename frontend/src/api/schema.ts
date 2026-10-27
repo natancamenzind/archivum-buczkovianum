@@ -479,7 +479,8 @@ export interface components {
         /**
          * @description The search results (US-RA-15): each group by relevance or by title, as asked.
          *
-         *     The context's `work_fragments` holds the matching fragments of each work, by work id.
+         *     The context's `work_fragments` holds the matching fragments of each work, by work id, and
+         *     `works` the fragment cards' works (see `FragmentCardSerializer`).
          */
         SearchPage: {
             /** @description Results in all the groups. */

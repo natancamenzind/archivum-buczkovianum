@@ -1,8 +1,11 @@
 from typing import Any
 
 import pytest
+from django.db import connection
 from django.test import Client
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from pytest_django import DjangoAssertNumQueries
 
 from archive.models import ContentKind, Status, Work
 from archive.tests.factories import (
@@ -239,3 +242,40 @@ class TestSearchEndpoint:
         # Assert
         assert page["total"] > 8
         assert page["suggested_tags"] == []
+
+    def test_performance_search_query_count_does_not_grow(
+        self, client: Client, django_assert_num_queries: DjangoAssertNumQueries
+    ) -> None:
+        # Arrange
+        institution = InstitutionFactory.create()
+
+        def add_results() -> None:
+            work = published_work("Wertepy", 1947, description="Dezerter.")
+            typescript = TypescriptFactory.create(
+                status=PUBLISHED, work=work, institution=institution, document__text="Dezerter."
+            )
+            FragmentFactory.create(document=typescript.document, start=0, end=8).tags.add(
+                TagFactory.create(status=PUBLISHED)
+            )
+            note = NoteFactory.create(
+                status=PUBLISHED,
+                institution=institution,
+                content_kind=ContentKind.PLAIN_TEXT,
+                external_url="",
+                document=DocumentFactory.create(text="Dezerter."),
+            )
+            note.works.add(work)
+            FragmentFactory.create(document=note.document, start=0, end=8)
+
+        add_results()
+        with CaptureQueriesContext(connection) as before:
+            results(client, "dezerter")
+        for _ in range(3):
+            add_results()
+
+        # Act & Assert
+        with django_assert_num_queries(len(before.captured_queries)):
+            page = results(client, "dezerter")
+
+        assert len(page["fragments"]) == 8
+        assert {card["work"] for card in page["fragments"]} == {"Wertepy"}

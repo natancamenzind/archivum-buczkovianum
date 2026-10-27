@@ -65,8 +65,8 @@ class Filters:
 @dataclass(frozen=True)
 class Hit:
     entry: SearchEntry
-    # HTML: the escaped body with the search terms in <mark>; empty for works and for an empty
-    # query.
+    # HTML: the escaped body with the search terms in <mark>; empty for works, for fragments
+    # (their cards show the quote) and for an empty query.
     snippet: str
     # The first matched word of the snippet, as the text spells it, for the reader to scroll to
     # (R-11 AC3); empty when the snippet has none.
@@ -175,7 +175,7 @@ def _hits(entries: QuerySet[SearchEntry], query: SearchQuery | None, sort: Sort)
         ordered = entries.annotate(
             rank=SearchRank(F("vector"), query),
             snippet=Case(
-                When(entity_type=EntityType.WORK, then=Value("")),
+                When(entity_type__in=(EntityType.WORK, EntityType.FRAGMENT), then=Value("")),
                 default=headline,
                 output_field=models.TextField(),
             ),

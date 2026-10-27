@@ -21,11 +21,14 @@ function pageOf(offsets: number[], offset: number): number {
   return Math.max(offsets.filter((start) => start <= offset).length, 1);
 }
 
-/** The first case-insensitive occurrence of `term` in `text`, or null (R-11 AC3). */
+/** The first case-insensitive occurrence of `term` as a whole word in `text`, or null (R-11 AC3). */
 function findTerm(text: string, term: string): { start: number; end: number } | null {
-  const start =
-    term === "" ? -1 : text.toLocaleLowerCase("pl").indexOf(term.toLocaleLowerCase("pl"));
-  return start < 0 ? null : { start, end: start + term.length };
+  if (term === "") {
+    return null;
+  }
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = new RegExp(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`, "iu").exec(text);
+  return match === null ? null : { start: match.index, end: match.index + match[0].length };
 }
 
 /** What the reader shows of a clicked fragment: its number, location and tags (R-11 AC2). */

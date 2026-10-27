@@ -432,16 +432,18 @@ describe("SearchPage", () => {
     await waitFor(() => {
       expect(container.querySelector(skeleton)).not.toBeNull();
     });
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("US-RA-15: a failed search says so", async () => {
     server.use(http.get(SEARCH_URL, () => new HttpResponse(null, { status: 500 })));
 
-    renderRoute("/search?q=dezerter");
+    const { container } = renderRoute("/search?q=dezerter");
 
     expect(
       await screen.findByText("Nie udało się wczytać wyników. Spróbuj ponownie później."),
     ).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("US-RA-15: without a query, nothing is searched", () => {

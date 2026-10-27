@@ -439,6 +439,16 @@ describe("TypescriptPage", () => {
     expect(scrollIntoView).not.toHaveBeenCalled();
   });
 
+  it("R-11 AC3: ?q= matches whole words only, not the start of a longer one", async () => {
+    mockPage();
+
+    const { container } = await renderPage("/typescripts/1?q=tekst");
+
+    await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    expect(container.querySelector("mark[data-search-match]")).toBeNull();
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+
   it("US-RA-08 AC3: 'Fragmenty z maszynopisu' previews the fragments as a numbered list", async () => {
     mockPage();
 

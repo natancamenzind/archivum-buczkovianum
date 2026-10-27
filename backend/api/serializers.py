@@ -595,7 +595,6 @@ class Found[M]:
 
 @dataclass(frozen=True)
 class SearchPage:
-    total: int
     works: list[Found[Work]]
     tags: list[Found[Tag]]
     fragments: list[Fragment]
@@ -604,6 +603,21 @@ class SearchPage:
     secondary_texts: list[Found[SecondaryText]]
     materials: list[Found[ContextualMaterial]]
     suggested_tags: list[Tag]
+
+    @property
+    def total(self) -> int:
+        return sum(
+            len(group)
+            for group in (
+                self.works,
+                self.tags,
+                self.fragments,
+                self.notes,
+                self.typescripts,
+                self.secondary_texts,
+                self.materials,
+            )
+        )
 
 
 class WorkResultSerializer(serializers.Serializer[Found[Work]]):
@@ -665,7 +679,8 @@ class ItemResultSerializer(serializers.Serializer[Found[Archival]]):
 class SearchPageSerializer(serializers.Serializer[SearchPage]):
     """The search results (US-RA-15): each group by relevance or by title, as asked.
 
-    The context's `work_fragments` holds the matching fragments of each work, by work id.
+    The context's `work_fragments` holds the matching fragments of each work, by work id, and
+    `works` the fragment cards' works (see `FragmentCardSerializer`).
     """
 
     total = serializers.IntegerField(help_text="Results in all the groups.")
