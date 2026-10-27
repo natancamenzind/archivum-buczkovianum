@@ -743,7 +743,8 @@ class Document(BaseModel):
                 for fragment in self.fragments.all():
                     fragment.reanchor(self.text)
             owner = self.owner
-            if isinstance(owner, Publishable):
+            # An owner not saved yet, as on the form that adds it, indexes itself when saved.
+            if isinstance(owner, Publishable) and owner.pk is not None:
                 owner.update_search_entry()
         self._saved_text = self.text
         self._saved_page_offsets = list(self.page_offsets)

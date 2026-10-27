@@ -13,6 +13,7 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "dj-database-url>=2.3",
     "django-stubs-ext>=5.2",
+    "pypdf>=6.21.2",
 ]
 
 [dependency-groups]
