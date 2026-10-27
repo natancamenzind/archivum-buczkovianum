@@ -15,9 +15,12 @@ from api.serializers import (
     AboutPageSerializer,
     ContextualMaterials,
     DocumentSerializer,
+    Found,
     HomePage,
     HomePageSerializer,
     HomeStatistics,
+    SearchPage,
+    SearchPageSerializer,
     SecondaryTextPage,
     SecondaryTextPageSerializer,
     SuggestionSerializer,
@@ -53,7 +56,8 @@ from archive.models import (
     Work,
     preview,
 )
-from search.query import autocomplete
+from search.models import EntityType
+from search.query import Hit, Sort, autocomplete, search
 
 
 @extend_schema(responses=AboutPageSerializer)
@@ -144,6 +148,58 @@ def search_autocomplete(request: Request) -> Response:
     contains `q`. Empty for a blank `q`."""
     suggestions = autocomplete(request.query_params.get("q", ""))
     return Response(SuggestionSerializer(suggestions, many=True).data)
+
+
+def found[M: Publishable](queryset: PublishableQuerySet[M], hits: list[Hit]) -> list[Found[M]]:
+    """The published entities of `hits`, in the order of the hits."""
+    items = queryset.published().in_bulk([hit.entry.entity_id for hit in hits])
+    return [Found(items[hit.entry.entity_id], hit) for hit in hits if hit.entry.entity_id in items]
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter("q", str, description="Web search syntax: quoted phrases, or, -word."),
+        OpenApiParameter("sort", str, enum=list(Sort), description="Within each group."),
+    ],
+    responses=SearchPageSerializer,
+)
+@api_view(["GET"])
+def search_results(request: Request) -> Response:
+    """The search results (US-RA-15), grouped by type. A blank `q`, or one of stopwords only,
+    finds everything."""
+    sort = Sort.TITLE if request.query_params.get("sort") == Sort.TITLE else Sort.RELEVANCE
+    results = search(request.query_params.get("q", ""), sort=sort)
+    hits = {group.entity_type: group.hits for group in results.groups}
+
+    fragment_ids = [hit.entry.entity_id for hit in hits.get(EntityType.FRAGMENT, [])]
+    owners = Document.owner_accessors()
+    fragments = (
+        Fragment.objects.with_number()
+        .select_related(*(f"document__{owner}__institution" for owner in owners))
+        .prefetch_related(Prefetch("tags", Tag.objects.published()))
+        .in_bulk(fragment_ids)
+    )
+    page = SearchPage(
+        total=results.total,
+        works=found(Work.objects.with_year(), hits.get(EntityType.WORK, [])),
+        tags=found(Tag.objects.with_occurrences(), hits.get(EntityType.TAG, [])),
+        fragments=[fragments[pk] for pk in fragment_ids if pk in fragments],
+        notes=found(Note.objects.select_related("institution"), hits.get(EntityType.NOTE, [])),
+        typescripts=found(
+            Typescript.objects.select_related("institution"), hits.get(EntityType.TYPESCRIPT, [])
+        ),
+        secondary_texts=found(
+            SecondaryText.objects.select_related("institution"),
+            hits.get(EntityType.SECONDARY_TEXT, []),
+        ),
+        materials=found(
+            ContextualMaterial.objects.select_related("institution"),
+            hits.get(EntityType.MATERIAL, []),
+        ),
+        suggested_tags=results.suggested_tags,
+    )
+    context = {"work_fragments": results.work_fragments}
+    return Response(SearchPageSerializer(page, context=context).data)
 
 
 def contextual_materials(

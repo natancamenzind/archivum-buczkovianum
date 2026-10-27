@@ -402,6 +402,43 @@ describe("TypescriptPage", () => {
     );
   });
 
+  it("R-11 AC3: opened from a search result with ?q=, the reader shows the text, highlights the first match and scrolls to it", async () => {
+    mockPage();
+
+    const { container } = await renderPage("/typescripts/1?q=Tekstu");
+
+    const match = await screen.findByText("tekstu", { selector: "mark" });
+    expect(container.querySelectorAll("mark[data-search-match]")).toHaveLength(1);
+    expect(match.textContent).toBe(TEXT.slice(16, 22));
+    expect(scrollIntoView).toHaveBeenCalledOnce();
+    expect(scrollIntoView.mock.contexts[0]).toBe(match);
+    expect(screen.getByRole("button", { name: "Transkrypcja" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("R-11 AC3: a match inside a fragment is highlighted within it", async () => {
+    mockPage();
+
+    await renderPage("/typescripts/1?q=pierwsza");
+
+    const fragment = await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    expect(within(fragment).getByText("Pierwsza", { selector: "mark" })).toHaveAttribute(
+      "data-search-match",
+    );
+  });
+
+  it("R-11 AC3: a ?q= the text lacks scrolls nowhere", async () => {
+    mockPage();
+
+    await renderPage("/typescripts/1?q=potok");
+
+    await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+
   it("US-RA-08 AC3: 'Fragmenty z maszynopisu' previews the fragments as a numbered list", async () => {
     mockPage();
 

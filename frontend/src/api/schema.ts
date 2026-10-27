@@ -97,6 +97,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/search/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The search results (US-RA-15), grouped by type. A blank `q`, or one of stopwords only,
+         *     finds everything.
+         */
+        get: operations["search_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/search/autocomplete/": {
         parameters: {
             query?: never;
@@ -406,6 +426,16 @@ export interface components {
             /** @description Published tags. */
             tags: number;
         };
+        /** @description A note, typescript, secondary text or contextual material result. */
+        ItemResult: {
+            /** @description The item's page; with `?q=` naming the first match, for the reader (R-11 AC3). */
+            readonly url: string;
+            title: string;
+            /** @description E.g. "ML, sygn. 1678"; may be empty. */
+            shelfmark: string;
+            /** @description HTML: the escaped text around the match, the search terms in <mark>. */
+            snippet: string;
+        };
         /**
          * @description A row of "Teksty sekundarne" (R-08): a secondary text, or a contextual material that is
          *     not an image, which shows its title only (D5).
@@ -445,6 +475,24 @@ export interface components {
             readonly tags?: components["schemas"]["EditorTag"][];
             /** @description The text changed. Check the fragment, then clear this box. */
             readonly needs_review?: boolean;
+        };
+        /**
+         * @description The search results (US-RA-15): each group by relevance or by title, as asked.
+         *
+         *     The context's `work_fragments` holds the matching fragments of each work, by work id.
+         */
+        SearchPage: {
+            /** @description Results in all the groups. */
+            total: number;
+            works: components["schemas"]["WorkResult"][];
+            tags: components["schemas"]["TagResult"][];
+            fragments: components["schemas"]["FragmentCard"][];
+            notes: components["schemas"]["ItemResult"][];
+            typescripts: components["schemas"]["ItemResult"][];
+            secondary_texts: components["schemas"]["ItemResult"][];
+            materials: components["schemas"]["ItemResult"][];
+            /** @description The most frequent tags, only when nothing was found (US-RA-15 AC8). */
+            suggested_tags: components["schemas"]["TagCount"][];
         };
         /** @description US-RA-10. `description` is rich text: HTML, sanitized when an editor saves it. */
         SecondaryTextPage: {
@@ -526,6 +574,17 @@ export interface components {
             related: components["schemas"]["TagChip"][];
             /** @description Those with the tag on the whole item, a fragment, or a work link. */
             materials: components["schemas"]["ContextualMaterials"];
+        };
+        /**
+         * @description A tag result, from a tag with `with_occurrences()`. The snippet is cut from its
+         *     description.
+         */
+        TagResult: {
+            url: string;
+            title: string;
+            occurrences: number;
+            /** @description HTML: the escaped text around the match, the search terms in <mark>. */
+            snippet: string;
         };
         TeamGroup: {
             group: components["schemas"]["GroupEnum"];
@@ -636,6 +695,16 @@ export interface components {
             tags: components["schemas"]["TagChip"][];
             /** @description Those linked to the work. */
             materials: components["schemas"]["ContextualMaterials"];
+        };
+        /** @description A work result (US-RA-15 AC5), from a work with `with_year()`. Works show no snippet. */
+        WorkResult: {
+            url: string;
+            title: string;
+            genre: string;
+            /** @description The year of the first edition; null without editions. */
+            year: number | null;
+            /** @description The work's fragments that match the query. */
+            readonly fragments: number;
         };
         /**
          * @description A work in a context column (R-03), from a queryset with `with_year()` and
@@ -805,6 +874,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HomePage"];
+                };
+            };
+        };
+    };
+    search_retrieve: {
+        parameters: {
+            query?: {
+                /** @description Web search syntax: quoted phrases, or, -word. */
+                q?: string;
+                /** @description Within each group. */
+                sort?: "relevance" | "title";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchPage"];
                 };
             };
         };

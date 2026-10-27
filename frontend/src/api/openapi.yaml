@@ -151,6 +151,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/HomePage'
           description: ''
+  /api/search/:
+    get:
+      operationId: search_retrieve
+      description: |-
+        The search results (US-RA-15), grouped by type. A blank `q`, or one of stopwords only,
+        finds everything.
+      parameters:
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: 'Web search syntax: quoted phrases, or, -word.'
+      - in: query
+        name: sort
+        schema:
+          type: string
+          enum:
+          - relevance
+          - title
+        description: Within each group.
+      tags:
+      - search
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPage'
+          description: ''
   /api/search/autocomplete/:
     get:
       operationId: search_autocomplete_list
@@ -716,6 +748,29 @@ components:
       - fragments
       - tags
       - works
+    ItemResult:
+      type: object
+      description: A note, typescript, secondary text or contextual material result.
+      properties:
+        url:
+          type: string
+          readOnly: true
+          description: The item's page; with `?q=` naming the first match, for the
+            reader (R-11 AC3).
+        title:
+          type: string
+        shelfmark:
+          type: string
+          description: E.g. "ML, sygn. 1678"; may be empty.
+        snippet:
+          type: string
+          description: 'HTML: the escaped text around the match, the search terms
+            in <mark>.'
+      required:
+      - shelfmark
+      - snippet
+      - title
+      - url
     MaterialText:
       type: object
       description: |-
@@ -811,6 +866,60 @@ components:
           type: boolean
           readOnly: true
           description: The text changed. Check the fragment, then clear this box.
+    SearchPage:
+      type: object
+      description: |-
+        The search results (US-RA-15): each group by relevance or by title, as asked.
+
+        The context's `work_fragments` holds the matching fragments of each work, by work id.
+      properties:
+        total:
+          type: integer
+          description: Results in all the groups.
+        works:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkResult'
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagResult'
+        fragments:
+          type: array
+          items:
+            $ref: '#/components/schemas/FragmentCard'
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResult'
+        typescripts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResult'
+        secondary_texts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResult'
+        materials:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResult'
+        suggested_tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagCount'
+          description: The most frequent tags, only when nothing was found (US-RA-15
+            AC8).
+      required:
+      - fragments
+      - materials
+      - notes
+      - secondary_texts
+      - suggested_tags
+      - tags
+      - total
+      - typescripts
+      - works
     SecondaryTextPage:
       type: object
       description: 'US-RA-10. `description` is rich text: HTML, sanitized when an
@@ -994,6 +1103,27 @@ components:
       - slug
       - title
       - works
+    TagResult:
+      type: object
+      description: |-
+        A tag result, from a tag with `with_occurrences()`. The snippet is cut from its
+        description.
+      properties:
+        url:
+          type: string
+        title:
+          type: string
+        occurrences:
+          type: integer
+        snippet:
+          type: string
+          description: 'HTML: the escaped text around the match, the search terms
+            in <mark>.'
+      required:
+      - occurrences
+      - snippet
+      - title
+      - url
     TeamGroup:
       type: object
       properties:
@@ -1261,6 +1391,31 @@ components:
       - tags
       - title
       - typescripts
+      - year
+    WorkResult:
+      type: object
+      description: A work result (US-RA-15 AC5), from a work with `with_year()`. Works
+        show no snippet.
+      properties:
+        url:
+          type: string
+        title:
+          type: string
+        genre:
+          type: string
+        year:
+          type: integer
+          nullable: true
+          description: The year of the first edition; null without editions.
+        fragments:
+          type: integer
+          readOnly: true
+          description: The work's fragments that match the query.
+      required:
+      - fragments
+      - genre
+      - title
+      - url
       - year
     WorkSummary:
       type: object

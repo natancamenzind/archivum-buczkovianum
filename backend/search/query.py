@@ -9,7 +9,7 @@ from dataclasses import dataclass, replace
 
 from django.conf import settings
 from django.contrib.postgres.search import SearchHeadline, SearchQuery, SearchRank
-from django.db import models
+from django.db import connection, models
 from django.db.models import Case, Count, F, Func, QuerySet, Value, When
 from django.db.models.functions import Collate, Lower
 from django.utils.html import escape
@@ -68,6 +68,9 @@ class Hit:
     # HTML: the escaped body with the search terms in <mark>; empty for works and for an empty
     # query.
     snippet: str
+    # The first matched word of the snippet, as the text spells it, for the reader to scroll to
+    # (R-11 AC3); empty when the snippet has none.
+    term: str = ""
 
 
 @dataclass(frozen=True)
@@ -95,6 +98,8 @@ class SearchResults:
     facets: Facets
     # The most frequent tags, only when nothing was found (US-RA-15 AC8).
     suggested_tags: list[Tag]
+    # How many matching fragments each work has, by work id (US-RA-15 AC5).
+    work_fragments: dict[int, int]
 
 
 def search(
@@ -105,12 +110,13 @@ def search(
 ) -> SearchResults:
     """Find entries matching `text` (web search syntax: "quoted phrases", or, -word).
 
-    An empty `text` matches everything in the tab and filters, sorted by title (US-RA-16 AC5).
+    An empty `text`, or one of stopwords only, matches everything in the tab and filters,
+    sorted by title (US-RA-16 AC5).
     """
     filters = filters or Filters()
     query = None
     matching = SearchEntry.objects.all()
-    if text.strip():
+    if _has_lexemes(text):
         query = SearchQuery(text, search_type="websearch", config=settings.SEARCH_TS_CONFIG)
         matching = matching.filter(vector=query)
 
@@ -125,7 +131,24 @@ def search(
         groups=[group for group in groups if group.hits],
         facets=_facets(matching, in_tab, tab, filters),
         suggested_tags=[] if hits else _suggested_tags(),
+        work_fragments=_value_counts(
+            _filtered(matching, filters).filter(entity_type=EntityType.FRAGMENT), "work_ids"
+        ),
     )
+
+
+def _has_lexemes(text: str) -> bool:
+    """Whether `text` has a word to search for. Stopwords ("w") and operators alone ("-") have
+    none, and PostgreSQL would match nothing with them."""
+    if not text.strip():
+        return False
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT numnode(websearch_to_tsquery(%s::regconfig, %s))",
+            [settings.SEARCH_TS_CONFIG, text],
+        )
+        row = cursor.fetchone()
+    return bool(row and row[0])
 
 
 def _filtered(entries: QuerySet[SearchEntry], filters: Filters) -> QuerySet[SearchEntry]:
@@ -159,12 +182,22 @@ def _hits(entries: QuerySet[SearchEntry], query: SearchQuery | None, sort: Sort)
         )
         within_group = ("-rank", "title") if sort == Sort.RELEVANCE else ("title", "-rank")
         ordered = ordered.order_by(group, *within_group, "pk")
-    return [Hit(entry=entry, snippet=highlight(entry.snippet)) for entry in ordered]
+    return [
+        Hit(entry=entry, snippet=highlight(entry.snippet), term=_first_term(entry.snippet))
+        for entry in ordered
+    ]
 
 
 def highlight(snippet: str) -> str:
     """Escape the text, then turn the markers around matched terms into <mark> tags."""
     return escape(snippet).replace(MARK[0], "<mark>").replace(MARK[1], "</mark>")
+
+
+def _first_term(snippet: str) -> str:
+    """The first marked term of a raw `ts_headline` snippet, or "" without one."""
+    start = snippet.find(MARK[0])
+    end = snippet.find(MARK[1], start)
+    return snippet[start + 1 : end] if start >= 0 and end >= 0 else ""
 
 
 def _facets(
