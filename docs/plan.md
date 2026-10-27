@@ -26,7 +26,7 @@ What the done work changes for the rest:
 - **Only three steps are ready (4.1), down from ten.** Everything else waits on step 19, then step 21. Step 19 is now the bottleneck: start it first.
 - **Editor-visible backend strings are translated** (#39, AGENTS.md). A step that adds a model, a field, an admin label or a validation message runs `make messages`. A new `archive` model also needs a data migration that grants its permissions to "Redaktorzy" (#34). No remaining step plans one.
 - **Rich text has landed** (#31): every page step renders descriptions through `components/RichText.tsx`.
-- **Open questions from merged PRs** are D27–D29 in section 3. None blocks a step that is ready now.
+- **Open questions from merged PRs** (D27–D29) are answered in section 3. Only D9 (hosting) is still open, and it blocks only step 35.
 
 ## 2. How we work
 
@@ -92,13 +92,15 @@ Answered by the project owner on 2026-10-27, for steps 15 and 16:
 | D25 | A work without a cover. | **The placeholder board** (design/rules.md, Materiały zastępcze). No fallback to an edition's cover. | 15 (done) |
 | D26 | US-RA-20 AC2 lists "every published tag", but the cloud shows only tags in use. Does the index list published tags with no occurrence? | **No.** The index and the cloud show the same tags: published, with at least one occurrence (`in_use()`). Write it into US-RA-20 AC2 (`user-stories.md` and `user-stories.pl.md`). | 16 |
 
-Open, raised by merged PRs on 2026-10-27. The project owner answers; until then each step does what the "Until answered" column says.
+Answered by the project owner on 2026-10-27, for questions raised by merged PRs:
 
-| # | Question | Until answered | Step |
-|---|----------|----------------|------|
-| D27 | Relation tags (`SecondaryTextWorkLink.tags`, `MaterialWorkLink.tags`, US-RA-05) are not in any search entry. Should searching a relation tag's name find the secondary text or material? (#38) | Not searched. If yes: add link tags to `Archival.indexed_content` and re-index link carriers in `Tag.save()`. A small CORE follow-up, needed before step 30 merges. | 30 |
-| D28 | Two editor-panel labels with no glossary term: slug is "Końcówka adresu", site settings are "Treści serwisu". Keep them? (#39) | Keep them. | — |
-| D29 | Genre is shown as stored ("powieść"); Figma shows "Powieść". The typescripts hero has no count ("Pięć jednostek…" in Figma). Capitalise the genre on display or in the data? Add a live count to the hero? (#35) | Shown as stored, no count. Steps 17, 21 and 23 show the genre the same way as steps 15 and 18. | 17, 21, 23 |
+| # | Question | Decision | Step |
+|---|----------|----------|------|
+| D27 | Relation tags (`SecondaryTextWorkLink.tags`, `MaterialWorkLink.tags`, US-RA-05) are not in any search entry. Should searching a relation tag's name find the secondary text or material? (#38) | **No.** Relation tags stay out of search. No CORE follow-up. | 30 |
+| D28 | Two editor-panel labels with no glossary term: slug is "Końcówka adresu", site settings are "Treści serwisu". Keep them? (#39) | **Keep them.** | — |
+| D29 | Genre is shown as stored ("powieść"); Figma shows "Powieść". The typescripts hero has no count ("Pięć jednostek…" in Figma). Capitalise the genre on display or in the data? Add a live count to the hero? (#35) | **Shown as stored, no count.** Steps 17, 21 and 23 show the genre the same way as steps 15 and 18. | 17, 21, 23 |
+| D30 | Storage provider (architecture §10). | **Amazon S3.** The code still depends only on the S3 API. | 35 |
+| D31 | Open questions 1–3 and 5 of `user-stories.md` §5. | **The defaults hold**, except question 5: the stories win and Figma is not updated. Question 4 (an example of a tagged relation) stays with the editors. | — |
 
 ## 4. Order and dependencies
 
@@ -193,7 +195,7 @@ These steps do not depend on each other, but they edit the same files. Run them 
 | `components/layout/SiteHeader.tsx`, `components/SearchField.tsx`, `lib/search.ts` | 30, 31, 33 | 33 adds suggestions to both fields; 30 and 31 change the search page. 33 can run alongside all of wave A–C. |
 | `pages/HomePage.tsx`, `/api/home/` | 17, 32 | 32 waits for 17 anyway. |
 | `frontend/src/components/` page parts | 21–26 | 21 builds the fragment card and the materials block, 24 the related-fragments query, 25 the content by type. Later steps import them, never copy them (section 7). |
-| `backend/search/` | 30, 31, 33, and D27's follow-up | 30 adds the endpoint; 31 the filters; 33 its own autocomplete query. |
+| `backend/search/` | 30, 31, 33 | 30 adds the endpoint; 31 the filters; 33 its own autocomplete query. |
 
 ## 5. Steps
 
@@ -230,7 +232,7 @@ These steps do not depend on each other, but they edit the same files. Run them 
 | [x] | 14 | US-RA-13: About | `us-ra-13-about` | 13 | `/api/about/`, the About page. As the first page endpoint, it creates `backend/api/` and removes the schema's self-documentation (D13, D21). |
 | [x] | 15 | US-RA-18: works list | `us-ra-18-works-list` | 13 | `/api/works/`, the work card, the list page. The card's fragment count follows D19; write it into US-RA-01 AC3. The card follows D22, D23 and D25; the section header gets its counter and description (D24). D13 and D21 are done in step 14: the `backend/api/` app exists (views, serializers, urls), and the schema describes the real endpoints only. Add the endpoint there and leave `HomePage` as it is. |
 | [x] | 16 | US-RA-20: tags list | `us-ra-20-tags-list` | 13 | `/api/tags/`, the deterministic tag cloud, the alphabetical index. Tags come from `Tag.objects.published()` chained with `with_occurrences()` or `in_use()`; neither filters the tag's own status. The index lists only tags in use, like the cloud (D26). |
-| [ ] | 17 | US-RA-01: home page | `us-ra-01-home` | 15, 16 | `/api/home/`, the hero with counts and portrait, works, tag cloud. Replaces the placeholder at `/` (D21): `pages/HomePage.tsx`, its test and `copy.home`. Reuse from step 15: `components/WorkCard.tsx`, `WorkCardSerializer` and `Work.objects.published().with_year().with_fragment_count()`. Reuse from step 16: `components/TagCloud.tsx` (the cloud's rows inside a `Card` with `SectionHeader`, given `TagCount[]` in any order), `TagCountSerializer` with `Tag.objects.published().in_use()`, and `copy.tagCloud` for the section header. Genre and the hero's counts follow D29 until it is answered. |
+| [ ] | 17 | US-RA-01: home page | `us-ra-01-home` | 15, 16 | `/api/home/`, the hero with counts and portrait, works, tag cloud. Replaces the placeholder at `/` (D21): `pages/HomePage.tsx`, its test and `copy.home`. Reuse from step 15: `components/WorkCard.tsx`, `WorkCardSerializer` and `Work.objects.published().with_year().with_fragment_count()`. Reuse from step 16: `components/TagCloud.tsx` (the cloud's rows inside a `Card` with `SectionHeader`, given `TagCount[]` in any order), `TagCountSerializer` with `Tag.objects.published().in_use()`, and `copy.tagCloud` for the section header. Genre and the hero's counts follow D29. |
 | [x] | 18 | US-RA-19: typescripts list | `us-ra-19-typescripts-list` | 13 | `/api/typescripts/`, grouped by work. Order shelfmarks as numbers, not strings. |
 
 ### Phase 4 — Entity pages
@@ -253,7 +255,7 @@ These steps do not depend on each other, but they edit the same files. Run them 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
 | [x] | 29 | US-RA-14: search entry | `us-ra-14-search-entry` | 3L, 13 | The header field (the icon on mobile), the `/search` page shell, the hint text. The field goes in the slot marked in `components/layout/SiteHeader.tsx`, next to "O archiwum", which stays in the mobile header too (R-07; Figma's mobile header drops it). Icons are inline components in `components/icons.tsx`, copied from `design/assets/icons/`: add `szukaj` there. |
-| [ ] | 30 | US-RA-15: search results | `us-ra-15-search-results` | 29, 21, 37 | `/api/search/`, groups, sorting, snippets, the loading state, no results. Opening a result scrolls to the first match (`?q=`, R-11 AC3). From step 37: tag names are in the entry's `vector` but not its `body`, so a result found only by a tag name has a snippet without `<mark>`; show the snippet unmarked. Relation tags are not searched until D27 is answered. Left by #12 for this step: how many of a work's fragments match (AC5), and a test that "potoku" finds "potok" (AC7). No pagination in v1: the archive is small, and the stories and design have none. Snippets: keep `ts_headline` off whole document bodies of results the page doesn't show. A query of only stopwords (`w`, `-`) behaves as an empty query, not as "no results" (#16). From step 29: `pages/SearchPage.tsx` has the field (`components/SearchField.tsx`), the scope line and the hint, and a screen-reader `h1`; add the results below them and read `q` from `useSearchParams` there. Header and page fields both go through `searchUrl()` in `lib/search.ts`, which trims the query and drops a blank one. From step 33: both fields' inputs are `components/SearchCombobox.tsx` (role `combobox`, not `searchbox`; tests mock `/api/search/autocomplete/`), and `search/query.py` has `autocomplete()` next to `search()`. `SuggestionSerializer.type` is named `TypeEnum` in the schema: a second `type` choice field with other values makes drf-spectacular rename both, so name the new one differently or add `ENUM_NAME_OVERRIDES`. `renderRoute()` returns its router, for asserting `router.state.location`. |
+| [ ] | 30 | US-RA-15: search results | `us-ra-15-search-results` | 29, 21, 37 | `/api/search/`, groups, sorting, snippets, the loading state, no results. Opening a result scrolls to the first match (`?q=`, R-11 AC3). From step 37: tag names are in the entry's `vector` but not its `body`, so a result found only by a tag name has a snippet without `<mark>`; show the snippet unmarked. Relation tags are not searched (D27). Left by #12 for this step: how many of a work's fragments match (AC5), and a test that "potoku" finds "potok" (AC7). No pagination in v1: the archive is small, and the stories and design have none. Snippets: keep `ts_headline` off whole document bodies of results the page doesn't show. A query of only stopwords (`w`, `-`) behaves as an empty query, not as "no results" (#16). From step 29: `pages/SearchPage.tsx` has the field (`components/SearchField.tsx`), the scope line and the hint, and a screen-reader `h1`; add the results below them and read `q` from `useSearchParams` there. Header and page fields both go through `searchUrl()` in `lib/search.ts`, which trims the query and drops a blank one. From step 33: both fields' inputs are `components/SearchCombobox.tsx` (role `combobox`, not `searchbox`; tests mock `/api/search/autocomplete/`), and `search/query.py` has `autocomplete()` next to `search()`. `SuggestionSerializer.type` is named `TypeEnum` in the schema: a second `type` choice field with other values makes drf-spectacular rename both, so name the new one differently or add `ENUM_NAME_OVERRIDES`. `renderRoute()` returns its router, for asserting `router.state.location`. |
 | [ ] | 31 | US-RA-16: tabs and filters | `us-ra-16-search-filters` | 30 | Tabs, filters, facet counts, the mobile filter panel, state kept in the URL, the empty query. From step 29: `searchUrl()` in `lib/search.ts` writes only `q`, so a new search from either field drops the tab and filters. Decide whether the page's field keeps them, and test it. |
 
 ### Phase 6 — Should
@@ -299,11 +301,11 @@ Rules R-01 to R-12 have no step of their own. Each page step meets them for its 
 
 ## 7. Reminders for every step
 
-- **Stories beat Figma** (open question 5). Figma has no reader, no note page and no contextual material page, and its fragment card shows a scan crop. Build these from the stories, using the existing Figma components.
+- **Stories beat Figma** (open question 5, D31). Figma is not updated. Figma has no reader, no note page and no contextual material page, and its fragment card shows a scan crop. Build these from the stories, using the existing Figma components.
 - **Mobile is part of each page step**, not a separate PR. `design/rules.md` → Siatka gives the order.
 - **Shared UI parts** (layout, section header, fragment card, reader, contextual materials block) are built in the step named above and reused after that, never rebuilt.
 - **shadcn overlays need a token.** The theme removes Tailwind's default colours, so the generated `bg-black/50` of Dialog and Sheet compiles to nothing. Map it to a token in the first step that adds one (step 31's filter panel at the latest).
-- **Migrations from parallel steps** can collide on a number. Whichever merges second renumbers. No remaining step plans a migration; a D27 follow-up or step 28 might add one.
+- **Migrations from parallel steps** can collide on a number. Whichever merges second renumbers. No remaining step plans a migration; step 28 might add one.
 - **Editor-visible strings are translated** (#39). Any new `verbose_name`, `help_text`, choice label, validation message or admin template string is English with `gettext_lazy` / `{% translate %}`, then `make messages` and the Polish entry in `django.po` (AGENTS.md). A new `archive` model also needs a data migration that adds its permissions to "Redaktorzy" (#34).
 - **Each component test runs the axe check** (R-12). Polish copy lives in `copy/pl.ts` and counts use the plural helper.
 - **Draft tags are never shown**: not as chips, not in the cloud, not in counts. Step 2's querysets handle this.

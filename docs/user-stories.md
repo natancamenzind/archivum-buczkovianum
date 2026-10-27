@@ -361,10 +361,10 @@ Rejected:
 
 ## 5. Open questions
 
-The stories above already assume the default given for each.
+The project owner answered questions 1, 2, 3 and 5 on 2026-10-27 (`docs/plan.md`, D31). Only question 4 is still open.
 
-1. **Tag metadata (metryczka).** Any fields beyond name, kind and description? *Default: none.*
-2. **List order.** *Default: works by first edition; editions by year; typescripts by work, then shelfmark; tags alphabetically; fragments by position in the text; everything else by title.*
-3. **Video and audio.** The brief hosts them elsewhere for notes. *Default: same for contextual materials, so the only uploads are images and documents.*
-4. **Example of a tagged relation.** The editors still have to find one.
-5. **Design follow-up.** Figma still shows a scan-only typescript viewer and fragment cards with a cropped scan. *Default: the stories win. The designer adds the side-by-side reader with the mobile toggle (R-11) and the fragment card with quote and page thumbnail (R-10).*
+1. **Tag metadata (metryczka).** Any fields beyond name, kind and description? *Decided: none.*
+2. **List order.** *Decided: works by first edition; editions by year; typescripts by work, then shelfmark; tags alphabetically; fragments by position in the text; everything else by title.*
+3. **Video and audio.** The brief hosts them elsewhere for notes. *Decided: same for contextual materials, so the only uploads are images and documents.*
+4. **Example of a tagged relation.** Open: the editors still have to find one.
+5. **Design follow-up.** Figma still shows a scan-only typescript viewer and fragment cards with a cropped scan. *Decided: the stories win and Figma is not updated. The side-by-side reader with the mobile toggle (R-11) and the fragment card with quote and page thumbnail (R-10) are built from the stories, using the existing Figma components.*
