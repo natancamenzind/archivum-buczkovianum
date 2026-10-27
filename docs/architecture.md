@@ -180,7 +180,7 @@ One row per published entity and one per visible fragment:
 - `body`: plain text used for snippets,
 - `vector`: `tsvector` with a GIN index,
 - `title_trgm`: GIN trigram index, for autocomplete,
-- `work_ids`: integer array of related works (GIN index), for the work filter,
+- `work_ids`: integer array of the related *published* works (GIN index), for the work filter; drafts never reach search, not even as a filter value,
 - `decades`: integer array of the decades of those works' years (e.g. `1940`), for the period filter,
 - `has_scan`, `has_text`: booleans, for the availability filter.
 
@@ -203,7 +203,8 @@ Updates are explicit, never via signals:
 - `Publishable.delete()` removes the entry, then calls `super().delete()`.
 - `Fragment.save()` and `Fragment.delete()` write or remove the fragment's entry.
 - `Document.save()` re-anchors fragments (section 4.4) and then calls `update_search_entry()` on its owning entity.
-- `Work.save()` also updates the entries whose `work_ids` include it, because their decades may change. `Edition.save()` and `Edition.delete()` call `work.save()`.
+- `Work.save()` and `Work.delete()` also re-index the items related to the work (with their fragments) and every published tag, because the work's status and first-edition year are in their `work_ids` and `decades`. `Edition.save()` and `Edition.delete()` call `work.save()`.
+- Tag entries list the works a tag refers to through whatever carries it, so deletes re-index every published tag, and the admin re-indexes the saved item and every published tag after many-to-many fields and inlines are saved (they are saved after `save()`).
 - The management command `rebuild_search_index` rebuilds the whole table.
 
 Bulk QuerySet operations (`update()`, `bulk_create()`, `bulk_update()`, `delete()`) bypass `save()` and `delete()`. For `Publishable` models, `Document` and `Fragment` they are allowed only in migrations and management commands, and must be followed by `rebuild_search_index`. Django admin's "delete selected" action uses `QuerySet.delete()`, so it is disabled for these models.
