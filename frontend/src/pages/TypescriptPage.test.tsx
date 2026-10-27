@@ -1,5 +1,5 @@
 import { fireEvent, screen, within } from "@testing-library/react";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { components } from "@/api/schema";
@@ -98,6 +98,17 @@ const DOCUMENT: Document = {
       tags: [{ slug: "wojna", title: "Wojna" }],
     },
   ],
+};
+
+const EXTRA_FRAGMENT: Document["fragments"][number] = {
+  id: 0,
+  start: 0,
+  end: 0,
+  number: 4,
+  start_page: 1,
+  location: "",
+  shelfmark: "",
+  tags: [],
 };
 
 function mockPage(typescript: Partial<TypescriptData> = {}, document: Partial<Document> = {}) {
@@ -256,12 +267,14 @@ describe("TypescriptPage", () => {
 
     const { container } = await renderPage();
 
-    const fragment = await screen.findByRole("button", { name: "Pierwsza" });
-    expect(highlight("strona")).toHaveAttribute("aria-pressed", "false");
+    const fragment = await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    expect(highlight("Fragment 02: strona")).toHaveAttribute("aria-pressed", "false");
     fireEvent.click(fragment);
 
     expect(fragment).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText("Fragment 01 · rozdział I")).toBeVisible();
+    const details = screen.getByText("Fragment 01 · rozdział I");
+    expect(details).toBeVisible();
+    expect(details.closest("[aria-live=polite]")).not.toBeNull();
     const scan = card("Skan maszynopisu");
     expect(within(scan).getByRole("link", { name: "Wieś" })).toHaveAttribute("href", "/tags/wies");
     expect(await axeViolations(container)).toEqual([]);
@@ -272,15 +285,42 @@ describe("TypescriptPage", () => {
 
     await renderPage();
 
-    const fragment = await screen.findByRole("button", { name: "Druga" });
+    const fragment = await screen.findByRole("button", { name: "Fragment 03: Druga" });
     fireEvent.keyDown(fragment, { key: "Enter" });
 
     expect(fragment).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByText("Fragment 03 · rozdział III")).toBeVisible();
-    fireEvent.keyDown(highlight("strona"), { key: "Tab" });
-    expect(highlight("strona")).toHaveAttribute("aria-pressed", "false");
-    fireEvent.keyDown(highlight("strona"), { key: " " });
-    expect(highlight("strona")).toHaveAttribute("aria-pressed", "true");
+    fireEvent.keyDown(highlight("Fragment 02: strona"), { key: "Tab" });
+    expect(highlight("Fragment 02: strona")).toHaveAttribute("aria-pressed", "false");
+    fireEvent.keyDown(highlight("Fragment 02: strona"), { key: " " });
+    expect(highlight("Fragment 02: strona")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("R-11 AC2: of fragments with the same start, a click selects the inner one", async () => {
+    const outer = { ...EXTRA_FRAGMENT, id: 8, start: 0, end: 15 };
+    mockPage({}, { fragments: [...DOCUMENT.fragments, outer] });
+
+    await renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Fragment 01: Pierwsza" }));
+
+    expect(screen.getByText("Fragment 01 · rozdział I")).toBeVisible();
+    expect(screen.queryByText(/^Fragment 04/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Fragment 02: strona" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
+  it("R-11: a fragment reaching past the end of the text is highlighted up to the end", async () => {
+    const past = { ...EXTRA_FRAGMENT, id: 9, start: 40, end: 99 };
+    mockPage({}, { fragments: [...DOCUMENT.fragments, past] });
+
+    await renderPage();
+
+    expect(await screen.findByRole("button", { name: "Fragment 04: stu." })).toHaveTextContent(
+      /^stu\.$/,
+    );
   });
 
   it("R-11 AC3: opened with ?fragment=, the reader shows the text, scrolls to the fragment and selects it", async () => {
@@ -288,7 +328,7 @@ describe("TypescriptPage", () => {
 
     await renderPage("/typescripts/1?fragment=7");
 
-    const fragment = await screen.findByRole("button", { name: "Druga" });
+    const fragment = await screen.findByRole("button", { name: "Fragment 03: Druga" });
     expect(fragment).toHaveAttribute("aria-pressed", "true");
     expect(scrollIntoView).toHaveBeenCalledOnce();
     expect(scrollIntoView.mock.contexts[0]).toBe(fragment);
@@ -319,35 +359,53 @@ describe("TypescriptPage", () => {
     mockPage();
 
     await renderPage();
-    await screen.findByRole("button", { name: "Druga" });
+    await screen.findByRole("button", { name: "Fragment 03: Druga" });
 
     fireEvent.click(
       within(card("Fragmenty z maszynopisu")).getByRole("link", { name: /Fragment 03/ }),
     );
 
     expect(await screen.findByText("Fragment 03 · rozdział III")).toBeVisible();
-    expect(scrollIntoView.mock.contexts[0]).toBe(screen.getByRole("button", { name: "Druga" }));
+    expect(scrollIntoView.mock.contexts[0]).toBe(
+      screen.getByRole("button", { name: "Fragment 03: Druga" }),
+    );
   });
 
   it("D20: 'Wszystkie fragmenty (3)' expands the list in place, in page order", async () => {
     mockPage();
 
     await renderPage();
-    await screen.findByRole("button", { name: "Druga" });
+    await screen.findByRole("button", { name: "Fragment 03: Druga" });
 
     fireEvent.click(screen.getByRole("link", { name: "Wszystkie fragmenty (3)" }));
 
     const fragments = card("Fragmenty z maszynopisu");
     expect(await within(fragments).findByText("3")).toBeVisible();
-    expect(
-      within(fragments)
-        .getAllByRole("link")
-        .map((link) => link.textContent),
-    ).toEqual([
+    const links = within(fragments).getAllByRole("link");
+    expect(links.map((link) => link.textContent)).toEqual([
       "01Fragment 01 · rozdział I · ML, sygn. 1618.0009",
       "02Fragment 02",
       "03Fragment 03 · rozdział III · ML, sygn. 1618.0019",
     ]);
+    expect(links[0]).toHaveFocus();
+    // Opening a fragment keeps the list expanded.
+    expect(links[1]).toHaveAttribute("href", "/typescripts/1?fragments=all&fragment=6");
+  });
+
+  it("D20: while the whole list loads, the preview stays, without the link", async () => {
+    server.use(
+      http.get(TYPESCRIPT_URL, () => HttpResponse.json(TYPESCRIPT)),
+      http.get(DOCUMENT_URL, async () => {
+        await delay("infinite");
+        return HttpResponse.json(DOCUMENT);
+      }),
+    );
+
+    await renderPage("/typescripts/1?fragments=all");
+
+    const fragments = card("Fragmenty z maszynopisu");
+    expect(within(fragments).getByText("2 z 3")).toBeVisible();
+    expect(within(fragments).queryByText(/Wszystkie fragmenty/)).not.toBeInTheDocument();
   });
 
   it("D20: ?fragments=all, the work page's link, opens the page with the list expanded", async () => {
@@ -428,7 +486,7 @@ describe("TypescriptPage", () => {
     const headings = screen.getAllByRole("heading").map((heading) => heading.textContent);
     // In the mobile order (R-05): main column, then context.
     expect(headings).toEqual([TYPESCRIPT.title, "Skan maszynopisu", "Maszynopisy utworu"]);
-    expect(screen.queryByRole("button", { name: "Pierwsza" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Fragment 01: Pierwsza" })).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -437,7 +495,7 @@ describe("TypescriptPage", () => {
 
     await renderPage();
 
-    await screen.findByRole("button", { name: "Pierwsza" });
+    await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
     expect(screen.queryByRole("group", { name: "Widok" })).not.toBeInTheDocument();
     expect(screen.queryByText(/Skan · strona/)).not.toBeInTheDocument();
   });
@@ -452,6 +510,9 @@ describe("TypescriptPage", () => {
 
     expect(await screen.findByText("Nie udało się wczytać skanu.")).toBeVisible();
     expect(screen.queryByRole("img", { name: /Skan · strona/ })).not.toBeInTheDocument();
+    // On mobile the reader shows the text, without a toggle to the missing scan.
+    expect(screen.queryByRole("group", { name: "Widok" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Fragment 01: Pierwsza" })).toBeVisible();
   });
 
   it("R-06: a typescript the API does not find shows the not-found page", async () => {

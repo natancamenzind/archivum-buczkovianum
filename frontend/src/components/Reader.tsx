@@ -61,7 +61,16 @@ function ScanPage({
   }, [pdf, number]);
 
   return (
-    <canvas ref={canvas} role="img" aria-label={label} className="h-auto w-full shadow-document" />
+    // Until it is drawn, the canvas keeps the A4 proportions of a typescript page, so the
+    // reader's scroll position holds when the scan arrives.
+    <canvas
+      ref={canvas}
+      width={210}
+      height={297}
+      role="img"
+      aria-label={label}
+      className="h-auto w-full shadow-document"
+    />
   );
 }
 
@@ -109,22 +118,31 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
   const selectedFragment = fragments.find((fragment) => fragment.id === selected);
   const selectedPage =
     selectedFragment === undefined ? null : pageOf(Math.min(selectedFragment.start, text.length));
+  const hasScans = pageCount > 0 && !scanFailed;
 
-  function select(segment: Segment) {
-    // Of overlapping fragments, the one that starts last is the innermost.
-    setSelected(segment.ids.at(-1) ?? null);
+  /** Of the fragments covering a segment, the shortest: the innermost one. */
+  function innermost(segment: Segment): Fragment | undefined {
+    return fragments
+      .filter((fragment) => segment.ids.includes(fragment.id))
+      .reduce<Fragment | undefined>(
+        (best, fragment) =>
+          best === undefined || fragment.end - fragment.start < best.end - best.start
+            ? fragment
+            : best,
+        undefined,
+      );
   }
 
-  function selectByKey(event: KeyboardEvent, segment: Segment) {
+  function selectByKey(event: KeyboardEvent, id: number | null) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      select(segment);
+      setSelected(id);
     }
   }
 
   return (
     <div className="flex flex-col gap-16">
-      {pageCount > 0 && (
+      {hasScans && (
         <div role="group" aria-label={copy.reader.views} className="flex gap-8 md:hidden">
           {(["scan", "text"] as const).map((option) => (
             <button
@@ -152,7 +170,7 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
       <div ref={textColumn} className="flex flex-col gap-24">
         {pages.map((pageSegments, index) => (
           <div key={index} className="grid grid-cols-1 gap-16 md:grid-cols-2">
-            {pageCount > 0 && (
+            {hasScans && (
               <div
                 className={cn(
                   "flex flex-col gap-12 rounded-md bg-media p-16",
@@ -162,19 +180,17 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
                 <p className="text-cousine-metadane-male text-muted-foreground">
                   {copy.reader.page(index + 1, pageCount)}
                 </p>
-                {!scanFailed && (
-                  <ScanPage
-                    pdf={pdf}
-                    number={index + 1}
-                    label={copy.reader.page(index + 1, pageCount)}
-                  />
-                )}
+                <ScanPage
+                  pdf={pdf}
+                  number={index + 1}
+                  label={copy.reader.page(index + 1, pageCount)}
+                />
               </div>
             )}
             <div
               className={cn(
                 "flex flex-col gap-16",
-                pageCount === 0 ? "md:col-span-2" : view === "scan" && "hidden md:flex",
+                hasScans ? view === "scan" && "hidden md:flex" : "md:col-span-2",
               )}
             >
               <p className="text-lora-tekst whitespace-pre-wrap text-foreground">
@@ -184,18 +200,25 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
                     return part;
                   }
                   const isSelected = selected !== null && segment.ids.includes(selected);
+                  const fragment = innermost(segment);
+                  const id = fragment?.id ?? null;
                   return (
                     <mark
                       key={segment.start}
                       role="button"
                       tabIndex={0}
                       aria-pressed={isSelected}
+                      aria-label={
+                        fragment === undefined
+                          ? undefined
+                          : `${fragmentLabel(fragment.number)}: ${part}`
+                      }
                       data-fragments={segment.ids.join(" ")}
                       onClick={() => {
-                        select(segment);
+                        setSelected(id);
                       }}
                       onKeyDown={(event) => {
-                        selectByKey(event, segment);
+                        selectByKey(event, id);
                       }}
                       className={cn(
                         "cursor-pointer bg-accent text-foreground",
@@ -208,9 +231,12 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
                   );
                 })}
               </p>
-              {selectedFragment !== undefined && selectedPage === index + 1 && (
-                <FragmentDetails fragment={selectedFragment} />
-              )}
+              {/* A live region, so a screen reader reads the details of a selected fragment. */}
+              <div aria-live="polite" className="empty:hidden">
+                {selectedFragment !== undefined && selectedPage === index + 1 && (
+                  <FragmentDetails fragment={selectedFragment} />
+                )}
+              </div>
             </div>
           </div>
         ))}

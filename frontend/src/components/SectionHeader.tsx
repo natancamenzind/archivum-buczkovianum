@@ -9,7 +9,7 @@ interface SectionHeaderProps {
 /**
  * "Nagłówek sekcji" in design/components/: a section title over a subtle rule, with an optional
  * counter and description (plan D24). Shared by all pages (architecture §8). The preview link of
- * R-09 is added when a page needs it.
+ * R-09 is `ArrowLink`, under the list.
  */
 export function SectionHeader({ title, count, description }: SectionHeaderProps) {
   return (

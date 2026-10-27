@@ -175,6 +175,9 @@ class TestTypescriptPageEndpoint:
         draft = TagFactory.create(title="Szkic", status=Status.DRAFT)
         typescript.tags.add(wojna, draft)
         FragmentFactory.create(document=typescript.document).tags.add(wies, wojna)
+        FragmentFactory.create(document=typescript.document).tags.add(
+            TagFactory.create(title="Szkic fragmentu", status=Status.DRAFT)
+        )
         other = published_typescript()
         other.tags.add(TagFactory.create(title="Inny", status=PUBLISHED))
 

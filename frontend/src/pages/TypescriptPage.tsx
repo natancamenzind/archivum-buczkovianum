@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { useParams, useSearchParams } from "react-router";
 
 import type { components } from "@/api/schema";
@@ -97,9 +98,20 @@ function Context({ typescript }: { typescript: TypescriptData }) {
 function Fragments({ typescript, document }: { typescript: TypescriptData; document?: Document }) {
   const [params] = useSearchParams();
   const { items, total } = typescript.fragments;
+  const expanded = params.get("fragments") === ALL_FRAGMENTS;
   // The whole list comes with the reader's text, in page order.
-  const all = params.get("fragments") === ALL_FRAGMENTS ? document?.fragments : undefined;
+  const all = expanded ? document?.fragments : undefined;
   const shown = all ?? items;
+  const list = useRef<HTMLUListElement>(null);
+  const expanding = useRef(false);
+
+  // Expanded from the link, which then disappears, the list takes the keyboard focus.
+  useEffect(() => {
+    if (all !== undefined && expanding.current) {
+      expanding.current = false;
+      list.current?.querySelector("a")?.focus();
+    }
+  }, [all]);
 
   return (
     <Card>
@@ -108,19 +120,25 @@ function Fragments({ typescript, document }: { typescript: TypescriptData; docum
         count={previewCount(shown.length, total)}
         description={copy.typescript.fragmentsDescription}
       />
-      <ul>
+      <ul ref={list}>
         {shown.map((fragment) => (
           <li key={fragment.id}>
             <ListRow
               number={fragment.number}
               title={fragmentTitle(fragment)}
-              to={`/typescripts/${String(typescript.id)}?fragment=${String(fragment.id)}`}
+              to={`/typescripts/${String(typescript.id)}?${expanded ? `fragments=${ALL_FRAGMENTS}&` : ""}fragment=${String(fragment.id)}`}
             />
           </li>
         ))}
       </ul>
-      {shown.length < total && (
-        <ArrowLink label={copy.typescript.allFragments(total)} to={`?fragments=${ALL_FRAGMENTS}`} />
+      {!expanded && shown.length < total && (
+        <ArrowLink
+          label={copy.typescript.allFragments(total)}
+          to={`?fragments=${ALL_FRAGMENTS}`}
+          onClick={() => {
+            expanding.current = true;
+          }}
+        />
       )}
     </Card>
   );
