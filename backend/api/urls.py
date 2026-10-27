@@ -1,10 +1,20 @@
 from django.urls import path
 
 from api.editor_fragments import EditorFragmentDetail, EditorFragmentListCreate
-from api.views import about, document, search_autocomplete, tags, typescript, typescripts, works
+from api.views import (
+    about,
+    document,
+    home,
+    search_autocomplete,
+    tags,
+    typescript,
+    typescripts,
+    works,
+)
 
 # The public, read-only API of the site's pages (docs/architecture.md, section 7).
 urlpatterns = [
+    path("home/", home, name="home"),
     path("about/", about, name="about"),
     path("works/", works, name="works"),
     path("typescripts/", typescripts, name="typescripts"),

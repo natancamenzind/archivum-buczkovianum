@@ -78,8 +78,12 @@ export const copy = {
     /** The placeholder board for a work without a cover (plan D25, design/rules.md). */
     coverPlaceholder: "[Okładka]",
   },
+  /** The home page (US-RA-01). */
   home: {
-    lead: "Cyfrowe archiwum twórczości Leopolda Buczkowskiego. Strona jest w budowie.",
+    works: "Utwory",
+    worksDescription: "Wszystkie utwory w archiwum, w kolejności wydania",
+    loading: "Wczytuję stronę…",
+    error: "Nie udało się wczytać strony. Spróbuj ponownie później.",
   },
   /** The About page (US-RA-13). */
   about: {
