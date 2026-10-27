@@ -26,12 +26,16 @@ from api.serializers import (
     TypescriptPage,
     TypescriptPageSerializer,
     WorkCardSerializer,
+    WorkPage,
+    WorkPageSerializer,
 )
 from archive.models import (
     ContentKind,
     ContextualMaterial,
     Document,
     Fragment,
+    Note,
+    Preview,
     Publishable,
     PublishableQuerySet,
     SecondaryText,
@@ -192,6 +196,45 @@ def typescript(request: Request, pk: int) -> Response:
     )
     context = {"institution": current.institution}
     return Response(TypescriptPageSerializer(page, context=context).data)
+
+
+@extend_schema(responses=WorkPageSerializer)
+@api_view(["GET"])
+def work(request: Request, slug: str) -> Response:
+    """The work page (US-RA-04). A draft work is not found (R-06)."""
+    current = get_object_or_404(
+        Work.objects.published().with_year().prefetch_related("editions"), slug=slug
+    )
+    typescripts = Typescript.objects.published().filter(work=current)
+    main = typescripts.filter(is_main=True).first()
+    published_tags = Prefetch("tags", Tag.objects.published())
+    fragments = (
+        Fragment.objects.filter(document__typescript=main)
+        .select_related("document__typescript__institution")
+        .prefetch_related(published_tags)
+        .with_number()
+        .preview()
+        if main
+        else Preview[Fragment](items=[], total=0)
+    )
+    page = WorkPage(
+        work=current,
+        main_typescript=main.pk if main else None,
+        fragments=fragments,
+        typescripts=sorted(typescripts.select_related("institution"), key=shelfmark_order),
+        notes=list(
+            Note.objects.published()
+            .filter(works=current)
+            .select_related("institution")
+            .prefetch_related(published_tags)
+        ),
+        tags=list(Tag.objects.published().referring_to(current).distinct().order_by("title")),
+        materials=contextual_materials(
+            SecondaryText.objects.filter(works=current),
+            ContextualMaterial.objects.filter(works=current),
+        ),
+    )
+    return Response(WorkPageSerializer(page).data)
 
 
 @extend_schema(responses=DocumentSerializer)

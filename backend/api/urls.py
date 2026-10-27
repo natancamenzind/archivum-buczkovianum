@@ -9,6 +9,7 @@ from api.views import (
     tags,
     typescript,
     typescripts,
+    work,
     works,
 )
 
@@ -20,6 +21,7 @@ urlpatterns = [
     path("typescripts/", typescripts, name="typescripts"),
     path("tags/", tags, name="tags"),
     path("search/autocomplete/", search_autocomplete, name="search-autocomplete"),
+    path("works/<slug:slug>/", work, name="work"),
     path("typescripts/<int:pk>/", typescript, name="typescript"),
     path("documents/<int:pk>/", document, name="document"),
     path("editor/fragments/", EditorFragmentListCreate.as_view(), name="editor-fragments"),
