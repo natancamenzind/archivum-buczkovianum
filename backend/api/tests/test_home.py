@@ -13,6 +13,7 @@ from archive.tests.factories import (
     EditionFactory,
     FragmentFactory,
     NoteFactory,
+    SecondaryTextFactory,
     SiteSettingsFactory,
     TagFactory,
     TypescriptFactory,
@@ -76,6 +77,8 @@ class TestHomeEndpoint:
         FragmentFactory.create_batch(2, document=main.document)
         FragmentFactory.create(document=other.document)
         FragmentFactory.create(document=draft.document)
+        FragmentFactory.create(document=SecondaryTextFactory.create(status=PUBLISHED).document)
+        FragmentFactory.create(document=SecondaryTextFactory.create(status=Status.DRAFT).document)
         TagFactory.create_batch(2, status=PUBLISHED)
         TagFactory.create(status=Status.DRAFT)
 
@@ -83,7 +86,7 @@ class TestHomeEndpoint:
         result = home(client)
 
         # Assert
-        assert result["statistics"] == {"works": 1, "fragments": 3, "tags": 2}
+        assert result["statistics"] == {"works": 1, "fragments": 4, "tags": 2}
 
     def test_us_ra_01_ac3_lists_published_work_cards_by_first_edition(self, client: Client) -> None:
         # Arrange

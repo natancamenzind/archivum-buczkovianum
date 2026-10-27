@@ -86,7 +86,7 @@ export interface paths {
         };
         /**
          * @description The home page (US-RA-01): introduction and portrait, the counts, the work cards and the
-         *     tag cloud. The featured fragment (US-RA-02) is not here yet.
+         *     tag cloud.
          */
         get: operations["home_retrieve"];
         put?: never;

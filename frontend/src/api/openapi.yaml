@@ -138,7 +138,7 @@ paths:
       operationId: home_retrieve
       description: |-
         The home page (US-RA-01): introduction and portrait, the counts, the work cards and the
-        tag cloud. The featured fragment (US-RA-02) is not here yet.
+        tag cloud.
       tags:
       - home
       security:
