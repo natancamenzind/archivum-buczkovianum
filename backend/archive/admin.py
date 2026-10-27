@@ -48,8 +48,10 @@ class SearchIndexedAdmin[M: Publishable | Fragment](admin.ModelAdmin[M]):
         Tag.update_search_entries()
 
 
-class TextUploadAdmin[M: Typescript | Note](SearchIndexedAdmin[M]):
+class TextUploadAdmin[M: Typescript | Note | ContextualMaterial](SearchIndexedAdmin[M]):
     """The admin of an item whose form uploads its text (`TextUploadForm`)."""
+
+    readonly_fields = ("current_scan", "page_count")
 
     @admin.display(description=_("current scan"))
     def current_scan(self, obj: M) -> SafeString | None:
@@ -63,7 +65,7 @@ class TextUploadAdmin[M: Typescript | Note](SearchIndexedAdmin[M]):
         return obj.document.page_count if obj.document and obj.document.scan else None
 
 
-class MediaContentAdmin[M: Note | ContextualMaterial](SearchIndexedAdmin[M]):
+class MediaContentAdmin[M: Note | ContextualMaterial](TextUploadAdmin[M]):
     # Django 6.0 makes https the default scheme for URLs typed without one; opt in now.
     formfield_overrides: ClassVar[dict[type[models.Field[Any, Any]], dict[str, Any]]] = {
         models.URLField: {"assume_scheme": "https"},
@@ -121,7 +123,6 @@ class TypescriptAdmin(TextUploadAdmin[Typescript]):
     search_fields = ("title", "shelfmark")
     autocomplete_fields = ("work", "institution", "tags")
     form = TypescriptForm
-    readonly_fields = ("current_scan", "page_count")
 
 
 class NoteForm(MediaContentForm[Note]):
@@ -131,13 +132,12 @@ class NoteForm(MediaContentForm[Note]):
 
 
 @admin.register(Note)
-class NoteAdmin(MediaContentAdmin[Note], TextUploadAdmin[Note]):
+class NoteAdmin(MediaContentAdmin[Note]):
     list_display = ("title", "content_kind", "shelfmark", "status", "updated_at")
     list_filter = ("status", "content_kind", "works")
     search_fields = ("title", "shelfmark")
     autocomplete_fields = ("works", "institution", "tags")
     form = NoteForm
-    readonly_fields = ("current_scan", "page_count")
 
 
 class SecondaryTextWorkLinkInline(admin.TabularInline[SecondaryTextWorkLink, SecondaryText]):
