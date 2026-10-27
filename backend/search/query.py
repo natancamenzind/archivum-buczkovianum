@@ -70,7 +70,7 @@ class Hit:
     snippet: str
     # The first matched word of the snippet, as the text spells it, for the reader to scroll to
     # (R-11 AC3); empty when the snippet has none.
-    term: str = ""
+    term: str
 
 
 @dataclass(frozen=True)
