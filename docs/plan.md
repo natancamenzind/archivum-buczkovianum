@@ -6,19 +6,27 @@ If the two disagree, the stories win. Fix this file in the same PR.
 
 ## 1. Where we are
 
-Updated on 2026-10-27, after #26. No step is in progress: there are no open PRs.
+Updated on 2026-10-27, after #40. No step is in progress: there are no open PRs. 20 of 38 steps are done; 18 remain.
 
 On `main`:
 
 - Django skeleton, settings, CI for both sides, run only for the side that changed (#6, #14). CI builds the frontend and checks the API client (step 36, #18).
 - Domain models and admin (#5). They already meet US-WR-02, US-WR-10, US-WR-11 and US-WR-14, and parts of the other WR stories.
 - Figma export in `design/`.
-- Phase 1 is done except step 37: scaffold (1, #11), shared queries (2, #10), search index and demo data (3, 5, landed by 3L, #16), re-anchoring (4, #9).
-- Typescript text upload (6, #25). #23 was merged and reverted (#24); #25 is the version on `main`.
-- The page shell (13, #17), About (14, #19) and the works list (15, #21). `backend/api/` serves `/api/about/` and `/api/works/`.
-- Outside the plan: search behaviour tests (#20), `manage.py` loads the repo-root `.env` (#26).
+- **Phase 1 is done**: scaffold (1, #11), shared queries (2, #10), search index and demo data (3, 5, landed by 3L, #16), re-anchoring (4, #9), tags in search entries (37, #38).
+- **Phase 2 (editor panel) is done**: typescript upload (6, #25), note content (7, #28), secondary text text (8, #29), material content (9, #30), rich text (10, #31), the tagger (11, #32), the editors group (12, #34). Every WR story is met except US-WR-13 AC2 (step 28).
+- The page shell (13, #17), About (14, #19), the works list (15, #21), the typescripts list (18, #35) and the search entry (29, #37). `backend/api/` serves `/api/about/`, `/api/works/`, `/api/typescripts/` and the staff-only `/api/editor/fragments/`.
+- Outside the plan: search behaviour tests (#20), `manage.py` loads the repo-root `.env` (#26), Django serves `/media/` from `MEDIA_ROOT` when `AWS_STORAGE_BUCKET_NAME` is unset (#36), the editor panel in Polish with `make messages` (#39), a backend suite on 4 xdist workers (#40).
 
-Missing: the other public pages, search, rich text, the tagger, the editors group, content upload for notes, secondary texts and materials, meta tags, production.
+Missing: the tags list and home page, every entity page (typescript, work, tag, secondary text, note, material), search results and filters, draft preview, autocomplete, the featured fragment, meta tags, production.
+
+What the done work changes for the rest:
+
+- **The editor panel is finished, so all remaining work is public pages and search.** Every remaining step except 34 and 35 adds an endpoint to `backend/api/` and a page, so they all touch the files in 4.4.
+- **Only three steps are ready (4.1), down from ten.** Everything else waits on step 19, then step 21. Step 19 is now the bottleneck: start it first.
+- **Editor-visible backend strings are translated** (#39, AGENTS.md). A step that adds a model, a field, an admin label or a validation message runs `make messages`. A new `archive` model also needs a data migration that grants its permissions to "Redaktorzy" (#34). No remaining step plans one.
+- **Rich text has landed** (#31): every page step renders descriptions through `components/RichText.tsx`.
+- **Open questions from merged PRs** are D27–D29 in section 3. None blocks a step that is ready now.
 
 ## 2. How we work
 
@@ -84,63 +92,64 @@ Answered by the project owner on 2026-10-27, for steps 15 and 16:
 | D25 | A work without a cover. | **The placeholder board** (design/rules.md, Materiały zastępcze). No fallback to an edition's cover. | 15 (done) |
 | D26 | US-RA-20 AC2 lists "every published tag", but the cloud shows only tags in use. Does the index list published tags with no occurrence? | **No.** The index and the cloud show the same tags: published, with at least one occurrence (`in_use()`). Write it into US-RA-20 AC2 (`user-stories.md` and `user-stories.pl.md`). | 16 |
 
+Open, raised by merged PRs on 2026-10-27. The project owner answers; until then each step does what the "Until answered" column says.
+
+| # | Question | Until answered | Step |
+|---|----------|----------------|------|
+| D27 | Relation tags (`SecondaryTextWorkLink.tags`, `MaterialWorkLink.tags`, US-RA-05) are not in any search entry. Should searching a relation tag's name find the secondary text or material? (#38) | Not searched. If yes: add link tags to `Archival.indexed_content` and re-index link carriers in `Tag.save()`. A small CORE follow-up, needed before step 30 merges. | 30 |
+| D28 | Two editor-panel labels with no glossary term: slug is "Końcówka adresu", site settings are "Treści serwisu". Keep them? (#39) | Keep them. | — |
+| D29 | Genre is shown as stored ("powieść"); Figma shows "Powieść". The typescripts hero has no count ("Pięć jednostek…" in Figma). Capitalise the genre on display or in the data? Add a live count to the hero? (#35) | Shown as stored, no count. Steps 17, 21 and 23 show the genre the same way as steps 15 and 18. | 17, 21, 23 |
+
 ## 4. Order and dependencies
 
-A step can start when every step in its "Needs" (section 5) is merged into `main`. Nothing else orders the work. The phases group steps by topic, not by time: Phase 2 runs alongside Phases 3–5.
+A step can start when every step in its "Needs" (section 5) is merged into `main`. Nothing else orders the work. The phases group steps by topic, not by time.
 
 ### 4.1 Ready now
 
-Snapshot as of 2026-10-27. Recompute it from section 5 if this is stale.
+Snapshot as of 2026-10-27, after #40. Recompute it from section 5 if this is stale.
 
 | Step | Story | Lane | Needs (all merged) |
 |------|-------|------|--------------------|
-| 18 | US-RA-19: typescripts list | Public pages, **critical path** | 13 |
-| 29 | US-RA-14: search entry | Search, **critical path** | 3L, 13 |
-| 37 | CORE: tags in search entries | Search, **critical path** | 3L |
+| 19 | US-RA-08: typescript page | Entity pages, **critical path** | 3L, 18 |
 | 16 | US-RA-20: tags list | Public pages | 13 |
-| 7 | US-WR-05: note content | Editor panel | 6 |
-| 8 | US-WR-06: secondary text text | Editor panel | 6 |
-| 9 | US-WR-07: contextual material content | Editor panel | 6 |
-| 10 | CORE: rich text | Editor panel | 3L |
-| 11 | US-WR-09: tagger | Editor panel | 3L, 6 |
-| 12 | US-WR-01: editors group | Editor panel | — |
+| 33 | US-RA-17: autocomplete (Should) | Search | 29 |
 
-All ten can run at the same time. 4.4 lists the files they share.
+All three can run at the same time. Start 19 first: 13 of the 18 remaining steps wait on it. 4.4 lists the files they share.
 
 ### 4.2 Waves
 
 Each wave holds the steps whose needs are all in earlier waves. A step does not wait for its whole wave: it starts as soon as its own needs merge.
 
-| Wave | Steps | Each step waits for |
-|------|-------|---------------------|
-| done | 1, 2, 3, 3L, 4, 5, 6, 13, 14, 15, 36 | — |
-| A | 7, 8, 9, 10, 11, 12, 16, 18, 29, 37 | see 4.1 |
-| B | 17, 19, 33 | 17 ← 15, 16 · 19 ← 3L, 18 · 33 ← 29 |
-| C | 20, 21 | 20 ← 19 · 21 ← 19 |
-| D | 22, 23, 24, 30 | 22, 23, 24 ← 21 · 30 ← 21, 29, 37 |
-| E | 25, 31 | 25 ← 24 · 31 ← 30 |
-| F | 26, 32, 34 | 26 ← 25 · 32 ← 17, 21, 31 · 34 ← 31 |
-| G | 27, 28 | 27 ← 22, 23, 26 · 28 ← 26 |
-| blocked | 35 | decision D9 (hosting) |
+| Wave | Steps | Each step waits for | Parallel |
+|------|-------|---------------------|----------|
+| done | 1–15, 18, 29, 36, 37, 3L | — | — |
+| A | 16, 19, 33 | see 4.1 | 3 |
+| B | 17, 20, 21 | 17 ← 15, 16 · 20, 21 ← 19 | 3 |
+| C | 22, 23, 24, 30 | 22, 23, 24 ← 21 · 30 ← 21, 29, 37 | 4 |
+| D | 25, 31 | 25 ← 24 · 31 ← 30 | 2 |
+| E | 26, 32, 34 | 26 ← 25 · 32 ← 17, 21, 31 · 34 ← 31 | 3 |
+| F | 27, 28 | 27 ← 22, 23, 26 · 28 ← 26 | 2 |
+| blocked | 35 | decision D9 (hosting) | — |
+
+At most four steps run at once (wave C). With enough agents, the 17 unblocked steps take six rounds of merges.
 
 ### 4.3 Dependency graph
 
 The longest chain decides when v1 is done. Take steps on it first:
 
-**Critical path: 18 → 19 → 21 → 24 → 25 → 26 → 27 / 28.** The search chain is one wave shorter and also waits on 21: **21 + 29 + 37 → 30 → 31 → 32 / 34.**
+**Critical path: 19 → 21 → 24 → 25 → 26 → 27 / 28** (six rounds). The search chain is one round shorter and also waits on 21: **21 → 30 → 31 → 32 / 34.**
 
-Steps with nothing waiting on them (7, 8, 9, 10, 11, 12, 20, 33) are off the critical path. Fill free slots with them.
+The chain 24 → 25 → 26 is real, not an artefact of the plan: the note and material pages use the secondary text page's layout and its "Powiązane fragmenty" (US-RA-11, US-RA-12), and the material page reuses the note page's content by type (US-RA-12 AC3).
+
+Steps with nothing waiting on them (20, 33, and 16 once 17 is taken) are off the critical path. Fill free slots with them.
 
 ```mermaid
 graph LR
   classDef done fill:#d4edda,stroke:#2e7d32
-  6 --> 7 & 8 & 9 & 11
-  3L --> 10 & 11 & 37 & 19 & 29
-  12
-  13 --> 16 & 18 & 29
+  13 --> 16
+  3L & 18 --> 19
   15 --> 17
   16 --> 17
-  18 --> 19
   19 --> 20 & 21
   21 --> 22 & 23 & 24 & 30 & 32
   24 --> 25 --> 26
@@ -152,29 +161,24 @@ graph LR
   31 --> 32 & 34
   17 --> 32
   D9{{D9 hosting}} --> 35
-  class 3L,6,13,15 done
+  class 3L,13,15,18,29,37 done
 ```
 
-The same graph as a list, for reading without a renderer. "X ← Y" means X needs Y.
+The same graph as a list, for reading without a renderer. "X ← Y" means X needs Y. Done steps are left out.
 
-- 7, 8, 9 ← 6
-- 10, 37 ← 3L
-- 11 ← 3L, 6
-- 12 ← nothing
-- 16, 18 ← 13
-- 17 ← 15, 16
-- 19 ← 3L, 18
+- 16 ← 13 (done)
+- 17 ← 15 (done), 16
+- 19 ← 3L, 18 (done)
 - 20, 21 ← 19
 - 22, 23, 24 ← 21
 - 25 ← 24
 - 26 ← 25
 - 27 ← 22, 23, 26
 - 28 ← 26
-- 29 ← 3L, 13
-- 30 ← 21, 29, 37
+- 30 ← 21, 29 (done), 37 (done)
 - 31 ← 30
 - 32 ← 17, 21, 31
-- 33 ← 29
+- 33 ← 29 (done)
 - 34 ← 31
 - 35 ← D9
 
@@ -184,13 +188,12 @@ These steps do not depend on each other, but they edit the same files. Run them 
 
 | Files | Steps | What to watch |
 |-------|-------|---------------|
-| `backend/archive/admin.py`, `backend/archive/forms.py` | 7, 8, 9, 10, 11 | 7–9 each add a form next to step 6's `TypescriptForm`. 11 adds the "Taguj fragmenty" link to item forms, 10 swaps description widgets. Keep every side. |
-| `backend/archive/migrations/` | 10, 12, 37 (if it adds one) | Numbers collide. The second to merge renumbers and fixes its `dependencies`. |
-| `Tag.update_search_entries()`, `backend/search/` | 11, 37 | 37 changes what a tag writes into the index; 11 calls it after tagging. Whichever merges second re-runs the other's tests. |
-| `backend/api/urls.py`, `views.py`, `serializers.py`, `frontend/src/routes.tsx`, `frontend/src/copy/pl.ts`, `frontend/src/api/` | every page step: 16–34 | Each adds its own entries. Regenerate `frontend/src/api/` after the rebase, never merge it by hand. |
-| `components/layout/SiteHeader.tsx` | 29, 33 | 33 waits for 29 anyway. |
-| Description rendering | 10 and every page step | A page merged before 10 shows plain text, and step 10 switches it to HTML. A page merged after 10 renders the sanitized HTML from the start (section 7). |
-| `components/SectionHeader.tsx`, `PageHeader.tsx` | 16, 18, 19 | 19 adds the preview link to R-09. 16 and 18 use the header as it is. |
+| `backend/api/urls.py`, `views.py`, `serializers.py`, `frontend/src/routes.tsx`, `frontend/src/copy/pl.ts`, `frontend/src/api/` | every page step: 16–33 | Each adds its own entries. Regenerate `frontend/src/api/` after the rebase, never merge it by hand. |
+| `components/SectionHeader.tsx`, `PageHeader.tsx` | 16, 19, 17 | 19 adds the preview link to R-09. 16 and 17 use the header as it is. |
+| `components/layout/SiteHeader.tsx`, `components/SearchField.tsx`, `lib/search.ts` | 30, 31, 33 | 33 adds suggestions to both fields; 30 and 31 change the search page. 33 can run alongside all of wave A–C. |
+| `pages/HomePage.tsx`, `/api/home/` | 17, 32 | 32 waits for 17 anyway. |
+| `frontend/src/components/` page parts | 21–26 | 21 builds the fragment card and the materials block, 24 the related-fragments query, 25 the content by type. Later steps import them, never copy them (section 7). |
+| `backend/search/` | 30, 31, 33, and D27's follow-up | 30 adds the endpoint; 31 the filters; 33 its own autocomplete query. |
 
 ## 5. Steps
 
@@ -207,7 +210,7 @@ These steps do not depend on each other, but they edit the same files. Run them 
 | [x] | 36 | CI: frontend build and API client check | `ci/frontend-build` | — | CI runs `npm run build`, because `tsc --noEmit` misses what only fails at build time: the token plugin reading `design/tokens/tokens.css`, asset paths, the `/static/` base. CI also runs `make api-client` and fails if `frontend/src/api/` changed. Both are #11 review findings. |
 | [x] | 37 | CORE: tags in search entries | `core/search-tags` | 3L | D18: a fragment's or item's published tag names go into its search entry at weight B. Saving, publishing or unpublishing a tag re-indexes what carries it. Update architecture §6. A test that "dezerter" finds a fragment tagged Dezerter whose quote lacks the word. |
 
-### Phase 2 — Editor panel (runs alongside Phases 3–5)
+### Phase 2 — Editor panel (done)
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
@@ -227,14 +230,14 @@ These steps do not depend on each other, but they edit the same files. Run them 
 | [x] | 14 | US-RA-13: About | `us-ra-13-about` | 13 | `/api/about/`, the About page. As the first page endpoint, it creates `backend/api/` and removes the schema's self-documentation (D13, D21). |
 | [x] | 15 | US-RA-18: works list | `us-ra-18-works-list` | 13 | `/api/works/`, the work card, the list page. The card's fragment count follows D19; write it into US-RA-01 AC3. The card follows D22, D23 and D25; the section header gets its counter and description (D24). D13 and D21 are done in step 14: the `backend/api/` app exists (views, serializers, urls), and the schema describes the real endpoints only. Add the endpoint there and leave `HomePage` as it is. |
 | [ ] | 16 | US-RA-20: tags list | `us-ra-20-tags-list` | 13 | `/api/tags/`, the deterministic tag cloud, the alphabetical index. Tags come from `Tag.objects.published()` chained with `with_occurrences()` or `in_use()`; neither filters the tag's own status. The index lists only tags in use, like the cloud (D26). |
-| [ ] | 17 | US-RA-01: home page | `us-ra-01-home` | 15, 16 | `/api/home/`, the hero with counts and portrait, works, tag cloud. Replaces the placeholder at `/` (D21): `pages/HomePage.tsx`, its test and `copy.home`. Reuse from step 15: `components/WorkCard.tsx`, `WorkCardSerializer` and `Work.objects.published().with_year().with_fragment_count()`. |
+| [ ] | 17 | US-RA-01: home page | `us-ra-01-home` | 15, 16 | `/api/home/`, the hero with counts and portrait, works, tag cloud. Replaces the placeholder at `/` (D21): `pages/HomePage.tsx`, its test and `copy.home`. Reuse from step 15: `components/WorkCard.tsx`, `WorkCardSerializer` and `Work.objects.published().with_year().with_fragment_count()`. Genre and the hero's counts follow D29 until it is answered. |
 | [x] | 18 | US-RA-19: typescripts list | `us-ra-19-typescripts-list` | 13 | `/api/typescripts/`, grouped by work. Order shelfmarks as numbers, not strings. |
 
 ### Phase 4 — Entity pages
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
-| [ ] | 19 | US-RA-08: typescript page | `us-ra-08-typescript-page` | 3L, 18 | `/api/typescripts/<id>/`, `/api/documents/<id>/`. The shared parts first built here: subpage layout (R-05), section header and preview (R-09), the reader (R-11) with `pdfjs-dist`, the text renderer (§4.4), the mobile toggle, `?fragment=`. The renderer clamps a lost fragment's offsets to the text (#9). The fragment list's "all" link follows D20; write it into R-09. Built in step 14 and extended here, not rebuilt: `components/PageHeader.tsx` (the hero; its `label` takes the entity's type line) and `components/SectionHeader.tsx` (the counter and description exist since step 15, D24; add the rest of R-09: the preview link). Also from step 14: `components/ColumnHeader.tsx` without its count, and the shadcn `components/ui/card.tsx` on the design tokens. From step 18: `components/ListRow.tsx` ("Wiersz listy": two-digit number, title, arrow, link) and `ArrowRightIcon`, for the "Fragmenty z maszynopisu" numbered list. The hero's paper grain (design/rules.md, Ornamenty) is not built yet. |
+| [ ] | 19 | US-RA-08: typescript page | `us-ra-08-typescript-page` | 3L, 18 | `/api/typescripts/<id>/`, `/api/documents/<id>/`. The shared parts first built here: subpage layout (R-05), section header and preview (R-09), the reader (R-11) with `pdfjs-dist`, the text renderer (§4.4), the mobile toggle, `?fragment=`. The renderer clamps a lost fragment's offsets to the text (#9). The fragment list's "all" link follows D20; write it into R-09. Built in step 14 and extended here, not rebuilt: `components/PageHeader.tsx` (the hero; its `label` takes the entity's type line) and `components/SectionHeader.tsx` (the counter and description exist since step 15, D24; add the rest of R-09: the preview link). Also from step 14: `components/ColumnHeader.tsx` without its count, and the shadcn `components/ui/card.tsx` on the design tokens. From step 18: `components/ListRow.tsx` ("Wiersz listy": two-digit number, title, arrow, link) and `ArrowRightIcon`, for the "Fragmenty z maszynopisu" numbered list. The hero's paper grain (design/rules.md, Ornamenty) is not built yet. Descriptions are HTML: render them with `components/RichText.tsx` (step 10). |
 | [ ] | 20 | US-RA-09: reading the full typescript | `us-ra-09-full-typescript` | 19 | The reader handles a long typescript: pages render as they scroll into view. Fragments are highlighted wherever they exist (D4). |
 | [ ] | 21 | US-RA-04: work page | `us-ra-04-work-page` | 19 | `/api/works/<slug>/`. Built here: the fragment card (R-10) with page thumbnail, the note card, the contextual materials block (R-08), where a contextual material shows its title only (D5). |
 | [ ] | 22 | US-RA-05: relation tags | `us-ra-05-relation-tags` | 21 | Work link tags in the work page's tag column. |
@@ -250,7 +253,7 @@ These steps do not depend on each other, but they edit the same files. Run them 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
 | [x] | 29 | US-RA-14: search entry | `us-ra-14-search-entry` | 3L, 13 | The header field (the icon on mobile), the `/search` page shell, the hint text. The field goes in the slot marked in `components/layout/SiteHeader.tsx`, next to "O archiwum", which stays in the mobile header too (R-07; Figma's mobile header drops it). Icons are inline components in `components/icons.tsx`, copied from `design/assets/icons/`: add `szukaj` there. |
-| [ ] | 30 | US-RA-15: search results | `us-ra-15-search-results` | 29, 21, 37 | `/api/search/`, groups, sorting, snippets, the loading state, no results. Opening a result scrolls to the first match (`?q=`, R-11 AC3). Left by #12 for this step: how many of a work's fragments match (AC5), and a test that "potoku" finds "potok" (AC7). No pagination in v1: the archive is small, and the stories and design have none. Snippets: keep `ts_headline` off whole document bodies of results the page doesn't show. A query of only stopwords (`w`, `-`) behaves as an empty query, not as "no results" (#16). From step 29: `pages/SearchPage.tsx` has the field (`components/SearchField.tsx`), the scope line and the hint, and a screen-reader `h1`; add the results below them and read `q` from `useSearchParams` there. Header and page fields both go through `searchUrl()` in `lib/search.ts`, which trims the query and drops a blank one. |
+| [ ] | 30 | US-RA-15: search results | `us-ra-15-search-results` | 29, 21, 37 | `/api/search/`, groups, sorting, snippets, the loading state, no results. Opening a result scrolls to the first match (`?q=`, R-11 AC3). From step 37: tag names are in the entry's `vector` but not its `body`, so a result found only by a tag name has a snippet without `<mark>`; show the snippet unmarked. Relation tags are not searched until D27 is answered. Left by #12 for this step: how many of a work's fragments match (AC5), and a test that "potoku" finds "potok" (AC7). No pagination in v1: the archive is small, and the stories and design have none. Snippets: keep `ts_headline` off whole document bodies of results the page doesn't show. A query of only stopwords (`w`, `-`) behaves as an empty query, not as "no results" (#16). From step 29: `pages/SearchPage.tsx` has the field (`components/SearchField.tsx`), the scope line and the hint, and a screen-reader `h1`; add the results below them and read `q` from `useSearchParams` there. Header and page fields both go through `searchUrl()` in `lib/search.ts`, which trims the query and drops a blank one. |
 | [ ] | 31 | US-RA-16: tabs and filters | `us-ra-16-search-filters` | 30 | Tabs, filters, facet counts, the mobile filter panel, state kept in the URL, the empty query. From step 29: `searchUrl()` in `lib/search.ts` writes only `q`, so a new search from either field drops the tab and filters. Decide whether the page's field keeps them, and test it. |
 
 ### Phase 6 — Should
@@ -265,31 +268,31 @@ These steps do not depend on each other, but they edit the same files. Run them 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
 | [ ] | 34 | CORE: per-URL meta tags | `core/meta-tags` | 31 | `site_shell` sets `<title>` and the meta description for every route (user stories §4: SEO). An unknown URL or a draft for an anonymous reader returns status 404, not a 200 with the React 404 page. Paths starting with a dot (`/.env`) return 404 (#11 review). |
-| [ ] | 35 | Production setup | `ops/production` | D9 (open) | Production settings and deployment notes for the chosen host. The deploy runs `npm run build` (`make build-frontend`, step 36) before `collectstatic` and before Django starts (#11). |
+| [ ] | 35 | Production setup | `ops/production` | D9 (open) | Production settings and deployment notes for the chosen host. The deploy runs `npm run build` (`make build-frontend`, step 36) before `collectstatic` and before Django starts (#11). Uploads: set `AWS_STORAGE_BUCKET_NAME`. Without it Django serves `/media/` from `MEDIA_ROOT` (#36), which is for local development only. The committed `.mo` catalogue is used as is (#39), so the server needs no gettext. |
 
 ## 6. Story coverage
 
 | Story | Step | Story | Step |
 |-------|------|-------|------|
-| US-RA-01 | 17 | US-WR-01 | 12 |
+| US-RA-01 | 17 | US-WR-01 | done (12) |
 | US-RA-02 (Should) | 32 | US-WR-02 | done (PR #5) |
-| US-RA-03 | 13 (story changed, D7) | US-WR-03 | 10 (rest done) |
-| US-RA-04 | 21 | US-WR-04 | 6 |
-| US-RA-05 | 22 | US-WR-05 | 7 |
-| US-RA-06 | 27 | US-WR-06 | 8 |
-| US-RA-07 | 23 | US-WR-07 | 9 |
-| US-RA-08 | 19 | US-WR-08 | 10 (rest done) |
-| US-RA-09 | 20 | US-WR-09 | 4, 11 |
+| US-RA-03 | done (13; story changed, D7) | US-WR-03 | done (10) |
+| US-RA-04 | 21 | US-WR-04 | done (6) |
+| US-RA-05 | 22 | US-WR-05 | done (7) |
+| US-RA-06 | 27 | US-WR-06 | done (8) |
+| US-RA-07 | 23 | US-WR-07 | done (9) |
+| US-RA-08 | 19 | US-WR-08 | done (10) |
+| US-RA-09 | 20 | US-WR-09 | done (4, 11) |
 | US-RA-10 | 24 | US-WR-10 | done (PR #5) |
 | US-RA-11 | 25 | US-WR-11 | done (PR #5); funding note removed in 13 |
-| US-RA-12 | 26 | US-WR-12 | 10 (rest done) |
-| US-RA-13 | 14 | US-WR-13 | AC1 done; 28 |
-| US-RA-14 | 29 | US-WR-14 | done (PR #5) |
+| US-RA-12 | 26 | US-WR-12 | done (10) |
+| US-RA-13 | done (14) | US-WR-13 | AC1 done; 28 |
+| US-RA-14 | done (29) | US-WR-14 | done (PR #5) |
 | US-RA-15 | 30 | | |
 | US-RA-16 | 31 | | |
 | US-RA-17 (Should) | 33 | | |
-| US-RA-18 | 15 | | |
-| US-RA-19 | 18 | | |
+| US-RA-18 | done (15) | | |
+| US-RA-19 | done (18) | | |
 | US-RA-20 | 16 | | |
 
 Rules R-01 to R-12 have no step of their own. Each page step meets them for its page.
@@ -300,9 +303,23 @@ Rules R-01 to R-12 have no step of their own. Each page step meets them for its 
 - **Mobile is part of each page step**, not a separate PR. `design/rules.md` → Siatka gives the order.
 - **Shared UI parts** (layout, section header, fragment card, reader, contextual materials block) are built in the step named above and reused after that, never rebuilt.
 - **shadcn overlays need a token.** The theme removes Tailwind's default colours, so the generated `bg-black/50` of Dialog and Sheet compiles to nothing. Map it to a token in the first step that adds one (step 31's filter panel at the latest).
-- **Migrations from parallel steps** (10, 12, 13) can collide on a number. Whichever merges second renumbers.
+- **Migrations from parallel steps** can collide on a number. Whichever merges second renumbers. No remaining step plans a migration; a D27 follow-up or step 28 might add one.
+- **Editor-visible strings are translated** (#39). Any new `verbose_name`, `help_text`, choice label, validation message or admin template string is English with `gettext_lazy` / `{% translate %}`, then `make messages` and the Polish entry in `django.po` (AGENTS.md). A new `archive` model also needs a data migration that adds its permissions to "Redaktorzy" (#34).
 - **Each component test runs the axe check** (R-12). Polish copy lives in `copy/pl.ts` and counts use the plural helper.
 - **Draft tags are never shown**: not as chips, not in the cloud, not in counts. Step 2's querysets handle this.
 - **Links to pages built later are fine.** Step 27 checks them all.
-- **Descriptions are HTML** once step 10 lands. Render them as the sanitized HTML the API returns.
+- **Descriptions are HTML** (step 10 landed). Render them with `components/RichText.tsx`, as the sanitized HTML the API returns.
 - A page step builds only its own endpoint. If it needs anything else from the backend, say so in the PR (AGENTS.md). A change to `docs/architecture.md` needs asking first.
+
+## 8. Follow-ups outside the steps
+
+Review findings from merged PRs that no step owns. None blocks v1. Take one only when the core owner asks for it, as its own `CORE:` or `TEST:` PR.
+
+| From | Finding |
+|------|---------|
+| #28 | Saving a plain-text item re-indexes it three times (`Document.save` → owner, `Publishable.save`, `save_related`). Needs a core change to `Document.save`. |
+| #38 | `Tag.save()` re-indexes every carrier on every save, including description-only edits of a draft tag. Fine at the archive's size. |
+| #38 | The demo index test leaves `title` and `has_text` out of its comparison. |
+| #37 | `FOCUS_CLASSES` is defined in `SiteHeader.tsx` and `SearchField.tsx`, and other components inline the same string. The search field's widths use Tailwind's container scale, not a design token. |
+| #37 | Nobody has looked at the header and the search page in a browser at desktop and 360 px. |
+| #39 | The tagger API's error messages (`backend/api/editor_fragments.py`) are in English. The tagger UI does not show them. |
