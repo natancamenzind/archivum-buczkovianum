@@ -13,7 +13,12 @@ function Cover({ work }: { work: Work }) {
   return (
     <div className="flex aspect-4/3 items-center justify-center overflow-hidden rounded-sm bg-media">
       {work.cover_image === "" ? (
-        <div data-slot="cover-placeholder" className="flex flex-col items-center gap-8">
+        // Hidden from screen readers, so "[Okładka]" does not open every card link's name.
+        <div
+          data-slot="cover-placeholder"
+          aria-hidden="true"
+          className="flex flex-col items-center gap-8"
+        >
           <ImageIcon className="size-16 text-icon" />
           <p className="text-cousine-metadane-male text-muted-foreground">
             {copy.workCard.coverPlaceholder}

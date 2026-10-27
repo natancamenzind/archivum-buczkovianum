@@ -35,7 +35,8 @@ export function WorksPage() {
         description={copy.works.description}
       />
       <div className="flex flex-col gap-32 px-page-mobile py-24 md:px-page md:pt-48 md:pb-64">
-        {(works.isPending || works.isError) && (
+        {/* Only before the first data: a failed background refetch keeps the list it has. */}
+        {works.data === undefined && (
           <p className="text-cousine-metadane text-muted-foreground" role="status">
             {works.isPending ? copy.works.loading : copy.works.error}
           </p>

@@ -79,6 +79,7 @@ describe("WorkCard", () => {
 
     expect(screen.queryByRole("img")).toBeNull();
     expect(container.querySelector("[data-slot=cover-placeholder]")).toHaveTextContent("[Okładka]");
+    expect(card()).toHaveAccessibleName("powieść · 1947 Wertepy Leopold Buczkowski 24 fragmenty");
     expect(await axeViolations(container)).toEqual([]);
   });
 

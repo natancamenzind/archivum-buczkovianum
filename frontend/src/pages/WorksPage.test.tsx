@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { focusManager } from "@tanstack/react-query";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { components } from "@/api/schema";
 import { axeViolations, renderRoute } from "@/test/render";
@@ -192,6 +193,41 @@ describe("WorksPage", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Utwory" })).toBeVisible();
     expect(screen.queryByRole("heading", { level: 2 })).toBeNull();
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("keeps the list without an error when a background refetch fails", async () => {
+    mockWorks();
+    renderRoute("/works");
+    await screen.findByRole("heading", { level: 2, name: "Wszystkie utwory" });
+
+    let refetched = false;
+    server.use(
+      http.get(WORKS_URL, () => {
+        refetched = true;
+        return HttpResponse.json({}, { status: 500 });
+      }),
+    );
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      // Past the query client's staleTime, so regaining focus refetches.
+      vi.setSystemTime(Date.now() + 10 * 60 * 1000);
+      act(() => {
+        focusManager.setFocused(false);
+        focusManager.setFocused(true);
+      });
+      await waitFor(() => {
+        expect(refetched).toBe(true);
+      });
+      // Let the failed refetch settle into the query's error state.
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+    } finally {
+      focusManager.setFocused(undefined);
+      vi.useRealTimers();
+    }
+    expect(workCards()).toHaveLength(4);
+    expect(screen.queryByText(/Nie udało się wczytać utworów/)).toBeNull();
   });
 
   it("US-RA-20: one column on mobile, the Figma grid on desktop, rows of equal height", async () => {
