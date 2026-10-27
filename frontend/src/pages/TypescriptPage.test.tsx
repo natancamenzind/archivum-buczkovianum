@@ -3,6 +3,7 @@ import { delay, http, HttpResponse } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { components } from "@/api/schema";
+import { scrollIntoViewport, scrollOutOfViewport } from "@/test/intersection";
 import { axeViolations, renderRoute } from "@/test/render";
 import { server } from "@/test/server";
 
@@ -242,14 +243,49 @@ describe("TypescriptPage", () => {
     expect(within(scan).getByText("Skan · strona 2 z 2")).toBeVisible();
     // Before pdf.js draws it, a page keeps A4 proportions, so the reader does not jump.
     for (const page of within(scan).getAllByRole("img", { name: /Skan · strona/ })) {
-      expect(page).toHaveAttribute("width", "210");
-      expect(page).toHaveAttribute("height", "297");
+      expect(page).toHaveStyle({ aspectRatio: "210 / 297" });
     }
     const paragraphs = Array.from(scan.querySelectorAll("p.whitespace-pre-wrap"));
     expect(paragraphs.map((p) => p.textContent)).toEqual([
       "Pierwsza strona tekstu. ",
       "Druga strona tekstu.",
     ]);
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-09 AC1: a long typescript is read whole, and only the scan pages in view are drawn", async () => {
+    const pages = Array.from({ length: 40 }, (_, index) => `Strona ${String(index + 1)}. `);
+    mockPage(
+      { page_count: pages.length },
+      {
+        text: pages.join(""),
+        page_offsets: pages.map((_, index) => pages.slice(0, index).join("").length),
+        fragments: [{ ...EXTRA_FRAGMENT, id: 9, start: 1000, end: 1012 }],
+      },
+    );
+
+    const { container } = await renderPage();
+
+    const scan = card("Skan maszynopisu");
+    expect(await within(scan).findByText("Skan · strona 40 z 40")).toBeVisible();
+    const paragraphs = Array.from(scan.querySelectorAll("p.whitespace-pre-wrap"));
+    expect(paragraphs.map((p) => p.textContent)).toEqual(pages);
+    expect(within(scan).getAllByRole("img", { name: /Skan · strona/ })).toHaveLength(40);
+    expect(scan.querySelectorAll("canvas")).toHaveLength(0);
+
+    const first = within(scan).getByRole("img", { name: "Skan · strona 1 z 40" });
+    const second = within(scan).getByRole("img", { name: "Skan · strona 2 z 40" });
+    scrollIntoViewport(first);
+    scrollIntoViewport(second);
+    expect(first.querySelector("canvas")).not.toBeNull();
+    expect(second.querySelector("canvas")).not.toBeNull();
+    expect(scan.querySelectorAll("canvas")).toHaveLength(2);
+
+    // A page that scrolls away gives up its drawing and keeps its place in the reader.
+    scrollOutOfViewport(first);
+    expect(first.querySelector("canvas")).toBeNull();
+    expect(first).toHaveStyle({ aspectRatio: "210 / 297" });
+    expect(scan.querySelectorAll("canvas")).toHaveLength(1);
     expect(await axeViolations(container)).toEqual([]);
   });
 
