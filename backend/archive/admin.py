@@ -8,7 +8,11 @@ from django.db import models
 from django.db.models import QuerySet
 from django.forms import ModelForm
 from django.http import HttpRequest
+from django.utils.html import format_html
+from django.utils.safestring import SafeString
+from django.utils.translation import gettext_lazy as _
 
+from archive.forms import TextUploadForm
 from archive.models import (
     ContextualMaterial,
     Document,
@@ -89,13 +93,31 @@ class WorkAdmin(SearchIndexedAdmin[Work]):
     inlines = (EditionInline,)
 
 
+class TypescriptForm(TextUploadForm[Typescript]):
+    class Meta:
+        model = Typescript
+        exclude = ("document",)
+
+
 @admin.register(Typescript)
 class TypescriptAdmin(SearchIndexedAdmin[Typescript]):
     list_display = ("title", "work", "shelfmark", "is_main", "status", "updated_at")
     list_filter = ("status", "is_main", "work")
     search_fields = ("title", "shelfmark")
     autocomplete_fields = ("work", "institution", "tags")
-    raw_id_fields = ("document",)
+    form = TypescriptForm
+    readonly_fields = ("current_scan", "page_count")
+
+    @admin.display(description=_("current scan"))
+    def current_scan(self, obj: Typescript) -> SafeString | None:
+        if obj.document is None or not obj.document.scan:
+            return None
+        scan = obj.document.scan
+        return format_html('<a href="{}">{}</a>', scan.url, scan.name)
+
+    @admin.display(description=_("pages"))
+    def page_count(self, obj: Typescript) -> int | None:
+        return obj.document.page_count if obj.document else None
 
 
 @admin.register(Note)
@@ -146,6 +168,13 @@ class DocumentAdmin(admin.ModelAdmin[Document]):
     list_display = ("__str__", "kind", "page_count", "updated_at")
     list_filter = ("kind",)
     list_select_related = tuple(Document.owner_accessors())
+
+    def get_model_perms(self, request: HttpRequest) -> dict[str, bool]:
+        """Hide documents from the admin menu: an item's form uploads its text (US-WR-04).
+
+        The admin stays registered for the `document` lookup of the forms steps 7 to 9 replace.
+        """
+        return {}
 
     def get_readonly_fields(
         self, request: HttpRequest, obj: Document | None = None

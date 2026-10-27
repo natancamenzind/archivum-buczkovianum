@@ -103,10 +103,10 @@ Answered by the project owner on 2026-10-27, for steps 15 and 16:
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
-| [ ] | 6 | US-WR-04: typescript text upload | `us-wr-04-typescript-upload` | 3L | Scan and OCR file on the typescript form, with the page-count check and its message (AC2). The upload is built so steps 7–9 can reuse it. Its `Document` is created and replaced from the item's form. The editor never opens a `Document` form or picks one by ID; the Document admin leaves the editors' menu. Try a full-length OCR text: PostgreSQL caps a `tsvector` at 1 MB, and the save must not fail on a whole novel (#16). |
-| [ ] | 7 | US-WR-05: note content | `us-wr-05-note-content` | 6 | All five content kinds on the note form, with OCR or plain text entered on that form. |
-| [ ] | 8 | US-WR-06: secondary text text | `us-wr-06-secondary-text` | 6 | OCR or plain text on the secondary text form. |
-| [ ] | 9 | US-WR-07: contextual material content | `us-wr-07-material-content` | 6 | As in step 7, for contextual materials. |
+| [x] | 6 | US-WR-04: typescript text upload | `us-wr-04-typescript-upload` | 3L | Scan and OCR file on the typescript form, with the page-count check and its message (AC2). The upload is built so steps 7–9 can reuse it. Its `Document` is created and replaced from the item's form. The editor never opens a `Document` form or picks one by ID; the Document admin leaves the editors' menu. Try a full-length OCR text: PostgreSQL caps a `tsvector` at 1 MB, and the save must not fail on a whole novel (#16). |
+| [ ] | 7 | US-WR-05: note content | `us-wr-05-note-content` | 6 | All five content kinds on the note form, with OCR or plain text entered on that form. Reuse `archive.forms.TextUploadForm` and `archive.uploads.load_ocr_upload` from step 6 for OCR kinds; add plain-text upload on the same form pattern. |
+| [ ] | 8 | US-WR-06: secondary text text | `us-wr-06-secondary-text` | 6 | OCR or plain text on the secondary text form. Same reuse as step 7: subclass `TextUploadForm`, exclude `document`, drop `raw_id_fields`. |
+| [ ] | 9 | US-WR-07: contextual material content | `us-wr-07-material-content` | 6 | As in step 7, for contextual materials. Same `TextUploadForm` / `load_ocr_upload` reuse. |
 | [ ] | 10 | CORE: rich text (US-WR-03, 08, 12) | `core/rich-text` | 3L | `ProseEditorField` for descriptions, with the mypy override (D3), the About project text and the introductions. Search strips HTML from `body`. Left by step 14: `/api/about/` returns `intro` and `project` as plain text, and `pages/AboutPage.tsx` splits `project` into paragraphs on blank lines. Once they are rich text, the page renders the sanitized HTML the API returns instead. |
 | [ ] | 11 | US-WR-09: tagger | `us-wr-09-tagger` | 3L, 6 | The tagger admin view (§5) and `/api/editor/fragments/`. Offered only for the main typescript and for notes, secondary texts and materials that have a text. The endpoint writes outside the admin, so after setting a fragment's tags it calls `fragment.update_search_entry()` and `Tag.update_search_entries()` (#12). Consider giving the work-link models their own index writes in `save()`/`delete()` instead (#16). A "Taguj fragmenty" link on the item's form opens the tagger. |
 | [ ] | 12 | US-WR-01: editors group | `us-wr-01-editors` | — | A data migration for the "Redaktorzy" group, and tests for both ACs. If another archive migration merges first, renumber this one. |
@@ -166,7 +166,7 @@ Answered by the project owner on 2026-10-27, for steps 15 and 16:
 | US-RA-01 | 17 | US-WR-01 | 12 |
 | US-RA-02 (Should) | 32 | US-WR-02 | done (PR #5) |
 | US-RA-03 | 13 (story changed, D7) | US-WR-03 | 10 (rest done) |
-| US-RA-04 | 21 | US-WR-04 | 6; AC3 done; AC4 in 3 (lands with 3L) |
+| US-RA-04 | 21 | US-WR-04 | 6 |
 | US-RA-05 | 22 | US-WR-05 | 7 |
 | US-RA-06 | 27 | US-WR-06 | 8 |
 | US-RA-07 | 23 | US-WR-07 | 9 |
