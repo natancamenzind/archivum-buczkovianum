@@ -314,11 +314,7 @@ class MediaContent(Archival):
         abstract = True
 
     def required_document_kind(self) -> str | None:
-        text_kinds: dict[str, str] = {
-            ContentKind.OCR_TEXT: Document.Kind.OCR,
-            ContentKind.PLAIN_TEXT: Document.Kind.PLAIN,
-        }
-        return text_kinds.get(self.content_kind)
+        return TEXT_CONTENT_KINDS.get(self.content_kind)
 
     def clean(self) -> None:
         super().clean()
@@ -831,6 +827,13 @@ class Document(BaseModel):
             raise ValidationError(
                 {"text": _("Upload a new OCR file to change an OCR text, so pages stay aligned.")}
             )
+
+
+# The kind of `Document` each kind of text content of a `MediaContent` item holds.
+TEXT_CONTENT_KINDS: dict[str, str] = {
+    ContentKind.OCR_TEXT: Document.Kind.OCR,
+    ContentKind.PLAIN_TEXT: Document.Kind.PLAIN,
+}
 
 
 class FragmentQuerySet(models.QuerySet["Fragment"]):

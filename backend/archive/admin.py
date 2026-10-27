@@ -12,7 +12,7 @@ from django.utils.html import format_html
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
 
-from archive.forms import TextUploadForm
+from archive.forms import MediaContentForm, TextUploadForm
 from archive.models import (
     ContextualMaterial,
     Document,
@@ -46,6 +46,21 @@ class SearchIndexedAdmin[M: Publishable | Fragment](admin.ModelAdmin[M]):
         super().save_related(request, form, formsets, change)
         form.instance.update_search_entry()
         Tag.update_search_entries()
+
+
+class TextUploadAdmin[M: Typescript | Note](SearchIndexedAdmin[M]):
+    """The admin of an item whose form uploads its text (`TextUploadForm`)."""
+
+    @admin.display(description=_("current scan"))
+    def current_scan(self, obj: M) -> SafeString | None:
+        if obj.document is None or not obj.document.scan:
+            return None
+        scan = obj.document.scan
+        return format_html('<a href="{}">{}</a>', scan.url, scan.name)
+
+    @admin.display(description=_("pages"))
+    def page_count(self, obj: M) -> int | None:
+        return obj.document.page_count if obj.document and obj.document.scan else None
 
 
 class MediaContentAdmin[M: Note | ContextualMaterial](SearchIndexedAdmin[M]):
@@ -100,7 +115,7 @@ class TypescriptForm(TextUploadForm[Typescript]):
 
 
 @admin.register(Typescript)
-class TypescriptAdmin(SearchIndexedAdmin[Typescript]):
+class TypescriptAdmin(TextUploadAdmin[Typescript]):
     list_display = ("title", "work", "shelfmark", "is_main", "status", "updated_at")
     list_filter = ("status", "is_main", "work")
     search_fields = ("title", "shelfmark")
@@ -108,25 +123,21 @@ class TypescriptAdmin(SearchIndexedAdmin[Typescript]):
     form = TypescriptForm
     readonly_fields = ("current_scan", "page_count")
 
-    @admin.display(description=_("current scan"))
-    def current_scan(self, obj: Typescript) -> SafeString | None:
-        if obj.document is None or not obj.document.scan:
-            return None
-        scan = obj.document.scan
-        return format_html('<a href="{}">{}</a>', scan.url, scan.name)
 
-    @admin.display(description=_("pages"))
-    def page_count(self, obj: Typescript) -> int | None:
-        return obj.document.page_count if obj.document else None
+class NoteForm(MediaContentForm[Note]):
+    class Meta:
+        model = Note
+        exclude = ("document",)
 
 
 @admin.register(Note)
-class NoteAdmin(MediaContentAdmin[Note]):
+class NoteAdmin(MediaContentAdmin[Note], TextUploadAdmin[Note]):
     list_display = ("title", "content_kind", "shelfmark", "status", "updated_at")
     list_filter = ("status", "content_kind", "works")
     search_fields = ("title", "shelfmark")
     autocomplete_fields = ("works", "institution", "tags")
-    raw_id_fields = ("document",)
+    form = NoteForm
+    readonly_fields = ("current_scan", "page_count")
 
 
 class SecondaryTextWorkLinkInline(admin.TabularInline[SecondaryTextWorkLink, SecondaryText]):
