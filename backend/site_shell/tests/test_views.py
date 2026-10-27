@@ -84,6 +84,21 @@ def test_missing_files_are_404_not_the_index(client: Client, frontend_dist: Path
     assert client.get(url).status_code == 404
 
 
+def test_local_media_files_are_served(
+    client: Client, settings: Settings, tmp_path: Path, frontend_dist: Path
+) -> None:
+    settings.MEDIA_ROOT = tmp_path
+    works = tmp_path / "works"
+    works.mkdir()
+    (works / "cover.png").write_bytes(b"png")
+
+    response = client.get("/media/works/cover.png")
+
+    assert response.status_code == 200
+    assert isinstance(response, StreamingHttpResponse)
+    assert response.getvalue() == b"png"
+
+
 def test_pages_accept_head_but_not_post(client: Client, frontend_dist: Path) -> None:
     assert client.head("/works").status_code == 200
     assert client.post("/works").status_code == 405
