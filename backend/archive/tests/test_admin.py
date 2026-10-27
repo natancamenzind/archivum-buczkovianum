@@ -150,3 +150,23 @@ class TestEditorPanel:
 
         # Assert
         assert permissions == (False, False)
+
+    def test_us_wr_11_ac1_settings_form_has_no_funding_note(
+        self, rf: RequestFactory, admin_user: User
+    ) -> None:
+        # Arrange: the footer's funding note is hardcoded in the frontend (plan D7).
+        model_admin = admin.site.get_model_admin(SiteSettings)
+        request = rf.get("/")
+        request.user = admin_user
+
+        # Act
+        fields = model_admin.get_fields(request)
+
+        # Assert
+        assert list(fields) == [
+            "intro_text",
+            "portrait",
+            "portrait_alt",
+            "about_intro",
+            "about_project",
+        ]

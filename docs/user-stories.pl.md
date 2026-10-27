@@ -114,7 +114,7 @@ Dokument z tekstem litym wyświetlamy jako tekst, z fragmentami wyróżnionymi j
 
 ### US-RA-03 — Stopka
 
-1. Stopka jest zgodna z R-07. Informacja o finansowaniu jest edytowalna (US-WR-11).
+1. Stopka jest zgodna z R-07.
 
 ### US-RA-04 — Strona utworu
 
@@ -321,9 +321,9 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 1. Każdy utwór, maszynopis, zapisek, tekst sekundarny i materiał kontekstowy można otagować całością.
 2. Powiązanie z utworem można otagować. Jego tagi pojawiają się na stronie utworu (US-RA-05).
 
-### US-WR-11 — Edycja treści strony głównej i stopki
+### US-WR-11 — Edycja treści strony głównej
 
-1. Do edycji: wstępniak, portret, informacja o finansowaniu w stopce.
+1. Do edycji: wstępniak i portret.
 
 ### US-WR-12 — Edycja strony „O archiwum”
 

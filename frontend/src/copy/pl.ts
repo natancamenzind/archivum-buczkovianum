@@ -45,6 +45,21 @@ export const nouns = {
 
 export const copy = {
   siteName: "Archivum Buczkovianum",
+  /** Header, main navigation and footer (R-07). */
+  layout: {
+    headerSubtitle: "Archiwum literackie",
+    footerSubtitle: "Archiwum literackie Leopolda Buczkowskiego",
+    about: "O archiwum",
+    navLabel: "Menu główne",
+    nav: {
+      home: "Strona główna",
+      works: "Utwory",
+      typescripts: "Maszynopisy",
+      tags: "Tagi",
+    },
+    // PLACEHOLDER: the owner supplies the exact text (plan D7).
+    fundingNote: "[Informacja o finansowaniu projektu — tekst do uzupełnienia]",
+  },
   home: {
     lead: "Cyfrowe archiwum twórczości Leopolda Buczkowskiego. Strona jest w budowie.",
     apiLoading: "Łączę się z archiwum…",

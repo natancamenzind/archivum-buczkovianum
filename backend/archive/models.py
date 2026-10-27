@@ -962,13 +962,12 @@ class Fragment(BaseModel, Taggable):
 
 
 class SiteSettings(BaseModel):
-    """Editable texts of the home, footer and About pages. There is exactly one row."""
+    """Editable texts of the home and About pages. There is exactly one row."""
 
     id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
     intro_text = models.TextField(blank=True, help_text=_("Introduction on the home page."))
     portrait = models.FileField(upload_to="site/", blank=True, validators=[IMAGE_EXTENSIONS])
     portrait_alt = models.CharField(max_length=255, blank=True)
-    funding_note = models.TextField(blank=True, help_text=_("Shown in the footer."))
     about_intro = models.TextField(blank=True, help_text=_("Introduction on the About page."))
     about_project = models.TextField(blank=True, help_text=_("“O projekcie” on the About page."))
 

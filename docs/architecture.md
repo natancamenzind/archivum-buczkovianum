@@ -86,7 +86,7 @@ Every image field has a companion `<field>_alt` text field. `clean()` rejects an
 | `SecondaryText` | `kind`, `author`, `source`, `letter_date`, `sender`, `recipient`; `Archival` | ↔ Works via `SecondaryTextWorkLink`; → Document |
 | `ContextualMaterial` | `content_kind`, `image`, `file`, `external_url`; `Archival` | ↔ Works via `MaterialWorkLink`; → Document (optional) |
 | `Tag` | `slug`, `name` (unique), `kind` (`keyword` \| `interpretation`) | `related`: symmetric many-to-many to `Tag` |
-| `SiteSettings` | `intro_text`, `portrait`, `funding_note`, `about_intro`, `about_project` | singleton |
+| `SiteSettings` | `intro_text`, `portrait`, `about_intro`, `about_project` | singleton |
 | `TeamMember` | `name`, `role`, `bio`, `group` (`leadership` \| `team` \| `site`), `order` | — |
 
 `Institution`, `Edition`, `SiteSettings` and `TeamMember` are not `Publishable`.
