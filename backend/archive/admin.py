@@ -12,7 +12,7 @@ from django.utils.html import format_html
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
 
-from archive.forms import MediaContentForm, TextUploadForm
+from archive.forms import MediaContentForm, SecondaryTextForm, TextUploadForm
 from archive.models import (
     ContextualMaterial,
     Document,
@@ -150,15 +150,34 @@ class SecondaryTextWorkLinkInline(admin.TabularInline[SecondaryTextWorkLink, Sec
     min_num = 1
     autocomplete_fields = ("work", "tags")
 
+    def get_formset(
+        self, request: HttpRequest, obj: SecondaryText | None = None, **kwargs: Any
+    ) -> type[BaseInlineFormSet[SecondaryTextWorkLink, SecondaryText, Any]]:
+        """Require at least one work, also when every link is deleted (US-WR-06 AC2)."""
+        return super().get_formset(request, obj, validate_min=True, **kwargs)
+
+
+class SecondaryTextAdminForm(SecondaryTextForm):
+    class Meta:
+        model = SecondaryText
+        exclude = ("document",)
+
 
 @admin.register(SecondaryText)
-class SecondaryTextAdmin(SearchIndexedAdmin[SecondaryText]):
+class SecondaryTextAdmin(TextUploadAdmin[SecondaryText]):
     list_display = ("title", "kind", "author", "status", "updated_at")
     list_filter = ("status", "kind")
     search_fields = ("title", "author")
     autocomplete_fields = ("institution", "tags")
-    raw_id_fields = ("document",)
+    form = SecondaryTextAdminForm
     inlines = (SecondaryTextWorkLinkInline,)
+
+    def save_model(
+        self, request: HttpRequest, obj: SecondaryText, form: SecondaryTextAdminForm, change: bool
+    ) -> None:
+        """Save the uploaded text first: the item refers to it."""
+        form.save_document()
+        super().save_model(request, obj, form, change)
 
 
 class MaterialWorkLinkInline(admin.TabularInline[MaterialWorkLink, ContextualMaterial]):

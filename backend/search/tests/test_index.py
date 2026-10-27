@@ -369,11 +369,12 @@ class TestEditorPanel:
         tag = TagFactory.create(status=PUBLISHED)
         secondary_text = SecondaryTextFactory.create(status=PUBLISHED, title="Recenzja")
         link = SecondaryTextWorkLinkFactory.create(secondary_text=secondary_text, work=work)
+        assert secondary_text.document is not None
         data = {
             "title": "Recenzja",
             "status": PUBLISHED,
             "kind": secondary_text.kind,
-            "document": secondary_text.document_id,
+            "plain_text": secondary_text.document.text,
             "work_links-TOTAL_FORMS": 1,
             "work_links-INITIAL_FORMS": 1,
             "work_links-0-id": link.pk,

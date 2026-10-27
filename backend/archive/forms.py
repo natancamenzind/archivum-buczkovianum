@@ -16,6 +16,7 @@ from archive.models import (
     ContextualMaterial,
     Document,
     Note,
+    SecondaryText,
 )
 from archive.uploads import load_ocr_upload
 
@@ -117,11 +118,24 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
             and "document" not in self.fields
         ):
             messages = error.error_dict.pop("document")
-            if not any(self.has_error(name) for name in self.text_fields):
+            if not any(self.has_error(name) for name in (*self.text_fields, NON_FIELD_ERRORS)):
                 error.error_dict.setdefault(NON_FIELD_ERRORS, []).extend(messages)
             if not error.error_dict:
                 return
         super().add_error(field, error)
+
+    def save_document(self) -> None:
+        """Save the uploaded document, which the item refers to, before the item.
+
+        Saving a replaced text re-anchors its fragments and re-indexes the item. The replaced
+        scan is deleted only after the transaction commits.
+        """
+        if self.uploaded_document is None:
+            return
+        self.uploaded_document.save()
+        if self.replaced_scan:
+            storage = Document.scan.field.storage
+            transaction.on_commit(partial(storage.delete, self.replaced_scan))
 
     def save(self, commit: bool = True) -> M:
         """Save the uploaded document first, since the item refers to it.
@@ -200,6 +214,73 @@ class PlainTextForm[M: Archival](TextUploadForm[M]):
         document.text = text
         document.page_offsets = []
         self.uploaded_document = self.instance.document = document
+
+
+class SecondaryTextForm(PlainTextForm[SecondaryText]):
+    """OCR or plain text on the secondary text form (US-WR-06)."""
+
+    plain_text = TypedTextField(
+        label=_("plain text"),
+        required=False,
+        strip=False,
+        widget=forms.Textarea,
+        help_text=_("Or enter the text here instead of uploading a scan and an OCR file."),
+    )
+
+    @property
+    def stored_plain_text(self) -> str:
+        document = self.instance.document
+        return document.text if document and document.kind == Document.Kind.PLAIN else ""
+
+    def text_kind(self) -> str | None:
+        return None
+
+    def save(self, commit: bool = True) -> SecondaryText:
+        """Save the text only once the admin has validated the work links too."""
+        if not commit:
+            return super(TextUploadForm, self).save(commit)
+        with transaction.atomic():
+            self.save_document()
+            return super(TextUploadForm, self).save(commit)
+
+    def clean(self) -> dict[str, Any]:
+        cleaned_data = super(PlainTextForm, self).clean()
+        plain_text = cleaned_data.get("plain_text", "")
+        if plain_text and not plain_text.strip():
+            plain_text = ""
+            cleaned_data["plain_text"] = ""
+        if self.has_error("plain_text"):
+            return cleaned_data
+        if plain_text != self.stored_plain_text:
+            uploading = any(cleaned_data.get(name) for name in self.upload_fields)
+            if plain_text and uploading:
+                self.add_error(
+                    "plain_text",
+                    _("Upload a scan and its OCR file, or enter a plain text, not both."),
+                )
+                return cleaned_data
+            if plain_text:
+                self.take_plain_text()
+                return cleaned_data
+            if not uploading:
+                if self.instance.document is None:
+                    self.add_error(
+                        None,
+                        _("Upload a scan and its OCR file, or enter a plain text."),
+                    )
+                else:
+                    self.add_required_error("plain_text")
+                return cleaned_data
+        if any(cleaned_data.get(name) for name in self.upload_fields) or (
+            self.instance.document is not None and self.instance.document.kind == Document.Kind.OCR
+        ):
+            self.take_ocr_upload()
+        elif self.instance.document is None:
+            self.add_error(
+                None,
+                _("Upload a scan and its OCR file, or enter a plain text."),
+            )
+        return cleaned_data
 
 
 class MediaContentForm[M: Note | ContextualMaterial](PlainTextForm[M]):
