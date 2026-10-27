@@ -1,10 +1,7 @@
-from typing import Any
-
 import pytest
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.db.models import Model
-from django.forms import ModelForm
 from django.test import Client, RequestFactory
 from django.urls import reverse
 from django_prose_editor.fields import ProseEditorFormField
@@ -188,7 +185,8 @@ class TestRichTextInThePanel:
         response = admin_client.get(reverse(f"admin:archive_{model}_add"))
 
         # Assert
-        assert is_rich_text(response.context["adminform"].form, "description")
+        form = response.context["adminform"].form
+        assert isinstance(form.fields["description"], ProseEditorFormField)
 
     def test_us_wr_12_ac1_about_and_home_texts_use_the_rich_text_editor(
         self, admin_client: Client
@@ -201,7 +199,9 @@ class TestRichTextInThePanel:
 
         # Assert
         form = response.context["adminform"].form
-        assert [name for name in form.fields if is_rich_text(form, name)] == [
+        assert [
+            name for name, field in form.fields.items() if isinstance(field, ProseEditorFormField)
+        ] == [
             "intro_text",
             "about_intro",
             "about_project",
@@ -230,7 +230,3 @@ class TestRichTextInThePanel:
             "<p>O archiwum</p>",
             "<p><strong>Cel</strong></p>",
         )
-
-
-def is_rich_text(form: ModelForm[Any], name: str) -> bool:
-    return isinstance(form.fields[name], ProseEditorFormField)

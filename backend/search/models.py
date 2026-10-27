@@ -42,20 +42,19 @@ class Weight(models.TextChoices):
 
 
 class _TextExtractor(HTMLParser):
-    # The inline tags of the rich text editor (archive.models.RICH_TEXT_EXTENSIONS). Every other
-    # tag starts or ends a block, so the words on either side of it stay apart.
-    inline = frozenset({"strong", "em", "a"})
+    # Tags that start or end a block, so the words on either side of them stay apart.
+    blocks = frozenset({"p", "br", "li", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6"})
 
     def __init__(self) -> None:
         super().__init__()
         self.parts: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag not in self.inline:
-            self.parts.append("\n")
+        self.handle_endtag(tag)
 
     def handle_endtag(self, tag: str) -> None:
-        self.handle_starttag(tag, [])
+        if tag in self.blocks:
+            self.parts.append("\n")
 
     def handle_data(self, data: str) -> None:
         self.parts.append(data)

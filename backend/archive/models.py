@@ -39,6 +39,11 @@ RICH_TEXT_EXTENSIONS: dict[str, Any] = {
 }
 
 
+def rich_text_field(**kwargs: Any) -> Any:
+    """A rich text field (architecture section 5): HTML, sanitized when it is cleaned."""
+    return ProseEditorField(extensions=RICH_TEXT_EXTENSIONS, sanitize=True, blank=True, **kwargs)
+
+
 def format_shelfmark(institution: "Institution | None", number: str) -> str:
     """Display form of a shelfmark, e.g. "ML, sygn. 1618" (US-WR-14 AC2)."""
     if not number:
@@ -126,7 +131,7 @@ class Publishable(BaseModel):
         help_text=_("Only published items are visible to the public."),
     )
     title = models.CharField(max_length=255)
-    description = ProseEditorField(extensions=RICH_TEXT_EXTENSIONS, sanitize=True, blank=True)
+    description = rich_text_field()
 
     search_type: ClassVar[EntityType]
     # Defined by every concrete model.
@@ -151,6 +156,11 @@ class Publishable(BaseModel):
             result = super().delete(*args, **kwargs)
             Tag.update_search_entries()
         return result
+
+    @property
+    def description_text(self) -> str:
+        """The description without its HTML, for the search index."""
+        return html_to_text(self.description)
 
     def update_search_entry(self) -> None:
         """Index a published entity, unindex a draft (architecture section 6).
@@ -290,7 +300,7 @@ class Archival(models.Model):
             url=self.get_absolute_url(),
             texts=[
                 (self.title, Weight.TITLE),
-                (html_to_text(self.description), Weight.DESCRIPTION),
+                (self.description_text, Weight.DESCRIPTION),
                 (text, Weight.TEXT),
             ],
             work_ids=work_ids,
@@ -451,7 +461,7 @@ class Tag(Publishable):
         return IndexedContent(
             title=self.title,
             url=self.get_absolute_url(),
-            texts=[(self.title, Weight.TITLE), (html_to_text(self.description), Weight.QUOTE)],
+            texts=[(self.title, Weight.TITLE), (self.description_text, Weight.QUOTE)],
             work_ids=work_ids,
             decades=decades,
         )
@@ -585,10 +595,7 @@ class Work(Publishable, Taggable):
         return IndexedContent(
             title=self.title,
             url=self.get_absolute_url(),
-            texts=[
-                (self.title, Weight.TITLE),
-                (html_to_text(self.description), Weight.DESCRIPTION),
-            ],
+            texts=[(self.title, Weight.TITLE), (self.description_text, Weight.DESCRIPTION)],
             work_ids=[self.pk],
             decades=search_filters(Work.objects.filter(pk=self.pk))[1],
         )
@@ -1030,26 +1037,11 @@ class SiteSettings(BaseModel):
     """Editable texts of the home and About pages. There is exactly one row."""
 
     id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
-    intro_text = ProseEditorField(
-        extensions=RICH_TEXT_EXTENSIONS,
-        sanitize=True,
-        blank=True,
-        help_text=_("Introduction on the home page."),
-    )
+    intro_text = rich_text_field(help_text=_("Introduction on the home page."))
     portrait = models.FileField(upload_to="site/", blank=True, validators=[IMAGE_EXTENSIONS])
     portrait_alt = models.CharField(max_length=255, blank=True)
-    about_intro = ProseEditorField(
-        extensions=RICH_TEXT_EXTENSIONS,
-        sanitize=True,
-        blank=True,
-        help_text=_("Introduction on the About page."),
-    )
-    about_project = ProseEditorField(
-        extensions=RICH_TEXT_EXTENSIONS,
-        sanitize=True,
-        blank=True,
-        help_text=_("“O projekcie” on the About page."),
-    )
+    about_intro = rich_text_field(help_text=_("Introduction on the About page."))
+    about_project = rich_text_field(help_text=_("“O projekcie” on the About page."))
 
     class Meta:
         verbose_name = _("site settings")

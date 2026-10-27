@@ -120,7 +120,7 @@ describe("AboutPage", () => {
     expect(hero?.querySelector("em")).toHaveTextContent("literackie");
     const project = section("O projekcie");
     expect(within(project).getByRole("heading", { level: 3, name: "Cel" })).toBeVisible();
-    expect(within(project).getByText("Zakres").tagName).toBe("STRONG");
+    expect(within(project).getByText("Zakres", { selector: "strong" })).toBeVisible();
     expect(within(project).getByRole("listitem")).toHaveTextContent("Muzeum");
     expect(within(project).getByRole("link", { name: "partner" })).toHaveAttribute(
       "href",
