@@ -41,7 +41,18 @@ export const nouns = {
   note: { one: "zapisek", few: "zapiski", many: "zapisków" },
   tag: { one: "tag", few: "tagi", many: "tagów" },
   result: { one: "wynik", few: "wyniki", many: "wyników" },
+  page: { one: "strona", few: "strony", many: "stron" },
 } as const satisfies Record<string, PluralForms>;
+
+/** A section header's counter (R-09): "3", or "2 z 24" when the section is a preview. */
+export function previewCount(shown: number, total: number): string {
+  return shown < total ? `${String(shown)} z ${String(total)}` : String(total);
+}
+
+/** A fragment's number in its document, with two digits: "Fragment 01" (R-10). */
+export function fragmentLabel(number: number): string {
+  return `Fragment ${String(number).padStart(2, "0")}`;
+}
 
 export const copy = {
   siteName: "Archivum Buczkovianum",
@@ -113,6 +124,35 @@ export const copy = {
     allDescription: "Alfabetycznie",
     loading: "Wczytuję tagi…",
     error: "Nie udało się wczytać tagów. Spróbuj ponownie później.",
+  },
+  /** The typescript page (US-RA-08). */
+  typescript: {
+    type: "Maszynopis",
+    work: "Utwór",
+    workTypescripts: "Maszynopisy utworu",
+    scan: "Skan maszynopisu",
+    fragments: "Fragmenty z maszynopisu",
+    fragmentsDescription: "W kolejności stron",
+    allFragments: (count: number) => `Wszystkie fragmenty (${String(count)})`,
+    loading: "Wczytuję maszynopis…",
+    error: "Nie udało się wczytać maszynopisu. Spróbuj ponownie później.",
+  },
+  /** The reader (R-11). */
+  reader: {
+    views: "Widok",
+    scan: "Skan",
+    text: "Transkrypcja",
+    page: (number: number, count: number) => `Skan · strona ${String(number)} z ${String(count)}`,
+    scanError: "Nie udało się wczytać skanu.",
+    loading: "Wczytuję tekst…",
+    error: "Nie udało się wczytać tekstu. Spróbuj ponownie później.",
+  },
+  /** The contextual materials block (R-08). */
+  materials: {
+    title: "Materiały kontekstowe",
+    description: "Opracowania i materiały wizualne związane z utworem",
+    texts: "Teksty sekundarne",
+    visuals: "Materiały wizualne",
   },
   /** The search field in the header and on the search page (US-RA-14). */
   search: {

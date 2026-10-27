@@ -6,6 +6,7 @@ import { HomePage } from "@/pages/HomePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { SearchPage } from "@/pages/SearchPage";
 import { TagsPage } from "@/pages/TagsPage";
+import { TypescriptPage } from "@/pages/TypescriptPage";
 import { TypescriptsPage } from "@/pages/TypescriptsPage";
 import { WorksPage } from "@/pages/WorksPage";
 
@@ -19,6 +20,7 @@ export const routes: RouteObject[] = [
       { path: "works", element: <WorksPage /> },
       { path: "typescripts", element: <TypescriptsPage /> },
       { path: "tags", element: <TagsPage /> },
+      { path: "typescripts/:id", element: <TypescriptPage /> },
       { path: "about", element: <AboutPage /> },
       { path: "search", element: <SearchPage /> },
       { path: "*", element: <NotFoundPage /> },

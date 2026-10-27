@@ -2,7 +2,19 @@ from dataclasses import dataclass
 
 from rest_framework import serializers
 
-from archive.models import Tag, TeamMember, Typescript, Work
+from archive.models import (
+    ContextualMaterial,
+    Document,
+    Fragment,
+    Institution,
+    Preview,
+    SecondaryText,
+    Tag,
+    TeamMember,
+    Typescript,
+    Work,
+    format_shelfmark,
+)
 from search.models import EntityType, SearchEntry
 
 
@@ -130,3 +142,180 @@ class SuggestionSerializer(serializers.ModelSerializer[SearchEntry]):
         fields = ("type", "title", "url")
         # Output only, so the schema marks every field as present.
         read_only_fields = fields
+
+
+class TagChipSerializer(serializers.ModelSerializer[Tag]):
+    class Meta:
+        model = Tag
+        fields = ("slug", "title")
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
+
+
+@dataclass(frozen=True)
+class ContextualMaterials:
+    """The contextual materials block (R-08)."""
+
+    texts: list[SecondaryText | ContextualMaterial]
+    visuals: list[ContextualMaterial]
+
+
+class MaterialTextSerializer(serializers.Serializer[SecondaryText | ContextualMaterial]):
+    """A row of "Teksty sekundarne" (R-08): a secondary text, or a contextual material that is
+    not an image, which shows its title only (D5)."""
+
+    url = serializers.CharField(source="get_absolute_url")
+    author = serializers.SerializerMethodField()
+    title = serializers.CharField()
+    publication = serializers.SerializerMethodField(help_text="Publisher, place, year, pages.")
+
+    def get_author(self, item: SecondaryText | ContextualMaterial) -> str:
+        return item.author if isinstance(item, SecondaryText) else ""
+
+    def get_publication(self, item: SecondaryText | ContextualMaterial) -> str:
+        return item.source if isinstance(item, SecondaryText) else ""
+
+
+class VisualMaterialSerializer(serializers.ModelSerializer[ContextualMaterial]):
+    """A thumbnail of "Materiały wizualne" (R-08), captioned with title and shelfmark."""
+
+    url = serializers.CharField(source="get_absolute_url", read_only=True)
+    shelfmark = serializers.CharField(
+        source="shelfmark_display", read_only=True, help_text='E.g. "ML, sygn. 1700"; may be empty.'
+    )
+    image = serializers.SerializerMethodField(help_text="Empty when the material has no image.")
+
+    class Meta:
+        model = ContextualMaterial
+        fields = ("url", "title", "shelfmark", "image", "image_alt")
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
+
+    def get_image(self, material: ContextualMaterial) -> str:
+        return material.image.url if material.image else ""
+
+
+class ContextualMaterialsSerializer(serializers.Serializer[ContextualMaterials]):
+    texts = MaterialTextSerializer(many=True, help_text="By title.")
+    visuals = VisualMaterialSerializer(many=True, help_text="By title.")
+
+
+class FragmentRowSerializer(serializers.ModelSerializer[Fragment]):
+    """A row of "Fragmenty z maszynopisu" (US-RA-08 AC3), from a queryset with `with_number()`.
+
+    The context's `institution` is the one of the fragments' document owner.
+    """
+
+    number = serializers.IntegerField(read_only=True, help_text="1-based, by position in the text.")
+    shelfmark = serializers.SerializerMethodField(
+        help_text='E.g. "ML, sygn. 1618.0009"; may be empty.'
+    )
+
+    class Meta:
+        model = Fragment
+        fields = ("id", "number", "location", "shelfmark")
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
+
+    def get_shelfmark(self, fragment: Fragment) -> str:
+        institution: Institution | None = self.context["institution"]
+        return format_shelfmark(institution, fragment.shelfmark)
+
+
+class FragmentPreviewSerializer(serializers.Serializer[Preview[Fragment]]):
+    items = FragmentRowSerializer(many=True, help_text="Featured first, then text order (R-09).")
+    total = serializers.IntegerField(help_text="The number of all the fragments.")
+
+
+class WorkSummarySerializer(serializers.ModelSerializer[Work]):
+    """A work in a context column (R-03), from a queryset with `with_year()` and
+    `with_fragment_count()`."""
+
+    year = serializers.IntegerField(
+        read_only=True,
+        allow_null=True,
+        help_text="The year of the first edition; null without editions.",
+    )
+    fragment_count = serializers.IntegerField(
+        read_only=True, help_text="Visible fragments of the main typescript (D19); 0 without one."
+    )
+
+    class Meta:
+        model = Work
+        fields = ("slug", "title", "year", "fragment_count")
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
+
+
+@dataclass(frozen=True)
+class TypescriptPage:
+    typescript: Typescript
+    work: Work | None
+    work_typescripts: list[Typescript]
+    fragments: Preview[Fragment]
+    tags: list[Tag]
+    materials: ContextualMaterials
+
+
+class TypescriptPageSerializer(serializers.Serializer[TypescriptPage]):
+    """US-RA-08. `description` is rich text: HTML, sanitized when an editor saves it."""
+
+    id = serializers.IntegerField(source="typescript.pk")
+    title = serializers.CharField(source="typescript.title")
+    description = serializers.CharField(
+        source="typescript.description", allow_blank=True, help_text="HTML."
+    )
+    shelfmark = serializers.CharField(
+        source="typescript.shelfmark_display", help_text='E.g. "ML, sygn. 1618"; may be empty.'
+    )
+    document = serializers.IntegerField(
+        source="typescript.document_id", help_text="The text for the reader: /api/documents/<id>/."
+    )
+    page_count = serializers.IntegerField(source="typescript.document.page_count")
+    work = WorkSummarySerializer(allow_null=True, help_text="Null while the work is a draft.")
+    work_typescripts = TypescriptRowSerializer(
+        many=True, help_text="The work's typescripts by shelfmark, this one included."
+    )
+    fragments = FragmentPreviewSerializer()
+    tags = TagChipSerializer(
+        many=True, help_text="Tags on the typescript and on its fragments, by name."
+    )
+    materials = ContextualMaterialsSerializer(help_text="Those linked to the typescript's work.")
+
+
+class DocumentFragmentSerializer(FragmentRowSerializer):
+    """A fragment for the reader (R-11), from a queryset with `with_number()`.
+
+    The context holds the fragments' `document` and the `institution` of its owner.
+    """
+
+    start_page = serializers.SerializerMethodField(
+        help_text="1-based scan page the fragment starts on; null for a plain text."
+    )
+    tags = TagChipSerializer(many=True, read_only=True, help_text="Published tags, by name.")
+
+    class Meta:
+        model = Fragment
+        fields = ("id", "start", "end", "number", "start_page", "location", "shelfmark", "tags")
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
+
+    def get_start_page(self, fragment: Fragment) -> int | None:
+        document: Document = self.context["document"]
+        return document.page_number(fragment.start)
+
+
+class DocumentSerializer(serializers.ModelSerializer[Document]):
+    """The text of an item for the reader (R-11, architecture section 4.4)."""
+
+    scan = serializers.SerializerMethodField(help_text="PDF URL; empty for a plain text.")
+    fragments = DocumentFragmentSerializer(many=True, read_only=True, help_text="By position.")
+
+    class Meta:
+        model = Document
+        fields = ("id", "kind", "text", "page_offsets", "scan", "fragments")
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
+
+    def get_scan(self, document: Document) -> str:
+        return document.scan.url if document.scan else ""

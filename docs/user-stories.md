@@ -71,6 +71,7 @@ Each page defines which items it includes.
 
 - A section header shows a count: "3", or "2 z 24" when the section is a preview.
 - A preview shows the first `PREVIEW_LIMIT` items (one setting, default 2): featured fragments first, then text order. It ends with a link naming its target and count, e.g. "Wszystkie fragmenty (24)".
+- The fragment previews' "all" link opens no new page. On the typescript page it expands the list in place, in page order. On the work page it opens the main typescript's page with that list expanded.
 - Counts use Polish plural forms: 1 fragment, 2–4 fragmenty, 5+ fragmentów.
 
 **R-10 Fragment card.** Every fragment is shown as this card:

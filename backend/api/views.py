@@ -1,6 +1,10 @@
 import re
 from collections import defaultdict
+from operator import attrgetter
 
+from django.db.models import Prefetch, Q
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
@@ -9,14 +13,32 @@ from rest_framework.response import Response
 from api.serializers import (
     AboutPage,
     AboutPageSerializer,
+    ContextualMaterials,
+    DocumentSerializer,
     SuggestionSerializer,
     TagCountSerializer,
     TeamGroup,
     TypescriptGroup,
     TypescriptGroupSerializer,
+    TypescriptPage,
+    TypescriptPageSerializer,
     WorkCardSerializer,
 )
-from archive.models import SiteSettings, Tag, TeamMember, Typescript, Work
+from archive.models import (
+    ContentKind,
+    ContextualMaterial,
+    Document,
+    Fragment,
+    Publishable,
+    PublishableQuerySet,
+    SecondaryText,
+    SiteSettings,
+    Status,
+    Tag,
+    TeamMember,
+    Typescript,
+    Work,
+)
 from search.query import autocomplete
 
 
@@ -89,3 +111,84 @@ def search_autocomplete(request: Request) -> Response:
     contains `q`. Empty for a blank `q`."""
     suggestions = autocomplete(request.query_params.get("q", ""))
     return Response(SuggestionSerializer(suggestions, many=True).data)
+
+
+def contextual_materials(
+    secondary_texts: PublishableQuerySet[SecondaryText],
+    materials: PublishableQuerySet[ContextualMaterial],
+) -> ContextualMaterials:
+    """The published items of the contextual materials block (R-08): images in the gallery,
+    secondary texts and the other materials in the list, both by title."""
+    published = list(materials.published().select_related("institution"))
+    texts: list[SecondaryText | ContextualMaterial] = [
+        *secondary_texts.published(),
+        *(material for material in published if material.content_kind != ContentKind.IMAGE),
+    ]
+    return ContextualMaterials(
+        texts=sorted(texts, key=attrgetter("title")),
+        visuals=[material for material in published if material.content_kind == ContentKind.IMAGE],
+    )
+
+
+@extend_schema(responses=TypescriptPageSerializer)
+@api_view(["GET"])
+def typescript(request: Request, pk: int) -> Response:
+    """The typescript page (US-RA-08). A draft typescript is not found (R-06); a draft work
+    leaves out the work, its contextual materials and nothing else."""
+    current = get_object_or_404(
+        Typescript.objects.published().select_related("institution", "document"), pk=pk
+    )
+    work = (
+        Work.objects.published()
+        .filter(pk=current.work_id)
+        .with_year()
+        .with_fragment_count()
+        .first()
+    )
+    page = TypescriptPage(
+        typescript=current,
+        work=work,
+        work_typescripts=sorted(
+            Typescript.objects.published()
+            .filter(work=current.work_id)
+            .select_related("institution"),
+            key=shelfmark_order,
+        ),
+        fragments=Fragment.objects.filter(document=current.document).with_number().preview(),
+        tags=list(
+            Tag.objects.published()
+            .filter(Q(typescripts=current) | Q(fragments__document=current.document))
+            .distinct()
+            .order_by("title")
+        ),
+        materials=contextual_materials(
+            SecondaryText.objects.filter(works=work),
+            ContextualMaterial.objects.filter(works=work),
+        )
+        if work
+        else ContextualMaterials(texts=[], visuals=[]),
+    )
+    context = {"institution": current.institution}
+    return Response(TypescriptPageSerializer(page, context=context).data)
+
+
+@extend_schema(responses=DocumentSerializer)
+@api_view(["GET"])
+def document(request: Request, pk: int) -> Response:
+    """The text of a published item for the reader (R-11), with its fragments and their
+    published tags. The text of a draft, or of no item, is not found (R-06)."""
+    fragments = Fragment.objects.with_number().order_by("start", "end", "pk")
+    text = get_object_or_404(
+        Document.objects.prefetch_related(
+            Prefetch(
+                "fragments",
+                fragments.prefetch_related(Prefetch("tags", Tag.objects.published())),
+            )
+        ),
+        pk=pk,
+    )
+    owner = text.owner
+    if not isinstance(owner, Publishable) or owner.status != Status.PUBLISHED:
+        raise Http404
+    context = {"document": text, "institution": owner.institution}
+    return Response(DocumentSerializer(text, context=context).data)
