@@ -110,7 +110,7 @@ A plain-text document is shown as text, with fragments highlighted as in point 2
 
 ### US-RA-03 — Footer
 
-1. The footer follows R-07. The funding note is editable (US-WR-11).
+1. The footer follows R-07.
 
 ### US-RA-04 — Work page
 
@@ -317,9 +317,9 @@ Everything happens in Django admin. Every image field requires a text alternativ
 1. Any work, typescript, note, secondary text or contextual material can be tagged as a whole.
 2. A work link can be tagged. Its tags appear on the work page (US-RA-05).
 
-### US-WR-11 — Edit home page and footer content
+### US-WR-11 — Edit home page content
 
-1. Editable: the introduction, the portrait image, the funding note in the footer.
+1. Editable: the introduction and the portrait image.
 
 ### US-WR-12 — Edit the About page
 
