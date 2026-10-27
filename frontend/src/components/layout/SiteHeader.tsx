@@ -63,7 +63,8 @@ export function SiteHeader() {
           to="/search"
           aria-label={copy.search.label}
           // The 48 px touch target reaches into the page margin, so the row fits a 360 px screen.
-          className={`-mr-16 p-16 text-foreground md:hidden ${LINK_CLASSES}`}
+          // It stops 4 px short of the edge, where the focus outline is drawn.
+          className={`-mr-12 p-16 text-foreground md:hidden ${LINK_CLASSES}`}
         >
           <SearchIcon className="size-16" />
         </Link>

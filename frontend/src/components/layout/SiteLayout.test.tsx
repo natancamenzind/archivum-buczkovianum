@@ -83,6 +83,20 @@ describe("SiteLayout", () => {
     expect(within(pageForm).getByRole("searchbox")).toHaveValue("potok");
   });
 
+  it("US-RA-14 AC1: a header search for the current query drops unsubmitted edits", () => {
+    renderRoute("/search?q=dezerter");
+
+    const pageField = within(screen.getByRole("search", { name: "Wyszukiwanie" })).getByRole(
+      "searchbox",
+    );
+    fireEvent.change(pageField, { target: { value: "potok" } });
+    const header = screen.getByRole("banner");
+    fireEvent.change(within(header).getByRole("searchbox"), { target: { value: "dezerter" } });
+    fireEvent.submit(within(header).getByRole("search"));
+
+    expect(pageField).toHaveValue("dezerter");
+  });
+
   it("US-RA-14 AC1: a blank header search opens the search page without a query", () => {
     renderRoute("/about");
 

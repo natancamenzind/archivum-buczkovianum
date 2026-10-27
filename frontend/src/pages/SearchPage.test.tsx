@@ -31,7 +31,7 @@ describe("SearchPage", () => {
     expect(searchBox()).toHaveValue("potok");
   });
 
-  it("US-RA-14 AC1: submitting with Enter keeps the focus in the field", () => {
+  it("US-RA-14 AC1: submitting keeps the focus in the field", () => {
     renderRoute("/search?q=dezerter");
 
     searchBox().focus();

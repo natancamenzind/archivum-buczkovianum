@@ -1,5 +1,5 @@
 import { type SubmitEvent, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import { CloseIcon, SearchIcon } from "@/components/icons";
 import { copy } from "@/copy/pl";
@@ -9,7 +9,7 @@ const FOCUS_CLASSES =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 interface SearchFieldProps {
-  /** The query in the URL. The field shows it, and shows a new one when the URL changes. */
+  /** The query in the URL, shown again after every navigation. */
   query: string;
   /** The ID of the heading that names the search landmark. */
   labelledBy: string;
@@ -23,19 +23,20 @@ interface SearchFieldProps {
  */
 export function SearchField({ query, labelledBy, describedBy }: SearchFieldProps) {
   const [value, setValue] = useState(query);
-  const [shownQuery, setShownQuery] = useState(query);
+  const location = useLocation();
+  const [shownLocation, setShownLocation] = useState(location.key);
   const input = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  // Updated during render rather than by remounting, so a submit keeps the focus where it was.
-  if (query !== shownQuery) {
-    setShownQuery(query);
+  // Every search, even for the same query, shows the URL's query again. Updated during render
+  // rather than by remounting, so a submit keeps the focus where it was.
+  if (location.key !== shownLocation) {
+    setShownLocation(location.key);
     setValue(query);
   }
 
   function search(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    setValue(value.trim());
     void navigate(searchUrl(value));
   }
 
