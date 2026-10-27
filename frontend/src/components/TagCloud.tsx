@@ -38,16 +38,10 @@ function shuffled<T>(items: T[]): T[] {
     .map(({ item }) => item);
 }
 
-/**
- * The cloud's order: shuffled, then the largest sizes placed in the middle and the smaller ones
- * alternately before and after them. It starts from the tags sorted by slug, so the same tags
- * give the same cloud whatever order they come in.
- */
-function arranged(tags: TagCount[]): TagCount[] {
-  const bySlug = [...tags].sort((a, b) => (a.slug < b.slug ? -1 : 1));
-  const largestFirst = shuffled(bySlug).sort((a, b) => size(b.occurrences) - size(a.occurrences));
+/** Largest first in, largest in the middle out, the others alternately after and before it. */
+function centred(tags: TagCount[]): TagCount[] {
   const result: TagCount[] = [];
-  largestFirst.forEach((tag, index) => {
+  tags.forEach((tag, index) => {
     if (index % 2 === 0) {
       result.push(tag);
     } else {
@@ -58,27 +52,58 @@ function arranged(tags: TagCount[]): TagCount[] {
 }
 
 /**
+ * The cloud's rows (design/rules.md): the largest third of the tags in the middle row, the rest
+ * alternately in the rows above and below it, each row centred on its largest tags. Tags of one
+ * size are shuffled, starting from the tags sorted by slug, so the same tags give the same cloud
+ * whatever order they come in. Empty rows are left out.
+ */
+function rows(tags: TagCount[]): TagCount[][] {
+  const bySlug = [...tags].sort((a, b) => (a.slug < b.slug ? -1 : 1));
+  const largestFirst = shuffled(bySlug).sort((a, b) => size(b.occurrences) - size(a.occurrences));
+  const middleSize = Math.ceil(largestFirst.length / 3);
+  const rest = largestFirst.slice(middleSize);
+  return [
+    rest.filter((_, index) => index % 2 === 0),
+    largestFirst.slice(0, middleSize),
+    rest.filter((_, index) => index % 2 === 1),
+  ]
+    .filter((row) => row.length > 0)
+    .map(centred);
+}
+
+/**
  * "Chmura tagów" (US-RA-01 AC4, design/rules.md): every tag it gets, sized by its occurrence
- * count in five steps, the two largest in the accent colour. The layout is deterministic. Each
- * tag links to its page; its count, shown only by size, is spelled out for screen readers.
+ * count in five steps, the two largest in the accent colour. The layout is deterministic, and a
+ * row wraps when it does not fit. Each tag links to its page; its count, shown only by size, is
+ * spelled out for screen readers.
  */
 export function TagCloud({ tags }: { tags: TagCount[] }) {
   return (
-    <ul className="flex flex-wrap items-start justify-center gap-x-16 gap-y-4 rounded-md bg-muted p-16 md:gap-x-32 md:p-32">
-      {arranged(tags).map((tag, index) => (
-        <li key={tag.slug} className={OFFSET_CLASSES[index % OFFSET_CLASSES.length]}>
-          <Link
-            to={`/tags/${tag.slug}`}
-            className={cn(
-              SIZE_CLASSES[size(tag.occurrences)],
-              "transition-colors hover:text-accent-foreground-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",
-            )}
-          >
-            {tag.title}{" "}
-            <span className="sr-only">{formatCount(tag.occurrences, nouns.occurrence)}</span>
-          </Link>
-        </li>
+    <div className="flex flex-col gap-4 rounded-md bg-muted p-16 md:p-32">
+      {rows(tags).map((row, rowIndex) => (
+        <ul
+          key={row[0]?.slug}
+          className="flex flex-wrap items-start justify-center gap-x-16 md:gap-x-32"
+        >
+          {row.map((tag, index) => (
+            <li
+              key={tag.slug}
+              className={OFFSET_CLASSES[(index + 2 * rowIndex) % OFFSET_CLASSES.length]}
+            >
+              <Link
+                to={`/tags/${tag.slug}`}
+                className={cn(
+                  SIZE_CLASSES[size(tag.occurrences)],
+                  "transition-colors hover:text-accent-foreground-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",
+                )}
+              >
+                {tag.title}{" "}
+                <span className="sr-only">{formatCount(tag.occurrences, nouns.occurrence)}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       ))}
-    </ul>
+    </div>
   );
 }

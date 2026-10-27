@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 
@@ -89,21 +89,38 @@ describe("TagCloud", () => {
     expect(new Set(titles)).toEqual(new Set(TAGS.map((item) => item.title)));
   });
 
-  it("US-RA-01 AC4: the largest tags are in the middle, the smaller around them", () => {
+  it("US-RA-01 AC4: the largest tags are in the middle row, the smaller in the rows around it", () => {
     renderCloud();
 
-    const titles = cloudTitles();
-    const middle = titles.slice(4, 8);
-    expect(middle).toEqual(expect.arrayContaining(["Wojna", "Wieś", "Pamięć"]));
-    expect(titles.slice(0, 2)).not.toEqual(expect.arrayContaining(["Wojna"]));
+    const rows = screen.getAllByRole("list").map((row) =>
+      within(row)
+        .getAllByRole("link")
+        .map((link) => link.firstChild?.textContent),
+    );
+    expect(rows).toHaveLength(3);
+    const [top, middle, bottom] = rows;
+    expect(middle).toHaveLength(4);
+    expect(middle).toEqual(expect.arrayContaining(["Wojna", "Wieś", "Pamięć", "Podole"]));
+    expect(middle?.slice(1, 3)).toContain("Wojna");
+    expect([...(top ?? []), ...(bottom ?? [])]).toHaveLength(8);
+  });
+
+  it("US-RA-01 AC4: a cloud of one tag has one row", () => {
+    renderCloud([tag("Wojna", 31)]);
+
+    expect(screen.getAllByRole("list")).toHaveLength(1);
   });
 
   it("US-RA-01 AC4: baselines do not line up: neighbours have different vertical offsets", () => {
     renderCloud();
 
-    const offsets = screen.getAllByRole("listitem").map((item) => item.className);
-    for (let index = 1; index < offsets.length; index += 1) {
-      expect(offsets[index]).not.toEqual(offsets[index - 1]);
+    for (const row of screen.getAllByRole("list")) {
+      const offsets = within(row)
+        .getAllByRole("listitem")
+        .map((item) => item.className);
+      for (let index = 1; index < offsets.length; index += 1) {
+        expect(offsets[index]).not.toEqual(offsets[index - 1]);
+      }
     }
   });
 });
