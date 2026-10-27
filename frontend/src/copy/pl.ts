@@ -62,9 +62,20 @@ export const copy = {
   },
   home: {
     lead: "Cyfrowe archiwum twórczości Leopolda Buczkowskiego. Strona jest w budowie.",
-    apiLoading: "Łączę się z archiwum…",
-    apiReady: (title: string, version: string) => `Połączono z ${title}, wersja ${version}.`,
-    apiError: "Nie udało się połączyć z archiwum.",
+  },
+  /** The About page (US-RA-13). */
+  about: {
+    title: "O archiwum",
+    project: "O projekcie",
+    team: "Zespół",
+    /** Team groups, keyed by `TeamMember.Group` in the API. */
+    groups: {
+      leadership: "Kierownictwo projektu",
+      team: "Członkowie zespołu",
+      site: "Opracowanie serwisu",
+    },
+    loading: "Wczytuję stronę…",
+    error: "Nie udało się wczytać strony. Spróbuj ponownie później.",
   },
   notFound: {
     title: "Nie znaleziono strony",

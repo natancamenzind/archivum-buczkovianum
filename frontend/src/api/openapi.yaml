@@ -3,48 +3,82 @@ info:
   title: Archivum Buczkovianum API
   version: 1.0.0
 paths:
-  /api/schema/:
+  /api/about/:
     get:
-      operationId: api_schema_retrieve
+      operationId: about_retrieve
       description: |-
-        OpenApi3 schema for this API. Format can be selected via content negotiation.
+        The About page (US-RA-13): introduction, project text and the team by group.
 
-        - YAML: application/vnd.oai.openapi
-        - JSON: application/vnd.oai.openapi+json
-      parameters:
-      - in: query
-        name: format
-        schema:
-          type: string
-          enum:
-          - json
-          - yaml
+        Empty groups are left out (R-02), so the page renders every group it gets.
       tags:
-      - api
+      - about
       security:
       - cookieAuth: []
       - {}
       responses:
         '200':
           content:
-            application/vnd.oai.openapi:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/yaml:
-              schema:
-                type: object
-                additionalProperties: {}
-            application/vnd.oai.openapi+json:
-              schema:
-                type: object
-                additionalProperties: {}
             application/json:
               schema:
-                type: object
-                additionalProperties: {}
+                $ref: '#/components/schemas/AboutPage'
           description: ''
 components:
+  schemas:
+    AboutPage:
+      type: object
+      description: US-RA-13. Texts are plain text until step 10 makes them rich text.
+      properties:
+        intro:
+          type: string
+        project:
+          type: string
+        team:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamGroup'
+          description: Groups that have members, in the order of TeamMember.Group.
+      required:
+      - intro
+      - project
+      - team
+    GroupEnum:
+      enum:
+      - leadership
+      - team
+      - site
+      type: string
+      description: |-
+        * `leadership` - Project leadership
+        * `team` - Team members
+        * `site` - Website development
+    TeamGroup:
+      type: object
+      properties:
+        group:
+          $ref: '#/components/schemas/GroupEnum'
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamMember'
+      required:
+      - group
+      - members
+    TeamMember:
+      type: object
+      properties:
+        name:
+          type: string
+          readOnly: true
+        role:
+          type: string
+          readOnly: true
+        bio:
+          type: string
+          readOnly: true
+      required:
+      - bio
+      - name
+      - role
   securitySchemes:
     cookieAuth:
       type: apiKey

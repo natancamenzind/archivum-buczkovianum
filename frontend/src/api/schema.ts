@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/schema/": {
+    "/api/about/": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,12 +12,11 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * @description OpenApi3 schema for this API. Format can be selected via content negotiation.
+         * @description The About page (US-RA-13): introduction, project text and the team by group.
          *
-         *     - YAML: application/vnd.oai.openapi
-         *     - JSON: application/vnd.oai.openapi+json
+         *     Empty groups are left out (R-02), so the page renders every group it gets.
          */
-        get: operations["api_schema_retrieve"];
+        get: operations["about_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -29,7 +28,31 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
+    schemas: {
+        /** @description US-RA-13. Texts are plain text until step 10 makes them rich text. */
+        AboutPage: {
+            intro: string;
+            project: string;
+            /** @description Groups that have members, in the order of TeamMember.Group. */
+            team: components["schemas"]["TeamGroup"][];
+        };
+        /**
+         * @description * `leadership` - Project leadership
+         *     * `team` - Team members
+         *     * `site` - Website development
+         * @enum {string}
+         */
+        GroupEnum: "leadership" | "team" | "site";
+        TeamGroup: {
+            group: components["schemas"]["GroupEnum"];
+            members: components["schemas"]["TeamMember"][];
+        };
+        TeamMember: {
+            readonly name: string;
+            readonly role: string;
+            readonly bio: string;
+        };
+    };
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -38,11 +61,9 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    api_schema_retrieve: {
+    about_retrieve: {
         parameters: {
-            query?: {
-                format?: "json" | "yaml";
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -54,18 +75,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/vnd.oai.openapi": {
-                        [key: string]: unknown;
-                    };
-                    "application/yaml": {
-                        [key: string]: unknown;
-                    };
-                    "application/vnd.oai.openapi+json": {
-                        [key: string]: unknown;
-                    };
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["AboutPage"];
                 };
             };
         };
