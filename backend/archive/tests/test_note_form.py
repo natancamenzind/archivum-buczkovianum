@@ -189,7 +189,7 @@ class TestNoteForm:
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        assert form_errors(response) == {"ocr_file": ["The scan has 3 pages, the OCR file has 2."]}
+        assert form_errors(response) == {"ocr_file": ["Skan ma 3 strony, plik OCR ma 2."]}
         assert not Note.objects.exists()
         assert not Document.objects.exists()
 
@@ -374,10 +374,7 @@ class TestNoteForm:
 
         # Assert
         assert form_errors(response) == {
-            "__all__": [
-                "The text this item holds has 1 tagged fragment. "
-                "Delete them before removing the text."
-            ]
+            "__all__": ["Tekst tego bytu ma 1 otagowany fragment. Usuń go przed usunięciem tekstu."]
         }
         note.refresh_from_db()
         assert note.document is not None
@@ -401,7 +398,7 @@ class TestNoteForm:
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        empty = ["Leave this empty for this kind of content."]
+        empty = ["Przy tym rodzaju treści zostaw to pole puste."]
         expected = {"scan": empty, "ocr_file": empty}
         if content_kind == ContentKind.EXTERNAL_MEDIA:
             expected["plain_text"] = empty

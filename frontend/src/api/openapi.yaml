@@ -219,7 +219,7 @@ components:
         title:
           type: string
           readOnly: true
-          title: Nazwa
+          title: Name
       required:
       - id
       - title
@@ -282,12 +282,14 @@ components:
         name:
           type: string
           readOnly: true
+          title: Full name
         role:
           type: string
           readOnly: true
         bio:
           type: string
           readOnly: true
+          title: Short biography
       required:
       - bio
       - name
@@ -365,6 +367,7 @@ components:
         cover_image_alt:
           type: string
           readOnly: true
+          title: Cover image text alternative
         fragment_count:
           type: integer
           readOnly: true

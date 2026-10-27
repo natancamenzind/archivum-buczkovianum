@@ -120,7 +120,7 @@ export interface components {
         };
         EditorTag: {
             readonly id: number;
-            /** Nazwa */
+            /** Name */
             readonly title: string;
         };
         /**
@@ -146,8 +146,10 @@ export interface components {
             members: components["schemas"]["TeamMember"][];
         };
         TeamMember: {
+            /** Full name */
             readonly name: string;
             readonly role: string;
+            /** Short biography */
             readonly bio: string;
         };
         /** @description A work's group on the typescripts list (US-RA-19 AC2), from a work with `with_year()`. */
@@ -180,6 +182,7 @@ export interface components {
             readonly year: number | null;
             /** @description Empty when the work has no cover. */
             readonly cover_image: string;
+            /** Cover image text alternative */
             readonly cover_image_alt: string;
             /** @description Visible fragments of the main typescript (D19); 0 without one. */
             readonly fragment_count: number;

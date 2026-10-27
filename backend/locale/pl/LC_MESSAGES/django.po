@@ -1,0 +1,512 @@
+# Polish translation of the editor panel's own strings. Update with `make messages`.
+msgid ""
+msgstr ""
+"Project-Id-Version: Archivum Buczkovianum\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-27 21:27+0100\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
+"(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
+"n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+
+msgid "fragments"
+msgstr "fragmenty"
+
+msgid "Tag fragments"
+msgstr "Taguj fragmenty"
+
+msgid "current scan"
+msgstr "aktualny skan"
+
+msgid "pages"
+msgstr "liczba stron"
+
+msgid "Archive"
+msgstr "Archiwum"
+
+msgid "scan"
+msgstr "skan"
+
+msgid "PDF file."
+msgstr "Plik PDF."
+
+msgid "OCR file"
+msgstr "plik OCR"
+
+msgid ""
+"UTF-8 .txt file, as Tesseract writes it: a form feed between pages. It must "
+"have as many pages as the scan."
+msgstr ""
+"Plik .txt w UTF-8, taki jak zapisuje go Tesseract: strony rozdzielone "
+"znakiem nowej strony (form feed). Musi mieć tyle stron co skan."
+
+msgid ""
+"Upload the scan and the OCR file together, so their pages can be compared."
+msgstr "Wgraj skan i plik OCR razem, żeby dało się porównać ich strony."
+
+msgid "plain text"
+msgstr "tekst lity"
+
+msgid "E.g. a letter transcription."
+msgstr "Np. transkrypcja listu."
+
+msgid "Leave this empty for this kind of content."
+msgstr "Przy tym rodzaju treści zostaw to pole puste."
+
+msgid "Or enter the text here instead of uploading a scan and an OCR file."
+msgstr "Albo wpisz tekst tutaj, zamiast wgrywać skan i plik OCR."
+
+msgid "Upload a scan and its OCR file, or enter a plain text, not both."
+msgstr "Wgraj skan z plikiem OCR albo wpisz tekst lity, nie jedno i drugie."
+
+msgid "Upload a scan and its OCR file, or enter a plain text."
+msgstr "Wgraj skan z plikiem OCR albo wpisz tekst lity."
+
+msgid "created"
+msgstr "utworzono"
+
+msgid "updated"
+msgstr "ostatnia zmiana"
+
+msgid "Describe the image for readers who cannot see it."
+msgstr "Opisz obraz dla czytelników, którzy go nie widzą."
+
+msgid "Draft"
+msgstr "Szkic"
+
+msgid "Published"
+msgstr "Opublikowany"
+
+msgid "status"
+msgstr "status"
+
+msgid "Only published items are visible to the public."
+msgstr "Publicznie widać tylko opublikowane byty."
+
+msgid "title"
+msgstr "tytuł"
+
+msgid "description"
+msgstr "opis"
+
+msgid "tags"
+msgstr "tagi"
+
+msgid "institution"
+msgstr "instytucja"
+
+msgid "shelfmark"
+msgstr "sygnatura"
+
+msgid "Number only, e.g. 1618. The institution is chosen separately."
+msgstr "Tylko numer, np. 1618. Instytucję wybiera się osobno."
+
+msgid "text"
+msgstr "tekst"
+
+msgid "The scan and OCR text, or the plain text, of this item."
+msgstr "Skan z tekstem OCR albo tekst lity tego bytu."
+
+msgid "This item needs a text."
+msgstr "Ten byt wymaga tekstu."
+
+msgid "This text already belongs to another item."
+msgstr "Ten tekst należy już do innego bytu."
+
+#, python-format
+msgid "Choose a text of kind “%s”."
+msgstr "Wybierz tekst rodzaju „%s”."
+
+#, python-format
+msgid ""
+"The text this item holds has %(count)d tagged fragment. Delete them before "
+"removing the text."
+msgid_plural ""
+"The text this item holds has %(count)d tagged fragments. Delete them before "
+"removing the text."
+msgstr[0] ""
+"Tekst tego bytu ma %(count)d otagowany fragment. Usuń go przed usunięciem "
+"tekstu."
+msgstr[1] ""
+"Tekst tego bytu ma %(count)d otagowane fragmenty. Usuń je przed usunięciem "
+"tekstu."
+msgstr[2] ""
+"Tekst tego bytu ma %(count)d otagowanych fragmentów. Usuń je przed "
+"usunięciem tekstu."
+msgstr[3] ""
+"Tekst tego bytu ma %(count)d otagowanego fragmentu. Usuń go przed usunięciem "
+"tekstu."
+
+msgid "Image"
+msgstr "Obrazek"
+
+msgid "Document file"
+msgstr "Dokument"
+
+msgid "External audio or video link"
+msgstr "Zewnętrzny link audio/wideo"
+
+msgid "OCR text (scan + OCR file)"
+msgstr "Tekst OCR (skan + plik OCR)"
+
+msgid "Plain text"
+msgstr "Tekst lity"
+
+msgid "content kind"
+msgstr "rodzaj treści"
+
+msgid "image"
+msgstr "obrazek"
+
+msgid "image text alternative"
+msgstr "tekst alternatywny obrazka"
+
+msgid "document file"
+msgstr "plik dokumentu"
+
+msgid "external audio or video link"
+msgstr "zewnętrzny link audio/wideo"
+
+msgid "Required for this kind of content."
+msgstr "Wymagane przy tym rodzaju treści."
+
+msgid "abbreviation"
+msgstr "skrót"
+
+msgid "E.g. ML."
+msgstr "Np. ML."
+
+msgid "full name"
+msgstr "pełna nazwa"
+
+msgid "E.g. Muzeum Literatury."
+msgstr "Np. Muzeum Literatury."
+
+msgid "institutions"
+msgstr "instytucje"
+
+msgid "Buczkowski's keyword"
+msgstr "Słowo klucz z Buczkowskiego"
+
+msgid "Interpretation"
+msgstr "Interpretacja"
+
+msgid "name"
+msgstr "nazwa"
+
+msgid "slug"
+msgstr "końcówka adresu"
+
+msgid "Part of the page address."
+msgstr "Część adresu strony."
+
+msgid "kind"
+msgstr "rodzaj"
+
+msgid "Only for filtering in the editor panel. Never public."
+msgstr "Tylko do filtrowania w panelu. Nigdy nie jest pokazywany publicznie."
+
+msgid "related tags"
+msgstr "powiązane tagi"
+
+msgid "Works both ways."
+msgstr "Działa w obie strony."
+
+msgid "tag"
+msgstr "tag"
+
+#, python-format
+msgid "The tag is in use: %s"
+msgstr "Tag jest używany: %s"
+
+msgid "genre"
+msgstr "gatunek"
+
+msgid "E.g. powieść."
+msgstr "Np. powieść."
+
+msgid "cover image"
+msgstr "okładka"
+
+msgid "cover image text alternative"
+msgstr "tekst alternatywny okładki"
+
+msgid "work"
+msgstr "utwór"
+
+msgid "works"
+msgstr "utwory"
+
+msgid "publisher"
+msgstr "wydawnictwo"
+
+msgid "place"
+msgstr "miejsce"
+
+msgid "year"
+msgstr "rok"
+
+msgid "edition"
+msgstr "wydanie"
+
+msgid "editions"
+msgstr "wydania"
+
+msgid "main typescript"
+msgstr "główny maszynopis"
+
+msgid "One per work. Marking this one unmarks the previous one."
+msgstr "Tylko jeden na utwór. Zaznaczenie tego odznacza poprzedni."
+
+msgid "typescript"
+msgstr "maszynopis"
+
+msgid "typescripts"
+msgstr "maszynopisy"
+
+msgid "note"
+msgstr "zapisek"
+
+msgid "notes"
+msgstr "zapiski"
+
+msgid "Letter"
+msgstr "List"
+
+msgid "Review"
+msgstr "Recenzja"
+
+msgid "Study"
+msgstr "Opracowanie"
+
+msgid "Recording"
+msgstr "Nagranie"
+
+msgid "Other"
+msgstr "Inne"
+
+msgid "author"
+msgstr "autor"
+
+msgid "source"
+msgstr "źródło"
+
+msgid "Publisher, place, year, pages, as one line."
+msgstr "Wydawnictwo, miejsce, rok, strony, w jednej linii."
+
+msgid "date"
+msgstr "data"
+
+msgid "For letters."
+msgstr "Dla listów."
+
+msgid "sender"
+msgstr "nadawca"
+
+msgid "recipient"
+msgstr "adresat"
+
+msgid "secondary text"
+msgstr "tekst sekundarny"
+
+msgid "secondary texts"
+msgstr "teksty sekundarne"
+
+msgid "contextual material"
+msgstr "materiał kontekstowy"
+
+msgid "contextual materials"
+msgstr "materiały kontekstowe"
+
+msgid "link to a work"
+msgstr "powiązanie z utworem"
+
+msgid "links to works"
+msgstr "powiązania z utworami"
+
+msgid "Scan + OCR text"
+msgstr "Skan + tekst OCR"
+
+msgid "document"
+msgstr "dokument"
+
+msgid "documents"
+msgstr "dokumenty"
+
+msgid "An OCR text needs its scan."
+msgstr "Tekst OCR wymaga skanu."
+
+msgid "A plain text has no scan."
+msgstr "Tekst lity nie ma skanu."
+
+msgid "Upload a new OCR file to change an OCR text, so pages stay aligned."
+msgstr ""
+"Żeby zmienić tekst OCR, wgraj nowy plik OCR. Dzięki temu strony pozostaną "
+"dopasowane do skanu."
+
+msgid "start"
+msgstr "początek"
+
+msgid "end"
+msgstr "koniec"
+
+msgid "quote"
+msgstr "cytat"
+
+msgid "The selected text."
+msgstr "Zaznaczony tekst."
+
+msgid "location"
+msgstr "lokalizacja"
+
+msgid "E.g. rozdział I."
+msgstr "Np. rozdział I."
+
+msgid "shelfmark number"
+msgstr "numer sygnatury"
+
+msgid "Number only, e.g. 1618.0009; institution from the document."
+msgstr "Tylko numer, np. 1618.0009; instytucja pochodzi z dokumentu."
+
+msgid "featured"
+msgstr "wyróżniony"
+
+msgid "Shown first in previews and on the home page."
+msgstr "Pokazywany jako pierwszy w podglądach i na stronie głównej."
+
+msgid "needs review"
+msgstr "do sprawdzenia"
+
+msgid "The text changed. Check the fragment, then clear this box."
+msgstr "Tekst się zmienił. Sprawdź fragment, a potem odznacz to pole."
+
+msgid "fragment"
+msgstr "fragment"
+
+msgid "The fragment goes past the end of the text."
+msgstr "Fragment wychodzi poza koniec tekstu."
+
+msgid "introduction"
+msgstr "wstępniak"
+
+msgid "Introduction on the home page."
+msgstr "Wstępniak na stronie głównej."
+
+msgid "portrait"
+msgstr "portret"
+
+msgid "portrait text alternative"
+msgstr "tekst alternatywny portretu"
+
+msgid "About page introduction"
+msgstr "wstęp „O archiwum”"
+
+msgid "Introduction on the About page."
+msgstr "Wstęp na stronie „O archiwum”."
+
+msgid "About the project"
+msgstr "O projekcie"
+
+msgid "“O projekcie” on the About page."
+msgstr "„O projekcie” na stronie „O archiwum”."
+
+msgid "site settings"
+msgstr "treści serwisu"
+
+msgid "Site settings"
+msgstr "Treści serwisu"
+
+msgid "Project leadership"
+msgstr "Kierownictwo projektu"
+
+msgid "Team members"
+msgstr "Członkowie zespołu"
+
+msgid "Website development"
+msgstr "Opracowanie serwisu"
+
+msgid "role"
+msgstr "funkcja"
+
+msgid "short biography"
+msgstr "krótka biografia"
+
+msgid "group"
+msgstr "grupa"
+
+msgid "order"
+msgstr "kolejność"
+
+msgid "Lower numbers are shown first."
+msgstr "Niższe liczby są wyświetlane wcześniej."
+
+msgid "team member"
+msgstr "członek zespołu"
+
+msgid "team members"
+msgstr "członkowie zespołu"
+
+msgid "Select text, choose tags, then add a fragment."
+msgstr "Zaznacz tekst, wybierz tagi i dodaj fragment."
+
+msgid "Text"
+msgstr "Tekst"
+
+msgid "Selection"
+msgstr "Zaznaczenie"
+
+msgid "Tags"
+msgstr "Tagi"
+
+msgid "Add fragment"
+msgstr "Dodaj fragment"
+
+msgid "Fragments"
+msgstr "Fragmenty"
+
+msgid "Edit metadata"
+msgstr "Edytuj metadane"
+
+msgid "Delete"
+msgstr "Usuń"
+
+msgid "No fragments yet."
+msgstr "Nie ma jeszcze fragmentów."
+
+msgid "The scan is not a readable PDF file."
+msgstr "Skan nie jest czytelnym plikiem PDF."
+
+msgid "The OCR file is not UTF-8 text. Save it as UTF-8 and upload it again."
+msgstr "Plik OCR nie jest tekstem w UTF-8. Zapisz go w UTF-8 i wgraj ponownie."
+
+#, python-format
+msgid "The scan has %(scan)d page, the OCR file has %(ocr)d."
+msgid_plural "The scan has %(scan)d pages, the OCR file has %(ocr)d."
+msgstr[0] "Skan ma %(scan)d stronę, plik OCR ma %(ocr)d."
+msgstr[1] "Skan ma %(scan)d strony, plik OCR ma %(ocr)d."
+msgstr[2] "Skan ma %(scan)d stron, plik OCR ma %(ocr)d."
+msgstr[3] "Skan ma %(scan)d strony, plik OCR ma %(ocr)d."
+
+msgid "Work"
+msgstr "Utwór"
+
+msgid "Tag"
+msgstr "Tag"
+
+msgid "Fragment"
+msgstr "Fragment"
+
+msgid "Note"
+msgstr "Zapisek"
+
+msgid "Typescript"
+msgstr "Maszynopis"
+
+msgid "Secondary text"
+msgstr "Tekst sekundarny"
+
+msgid "Contextual material"
+msgstr "Materiał kontekstowy"

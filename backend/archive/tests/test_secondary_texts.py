@@ -22,8 +22,8 @@ from archive.tests.test_uploads import form_errors, found
 from search.models import EntityType
 
 ADD_URL = reverse("admin:archive_secondarytext_add")
-BOTH_TEXTS = "Upload a scan and its OCR file, or enter a plain text, not both."
-NO_TEXT = "Upload a scan and its OCR file, or enter a plain text."
+BOTH_TEXTS = "Wgraj skan z plikiem OCR albo wpisz tekst lity, nie jedno i drugie."
+NO_TEXT = "Wgraj skan z plikiem OCR albo wpisz tekst lity."
 
 
 def change_url(secondary_text: SecondaryText) -> str:
