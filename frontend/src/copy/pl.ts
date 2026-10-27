@@ -176,16 +176,10 @@ export const copy = {
   /** The tag page (US-RA-07). */
   tag: {
     /** The hero's type line: "Tag · 4 wystąpienia w 2 utworach". */
-    label: (occurrences: number, works: number) =>
-      [
-        "Tag",
-        [
-          formatCount(occurrences, nouns.occurrence),
-          works > 0 && `w ${formatCount(works, nouns.workLocative)}`,
-        ]
-          .filter(Boolean)
-          .join(" "),
-      ].join(" · "),
+    label: (occurrences: number, works: number) => {
+      const count = `Tag · ${formatCount(occurrences, nouns.occurrence)}`;
+      return works > 0 ? `${count} w ${formatCount(works, nouns.workLocative)}` : count;
+    },
     works: "Utwory",
     /** A work's line in the context column: "2 fragmenty z tagiem". */
     workFragments: (count: number) => `${formatCount(count, nouns.fragment)} z tagiem`,
