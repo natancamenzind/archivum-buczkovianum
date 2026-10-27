@@ -8,7 +8,6 @@ from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
-from django.utils.translation import ngettext
 
 from archive.models import (
     PDF_EXTENSION,
@@ -21,6 +20,14 @@ from archive.models import (
 from archive.uploads import load_ocr_upload
 
 TEXT_EXTENSION = FileExtensionValidator(["txt"])
+
+
+class TypedTextField(forms.CharField):
+    """Text typed into a textarea, with the LF line breaks fragments count by: browsers send
+    CRLF. The stored text then compares equal to an unchanged submission."""
+
+    def to_python(self, value: Any) -> str:
+        return str(super().to_python(value)).replace("\r\n", "\n")
 
 
 class TextUploadForm[M: Archival](forms.ModelForm[M]):
@@ -77,8 +84,7 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
         if scan is None and ocr_file is None:
             if document is None:
                 for name in self.upload_fields:
-                    required = self.fields[name].error_messages["required"]
-                    self.add_error(name, ValidationError(required, code="required"))
+                    self.add_required_error(name)
             return
         if scan is None or ocr_file is None:
             self.add_error(
@@ -94,6 +100,10 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
             return
         self.replaced_scan = replaced_scan
         self.instance.document = self.uploaded_document
+
+    def add_required_error(self, name: str) -> None:
+        required = self.fields[name].error_messages["required"]
+        self.add_error(name, ValidationError(required, code="required"))
 
     def add_error(self, field: str | None, error: Any) -> None:
         """Show the model's errors about `document`, which is not on this form, above the form.
@@ -136,7 +146,7 @@ class PlainTextForm[M: Archival](TextUploadForm[M]):
     `Document`, so a changed text re-anchors its fragments, whichever kind it was before.
     """
 
-    plain_text = forms.CharField(
+    plain_text = TypedTextField(
         label=_("plain text"),
         required=False,
         strip=False,
@@ -144,8 +154,7 @@ class PlainTextForm[M: Archival](TextUploadForm[M]):
         help_text=_("E.g. a letter transcription."),
     )
 
-    # A form error above the form, such as `MediaContentForm`'s, also says more than the model.
-    text_fields = (*TextUploadForm.upload_fields, "plain_text", NON_FIELD_ERRORS)
+    text_fields = (*TextUploadForm.upload_fields, "plain_text")
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -156,21 +165,30 @@ class PlainTextForm[M: Archival](TextUploadForm[M]):
     def clean(self) -> dict[str, Any]:
         cleaned_data = super().clean()
         kind = self.text_kind()
-        if kind == Document.Kind.OCR:
-            return cleaned_data
-        for name in self.upload_fields:
-            if cleaned_data.get(name) is not None:
-                self.add_error(name, _("Leave this empty for this kind of content."))
         if kind == Document.Kind.PLAIN:
             self.take_plain_text()
+        elif "plain_text" in self.changed_data and cleaned_data.get("plain_text"):
+            self.add_error("plain_text", _("Leave this empty for this kind of content."))
+        if kind != Document.Kind.OCR:
+            for name in self.upload_fields:
+                if cleaned_data.get(name) is not None:
+                    self.add_error(name, _("Leave this empty for this kind of content."))
         return cleaned_data
 
+    def take_ocr_upload(self) -> None:
+        """Ask for both files, too, when the item's text is a plain text that becomes OCR."""
+        document = self.instance.document
+        files = [self.cleaned_data.get(name) for name in self.upload_fields]
+        if document is not None and document.kind != Document.Kind.OCR and files == [None, None]:
+            for name in self.upload_fields:
+                self.add_required_error(name)
+            return
+        super().take_ocr_upload()
+
     def take_plain_text(self) -> None:
-        # Browsers send a textarea's line breaks as CRLF; fragments count characters.
-        text = self.cleaned_data.get("plain_text", "").replace("\r\n", "\n")
+        text = self.cleaned_data.get("plain_text", "")
         if not text.strip():
-            required = self.fields["plain_text"].error_messages["required"]
-            self.add_error("plain_text", ValidationError(required, code="required"))
+            self.add_required_error("plain_text")
             return
         document = self.instance.document
         if document is not None and document.kind == Document.Kind.PLAIN and document.text == text:
@@ -188,12 +206,9 @@ class MediaContentForm[M: Note | ContextualMaterial](PlainTextForm[M]):
     """The form of a note or contextual material, whose content is one of five kinds
     (US-WR-05 AC2, US-WR-07 AC2).
 
-    Choosing a content without a text deletes the item's document, unless its fragments would
-    go with it.
+    Choosing a content without a text drops the item's text: saving the item deletes it,
+    unless it has fragments (`Archival`).
     """
-
-    # The text the item no longer has, deleted once the item is saved without it.
-    removed_document: Document | None = None
 
     def text_kind(self) -> str | None:
         return TEXT_CONTENT_KINDS.get(self.cleaned_data.get("content_kind", ""))
@@ -205,29 +220,7 @@ class MediaContentForm[M: Note | ContextualMaterial](PlainTextForm[M]):
         return cleaned_data
 
     def drop_text(self) -> None:
-        """Drop the item's text, but never its fragments: the editor deletes those first."""
         document = self.instance.document
-        if document is None:
-            return
-        count = document.fragments.count()
-        if count:
-            message = ngettext(
-                "The text of this %(item)s has %(count)d tagged fragment.",
-                "The text of this %(item)s has %(count)d tagged fragments.",
-                count,
-            ) % {"item": self.instance._meta.verbose_name, "count": count}
-            self.add_error(
-                None,
-                f"{message} {_('Delete its fragments before choosing another kind of content.')}",
-            )
-            return
-        self.removed_document = document
-        self.replaced_scan = document.scan.name or ""
-        self.instance.document = None
-
-    def save(self, commit: bool = True) -> M:
-        """Delete the dropped text after the item is saved without it."""
-        item = super().save(commit)
-        if self.removed_document is not None:
-            transaction.on_commit(self.removed_document.delete)
-        return item
+        if document is not None:
+            self.replaced_scan = document.scan.name or ""
+            self.instance.document = None

@@ -202,6 +202,41 @@ class TestArchival:
         # Assert
         assert note.pk is None
 
+    def test_us_wr_05_saving_an_item_without_its_text_deletes_the_text(self) -> None:
+        # Arrange
+        secondary_text = SecondaryTextFactory.create()
+        dropped = secondary_text.document
+        assert dropped is not None
+        secondary_text.refresh_from_db()
+        secondary_text.document = DocumentFactory.create()
+
+        # Act
+        secondary_text.full_clean()
+        secondary_text.save()
+
+        # Assert
+        assert not Document.objects.filter(pk=dropped.pk).exists()
+
+    def test_us_wr_09_ac4_a_text_with_fragments_is_never_dropped(self) -> None:
+        # Arrange
+        secondary_text = SecondaryTextFactory.create()
+        assert secondary_text.document is not None
+        FragmentFactory.create_batch(2, document=secondary_text.document)
+        secondary_text.refresh_from_db()
+        secondary_text.document = DocumentFactory.create()
+
+        # Act
+        with pytest.raises(ValidationError) as error:
+            secondary_text.full_clean()
+
+        # Assert
+        assert error.value.message_dict == {
+            "document": [
+                "The text this item holds has 2 tagged fragments. "
+                "Delete them before removing the text."
+            ]
+        }
+
     def test_a_text_belongs_to_one_item_only(self) -> None:
         # Arrange
         typescript = TypescriptFactory.create()

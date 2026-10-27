@@ -330,9 +330,7 @@ class TestNoteForm:
         )
 
         # Assert
-        assert form_errors(without_files) == {
-            "__all__": ["Choose a text of kind “Scan + OCR text”."]
-        }
+        assert form_errors(without_files) == {"scan": REQUIRED, "ocr_file": REQUIRED}
         assert with_files.status_code == 302
         stored = Document.objects.get(pk=document.pk)
         assert (stored.kind, stored.text) == (Document.Kind.OCR, "Skan.")
@@ -377,8 +375,8 @@ class TestNoteForm:
         # Assert
         assert form_errors(response) == {
             "__all__": [
-                "The text of this note has 1 tagged fragment. "
-                "Delete its fragments before choosing another kind of content."
+                "The text this item holds has 1 tagged fragment. "
+                "Delete them before removing the text."
             ]
         }
         note.refresh_from_db()
@@ -404,7 +402,29 @@ class TestNoteForm:
 
         # Assert
         empty = ["Leave this empty for this kind of content."]
-        assert form_errors(response) == {"scan": empty, "ocr_file": empty}
+        expected = {"scan": empty, "ocr_file": empty}
+        if content_kind == ContentKind.EXTERNAL_MEDIA:
+            expected["plain_text"] = empty
+        assert form_errors(response) == expected
+
+    def test_us_wr_05_ac2_an_unchanged_multiline_text_is_not_a_change(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange: the browser sends the stored LF text back with CRLF
+        note = note_with_text()
+        assert note.document is not None
+        note.document.text = "Drogi Panie,\ndziękuję."
+        note.document.save()
+        data = note_data(note, plain_text="Drogi Panie,\r\ndziękuję.")
+
+        # Act
+        response = admin_client.get(change_url(note))
+        form = response.context["adminform"].form
+        bound = type(form)(data, instance=note)
+
+        # Assert
+        assert bound.is_valid(), bound.errors
+        assert "plain_text" not in bound.changed_data
 
     def test_us_wr_05_ac2_saving_indexes_the_text(self, admin_client: Client) -> None:
         # Arrange

@@ -17,6 +17,7 @@ from django.db import models, transaction
 from django.db.models import Expression, F, Func, OuterRef, Q, Subquery, Value
 from django.utils.text import Truncator
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 
 from search.models import EntityType, IndexedContent, SearchEntry, Weight
 
@@ -198,6 +199,50 @@ class Archival(models.Model):
     class Meta:
         abstract = True
 
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """Delete the text the item no longer holds, which has no meaning on its own."""
+        dropped = self._indexed_document_id
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            if dropped not in (None, self.document_id):
+                for document in Document.objects.filter(pk=dropped):
+                    document.delete()
+
+    def clean(self) -> None:
+        super().clean()
+        dropped = self._indexed_document_id
+        if dropped not in (None, self.document_id):
+            count = Fragment.objects.filter(document_id=dropped).count()
+            if count:
+                message = ngettext(
+                    "The text this item holds has %(count)d tagged fragment.",
+                    "The text this item holds has %(count)d tagged fragments.",
+                    count,
+                ) % {"count": count}
+                raise ValidationError(
+                    {"document": f"{message} {_('Delete them before removing the text.')}"}
+                )
+        if self.document is None:
+            if self.document_required:
+                raise ValidationError({"document": _("This item needs a text.")})
+            return
+        if self.document.owner not in (None, self):
+            raise ValidationError({"document": _("This text already belongs to another item.")})
+        kind = self.required_document_kind()
+        if kind and self.document.kind != kind:
+            raise ValidationError(
+                {"document": _("Choose a text of kind “%s”.") % Document.Kind(kind).label}
+            )
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        """Delete the item together with its document, which has no meaning on its own."""
+        document = self.document
+        with transaction.atomic():
+            result = super().delete(*args, **kwargs)
+            if document is not None:
+                document.delete()
+        return result
+
     @property
     def shelfmark_display(self) -> str:
         return format_shelfmark(self.institution, self.shelfmark)
@@ -258,29 +303,6 @@ class Archival(models.Model):
         item = super().from_db(db, field_names, values, **kwargs)
         item._indexed_document_id = item.__dict__.get("document_id")
         return item
-
-    def clean(self) -> None:
-        super().clean()
-        if self.document is None:
-            if self.document_required:
-                raise ValidationError({"document": _("This item needs a text.")})
-            return
-        if self.document.owner not in (None, self):
-            raise ValidationError({"document": _("This text already belongs to another item.")})
-        kind = self.required_document_kind()
-        if kind and self.document.kind != kind:
-            raise ValidationError(
-                {"document": _("Choose a text of kind “%s”.") % Document.Kind(kind).label}
-            )
-
-    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
-        """Delete the item together with its document, which has no meaning on its own."""
-        document = self.document
-        with transaction.atomic():
-            result = super().delete(*args, **kwargs)
-            if document is not None:
-                document.delete()
-        return result
 
 
 class ContentKind(models.TextChoices):

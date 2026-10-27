@@ -48,7 +48,9 @@ class SearchIndexedAdmin[M: Publishable | Fragment](admin.ModelAdmin[M]):
         Tag.update_search_entries()
 
 
-class TextUploadAdmin[M: Typescript | Note | ContextualMaterial](SearchIndexedAdmin[M]):
+class TextUploadAdmin[M: Typescript | Note | SecondaryText | ContextualMaterial](
+    SearchIndexedAdmin[M]
+):
     """The admin of an item whose form uploads its text (`TextUploadForm`)."""
 
     readonly_fields = ("current_scan", "page_count")
@@ -62,7 +64,7 @@ class TextUploadAdmin[M: Typescript | Note | ContextualMaterial](SearchIndexedAd
 
     @admin.display(description=_("pages"))
     def page_count(self, obj: M) -> int | None:
-        return obj.document.page_count if obj.document and obj.document.scan else None
+        return None if obj.document is None else obj.document.page_count
 
 
 class MediaContentAdmin[M: Note | ContextualMaterial](TextUploadAdmin[M]):
