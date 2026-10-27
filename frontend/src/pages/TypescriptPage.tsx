@@ -135,8 +135,11 @@ function Fragments({ typescript, document }: { typescript: TypescriptData; docum
         <ArrowLink
           label={copy.typescript.allFragments(total)}
           to={`?fragments=${ALL_FRAGMENTS}`}
-          onClick={() => {
-            expanding.current = true;
+          onClick={(event) => {
+            // A modified click opens another tab; this list does not expand.
+            expanding.current =
+              event.button === 0 &&
+              !(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey);
           }}
         />
       )}

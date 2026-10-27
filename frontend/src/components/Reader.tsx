@@ -77,7 +77,7 @@ function ScanPage({
 /** What the reader shows of a clicked fragment: its number, location and tags (R-11 AC2). */
 function FragmentDetails({ fragment }: { fragment: Fragment }) {
   return (
-    <div className="flex flex-col gap-8 rounded-sm border border-border bg-card p-16">
+    <div className="mt-16 flex flex-col gap-8 rounded-sm border border-border bg-card p-16">
       <p className="text-cousine-metadane text-foreground">
         {[fragmentLabel(fragment.number), fragment.location].filter(Boolean).join(" · ")}
       </p>
@@ -99,14 +99,15 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
   const [view, setView] = useState<View>(target === null ? "scan" : "text");
   const textColumn = useRef<HTMLDivElement>(null);
 
-  // R-11 AC3: opened with a fragment reference, the reader scrolls to it.
+  // R-11 AC3: opened with a fragment reference, the reader scrolls to it, and again if a scan
+  // that cannot be opened leaves the text alone, at full width.
   useEffect(() => {
     if (target !== null) {
       textColumn.current
         ?.querySelector(`[data-fragments~="${String(target)}"]`)
         ?.scrollIntoView({ block: "center" });
     }
-  }, [target]);
+  }, [target, scanFailed]);
 
   const { text, page_offsets: offsets, fragments } = document;
   const pageCount = offsets.length;
@@ -189,7 +190,7 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
             )}
             <div
               className={cn(
-                "flex flex-col gap-16",
+                "flex flex-col",
                 hasScans ? view === "scan" && "hidden md:flex" : "md:col-span-2",
               )}
             >
@@ -232,7 +233,7 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
                 })}
               </p>
               {/* A live region, so a screen reader reads the details of a selected fragment. */}
-              <div aria-live="polite" className="empty:hidden">
+              <div aria-live="polite">
                 {selectedFragment !== undefined && selectedPage === index + 1 && (
                   <FragmentDetails fragment={selectedFragment} />
                 )}

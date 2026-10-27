@@ -1,3 +1,4 @@
+import type { MouseEventHandler } from "react";
 import { Link } from "react-router";
 
 import { ArrowRightIcon } from "@/components/icons";
@@ -6,7 +7,7 @@ interface ArrowLinkProps {
   /** Names the target and its count, e.g. "Wszystkie fragmenty (24)" (R-09). */
   label: string;
   to: string;
-  onClick?: () => void;
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
 }
 
 /**

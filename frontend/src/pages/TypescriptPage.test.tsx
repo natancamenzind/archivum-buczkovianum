@@ -240,6 +240,11 @@ describe("TypescriptPage", () => {
     expect(within(scan).getByText("2 strony")).toBeVisible();
     expect(await within(scan).findByText("Skan · strona 1 z 2")).toBeVisible();
     expect(within(scan).getByText("Skan · strona 2 z 2")).toBeVisible();
+    // Before pdf.js draws it, a page keeps A4 proportions, so the reader does not jump.
+    for (const page of within(scan).getAllByRole("img", { name: /Skan · strona/ })) {
+      expect(page).toHaveAttribute("width", "210");
+      expect(page).toHaveAttribute("height", "297");
+    }
     const paragraphs = Array.from(scan.querySelectorAll("p.whitespace-pre-wrap"));
     expect(paragraphs.map((p) => p.textContent)).toEqual([
       "Pierwsza strona tekstu. ",
@@ -506,9 +511,11 @@ describe("TypescriptPage", () => {
       http.get("*/media/scans/missing.pdf", () => new HttpResponse(null, { status: 404 })),
     );
 
-    await renderPage();
+    await renderPage("/typescripts/1?fragment=7");
 
     expect(await screen.findByText("Nie udało się wczytać skanu.")).toBeVisible();
+    // The text, now at full width, is scrolled to the fragment again.
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
     expect(screen.queryByRole("img", { name: /Skan · strona/ })).not.toBeInTheDocument();
     // On mobile the reader shows the text, without a toggle to the missing scan.
     expect(screen.queryByRole("group", { name: "Widok" })).not.toBeInTheDocument();
