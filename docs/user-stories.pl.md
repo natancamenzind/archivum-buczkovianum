@@ -211,7 +211,7 @@ Nie ma jej w Figmie; używa układu strony tekstu sekundarnego.
 ### US-RA-20 — Lista tagów
 
 1. Otwierana z pozycji „Tagi” w menu głównym (R-07).
-2. Chmura tagów (US-RA-01 AC4), potem „Wszystkie tagi”: każdy opublikowany tag, alfabetycznie, z liczbą wystąpień („4 wystąpienia”).
+2. Chmura tagów (US-RA-01 AC4), potem „Wszystkie tagi”: każdy opublikowany tag z co najmniej jednym wystąpieniem, te same tagi co w chmurze, alfabetycznie, z liczbą wystąpień („4 wystąpienia”).
 
 Na telefonie wszystkie trzy listy mają jedną kolumnę z tych samych komponentów.
 

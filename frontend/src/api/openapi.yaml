@@ -109,6 +109,26 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/tags/:
+    get:
+      operationId: tags_list
+      description: |-
+        The tags list (US-RA-20): published tags with at least one occurrence (D26), the most
+        frequent first. The cloud and the alphabetical index both take this one list.
+      tags:
+      - tags
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TagCount'
+          description: ''
   /api/typescripts/:
     get:
       operationId: typescripts_list
@@ -264,6 +284,27 @@ components:
           type: boolean
           readOnly: true
           description: The text changed. Check the fragment, then clear this box.
+    TagCount:
+      type: object
+      description: A tag with its occurrence count (US-RA-20), from a queryset with
+        `with_occurrences()`.
+      properties:
+        slug:
+          type: string
+          readOnly: true
+          description: Part of the page address.
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          readOnly: true
+          title: Name
+        occurrences:
+          type: integer
+          readOnly: true
+      required:
+      - occurrences
+      - slug
+      - title
     TeamGroup:
       type: object
       properties:
