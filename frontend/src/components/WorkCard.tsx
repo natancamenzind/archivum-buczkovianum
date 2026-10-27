@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { copy, formatCount, nouns } from "@/copy/pl";
 import { cn } from "@/lib/utils";
 
-type Work = components["schemas"]["WorkCard"];
+export type Work = components["schemas"]["WorkCard"];
 
 /** The cover, or the placeholder board when the work has none (plan D25). */
 function Cover({ work }: { work: Work }) {
@@ -43,9 +43,7 @@ function Cover({ work }: { work: Work }) {
  */
 export function WorkCard({ work }: { work: Work }) {
   // Genre and year, leaving out whichever is missing (R-02).
-  const meta = [work.genre, work.year === null ? "" : String(work.year)]
-    .filter((part) => part !== "")
-    .join(" · ");
+  const meta = [work.genre, work.year].filter(Boolean).join(" · ");
 
   return (
     <Link

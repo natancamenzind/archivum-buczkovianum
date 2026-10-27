@@ -28,14 +28,13 @@ describe("SectionHeader", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("D24: the counter and description are each optional", () => {
-    const { unmount } = render(<SectionHeader title="Fragmenty" count="2 z 24" />);
-    expect(screen.getByText("2 z 24")).toBeVisible();
-    expect(document.querySelectorAll("p")).toHaveLength(1);
-    unmount();
+  it.each([
+    ["counter", { count: "2 z 24" }, "2 z 24"],
+    ["description", { description: "Wybór redakcji" }, "Wybór redakcji"],
+  ])("D24: the %s alone is shown without the other", (_, props, text) => {
+    render(<SectionHeader title="Fragmenty" {...props} />);
 
-    render(<SectionHeader title="Fragmenty" description="Wybór redakcji" />);
-    expect(screen.getByText("Wybór redakcji")).toBeVisible();
+    expect(screen.getByText(text)).toBeVisible();
     expect(document.querySelectorAll("p")).toHaveLength(1);
   });
 });

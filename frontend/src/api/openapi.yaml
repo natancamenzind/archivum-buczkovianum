@@ -11,36 +11,36 @@ paths:
 
         Empty groups are left out (R-02), so the page renders every group it gets.
       tags:
-      - about
+        - about
       security:
-      - cookieAuth: []
-      - {}
+        - cookieAuth: []
+        - {}
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AboutPage'
-          description: ''
+                $ref: "#/components/schemas/AboutPage"
+          description: ""
   /api/works/:
     get:
       operationId: works_list
-      description: 'The works list (US-RA-18): every published work as a card, by
-        first edition.'
+      description: "The works list (US-RA-18): every published work as a card, by
+        first edition."
       tags:
-      - works
+        - works
       security:
-      - cookieAuth: []
-      - {}
+        - cookieAuth: []
+        - {}
       responses:
-        '200':
+        "200":
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/WorkCard'
-          description: ''
+                  $ref: "#/components/schemas/WorkCard"
+          description: ""
 components:
   schemas:
     AboutPage:
@@ -54,17 +54,17 @@ components:
         team:
           type: array
           items:
-            $ref: '#/components/schemas/TeamGroup'
+            $ref: "#/components/schemas/TeamGroup"
           description: Groups that have members, in the order of TeamMember.Group.
       required:
-      - intro
-      - project
-      - team
+        - intro
+        - project
+        - team
     GroupEnum:
       enum:
-      - leadership
-      - team
-      - site
+        - leadership
+        - team
+        - site
       type: string
       description: |-
         * `leadership` - Project leadership
@@ -74,14 +74,14 @@ components:
       type: object
       properties:
         group:
-          $ref: '#/components/schemas/GroupEnum'
+          $ref: "#/components/schemas/GroupEnum"
         members:
           type: array
           items:
-            $ref: '#/components/schemas/TeamMember'
+            $ref: "#/components/schemas/TeamMember"
       required:
-      - group
-      - members
+        - group
+        - members
     TeamMember:
       type: object
       properties:
@@ -95,9 +95,9 @@ components:
           type: string
           readOnly: true
       required:
-      - bio
-      - name
-      - role
+        - bio
+        - name
+        - role
     WorkCard:
       type: object
       description: |-
@@ -133,13 +133,13 @@ components:
           readOnly: true
           description: Visible fragments of the main typescript (D19); 0 without one.
       required:
-      - cover_image
-      - cover_image_alt
-      - fragment_count
-      - genre
-      - slug
-      - title
-      - year
+        - cover_image
+        - cover_image_alt
+        - fragment_count
+        - genre
+        - slug
+        - title
+        - year
   securitySchemes:
     cookieAuth:
       type: apiKey

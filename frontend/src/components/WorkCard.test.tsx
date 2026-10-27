@@ -2,11 +2,8 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 
-import type { components } from "@/api/schema";
-import { WorkCard } from "@/components/WorkCard";
+import { type Work, WorkCard } from "@/components/WorkCard";
 import { axeViolations } from "@/test/render";
-
-type Work = components["schemas"]["WorkCard"];
 
 const WERTEPY: Work = {
   slug: "wertepy",
@@ -83,13 +80,13 @@ describe("WorkCard", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("R-02: a missing year or genre is left out of the type line", () => {
-    const { unmount } = renderCard({ year: null });
-    expect(screen.getByText("powieść")).toBeVisible();
-    unmount();
+  it.each([
+    ["year", { year: null }, "powieść"],
+    ["genre", { genre: "" }, "1947"],
+  ])("R-02: a missing %s is left out of the type line", (_, overrides, text) => {
+    renderCard(overrides);
 
-    renderCard({ genre: "" });
-    expect(screen.getByText("1947")).toBeVisible();
+    expect(screen.getByText(text)).toBeVisible();
   });
 
   it("R-02: without genre and year there is no type line", () => {
