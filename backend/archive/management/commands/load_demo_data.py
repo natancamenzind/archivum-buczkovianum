@@ -1,7 +1,7 @@
 """Load the sample archive of design/rules.md ("Dane przykładowe"), to try the site by hand.
 
 Everything goes through `full_clean()` and `save()`, so the search index is filled as it would be
-by an editor. archive/demo/README.md says where the scans and OCR texts come from.
+by an editor. The scans and OCR texts in archive/demo/ are placeholders, not Buczkowski's texts.
 """
 
 import re

@@ -11,7 +11,13 @@ from django.core.management.base import CommandError
 from archive.management.commands import load_demo_data
 from archive.management.commands.load_demo_data import spread_sentences
 from archive.models import Document, Fragment, Status, Tag, Typescript, Work
-from archive.tests.factories import TagFactory, TeamMemberFactory, WorkFactory
+from archive.tests.factories import (
+    InstitutionFactory,
+    SiteSettingsFactory,
+    TagFactory,
+    TeamMemberFactory,
+    WorkFactory,
+)
 from search.models import SearchEntry
 
 
@@ -119,7 +125,10 @@ class TestDemoData:
         assert index() == loaded
         assert len(loaded) == 4 + 12 + 62 + 5 + 1 + 2 + 1
 
-    @pytest.mark.parametrize("factory", [WorkFactory, TagFactory, TeamMemberFactory])
+    @pytest.mark.parametrize(
+        "factory",
+        [WorkFactory, TagFactory, InstitutionFactory, TeamMemberFactory, SiteSettingsFactory],
+    )
     def test_refuses_an_archive_that_is_not_empty(self, factory: type[WorkFactory]) -> None:
         # Arrange
         factory.create()

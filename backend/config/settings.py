@@ -125,7 +125,9 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
-SEARCH_TS_CONFIG = "polish"
+# PostgreSQL 19 ships `polish`. A dev database without it may set `simple`, losing only
+# inflection (docs/plan.md, D17).
+SEARCH_TS_CONFIG = os.environ.get("SEARCH_TS_CONFIG", "polish")
 
 # How many items a section preview shows before its "all" link (R-09).
 PREVIEW_LIMIT = 2

@@ -3,6 +3,7 @@
 from io import StringIO
 
 import pytest
+from django.conf import settings
 from django.core.management import call_command
 from django.db import connection
 from django.test import Client
@@ -37,14 +38,14 @@ def stored(entity_type: EntityType, entity_id: int) -> SearchEntry:
 
 
 @pytest.mark.django_db
-def test_polish_text_search_config_exists() -> None:
-    """Architecture section 6: PostgreSQL 19 ships the `polish` configuration."""
+def test_the_text_search_config_exists() -> None:
+    """Architecture section 6: the database has the configured configuration (`polish` in CI)."""
     # Arrange
-    sql = "SELECT 1 FROM pg_ts_config WHERE cfgname = 'polish'"
+    sql = "SELECT 1 FROM pg_ts_config WHERE cfgname = %s"
 
     # Act
     with connection.cursor() as cursor:
-        cursor.execute(sql)
+        cursor.execute(sql, [settings.SEARCH_TS_CONFIG])
         found = cursor.fetchone()
 
     # Assert

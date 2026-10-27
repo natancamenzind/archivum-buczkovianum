@@ -49,3 +49,13 @@ def test_frontend_build_is_a_static_dir_only_once_built(
 
     expected = [settings.FRONTEND_DIST_DIR] if built else []
     assert expected == settings.STATICFILES_DIRS
+
+
+def test_search_config_is_polish_unless_the_env_says_otherwise(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType
+) -> None:
+    monkeypatch.delenv("SEARCH_TS_CONFIG", raising=False)
+    assert importlib.reload(reload_settings).SEARCH_TS_CONFIG == "polish"
+
+    monkeypatch.setenv("SEARCH_TS_CONFIG", "simple")
+    assert importlib.reload(reload_settings).SEARCH_TS_CONFIG == "simple"
