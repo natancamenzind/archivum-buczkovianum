@@ -6,13 +6,15 @@ in field definitions, database constraints, `clean()` and `save()`. There are no
 
 from bisect import bisect_right
 from collections.abc import Collection
-from typing import Any, Self
+from dataclasses import dataclass
+from typing import Any, ClassVar, Self
 
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
-from django.db.models import F, Min, Q
+from django.db.models import Expression, F, Func, OuterRef, Q, Subquery, Value
 from django.utils.text import Truncator
 from django.utils.translation import gettext_lazy as _
 
@@ -65,6 +67,38 @@ class Status(models.TextChoices):
     PUBLISHED = "published", _("Published")
 
 
+def count_of(queryset: "models.QuerySet[Any]") -> Subquery:
+    """The number of rows in `queryset`, as a subquery that may refer to the outer query."""
+    rows = queryset.order_by().annotate(rows=Func(F("pk"), function="COUNT")).values("rows")
+    return Subquery(rows, output_field=models.IntegerField())
+
+
+@dataclass(frozen=True)
+class Preview[M: models.Model]:
+    """The first items of a section, with the count of all of them: "2 z 24" (R-09)."""
+
+    items: list[M]
+    total: int
+
+
+def preview[M: models.Model](queryset: "models.QuerySet[M]") -> Preview[M]:
+    """The first `PREVIEW_LIMIT` items of an ordered queryset (architecture section 4.5)."""
+    return Preview(items=list(queryset[: settings.PREVIEW_LIMIT]), total=queryset.count())
+
+
+def published_q(prefix: str = "") -> Q:
+    """What the public may see (R-06): `prefix` leads to a published entity.
+
+    Drafts are never listed, even for editors.
+    """
+    return Q(**{f"{prefix}status": Status.PUBLISHED})
+
+
+class PublishableQuerySet[M: "Publishable"](models.QuerySet[M]):
+    def published(self) -> Self:
+        return self.filter(published_q())
+
+
 class Publishable(BaseModel):
     """A public entity with its own page. Only published entities are public (R-06)."""
 
@@ -95,11 +129,17 @@ class Taggable(models.Model):
     class Meta:
         abstract = True
 
+    def published_tags(self) -> "TagQuerySet":
+        """The tags shown with this item. Draft tags never are (R-06)."""
+        return Tag.objects.published().filter(pk__in=self.tags.values("pk"))
+
 
 class Archival(models.Model):
     """An item held by an institution under a shelfmark, optionally with a text (`Document`)."""
 
     document_required = False
+    # The reverse name from `Work` to this kind of item.
+    works_lookup: ClassVar[str]
 
     institution = models.ForeignKey(
         "Institution",
@@ -132,6 +172,10 @@ class Archival(models.Model):
     def required_document_kind(self) -> str | None:
         """The kind of `Document` this item's text must be, or None for any kind."""
         return None
+
+    def related_works(self) -> "WorkQuerySet":
+        """The published works this item relates to, by first edition (R-03)."""
+        return Work.objects.published().filter(**{self.works_lookup: self}).with_year()
 
     def clean(self) -> None:
         super().clean()
@@ -224,6 +268,26 @@ class Institution(BaseModel):
         return self.abbreviation
 
 
+class TagQuerySet(PublishableQuerySet["Tag"]):
+    def with_occurrences(self) -> Self:
+        """Annotate `occurrences`: the visible fragments, published items and visible work links
+        carrying the tag (glossary, "Occurrence")."""
+        carriers: list[models.QuerySet[Any]] = [
+            Fragment.objects.visible(),
+            Work.objects.published(),
+            Typescript.objects.published(),
+            Note.objects.published(),
+            SecondaryText.objects.published(),
+            ContextualMaterial.objects.published(),
+            SecondaryTextWorkLink.objects.visible(),
+            MaterialWorkLink.objects.visible(),
+        ]
+        occurrences: Expression = Value(0)
+        for carrier in carriers:
+            occurrences += count_of(carrier.filter(tags=OuterRef("pk")))
+        return self.annotate(occurrences=occurrences)
+
+
 class Tag(Publishable):
     class Kind(models.TextChoices):
         KEYWORD = "keyword", _("Buczkowski's keyword")
@@ -237,6 +301,10 @@ class Tag(Publishable):
         help_text=_("Only for filtering in the editor panel. Never public."),
     )
     related = models.ManyToManyField("self", blank=True, help_text=_("Works both ways."))
+
+    objects = TagQuerySet.as_manager()
+    # Set only by `TagQuerySet.with_occurrences()`.
+    occurrences: int
 
     def get_absolute_url(self) -> str:
         return f"/tags/{self.slug}"
@@ -262,11 +330,34 @@ class Tag(Publishable):
         return super().delete(*args, **kwargs)
 
 
-class WorkQuerySet(models.QuerySet["Work"]):
-    def with_year(self) -> "WorkQuerySet":
+def first_edition_year(work: str = "pk") -> Subquery:
+    """The year of a work: its earliest edition (architecture section 4.2).
+
+    `work` names the field of the outer query that holds the work's id.
+    """
+    years = Edition.objects.filter(work=OuterRef(work)).order_by("year").values("year")
+    return Subquery(years[:1])
+
+
+class WorkQuerySet(PublishableQuerySet["Work"]):
+    def with_year(self) -> Self:
         """Annotate the year of the first edition and order by it, as everywhere on the site."""
-        return self.annotate(year=Min("editions__year")).order_by(
+        return self.annotate(year=first_edition_year()).order_by(
             F("year").asc(nulls_last=True), "title"
+        )
+
+    def referred_to_by(self, tag: "Tag") -> Self:
+        """The works a tag refers to (US-RA-07 AC5): the tag is on the work, on a published item
+        related to it, on a visible fragment of such an item, or on a visible work link."""
+        carrying = Q(tags=tag) | Q(document__fragments__tags=tag)
+        return self.filter(
+            Q(tags=tag)
+            | Q(pk__in=Typescript.objects.published().filter(carrying).values("work"))
+            | Q(pk__in=Note.objects.published().filter(carrying).values("works"))
+            | Q(pk__in=SecondaryText.objects.published().filter(carrying).values("works"))
+            | Q(pk__in=ContextualMaterial.objects.published().filter(carrying).values("works"))
+            | Q(pk__in=SecondaryTextWorkLink.objects.visible().filter(tags=tag).values("work"))
+            | Q(pk__in=MaterialWorkLink.objects.visible().filter(tags=tag).values("work"))
         )
 
 
@@ -277,6 +368,8 @@ class Work(Publishable, Taggable):
     cover_image_alt = models.CharField(max_length=255, blank=True)
 
     objects = WorkQuerySet.as_manager()
+    # Set only by `WorkQuerySet.with_year()`.
+    year: int | None
 
     def get_absolute_url(self) -> str:
         return f"/works/{self.slug}"
@@ -299,6 +392,7 @@ class Edition(BaseModel):
 
 class Typescript(Publishable, Taggable, Archival):
     document_required = True
+    works_lookup = "typescripts"
 
     work = models.ForeignKey(Work, on_delete=models.PROTECT, related_name="typescripts")
     is_main = models.BooleanField(
@@ -306,6 +400,8 @@ class Typescript(Publishable, Taggable, Archival):
         default=False,
         help_text=_("One per work. Marking this one unmarks the previous one."),
     )
+
+    objects = PublishableQuerySet["Typescript"].as_manager()
 
     class Meta:
         ordering = ("shelfmark", "title")
@@ -336,7 +432,11 @@ class Typescript(Publishable, Taggable, Archival):
 
 
 class Note(Publishable, Taggable, MediaContent):
+    works_lookup = "notes"
+
     works = models.ManyToManyField(Work, related_name="notes")
+
+    objects = PublishableQuerySet["Note"].as_manager()
 
     def get_absolute_url(self) -> str:
         return f"/notes/{self.pk}"
@@ -351,6 +451,7 @@ class SecondaryText(Publishable, Taggable, Archival):
         OTHER = "other", _("Other")
 
     document_required = True
+    works_lookup = "secondary_texts"
 
     kind = models.CharField(max_length=20, choices=Kind.choices)
     author = models.CharField(max_length=255, blank=True)
@@ -364,15 +465,27 @@ class SecondaryText(Publishable, Taggable, Archival):
         Work, through="SecondaryTextWorkLink", related_name="secondary_texts"
     )
 
+    objects = PublishableQuerySet["SecondaryText"].as_manager()
+
     def get_absolute_url(self) -> str:
         return f"/secondary-texts/{self.pk}"
 
 
 class ContextualMaterial(Publishable, Taggable, MediaContent):
+    works_lookup = "materials"
+
     works = models.ManyToManyField(Work, through="MaterialWorkLink", related_name="materials")
+
+    objects = PublishableQuerySet["ContextualMaterial"].as_manager()
 
     def get_absolute_url(self) -> str:
         return f"/materials/{self.pk}"
+
+
+class WorkLinkQuerySet[L: "SecondaryTextWorkLink | MaterialWorkLink"](models.QuerySet[L]):
+    def visible(self) -> Self:
+        """Links whose work and linked item are both published."""
+        return self.filter(published_q("work__"), published_q(f"{self.model.item_field}__"))
 
 
 class SecondaryTextWorkLink(BaseModel, Taggable):
@@ -382,6 +495,9 @@ class SecondaryTextWorkLink(BaseModel, Taggable):
         SecondaryText, on_delete=models.CASCADE, related_name="work_links"
     )
     work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="secondary_text_links")
+
+    item_field = "secondary_text"
+    objects = WorkLinkQuerySet["SecondaryTextWorkLink"].as_manager()
 
     class Meta:
         constraints = (
@@ -401,6 +517,9 @@ class MaterialWorkLink(BaseModel, Taggable):
         ContextualMaterial, on_delete=models.CASCADE, related_name="work_links"
     )
     work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="material_links")
+
+    item_field = "material"
+    objects = WorkLinkQuerySet["MaterialWorkLink"].as_manager()
 
     class Meta:
         constraints = (
@@ -514,6 +633,30 @@ class Document(BaseModel):
             )
 
 
+class FragmentQuerySet(models.QuerySet["Fragment"]):
+    def visible(self) -> Self:
+        """Fragments whose document's owner is published, whichever kind it is (architecture
+        section 4.4, D4)."""
+        owner_published = Q()
+        for owner in Document.owner_accessors():
+            owner_published |= published_q(f"document__{owner}__")
+        return self.filter(owner_published)
+
+    def with_number(self) -> Self:
+        """Annotate `number`: the 1-based position among all the fragments of its document,
+        by `start` (architecture section 4.2), whatever else the query filters out."""
+        earlier = Fragment.objects.filter(document=OuterRef("document")).filter(
+            Q(start__lt=OuterRef("start"))
+            | Q(start=OuterRef("start"), end__lt=OuterRef("end"))
+            | Q(start=OuterRef("start"), end=OuterRef("end"), pk__lt=OuterRef("pk"))
+        )
+        return self.annotate(number=count_of(earlier) + 1)
+
+    def preview(self) -> Preview["Fragment"]:
+        """Featured fragments first, then text order (R-09)."""
+        return preview(self.order_by("-is_featured", "document_id", "start", "end", "pk"))
+
+
 class Fragment(BaseModel, Taggable):
     """A tagged character range of a document's text. Fragments may overlap freely."""
 
@@ -537,6 +680,10 @@ class Fragment(BaseModel, Taggable):
         default=False,
         help_text=_("The text changed and the fragment was not found again."),
     )
+
+    objects = FragmentQuerySet.as_manager()
+    # Set only by `FragmentQuerySet.with_number()`.
+    number: int
 
     class Meta:
         ordering = ("document", "start", "end")
