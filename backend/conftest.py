@@ -5,6 +5,12 @@ from pytest_django.fixtures import Settings
 
 
 @pytest.fixture(autouse=True)
+def _fast_password_hasher(settings: Settings) -> None:
+    """PBKDF2 takes ~0.1 s per password, and every `admin_client` hashes one."""
+    settings.PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
+
+@pytest.fixture(autouse=True)
 def _plain_static_storage(settings: Settings) -> None:
     """Tests run without collectstatic, so the manifest storage has nothing to read."""
     settings.STORAGES = {
