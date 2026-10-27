@@ -73,7 +73,9 @@ class TestTagsEndpoint:
         # Assert
         assert [tag["title"] for tag in result] == ["Wojna"]
 
-    def test_us_ra_20_ac2_every_tag_in_use_is_listed(self, client: Client) -> None:
+    def test_us_ra_20_ac2_every_tag_in_use_is_listed_the_most_frequent_first(
+        self, client: Client
+    ) -> None:
         # Arrange
         for title, occurrences in (("Zima", 2), ("Wojna", 31), ("Dezerter", 4)):
             used_tag(occurrences, title=title)
@@ -82,11 +84,11 @@ class TestTagsEndpoint:
         result = tags(client)
 
         # Assert
-        assert {tag["title"]: tag["occurrences"] for tag in result} == {
-            "Zima": 2,
-            "Wojna": 31,
-            "Dezerter": 4,
-        }
+        assert [(tag["title"], tag["occurrences"]) for tag in result] == [
+            ("Wojna", 31),
+            ("Dezerter", 4),
+            ("Zima", 2),
+        ]
 
     @pytest.mark.parametrize("method", ("post", "put", "patch", "delete"))
     def test_tags_rejects_writes(self, client: Client, method: str) -> None:

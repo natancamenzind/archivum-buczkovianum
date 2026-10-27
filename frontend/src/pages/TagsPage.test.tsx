@@ -94,7 +94,7 @@ describe("TagsPage", () => {
   it("US-RA-20 AC2: 'Wszystkie tagi' lists every tag in Polish alphabetical order", async () => {
     mockTags();
 
-    renderRoute("/tags");
+    const { container } = renderRoute("/tags");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie tagi" });
     const index = section("Wszystkie tagi");
@@ -103,24 +103,26 @@ describe("TagsPage", () => {
     expect(indexRows().map((row) => within(row).getByRole("link").firstChild?.textContent)).toEqual(
       ["Dezerter", "Las", "Łąka", "Mak", "Sad", "Ślad", "Wojna"],
     );
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("US-RA-20 AC2: each row shows the occurrence count with the right plural", async () => {
     mockTags();
 
-    renderRoute("/tags");
+    const { container } = renderRoute("/tags");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie tagi" });
     const index = section("Wszystkie tagi");
     expect(within(index).getByRole("link", { name: "Las 1 wystąpienie" })).toBeVisible();
     expect(within(index).getByRole("link", { name: "Dezerter 4 wystąpienia" })).toBeVisible();
     expect(within(index).getByRole("link", { name: "Ślad 5 wystąpień" })).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("US-RA-20 AC2: each row links to its tag page (R-01)", async () => {
     mockTags();
 
-    renderRoute("/tags");
+    const { container } = renderRoute("/tags");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie tagi" });
     expect(indexRows().map((row) => within(row).getByRole("link").getAttribute("href"))).toEqual([
@@ -132,30 +134,33 @@ describe("TagsPage", () => {
       "/tags/slad",
       "/tags/wojna",
     ]);
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("US-RA-20: one column on mobile, two on desktop", async () => {
     mockTags();
 
-    renderRoute("/tags");
+    const { container } = renderRoute("/tags");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie tagi" });
     const list = within(section("Wszystkie tagi")).getByRole("list");
     expect(list).toHaveClass("md:columns-2");
     expect(list).not.toHaveClass("columns-2");
     expect(section("Chmura tagów")).toHaveClass("p-card-mobile", "md:p-card");
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("US-RA-20: without tags in use both sections are hidden (R-02)", async () => {
     mockTags([]);
 
-    renderRoute("/tags");
+    const { container } = renderRoute("/tags");
 
     await waitFor(() => {
       expect(screen.queryByRole("status")).toBeNull();
     });
     expect(screen.getByRole("heading", { level: 1, name: "Tagi" })).toBeVisible();
     expect(screen.queryByRole("heading", { level: 2 })).toBeNull();
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("says it is loading, then shows the list", async () => {
