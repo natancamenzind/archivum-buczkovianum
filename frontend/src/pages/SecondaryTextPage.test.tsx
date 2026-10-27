@@ -156,19 +156,21 @@ describe("SecondaryTextPage", () => {
     async (kind, label) => {
       mockPage({ kind, sender: "Jan Kowalski", letter_date: "1948-02-03", description: "" });
 
-      await renderPage();
+      const { container } = await renderPage();
 
       expect(within(hero()).getByText(label)).toBeVisible();
       expect(hero().querySelectorAll("p")).toHaveLength(1);
+      expect(await axeViolations(container)).toEqual([]);
     },
   );
 
   it("US-RA-10 AC1: a letter without sender or date shows what it has (R-02)", async () => {
     mockPage({ sender: "", letter_date: "1947-12-24" });
 
-    await renderPage();
+    const { container } = await renderPage();
 
     expect(within(hero()).getByText("List · 24.12.1947")).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("US-RA-10 AC2: 'Powiązane utwory' lists the related works with year, each linking to it", async () => {
@@ -204,21 +206,23 @@ describe("SecondaryTextPage", () => {
   it("US-RA-10 AC3: an OCR text is read with its scan pages", async () => {
     mockPage({}, { kind: "ocr", page_offsets: [0, 13], fragments: [] });
 
-    await renderPage();
+    const { container } = await renderPage();
 
     const text = card("Transkrypcja");
     expect(await within(text).findByText("Skan · strona 2 z 2")).toBeVisible();
     expect(screen.getByRole("group", { name: "Widok" })).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("US-RA-10 AC3: opened with ?fragment=, the reader scrolls to the fragment", async () => {
     mockPage();
 
-    await renderPage("/secondary-texts/4?fragment=30");
+    const { container } = await renderPage("/secondary-texts/4?fragment=30");
 
     const fragment = await screen.findByRole("button", { name: "Fragment 01: piszę" });
     expect(fragment).toHaveAttribute("aria-pressed", "true");
     expect(scrollIntoView.mock.contexts[0]).toBe(fragment);
+    expect(await axeViolations(container)).toEqual([]);
   });
 
   it("US-RA-10 AC3: 'Powiązane fragmenty' previews typescript fragments as cards, with no 'all' link", async () => {

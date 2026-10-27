@@ -128,14 +128,14 @@ class TestSecondaryTextPageEndpoint:
         ]
         for fragment in fragments:
             fragment.tags.add(tag)
-
+        fragments[0].tags.add(TagFactory.create(status=Status.DRAFT))
         assert typescript.document is not None
 
         # Act
         result = page(client, text)
 
         # Assert: the text's own fragments are not typescript fragments; no "all" link, so
-        # only the total (US-RA-10 AC3).
+        # only the total (US-RA-10 AC3). A card's draft tag is not shown (R-06).
         assert result["fragments"]["total"] == 3
         first, second = result["fragments"]["items"]
         assert second["id"] == fragments[1].pk

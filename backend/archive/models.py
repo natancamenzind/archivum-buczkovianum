@@ -1076,7 +1076,9 @@ class FragmentQuerySet(models.QuerySet["Fragment"]):
     def sharing_tags_with(self, item: "Note | SecondaryText | ContextualMaterial") -> Self:
         """The related fragments of an item (US-RA-10 AC3): visible typescript fragments that
         share a published tag with `item` or with a fragment of its text. Featured first, then
-        by the work's first edition and text order (R-09), ready for `preview()`."""
+        by the work's first edition and text order (R-09), ready for `preview()`.
+
+        Callers pass a published item: a draft's tags must not reach the public (R-06)."""
         own = (
             Fragment.objects.filter(document_id=item.document_id)
             if item.document_id
