@@ -1073,6 +1073,27 @@ class FragmentQuerySet(models.QuerySet["Fragment"]):
         """
         return preview(self.order_by("-is_featured", "document_id", "start", "end", "pk"))
 
+    def sharing_tags_with(self, item: "Note | SecondaryText | ContextualMaterial") -> Self:
+        """The related fragments of an item (US-RA-10 AC3): visible typescript fragments that
+        share a published tag with `item` or with a fragment of its text. Featured first, then
+        by the work's first edition and text order (R-09), ready for `preview()`."""
+        own = (
+            Fragment.objects.filter(document_id=item.document_id)
+            if item.document_id
+            else Fragment.objects.none()
+        )
+        tags = Tag.objects.published().filter(
+            Q(pk__in=item.tags.values("pk")) | Q(pk__in=own.values("tags"))
+        )
+        return (
+            self.filter(published_q("document__typescript__"))
+            .filter(pk__in=Fragment.objects.filter(tags__in=tags).values("pk"))
+            .annotate(year=first_edition_year("document__typescript__work"))
+            .order_by(
+                "-is_featured", F("year").asc(nulls_last=True), "document_id", "start", "end", "pk"
+            )
+        )
+
 
 class Fragment(BaseModel, Taggable):
     """A tagged character range of a document's text. Fragments may overlap freely."""

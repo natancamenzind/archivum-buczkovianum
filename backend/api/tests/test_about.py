@@ -151,6 +151,7 @@ class TestSchema:
                 "/api/editor/fragments/{id}/",
                 "/api/home/",
                 "/api/search/autocomplete/",
+                "/api/secondary-texts/{id}/",
                 "/api/tags/",
                 "/api/typescripts/",
                 "/api/typescripts/{id}/",

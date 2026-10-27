@@ -154,6 +154,23 @@ export const copy = {
     loading: "Wczytuję utwór…",
     error: "Nie udało się wczytać utworu. Spróbuj ponownie później.",
   },
+  /** The secondary text page (US-RA-10). */
+  secondaryText: {
+    /** The type line's kind, keyed by the API's `kind`. */
+    kinds: {
+      letter: "List",
+      review: "Recenzja",
+      study: "Opracowanie",
+      recording: "Nagranie",
+      other: "Tekst sekundarny",
+    },
+    works: "Powiązane utwory",
+    text: "Transkrypcja",
+    fragments: "Powiązane fragmenty",
+    tags: "Powiązane tagi",
+    loading: "Wczytuję tekst sekundarny…",
+    error: "Nie udało się wczytać tekstu sekundarnego. Spróbuj ponownie później.",
+  },
   /** The fragment card (R-10) and the note card (US-RA-04 AC3). */
   card: {
     /** The source type chip, keyed by the API's `source_type`. */

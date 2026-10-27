@@ -18,6 +18,8 @@ from api.serializers import (
     HomePage,
     HomePageSerializer,
     HomeStatistics,
+    SecondaryTextPage,
+    SecondaryTextPageSerializer,
     SuggestionSerializer,
     TagCountSerializer,
     TeamGroup,
@@ -39,12 +41,14 @@ from archive.models import (
     Publishable,
     PublishableQuerySet,
     SecondaryText,
+    SecondaryTextWorkLink,
     SiteSettings,
     Status,
     Tag,
     TeamMember,
     Typescript,
     Work,
+    preview,
 )
 from search.query import autocomplete
 
@@ -235,6 +239,35 @@ def work(request: Request, slug: str) -> Response:
         ),
     )
     return Response(WorkPageSerializer(page).data)
+
+
+@extend_schema(responses=SecondaryTextPageSerializer)
+@api_view(["GET"])
+def secondary_text(request: Request, pk: int) -> Response:
+    """The secondary text page (US-RA-10). A draft secondary text is not found (R-06)."""
+    current = get_object_or_404(SecondaryText.objects.published(), pk=pk)
+    published_tags = Tag.objects.published()
+    links = SecondaryTextWorkLink.objects.visible().filter(secondary_text=current)
+    page = SecondaryTextPage(
+        secondary_text=current,
+        works=list(current.related_works().with_fragment_count()),
+        fragments=preview(
+            Fragment.objects.sharing_tags_with(current)
+            .select_related("document__typescript__institution")
+            .prefetch_related(Prefetch("tags", published_tags))
+            .with_number()
+        ),
+        tags=list(
+            published_tags.filter(
+                Q(secondarytexts=current)
+                | Q(fragments__document=current.document_id)
+                | Q(pk__in=links.values("tags"))
+            )
+            .distinct()
+            .order_by("title")
+        ),
+    )
+    return Response(SecondaryTextPageSerializer(page).data)
 
 
 @extend_schema(responses=DocumentSerializer)

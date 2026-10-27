@@ -465,6 +465,42 @@ class WorkPageSerializer(serializers.Serializer[WorkPage]):
     materials = ContextualMaterialsSerializer(help_text="Those linked to the work.")
 
 
+@dataclass(frozen=True)
+class SecondaryTextPage:
+    secondary_text: SecondaryText
+    works: list[Work]
+    fragments: Preview[Fragment]
+    tags: list[Tag]
+
+
+class SecondaryTextPageSerializer(serializers.Serializer[SecondaryTextPage]):
+    """US-RA-10. `description` is rich text: HTML, sanitized when an editor saves it."""
+
+    id = serializers.IntegerField(source="secondary_text.pk")
+    title = serializers.CharField(source="secondary_text.title")
+    description = serializers.CharField(
+        source="secondary_text.description", allow_blank=True, help_text="HTML."
+    )
+    kind = serializers.ChoiceField(source="secondary_text.kind", choices=SecondaryText.Kind.choices)
+    sender = serializers.CharField(
+        source="secondary_text.sender", allow_blank=True, help_text="For letters; may be empty."
+    )
+    letter_date = serializers.DateField(
+        source="secondary_text.letter_date", allow_null=True, help_text="For letters."
+    )
+    document = serializers.IntegerField(
+        source="secondary_text.document_id",
+        help_text="The text for the reader: /api/documents/<id>/.",
+    )
+    works = WorkSummarySerializer(many=True, help_text="Related works, by first edition (R-03).")
+    fragments = FragmentCardPreviewSerializer(
+        help_text="Typescript fragments sharing a tag with the text or its fragments."
+    )
+    tags = TagChipSerializer(
+        many=True, help_text="Tags on the text, its fragments and its work links, by name."
+    )
+
+
 class DocumentFragmentSerializer(FragmentRowSerializer):
     """A fragment for the reader (R-11), from a queryset with `with_number()`.
 

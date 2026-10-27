@@ -117,6 +117,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/secondary-texts/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The secondary text page (US-RA-10). A draft secondary text is not found (R-06). */
+        get: operations["secondary_texts_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tags/": {
         parameters: {
             query?: never;
@@ -233,7 +250,7 @@ export interface components {
         /** @description The text of an item for the reader (R-11, architecture section 4.4). */
         Document: {
             readonly id: number;
-            readonly kind: components["schemas"]["KindEnum"];
+            readonly kind: components["schemas"]["DocumentKindEnum"];
             readonly text: string;
             readonly page_offsets: number[];
             /** @description PDF URL; empty for a plain text. */
@@ -261,6 +278,12 @@ export interface components {
             /** @description Published tags, by name. */
             readonly tags: components["schemas"]["TagChip"][];
         };
+        /**
+         * @description * `ocr` - Scan + OCR text
+         *     * `plain` - Plain text
+         * @enum {string}
+         */
+        DocumentKindEnum: "ocr" | "plain";
         Edition: {
             readonly year: number;
             readonly publisher: string;
@@ -364,12 +387,6 @@ export interface components {
             tags: number;
         };
         /**
-         * @description * `ocr` - Scan + OCR text
-         *     * `plain` - Plain text
-         * @enum {string}
-         */
-        KindEnum: "ocr" | "plain";
-        /**
          * @description A row of "Teksty sekundarne" (R-08): a secondary text, or a contextual material that is
          *     not an image, which shows its title only (D5).
          */
@@ -409,6 +426,38 @@ export interface components {
             /** @description The text changed. Check the fragment, then clear this box. */
             readonly needs_review?: boolean;
         };
+        /** @description US-RA-10. `description` is rich text: HTML, sanitized when an editor saves it. */
+        SecondaryTextPage: {
+            id: number;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            kind: components["schemas"]["SecondaryTextPageKindEnum"];
+            /** @description For letters; may be empty. */
+            sender: string;
+            /**
+             * Format: date
+             * @description For letters.
+             */
+            letter_date: string | null;
+            /** @description The text for the reader: /api/documents/<id>/. */
+            document: number;
+            /** @description Related works, by first edition (R-03). */
+            works: components["schemas"]["WorkSummary"][];
+            /** @description Typescript fragments sharing a tag with the text or its fragments. */
+            fragments: components["schemas"]["FragmentCardPreview"];
+            /** @description Tags on the text, its fragments and its work links, by name. */
+            tags: components["schemas"]["TagChip"][];
+        };
+        /**
+         * @description * `letter` - Letter
+         *     * `review` - Review
+         *     * `study` - Study
+         *     * `recording` - Recording
+         *     * `other` - Other
+         * @enum {string}
+         */
+        SecondaryTextPageKindEnum: "letter" | "review" | "study" | "recording" | "other";
         /**
          * @description * `typescript` - typescript
          *     * `note` - note
@@ -737,6 +786,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Suggestion"][];
+                };
+            };
+        };
+    };
+    secondary_texts_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecondaryTextPage"];
                 };
             };
         };
