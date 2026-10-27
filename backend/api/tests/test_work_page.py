@@ -286,16 +286,20 @@ class TestWorkPageEndpoint:
         work = published_work()
         reception = TagFactory.create(title="Recepcja", slug="recepcja", status=PUBLISHED)
         polemic = TagFactory.create(title="Polemika", slug="polemika", status=PUBLISHED)
+        context = TagFactory.create(title="Kontekst", slug="kontekst", status=PUBLISHED)
         SecondaryTextWorkLinkFactory.create(work=work, secondary_text__status=PUBLISHED).tags.add(
             reception, polemic
         )
-        MaterialWorkLinkFactory.create(work=work, material__status=PUBLISHED).tags.add(reception)
+        MaterialWorkLinkFactory.create(work=work, material__status=PUBLISHED).tags.add(
+            reception, context
+        )
 
         # Act
         result = page(client, work)
 
         # Assert: each tag once, by name.
         assert result["tags"] == [
+            {"slug": "kontekst", "title": "Kontekst"},
             {"slug": "polemika", "title": "Polemika"},
             {"slug": "recepcja", "title": "Recepcja"},
         ]
