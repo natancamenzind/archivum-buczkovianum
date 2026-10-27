@@ -482,6 +482,7 @@ class TestTypescriptForm:
         assert 'name="document"' not in content
         assert 'name="scan"' in content
         assert 'name="ocr_file"' in content
+        assert 'name="plain_text"' not in content
         assert '<div class="readonly">1</div>' in content
 
     def test_us_wr_04_document_admin_is_missing_from_the_index(self, admin_client: Client) -> None:
