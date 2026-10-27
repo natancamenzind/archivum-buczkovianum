@@ -84,7 +84,8 @@ class TestTagPageEndpoint:
         # Act
         result = page(client, tag)
 
-        # Assert: the page counts the works from `works` ("w 2 utworach").
+        # Assert: the page counts the works from `works` ("w 2 utworach"); the kind is not shown.
+        assert "kind" not in result
         assert result["slug"] == "dezerter"
         assert result["title"] == "Dezerter"
         assert result["description"] == "<p>Postać dezertera.</p>"
@@ -126,6 +127,10 @@ class TestTagPageEndpoint:
         tag = published_tag(title="Dezerter", slug="dezerter")
         late = published_work(1954, title="Czarny potok")
         early = published_work(1947, title="Wertepy")
+        # Created first, so document IDs alone would put the note before the typescript.
+        note = text_note(early)
+        note.works.add(late)
+        in_note = FragmentFactory.create(document=note.document, start=0, end=8)
         late_main = published_typescript(late, is_main=True)
         early_main = published_typescript(
             early, is_main=True, institution=InstitutionFactory.create()
@@ -143,9 +148,6 @@ class TestTagPageEndpoint:
             description="Dezerter w stodole.",
         )
         third = FragmentFactory.create(document=late_main.document, start=9, end=15)
-        note = text_note(early)
-        note.works.add(late)
-        in_note = FragmentFactory.create(document=note.document, start=0, end=8)
         for fragment in (second, first, third, in_note):
             fragment.tags.add(tag)
         first.tags.add(TagFactory.create(status=Status.DRAFT))
@@ -156,7 +158,8 @@ class TestTagPageEndpoint:
         # Act
         result = page(client, tag)
 
-        # Assert: every one, not a preview; the earliest work first, then position in its text.
+        # Assert: every one, not a preview; the earliest work first, its typescripts before its
+        # notes, then position in the text.
         assert [item["id"] for item in result["fragments"]] == [
             first.pk,
             second.pk,

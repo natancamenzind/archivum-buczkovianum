@@ -273,13 +273,18 @@ def secondary_text(request: Request, pk: int) -> Response:
     return Response(SecondaryTextPageSerializer(page).data)
 
 
+# The kinds of item a fragment's text belongs to, in the order the tag page lists their
+# fragments within a work.
+SOURCES = (Typescript, Note, SecondaryText, ContextualMaterial)
+
+
 def source_works(fragments: list[Fragment], works: list[Work]) -> dict[int, list[Work]]:
     """The published works of the fragments' sources, by first edition, keyed by document ID:
     one query per kind of source instead of one per fragment. `works` holds them all."""
     by_pk = {work.pk: work for work in works}
     documents = {fragment.document_id for fragment in fragments}
     sources: dict[int, list[Work]] = defaultdict(list)
-    for source in (Typescript, Note, SecondaryText, ContextualMaterial):
+    for source in SOURCES:
         document = f"{source.works_lookup}__document"
         pairs = (
             Work.objects.published()
@@ -315,11 +320,15 @@ def tag(request: Request, slug: str) -> Response:
     )
     sources = source_works(fragments, works)
     position = {work.pk: index for index, work in enumerate(works)}
+    kinds = [source.search_type for source in SOURCES]
 
-    def by_work_then_text(fragment: Fragment) -> tuple[int, int, int, int, int]:
+    def by_work_then_text(fragment: Fragment) -> tuple[int, int, int, int, int, int]:
         first = sources.get(fragment.document_id)
         work = position[first[0].pk] if first else len(position)
-        return (work, fragment.document_id, fragment.start, fragment.end, fragment.pk)
+        owner = fragment.document.owner
+        assert isinstance(owner, Publishable)
+        kind = kinds.index(owner.search_type)
+        return (work, kind, fragment.document_id, fragment.start, fragment.end, fragment.pk)
 
     carrying = Q(tags=current) | Q(document__fragments__tags=current)
     page = TagPage(

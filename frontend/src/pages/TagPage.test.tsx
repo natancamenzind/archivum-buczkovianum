@@ -146,6 +146,8 @@ describe("TagPage", () => {
     [1, 1, "Tag · 1 wystąpienie w 1 utworze"],
     [5, 2, "Tag · 5 wystąpień w 2 utworach"],
     [22, 12, "Tag · 22 wystąpienia w 12 utworach"],
+    // Only on items related to no published work.
+    [3, 0, "Tag · 3 wystąpienia"],
     [0, 0, "Tag · 0 wystąpień"],
   ])("US-RA-07 AC1: %i occurrences in %i works read '%s'", async (occurrences, works, label) => {
     mockPage({
