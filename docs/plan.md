@@ -6,31 +6,30 @@ If the two disagree, the stories win. Fix this file in the same PR.
 
 ## 1. Where we are
 
-Updated after Phase 1, on 2026-10-27.
+Updated on 2026-10-27, after #26. No step is in progress: there are no open PRs.
 
 On `main`:
 
-- Django skeleton, settings, CI for both sides, run only for the side that changed (#6, #14).
+- Django skeleton, settings, CI for both sides, run only for the side that changed (#6, #14). CI builds the frontend and checks the API client (step 36, #18).
 - Domain models and admin (#5). They already meet US-WR-02, US-WR-10, US-WR-11 and US-WR-14, and parts of the other WR stories.
 - Figma export in `design/`.
-- Step 1, frontend scaffold and `site_shell` (#11). Step 2, shared queries (#10). Step 4, re-anchoring (#9).
+- Phase 1 is done except step 37: scaffold (1, #11), shared queries (2, #10), search index and demo data (3, 5, landed by 3L, #16), re-anchoring (4, #9).
+- Typescript text upload (6, #25). #23 was merged and reverted (#24); #25 is the version on `main`.
+- The page shell (13, #17), About (14, #19) and the works list (15, #21). `backend/api/` serves `/api/about/` and `/api/works/`.
+- Outside the plan: search behaviour tests (#20), `manage.py` loads the repo-root `.env` (#26).
 
-**Not on `main` yet:** steps 3 (search index, #12) and 5 (demo data, #13). They were stacked PRs. Each was merged into its base branch after that base had already been squash-merged, so their code is only on `core/search-index`. That branch conflicts with `main` in `archive/models.py` (step 4's `reanchor()`) and `docs/plan.md`. Step 3L lands them.
-
-Missing:
-
-- the `api` app (no page endpoint yet);
-- every public page;
-- uploading a text on an item's form, the OCR page check, rich text, the tagger, the editors group.
+Missing: the other public pages, search, rich text, the tagger, the editors group, content upload for notes, secondary texts and materials, meta tags, production.
 
 ## 2. How we work
 
-1. **Pick the first open step** in section 4 whose "Needs" are on `main`. Steps in the same phase without a dependency between them can run in parallel. Step numbers are IDs, not order. A step added later takes a free ID (e.g. 3L).
-2. **One step = one branch = one PR, based on `main`.** Do not stack PRs. If a step needs an unmerged one, wait for it to merge. A PR merged into another feature branch does not count as done (see 3L). The branch name is in the table. A page story's PR contains its endpoint, its page and their tests (D11). The core owner reviews the core part (CODEOWNERS).
-3. **Brief the agent** with the step's row and its story. For example: *"Implement step 21 of `docs/plan.md` (US-RA-04). Read AGENTS.md, the story, architecture §… and the design files listed."*
-4. **Definition of done** is the one in `AGENTS.md`. In the same PR, tick the step's box in section 4. Notes a PR leaves for later steps go into those steps' rows in this file, in the same PR, not only into the PR description.
-5. **When in doubt, stop and ask.** This applies to an ambiguous story, a conflict with the docs, a new dependency, or a change to `docs/architecture.md`. Do not guess.
-6. A human reviews and merges. An agent never merges.
+1. **Pick a ready step** from section 4: every step in its "Needs" is ticked in section 5. Prefer a step on the critical path (4.3). Step numbers are IDs, not order. A step added later takes a free ID (e.g. 3L).
+2. **Claim it before you start.** Run `gh pr list --state open` and `git ls-remote origin <branch>`. If the step's branch or PR exists, someone has it: pick another step. Otherwise push the branch and open a **draft** PR right away, so the next agent sees the claim.
+3. **One step = one branch = one PR, based on `main`.** Do not stack PRs. If a step needs an unmerged one, wait for it to merge. A PR merged into another feature branch does not count as done (see 3L). The branch name is in the table. A page story's PR contains its endpoint, its page and their tests (D11). The core owner reviews the core part (CODEOWNERS).
+4. **Brief the agent** with `docs/agent-prompt.md`. It picks and claims a step, simplifies and reviews its own code, and ends with a PR ready for review. To name the step yourself, brief it with the step's row and its story. For example: *"Implement step 21 of `docs/plan.md` (US-RA-04). Read AGENTS.md, the story, architecture §… and the design files listed."*
+5. **Before you mark the PR ready, rebase on `main`.** Parallel steps touch the same files (4.4). Resolve conflicts by keeping both sides. Never hand-merge `frontend/src/api/`: take `main`'s copy and run `make api-client` again. If a migration number collides, renumber yours.
+6. **Definition of done** is the one in `AGENTS.md`. In the same PR, tick the step's box in section 5. Notes a PR leaves for later steps go into those steps' rows in this file, in the same PR, not only into the PR description.
+7. **When in doubt, stop and ask.** This applies to an ambiguous story, a conflict with the docs, a new dependency, or a change to `docs/architecture.md`. Do not guess.
+8. A human reviews and merges. An agent never merges.
 
 ## 3. Decisions
 
@@ -85,13 +84,122 @@ Answered by the project owner on 2026-10-27, for steps 15 and 16:
 | D25 | A work without a cover. | **The placeholder board** (design/rules.md, Materiały zastępcze). No fallback to an edition's cover. | 15 (done) |
 | D26 | US-RA-20 AC2 lists "every published tag", but the cloud shows only tags in use. Does the index list published tags with no occurrence? | **No.** The index and the cloud show the same tags: published, with at least one occurrence (`in_use()`). Write it into US-RA-20 AC2 (`user-stories.md` and `user-stories.pl.md`). | 16 |
 
-## 4. Steps
+## 4. Order and dependencies
+
+A step can start when every step in its "Needs" (section 5) is merged into `main`. Nothing else orders the work. The phases group steps by topic, not by time: Phase 2 runs alongside Phases 3–5.
+
+### 4.1 Ready now
+
+Snapshot as of 2026-10-27. Recompute it from section 5 if this is stale.
+
+| Step | Story | Lane | Needs (all merged) |
+|------|-------|------|--------------------|
+| 18 | US-RA-19: typescripts list | Public pages, **critical path** | 13 |
+| 29 | US-RA-14: search entry | Search, **critical path** | 3L, 13 |
+| 37 | CORE: tags in search entries | Search, **critical path** | 3L |
+| 16 | US-RA-20: tags list | Public pages | 13 |
+| 7 | US-WR-05: note content | Editor panel | 6 |
+| 8 | US-WR-06: secondary text text | Editor panel | 6 |
+| 9 | US-WR-07: contextual material content | Editor panel | 6 |
+| 10 | CORE: rich text | Editor panel | 3L |
+| 11 | US-WR-09: tagger | Editor panel | 3L, 6 |
+| 12 | US-WR-01: editors group | Editor panel | — |
+
+All ten can run at the same time. 4.4 lists the files they share.
+
+### 4.2 Waves
+
+Each wave holds the steps whose needs are all in earlier waves. A step does not wait for its whole wave: it starts as soon as its own needs merge.
+
+| Wave | Steps | Each step waits for |
+|------|-------|---------------------|
+| done | 1, 2, 3, 3L, 4, 5, 6, 13, 14, 15, 36 | — |
+| A | 7, 8, 9, 10, 11, 12, 16, 18, 29, 37 | see 4.1 |
+| B | 17, 19, 33 | 17 ← 15, 16 · 19 ← 3L, 18 · 33 ← 29 |
+| C | 20, 21 | 20 ← 19 · 21 ← 19 |
+| D | 22, 23, 24, 30 | 22, 23, 24 ← 21 · 30 ← 21, 29, 37 |
+| E | 25, 31 | 25 ← 24 · 31 ← 30 |
+| F | 26, 32, 34 | 26 ← 25 · 32 ← 17, 21, 31 · 34 ← 31 |
+| G | 27, 28 | 27 ← 22, 23, 26 · 28 ← 26 |
+| blocked | 35 | decision D9 (hosting) |
+
+### 4.3 Dependency graph
+
+The longest chain decides when v1 is done. Take steps on it first:
+
+**Critical path: 18 → 19 → 21 → 24 → 25 → 26 → 27 / 28.** The search chain is one wave shorter and also waits on 21: **21 + 29 + 37 → 30 → 31 → 32 / 34.**
+
+Steps with nothing waiting on them (7, 8, 9, 10, 11, 12, 20, 33) are off the critical path. Fill free slots with them.
+
+```mermaid
+graph LR
+  classDef done fill:#d4edda,stroke:#2e7d32
+  6 --> 7 & 8 & 9 & 11
+  3L --> 10 & 11 & 37 & 19 & 29
+  12
+  13 --> 16 & 18 & 29
+  15 --> 17
+  16 --> 17
+  18 --> 19
+  19 --> 20 & 21
+  21 --> 22 & 23 & 24 & 30 & 32
+  24 --> 25 --> 26
+  22 & 23 & 26 --> 27
+  26 --> 28
+  29 --> 30 & 33
+  37 --> 30
+  30 --> 31
+  31 --> 32 & 34
+  17 --> 32
+  D9{{D9 hosting}} --> 35
+  class 3L,6,13,15 done
+```
+
+The same graph as a list, for reading without a renderer. "X ← Y" means X needs Y.
+
+- 7, 8, 9 ← 6
+- 10, 37 ← 3L
+- 11 ← 3L, 6
+- 12 ← nothing
+- 16, 18 ← 13
+- 17 ← 15, 16
+- 19 ← 3L, 18
+- 20, 21 ← 19
+- 22, 23, 24 ← 21
+- 25 ← 24
+- 26 ← 25
+- 27 ← 22, 23, 26
+- 28 ← 26
+- 29 ← 3L, 13
+- 30 ← 21, 29, 37
+- 31 ← 30
+- 32 ← 17, 21, 31
+- 33 ← 29
+- 34 ← 31
+- 35 ← D9
+
+### 4.4 Shared files
+
+These steps do not depend on each other, but they edit the same files. Run them in parallel anyway. Whichever merges second rebases (section 2, rule 5).
+
+| Files | Steps | What to watch |
+|-------|-------|---------------|
+| `backend/archive/admin.py`, `backend/archive/forms.py` | 7, 8, 9, 10, 11 | 7–9 each add a form next to step 6's `TypescriptForm`. 11 adds the "Taguj fragmenty" link to item forms, 10 swaps description widgets. Keep every side. |
+| `backend/archive/migrations/` | 10, 12, 37 (if it adds one) | Numbers collide. The second to merge renumbers and fixes its `dependencies`. |
+| `Tag.update_search_entries()`, `backend/search/` | 11, 37 | 37 changes what a tag writes into the index; 11 calls it after tagging. Whichever merges second re-runs the other's tests. |
+| `backend/api/urls.py`, `views.py`, `serializers.py`, `frontend/src/routes.tsx`, `frontend/src/copy/pl.ts`, `frontend/src/api/` | every page step: 16–34 | Each adds its own entries. Regenerate `frontend/src/api/` after the rebase, never merge it by hand. |
+| `components/layout/SiteHeader.tsx` | 29, 33 | 33 waits for 29 anyway. |
+| Description rendering | 10 and every page step | A page merged before 10 shows plain text, and step 10 switches it to HTML. A page merged after 10 renders the sanitized HTML from the start (section 7). |
+| `components/SectionHeader.tsx`, `PageHeader.tsx` | 16, 18, 19 | 19 adds the preview link to R-09. 16 and 18 use the header as it is. |
+
+## 5. Steps
 
 ### Phase 1 — Foundations
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
 | [x] | 1 | FE: frontend scaffold and serving | `fe/scaffold` | — | `frontend/` with Vite, React, TS strict, React Router, TanStack Query, Tailwind on `design/tokens/tokens.css`, shadcn/ui, fonts, Vitest + Testing Library + MSW + axe, ESLint, Prettier. `copy/pl.ts` with the Polish plural helper. The generated client from `make api-client`. `site_shell`: Django serves `index.html` for every non-API URL, and Vite proxies in dev. Makefile `dev`/`test`/`lint`/`typecheck`/`api-client` cover both sides. CI runs the frontend jobs. One placeholder route proves the chain works. `.github/CODEOWNERS` (D8). Fix architecture §2 (D10). |
+| [x] | 2 | CORE: shared queries | `core/shared-queries` | — | Querysets in `archive`, reused by every endpoint and by search: published only (R-06), visible fragments (owner published, D4), published tags only, the year of a work, tag occurrences, the works an item relates to, and the works a tag refers to (US-RA-07 AC5). The preview helper with `PREVIEW_LIMIT` (§4.5), and fragment number and start page. Tests only, no endpoints. |
 | [x] | 3 | CORE: search index | `core/search-index` | 2 | The `backend/search/` app: `SearchEntry`, writes and removals from `save()`/`delete()` (§6), `Edition` saves its work, `rebuild_search_index`, and a test that the `polish` config exists. A query service with tabs, filters, facet counts, sorting, snippets and the "no results" tags. No endpoint yet. Meets US-WR-04 AC4. |
 | [x] | 4 | US-WR-09 AC4: flag every moved fragment | `us-wr-09-reanchor` | — | `Fragment.reanchor()` sets `needs_review` whenever it moves a fragment (D1). Update architecture §4.4. |
 | [x] | 5 | DEV: demo data | `dev/demo-data` | 3 | `manage.py load_demo_data` loads the sample data from `design/rules.md`, including small committed PDF and OCR fixtures. It uses `save()` only, so the search index is filled. Every later PR is verified by hand with it. |
@@ -99,7 +207,7 @@ Answered by the project owner on 2026-10-27, for steps 15 and 16:
 | [x] | 36 | CI: frontend build and API client check | `ci/frontend-build` | — | CI runs `npm run build`, because `tsc --noEmit` misses what only fails at build time: the token plugin reading `design/tokens/tokens.css`, asset paths, the `/static/` base. CI also runs `make api-client` and fails if `frontend/src/api/` changed. Both are #11 review findings. |
 | [ ] | 37 | CORE: tags in search entries | `core/search-tags` | 3L | D18: a fragment's or item's published tag names go into its search entry at weight B. Saving, publishing or unpublishing a tag re-indexes what carries it. Update architecture §6. A test that "dezerter" finds a fragment tagged Dezerter whose quote lacks the word. |
 
-### Phase 2 — Editor panel (can run in parallel with Phase 3)
+### Phase 2 — Editor panel (runs alongside Phases 3–5)
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
@@ -159,7 +267,7 @@ Answered by the project owner on 2026-10-27, for steps 15 and 16:
 | [ ] | 34 | CORE: per-URL meta tags | `core/meta-tags` | 31 | `site_shell` sets `<title>` and the meta description for every route (user stories §4: SEO). An unknown URL or a draft for an anonymous reader returns status 404, not a 200 with the React 404 page. Paths starting with a dot (`/.env`) return 404 (#11 review). |
 | [ ] | 35 | Production setup | `ops/production` | D9 (open) | Production settings and deployment notes for the chosen host. The deploy runs `npm run build` (`make build-frontend`, step 36) before `collectstatic` and before Django starts (#11). |
 
-## 5. Story coverage
+## 6. Story coverage
 
 | Story | Step | Story | Step |
 |-------|------|-------|------|
@@ -186,7 +294,7 @@ Answered by the project owner on 2026-10-27, for steps 15 and 16:
 
 Rules R-01 to R-12 have no step of their own. Each page step meets them for its page.
 
-## 6. Reminders for every step
+## 7. Reminders for every step
 
 - **Stories beat Figma** (open question 5). Figma has no reader, no note page and no contextual material page, and its fragment card shows a scan crop. Build these from the stories, using the existing Figma components.
 - **Mobile is part of each page step**, not a separate PR. `design/rules.md` → Siatka gives the order.
