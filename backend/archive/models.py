@@ -202,6 +202,8 @@ class Archival(models.Model):
     def save(self, *args: Any, **kwargs: Any) -> None:
         """Delete the text the item no longer holds, which has no meaning on its own."""
         dropped = self._indexed_document_id
+        if dropped not in (None, self.document_id):
+            self.refuse_dropping_text(dropped)
         with transaction.atomic():
             super().save(*args, **kwargs)
             if dropped not in (None, self.document_id):
@@ -212,16 +214,7 @@ class Archival(models.Model):
         super().clean()
         dropped = self._indexed_document_id
         if dropped not in (None, self.document_id):
-            count = Fragment.objects.filter(document_id=dropped).count()
-            if count:
-                message = ngettext(
-                    "The text this item holds has %(count)d tagged fragment.",
-                    "The text this item holds has %(count)d tagged fragments.",
-                    count,
-                ) % {"count": count}
-                raise ValidationError(
-                    {"document": f"{message} {_('Delete them before removing the text.')}"}
-                )
+            self.refuse_dropping_text(dropped)
         if self.document is None:
             if self.document_required:
                 raise ValidationError({"document": _("This item needs a text.")})
@@ -242,6 +235,23 @@ class Archival(models.Model):
             if document is not None:
                 document.delete()
         return result
+
+    def refuse_dropping_text(self, document_id: int) -> None:
+        """Refuse to drop a text that still has tagged fragments (US-WR-09 AC4)."""
+        count = Fragment.objects.filter(document_id=document_id).count()
+        if count:
+            raise ValidationError(
+                {
+                    "document": ngettext(
+                        "The text this item holds has %(count)d tagged fragment. "
+                        "Delete them before removing the text.",
+                        "The text this item holds has %(count)d tagged fragments. "
+                        "Delete them before removing the text.",
+                        count,
+                    )
+                    % {"count": count}
+                }
+            )
 
     @property
     def shelfmark_display(self) -> str:

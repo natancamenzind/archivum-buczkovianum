@@ -220,22 +220,27 @@ class TestArchival:
     def test_us_wr_09_ac4_a_text_with_fragments_is_never_dropped(self) -> None:
         # Arrange
         secondary_text = SecondaryTextFactory.create()
-        assert secondary_text.document is not None
-        FragmentFactory.create_batch(2, document=secondary_text.document)
+        dropped = secondary_text.document
+        assert dropped is not None
+        FragmentFactory.create_batch(2, document=dropped)
         secondary_text.refresh_from_db()
         secondary_text.document = DocumentFactory.create()
-
-        # Act
-        with pytest.raises(ValidationError) as error:
-            secondary_text.full_clean()
-
-        # Assert
-        assert error.value.message_dict == {
+        expected = {
             "document": [
                 "The text this item holds has 2 tagged fragments. "
                 "Delete them before removing the text."
             ]
         }
+
+        # Act / Assert: clean and save both refuse, so a missed full_clean cannot delete them
+        with pytest.raises(ValidationError) as cleaned:
+            secondary_text.full_clean()
+        assert cleaned.value.message_dict == expected
+        with pytest.raises(ValidationError) as saved:
+            secondary_text.save()
+        assert saved.value.message_dict == expected
+        assert Document.objects.filter(pk=dropped.pk).exists()
+        assert dropped.fragments.count() == 2
 
     def test_a_text_belongs_to_one_item_only(self) -> None:
         # Arrange

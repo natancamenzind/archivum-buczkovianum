@@ -64,7 +64,9 @@ class TextUploadAdmin[M: Typescript | Note | SecondaryText | ContextualMaterial]
 
     @admin.display(description=_("pages"))
     def page_count(self, obj: M) -> int | None:
-        return None if obj.document is None else obj.document.page_count
+        if obj.document is None or obj.document.kind != Document.Kind.OCR:
+            return None
+        return obj.document.page_count
 
 
 class MediaContentAdmin[M: Note | ContextualMaterial](TextUploadAdmin[M]):
