@@ -264,6 +264,8 @@ class Command(BaseCommand):
         # Index again with the works and tags added after saving, as the editor panel does.
         for item in (note, letter, review, portrait):
             item.update_search_entry()
+        for fragment in Fragment.objects.all():
+            fragment.update_search_entry()
         Tag.update_search_entries()
         self.load_site_content()
 
