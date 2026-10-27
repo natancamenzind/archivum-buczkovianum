@@ -45,10 +45,10 @@ jobs:
               - Makefile
               - .github/workflows/ci.yml
               - frontend/**
+              - design/tokens/**
 
   # Job names are referenced by the branch protection rule on main. Renaming one
   # requires updating the required status checks.
-  # Frontend jobs (fe/scaffold) gate on `needs.changes.outputs.frontend`.
   lint:
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
@@ -104,18 +104,28 @@ jobs:
   # Frontend: one job per make target, reported as separate checks "frontend (lint)",
   # "frontend (typecheck)" and "frontend (test)". A human adds them to the required status
   # checks on main (docs/plan.md, D8).
+  # The gate is on the steps, not the job: a matrix job skipped by its `if` reports one
+  # unexpanded "frontend" check, so the required checks above would never arrive.
   frontend:
+    needs: changes
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         target: [lint, typecheck, test]
+    env:
+      RUN: ${{ needs.changes.outputs.frontend != 'false' }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - if: env.RUN == 'true'
+        uses: actions/checkout@v4
+      - if: env.RUN == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm ci --prefix frontend
-      - run: make ${{ matrix.target }}-frontend
+      - if: env.RUN == 'true'
+        run: npm ci --prefix frontend
+      - if: env.RUN == 'true'
+        run: make ${{ matrix.target }}-frontend
