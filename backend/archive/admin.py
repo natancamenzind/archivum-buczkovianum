@@ -6,7 +6,7 @@ from typing import Any, ClassVar
 from django.contrib import admin
 from django.db import models
 from django.db.models import QuerySet
-from django.forms import ModelForm
+from django.forms import BaseInlineFormSet, ModelForm
 from django.http import HttpRequest
 from django.utils.html import format_html
 from django.utils.safestring import SafeString
@@ -167,6 +167,18 @@ class MaterialWorkLinkInline(admin.TabularInline[MaterialWorkLink, ContextualMat
     min_num = 1
     autocomplete_fields = ("work", "tags")
 
+    def get_formset(
+        self, request: HttpRequest, obj: ContextualMaterial | None = None, **kwargs: Any
+    ) -> type[BaseInlineFormSet[MaterialWorkLink, ContextualMaterial, Any]]:
+        """A material is linked to one or more works (US-WR-07 AC3)."""
+        return super().get_formset(request, obj, validate_min=True, **kwargs)
+
+
+class ContextualMaterialForm(MediaContentForm[ContextualMaterial]):
+    class Meta:
+        model = ContextualMaterial
+        exclude = ("document",)
+
 
 @admin.register(ContextualMaterial)
 class ContextualMaterialAdmin(MediaContentAdmin[ContextualMaterial]):
@@ -174,7 +186,7 @@ class ContextualMaterialAdmin(MediaContentAdmin[ContextualMaterial]):
     list_filter = ("status", "content_kind")
     search_fields = ("title", "shelfmark")
     autocomplete_fields = ("institution", "tags")
-    raw_id_fields = ("document",)
+    form = ContextualMaterialForm
     inlines = (MaterialWorkLinkInline,)
 
 
