@@ -143,7 +143,7 @@ class TestSchema:
         response = client.get(url, {"format": "json"})
 
         # Assert
-        assert list(response.json()["paths"]) == ["/api/about/"]
+        assert list(response.json()["paths"]) == ["/api/about/", "/api/works/"]
 
     def test_schema_marks_every_about_field_as_present(self, client: Client) -> None:
         # Arrange

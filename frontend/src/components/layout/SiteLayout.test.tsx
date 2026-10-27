@@ -22,9 +22,10 @@ function currentNavItem(): HTMLElement | null {
 
 describe("SiteLayout", () => {
   beforeEach(() => {
-    // Most cases render /about, which asks the API for its content.
+    // Most cases render /about or /works, which ask the API for their content.
     server.use(
       http.get("*/api/about/", () => HttpResponse.json({ intro: "", project: "", team: [] })),
+      http.get("*/api/works/", () => HttpResponse.json([])),
     );
   });
 
@@ -118,7 +119,7 @@ describe("SiteLayout", () => {
   });
 
   it("US-RA-03 AC1: every page renders inside the shell, a missing one too", () => {
-    renderRoute("/works");
+    renderRoute("/no-such-page");
 
     expect(screen.getByRole("banner")).toBeVisible();
     expect(screen.getByRole("heading", { level: 1, name: "Nie znaleziono strony" })).toBeVisible();

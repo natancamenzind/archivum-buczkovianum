@@ -60,6 +60,13 @@ export const copy = {
     // PLACEHOLDER: the owner supplies the exact text (plan D7).
     fundingNote: "[Informacja o finansowaniu projektu — tekst do uzupełnienia]",
   },
+  /** The archive covers one author, so every work card names him (plan D22). */
+  author: "Leopold Buczkowski",
+  /** The work card (US-RA-01 AC3), on the works list and the home page. */
+  workCard: {
+    /** The placeholder board for a work without a cover (plan D25, design/rules.md). */
+    coverPlaceholder: "[Okładka]",
+  },
   home: {
     lead: "Cyfrowe archiwum twórczości Leopolda Buczkowskiego. Strona jest w budowie.",
   },
@@ -76,6 +83,15 @@ export const copy = {
     },
     loading: "Wczytuję stronę…",
     error: "Nie udało się wczytać strony. Spróbuj ponownie później.",
+  },
+  /** The works list (US-RA-18). */
+  works: {
+    title: "Utwory",
+    description: "Wszystkie utwory Leopolda Buczkowskiego w archiwum, w kolejności wydania.",
+    all: "Wszystkie utwory",
+    allDescription: "W kolejności wydania",
+    loading: "Wczytuję utwory…",
+    error: "Nie udało się wczytać utworów. Spróbuj ponownie później.",
   },
   notFound: {
     title: "Nie znaleziono strony",

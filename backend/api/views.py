@@ -3,8 +3,8 @@ from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from api.serializers import AboutPage, AboutPageSerializer, TeamGroup
-from archive.models import SiteSettings, TeamMember
+from api.serializers import AboutPage, AboutPageSerializer, TeamGroup, WorkCardSerializer
+from archive.models import SiteSettings, TeamMember, Work
 
 
 @extend_schema(responses=AboutPageSerializer)
@@ -26,3 +26,11 @@ def about(request: Request) -> Response:
         team=[group for group in team if group.members],
     )
     return Response(AboutPageSerializer(page).data)
+
+
+@extend_schema(responses=WorkCardSerializer(many=True))
+@api_view(["GET"])
+def works(request: Request) -> Response:
+    """The works list (US-RA-18): every published work as a card, by first edition."""
+    cards = Work.objects.published().with_year().with_fragment_count()
+    return Response(WorkCardSerializer(cards, many=True).data)

@@ -103,7 +103,7 @@ Dokument z tekstem litym wyświetlamy jako tekst, z fragmentami wyróżnionymi j
 
 1. Kolejno: nagłówek, hiro, utwory, wyróżniony fragment (US-RA-02), chmura tagów, stopka (R-07).
 2. Hiro: tytuł „Archivum Buczkovianum” i wstępniak na portrecie Buczkowskiego, oraz liczby opublikowanych utworów, widocznych fragmentów i opublikowanych tagów („4 utwory · 62 fragmenty · 12 tagów”).
-3. Utwory: jedna karta na każdy opublikowany utwór, w kolejności pierwszych wydań: okładka, gatunek i rok, tytuł, autor, liczba fragmentów. Kliknięcie otwiera stronę utworu.
+3. Utwory: jedna karta na każdy opublikowany utwór, w kolejności pierwszych wydań: okładka, gatunek i rok, tytuł, autor, liczba fragmentów. Liczba fragmentów to liczba widocznych fragmentów głównego maszynopisu utworu; gdy wynosi 0 (brak głównego maszynopisu, maszynopis w wersji roboczej albo brak widocznych fragmentów), karta jej nie pokazuje (R-02). Kliknięcie otwiera stronę utworu.
 4. Chmura tagów: każdy opublikowany tag z co najmniej jednym wystąpieniem. Pięć rozmiarów według liczby wystąpień: 1–3, 4–7, 8–15, 16–25, 26+; dwa największe w kolorze akcentu. Układ jest deterministyczny: te same dane zawsze dają tę samą chmurę. Kliknięcie tagu otwiera jego stronę.
 5. Wstępniak i portret są edytowalne (US-WR-11).
 
