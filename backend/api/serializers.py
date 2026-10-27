@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from rest_framework import serializers
 
-from archive.models import TeamMember, Work
+from archive.models import TeamMember, Typescript, Work
 
 
 @dataclass(frozen=True)
@@ -71,3 +71,35 @@ class WorkCardSerializer(serializers.ModelSerializer[Work]):
 
     def get_cover_image(self, work: Work) -> str:
         return work.cover_image.url if work.cover_image else ""
+
+
+@dataclass(frozen=True)
+class TypescriptGroup:
+    work: Work
+    typescripts: list[Typescript]
+
+
+class TypescriptRowSerializer(serializers.ModelSerializer[Typescript]):
+    shelfmark = serializers.CharField(
+        source="shelfmark_display", read_only=True, help_text='E.g. "ML, sygn. 1618"; may be empty.'
+    )
+
+    class Meta:
+        model = Typescript
+        fields = ("id", "title", "shelfmark")
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
+
+
+class TypescriptGroupSerializer(serializers.Serializer[TypescriptGroup]):
+    """A work's group on the typescripts list (US-RA-19 AC2), from a work with `with_year()`."""
+
+    slug = serializers.CharField(source="work.slug")
+    title = serializers.CharField(source="work.title")
+    genre = serializers.CharField(source="work.genre", allow_blank=True)
+    year = serializers.IntegerField(
+        source="work.year",
+        allow_null=True,
+        help_text="The year of the first edition; null without editions.",
+    )
+    typescripts = TypescriptRowSerializer(many=True, help_text="By shelfmark, as numbers.")

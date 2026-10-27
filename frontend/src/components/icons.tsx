@@ -82,6 +82,11 @@ export function ImageIcon(props: IconProps) {
   );
 }
 
+/** design/assets/icons/strzalka-prawo.svg */
+export function ArrowRightIcon(props: IconProps) {
+  return <Icon {...props} paths={["M3.33337 8H12.6667", "M8 3.33334L12.6667 8L8 12.6667"]} />;
+}
+
 /** design/assets/icons/strzalka-ukos.svg */
 export function ArrowUpRightIcon(props: IconProps) {
   return (

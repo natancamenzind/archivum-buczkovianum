@@ -109,6 +109,26 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/typescripts/:
+    get:
+      operationId: typescripts_list
+      description: |-
+        The typescripts list (US-RA-19): published typescripts grouped by their published work,
+        works by first edition. A work without published typescripts has no group (R-02).
+      tags:
+      - typescripts
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TypescriptGroup'
+          description: ''
   /api/works/:
     get:
       operationId: works_list
@@ -272,6 +292,49 @@ components:
       - bio
       - name
       - role
+    TypescriptGroup:
+      type: object
+      description: A work's group on the typescripts list (US-RA-19 AC2), from a work
+        with `with_year()`.
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        genre:
+          type: string
+        year:
+          type: integer
+          nullable: true
+          description: The year of the first edition; null without editions.
+        typescripts:
+          type: array
+          items:
+            $ref: '#/components/schemas/TypescriptRow'
+          description: By shelfmark, as numbers.
+      required:
+      - genre
+      - slug
+      - title
+      - typescripts
+      - year
+    TypescriptRow:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        shelfmark:
+          type: string
+          readOnly: true
+          description: E.g. "ML, sygn. 1618"; may be empty.
+      required:
+      - id
+      - shelfmark
+      - title
     WorkCard:
       type: object
       description: |-
