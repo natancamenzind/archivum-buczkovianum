@@ -100,6 +100,20 @@ export const copy = {
     loading: "Wczytuję maszynopisy…",
     error: "Nie udało się wczytać maszynopisów. Spróbuj ponownie później.",
   },
+  /** The tag cloud (US-RA-01 AC4), on the tags list and the home page. */
+  tagCloud: {
+    title: "Chmura tagów",
+    description: "Wielkość nazwy odpowiada liczbie wystąpień, w pięciu stopniach",
+  },
+  /** The tags list (US-RA-20). */
+  tags: {
+    title: "Tagi",
+    description: "Motywy łączące fragmenty i zapiski z różnych utworów.",
+    all: "Wszystkie tagi",
+    allDescription: "Alfabetycznie",
+    loading: "Wczytuję tagi…",
+    error: "Nie udało się wczytać tagów. Spróbuj ponownie później.",
+  },
   /** The search field in the header and on the search page (US-RA-14). */
   search: {
     title: "Wyszukiwanie",

@@ -9,12 +9,13 @@ from rest_framework.response import Response
 from api.serializers import (
     AboutPage,
     AboutPageSerializer,
+    TagCountSerializer,
     TeamGroup,
     TypescriptGroup,
     TypescriptGroupSerializer,
     WorkCardSerializer,
 )
-from archive.models import SiteSettings, TeamMember, Typescript, Work
+from archive.models import SiteSettings, Tag, TeamMember, Typescript, Work
 
 
 @extend_schema(responses=AboutPageSerializer)
@@ -44,6 +45,14 @@ def works(request: Request) -> Response:
     """The works list (US-RA-18): every published work as a card, by first edition."""
     cards = Work.objects.published().with_year().with_fragment_count()
     return Response(WorkCardSerializer(cards, many=True).data)
+
+
+@extend_schema(responses=TagCountSerializer(many=True))
+@api_view(["GET"])
+def tags(request: Request) -> Response:
+    """The tags list (US-RA-20): published tags with at least one occurrence (D26), the most
+    frequent first. The cloud and the alphabetical index both take this one list."""
+    return Response(TagCountSerializer(Tag.objects.published().in_use(), many=True).data)
 
 
 def shelfmark_order(typescript: Typescript) -> tuple[bool, list[int | str], str]:

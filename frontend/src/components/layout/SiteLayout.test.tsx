@@ -26,6 +26,7 @@ describe("SiteLayout", () => {
     server.use(
       http.get("*/api/about/", () => HttpResponse.json({ intro: "", project: "", team: [] })),
       http.get("*/api/works/", () => HttpResponse.json([])),
+      http.get("*/api/tags/", () => HttpResponse.json([])),
     );
   });
 

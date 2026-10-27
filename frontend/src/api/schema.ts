@@ -57,6 +57,26 @@ export interface paths {
         patch: operations["editor_fragments_partial_update"];
         trace?: never;
     };
+    "/api/tags/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The tags list (US-RA-20): published tags with at least one occurrence (D26), the most
+         *     frequent first. The cloud and the alphabetical index both take this one list.
+         */
+        get: operations["tags_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/typescripts/": {
         parameters: {
             query?: never;
@@ -140,6 +160,14 @@ export interface components {
             readonly tags?: components["schemas"]["EditorTag"][];
             /** @description The text changed. Check the fragment, then clear this box. */
             readonly needs_review?: boolean;
+        };
+        /** @description A tag with its occurrence count (US-RA-20), from a queryset with `with_occurrences()`. */
+        TagCount: {
+            /** @description Part of the page address. */
+            readonly slug: string;
+            /** Name */
+            readonly title: string;
+            readonly occurrences: number;
         };
         TeamGroup: {
             group: components["schemas"]["GroupEnum"];
@@ -302,6 +330,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EditorFragment"];
+                };
+            };
+        };
+    };
+    tags_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagCount"][];
                 };
             };
         };

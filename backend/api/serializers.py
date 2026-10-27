@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from rest_framework import serializers
 
-from archive.models import TeamMember, Typescript, Work
+from archive.models import Tag, TeamMember, Typescript, Work
 
 
 @dataclass(frozen=True)
@@ -71,6 +71,18 @@ class WorkCardSerializer(serializers.ModelSerializer[Work]):
 
     def get_cover_image(self, work: Work) -> str:
         return work.cover_image.url if work.cover_image else ""
+
+
+class TagCountSerializer(serializers.ModelSerializer[Tag]):
+    """A tag with its occurrence count (US-RA-20), from a queryset with `with_occurrences()`."""
+
+    occurrences = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Tag
+        fields = ("slug", "title", "occurrences")
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
 
 
 @dataclass(frozen=True)

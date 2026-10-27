@@ -207,7 +207,7 @@ Not in Figma; uses the secondary text page layout.
 ### US-RA-20 — Tags list
 
 1. Opened from "Tagi" in the main navigation (R-07).
-2. The tag cloud (US-RA-01 AC4), then "Wszystkie tagi": every published tag, alphabetically, with its occurrence count ("4 wystąpienia").
+2. The tag cloud (US-RA-01 AC4), then "Wszystkie tagi": every published tag with at least one occurrence, the same tags as the cloud, alphabetically, with its occurrence count ("4 wystąpienia").
 
 On mobile, all three lists use one column of the same components.
 
