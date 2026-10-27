@@ -22,8 +22,10 @@ function currentNavItem(): HTMLElement | null {
 
 describe("SiteLayout", () => {
   beforeEach(() => {
-    // The placeholder home page asks the API for its schema.
-    server.use(http.get("*/api/schema/", () => HttpResponse.json({ paths: {} })));
+    // Most cases render /about, which asks the API for its content.
+    server.use(
+      http.get("*/api/about/", () => HttpResponse.json({ intro: "", project: "", team: [] })),
+    );
   });
 
   it("US-RA-03 AC1: the header links the service name to home and 'O archiwum' to /about", async () => {

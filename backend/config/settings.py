@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "django_prose_editor",
     "archive",
     "search",
+    "api",
     "site_shell",
 ]
 
