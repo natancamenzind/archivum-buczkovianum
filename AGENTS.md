@@ -52,6 +52,8 @@ All code is tested. There are no exceptions for small changes.
 
 - Tools: pytest, pytest-django, factory_boy. Every model has a factory in its app's `tests/factories.py`.
 - Tests run against PostgreSQL, never SQLite, because search depends on Postgres features.
+- pytest runs on 4 xdist workers by default; pass `-n 0` to run serially (e.g. with `--pdb`).
+ Load expensive shared data once per class with a class-scoped fixture, as `test_demo_data.py` does.
 - Test behaviour through model methods and API endpoints, not private helpers.
 
 **Frontend**

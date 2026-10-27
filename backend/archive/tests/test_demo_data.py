@@ -1,12 +1,17 @@
 """`manage.py load_demo_data`: the sample archive of design/rules.md (docs/plan.md, step 5)."""
 
 import re
+from collections.abc import Iterator
 from io import StringIO
 from pathlib import Path
 
 import pytest
 from django.core.management import call_command
 from django.core.management.base import CommandError
+from django.db import transaction
+from django.test import override_settings
+from pytest_django import DjangoDbBlocker
+from pytest_django.fixtures import Settings
 
 from archive.management.commands import load_demo_data
 from archive.management.commands.load_demo_data import spread_sentences
@@ -28,15 +33,30 @@ def index() -> set[tuple[object, ...]]:
     return {tuple(tuple(v) if isinstance(v, list) else v for v in row) for row in rows}
 
 
+@pytest.fixture(scope="class")
+def loaded_demo(
+    django_db_setup: None,
+    django_db_blocker: DjangoDbBlocker,
+    tmp_path_factory: pytest.TempPathFactory,
+) -> Iterator[tuple[str, Path]]:
+    """Loads the demo once per class (~3 s), in a transaction each test's own one nests in."""
+    media = tmp_path_factory.mktemp("media")
+    with django_db_blocker.unblock(), override_settings(MEDIA_ROOT=media), transaction.atomic():
+        output = StringIO()
+        call_command("load_demo_data", stdout=output)
+        yield output.getvalue(), media
+        transaction.set_rollback(True)
+
+
 @pytest.fixture
-def demo() -> str:
-    output = StringIO()
-    call_command("load_demo_data", stdout=output)
-    return output.getvalue()
+def demo(loaded_demo: tuple[str, Path], settings: Settings) -> str:
+    output, settings.MEDIA_ROOT = loaded_demo
+    return output
 
 
 @pytest.mark.django_db
-class TestDemoData:
+@pytest.mark.xdist_group("loaded_demo")
+class TestLoadedDemoData:
     def test_loads_the_numbers_of_the_design(self, demo: str) -> None:
         # Arrange
         works = Work.objects.published().with_year()
@@ -125,6 +145,9 @@ class TestDemoData:
         assert index() == loaded
         assert len(loaded) == 4 + 12 + 62 + 5 + 1 + 2 + 1
 
+
+@pytest.mark.django_db
+class TestDemoData:
     @pytest.mark.parametrize(
         "factory",
         [WorkFactory, TagFactory, InstitutionFactory, TeamMemberFactory, SiteSettingsFactory],
