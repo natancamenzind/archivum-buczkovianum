@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -43,13 +43,46 @@ describe("SiteLayout", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("US-RA-03 AC1: the header has no search control yet (step 29)", () => {
+  it.each(["/", "/about", "/works", "/search", "/no-such-page"])(
+    "US-RA-14 AC1: on %s the header has the search field",
+    async (url) => {
+      const { container } = renderRoute(url);
+
+      const header = screen.getByRole("banner");
+      const form = within(header).getByRole("search", { name: "Szukaj w archiwum" });
+      expect(within(form).getByRole("searchbox", { name: "Szukaj w archiwum" })).toHaveAttribute(
+        "placeholder",
+        "Szukaj w archiwum",
+      );
+      expect(await axeViolations(container)).toEqual([]);
+    },
+  );
+
+  it("US-RA-14 AC1: submitting the header field opens the search page with the query", () => {
     renderRoute("/about");
 
     const header = screen.getByRole("banner");
-    expect(within(header).queryByRole("searchbox")).toBeNull();
-    expect(within(header).queryByRole("button")).toBeNull();
-    expect(within(header).getAllByRole("link")).toHaveLength(2);
+    const field = within(header).getByRole("searchbox", { name: "Szukaj w archiwum" });
+    fireEvent.change(field, { target: { value: " Dezerter " } });
+    fireEvent.submit(within(header).getByRole("search"));
+
+    expect(screen.getByRole("heading", { level: 1, name: "Wyszukiwanie" })).toBeInTheDocument();
+    const pageForm = screen.getByRole("search", { name: "Wyszukiwanie" });
+    expect(within(pageForm).getByRole("searchbox")).toHaveValue("Dezerter");
+    // The header field is emptied for the next search.
+    expect(field).toHaveValue("");
+  });
+
+  it("US-RA-14 AC1: on mobile the header search is an icon linking to the search page", () => {
+    renderRoute("/about");
+
+    const header = screen.getByRole("banner");
+    const icon = within(header).getByRole("link", { name: "Szukaj w archiwum" });
+    expect(icon).toHaveAttribute("href", "/search");
+    expect(icon).toHaveClass("md:hidden");
+    // The field is the desktop form; "O archiwum" stays on both (plan, step 29).
+    expect(within(header).getByRole("search")).toHaveClass("hidden", "md:flex");
+    expect(within(header).getByRole("link", { name: "O archiwum" })).not.toHaveClass("hidden");
   });
 
   it("US-RA-03 AC1: the main navigation lists Strona główna, Utwory, Maszynopisy, Tagi", async () => {
@@ -105,11 +138,12 @@ describe("SiteLayout", () => {
     expect(screen.getByRole("contentinfo")).toHaveClass("pb-64", "md:pb-0");
   });
 
-  it("R-12: every header and navigation link shows a focus outline, the active item too", () => {
+  it("R-12: every header control and navigation link shows a focus outline, the active item too", () => {
     renderRoute("/works");
 
     const links = [
       ...within(screen.getByRole("banner")).getAllByRole("link"),
+      within(screen.getByRole("banner")).getByRole("searchbox"),
       ...within(mainNav()).getAllByRole("link"),
     ];
     // A colour shift alone is invisible on the active item, which is already in the accent colour.
