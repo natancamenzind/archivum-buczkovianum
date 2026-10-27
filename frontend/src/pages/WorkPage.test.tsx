@@ -352,6 +352,20 @@ describe("WorkPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("US-RA-05 AC1, AC2: a tag on a work link shows in the tag column and links to its tag page", async () => {
+    mockPage({ tags: [...WORK.tags, { slug: "recepcja", title: "Recepcja" }] });
+
+    const { container } = await renderPage();
+
+    const tags = column("Tagi");
+    expect(within(tags).getByText("3")).toBeVisible();
+    expect(within(tags).getByRole("link", { name: "Recepcja" })).toHaveAttribute(
+      "href",
+      "/tags/recepcja",
+    );
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
   it("US-RA-04 AC5: the contextual materials linked to the work", async () => {
     mockPage();
 

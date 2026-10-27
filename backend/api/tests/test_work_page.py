@@ -279,6 +279,51 @@ class TestWorkPageEndpoint:
         # Assert
         assert result["tags"] == []
 
+    def test_us_ra_05_ac1_tags_on_a_work_link_appear_in_the_tag_column(
+        self, client: Client
+    ) -> None:
+        # Arrange: the linked items carry no tags of their own; only the links do.
+        work = published_work()
+        reception = TagFactory.create(title="Recepcja", slug="recepcja", status=PUBLISHED)
+        polemic = TagFactory.create(title="Polemika", slug="polemika", status=PUBLISHED)
+        context = TagFactory.create(title="Kontekst", slug="kontekst", status=PUBLISHED)
+        SecondaryTextWorkLinkFactory.create(work=work, secondary_text__status=PUBLISHED).tags.add(
+            reception, polemic
+        )
+        MaterialWorkLinkFactory.create(work=work, material__status=PUBLISHED).tags.add(
+            reception, context
+        )
+
+        # Act
+        result = page(client, work)
+
+        # Assert: each tag once, by name.
+        assert result["tags"] == [
+            {"slug": "kontekst", "title": "Kontekst"},
+            {"slug": "polemika", "title": "Polemika"},
+            {"slug": "recepcja", "title": "Recepcja"},
+        ]
+
+    def test_us_ra_05_ac1_links_to_drafts_or_other_works_bring_no_tags(
+        self, client: Client
+    ) -> None:
+        # Arrange
+        work = published_work()
+        SecondaryTextWorkLinkFactory.create(work=work).tags.add(TagFactory.create(status=PUBLISHED))
+        MaterialWorkLinkFactory.create(work=work).tags.add(TagFactory.create(status=PUBLISHED))
+        SecondaryTextWorkLinkFactory.create(work=work, secondary_text__status=PUBLISHED).tags.add(
+            TagFactory.create(status=Status.DRAFT)
+        )
+        MaterialWorkLinkFactory.create(work=published_work(), material__status=PUBLISHED).tags.add(
+            TagFactory.create(status=PUBLISHED)
+        )
+
+        # Act
+        result = page(client, work)
+
+        # Assert
+        assert result["tags"] == []
+
     def test_us_ra_04_ac5_contextual_materials_linked_to_the_work(self, client: Client) -> None:
         # Arrange
         work = published_work()
