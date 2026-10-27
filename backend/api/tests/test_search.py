@@ -145,6 +145,29 @@ class TestSearchEndpoint:
         assert card["url"].startswith("/typescripts/")
         assert "?fragment=" in card["url"]
 
+    def test_us_ra_15_ac5_a_fragment_card_names_its_published_works_by_first_edition(
+        self, client: Client
+    ) -> None:
+        # Arrange
+        note = NoteFactory.create(
+            status=PUBLISHED,
+            content_kind=ContentKind.PLAIN_TEXT,
+            external_url="",
+            document=DocumentFactory.create(text="Dezerter."),
+        )
+        note.works.add(
+            published_work("Wertepy", 1947),
+            published_work("Czarny potok", 1954),
+            WorkFactory.create(status=Status.DRAFT, title="Szkic"),
+        )
+        FragmentFactory.create(document=note.document, start=0, end=8)
+
+        # Act
+        page = results(client, "dezerter")
+
+        # Assert
+        assert [card["work"] for card in page["fragments"]] == ["Wertepy, Czarny potok"]
+
     def test_us_ra_15_ac5_each_result_says_its_type_and_links_to_its_page(
         self, client: Client, archive: Work
     ) -> None:

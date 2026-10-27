@@ -449,6 +449,15 @@ describe("TypescriptPage", () => {
     expect(scrollIntoView).not.toHaveBeenCalled();
   });
 
+  it("R-11 AC3: a ?q= of regular expression characters is matched literally", async () => {
+    mockPage();
+
+    const { container } = await renderPage(`/typescripts/1?q=${encodeURIComponent(".*")}`);
+
+    await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    expect(container.querySelector("mark[data-search-match]")).toBeNull();
+  });
+
   it("US-RA-08 AC3: 'Fragmenty z maszynopisu' previews the fragments as a numbered list", async () => {
     mockPage();
 
