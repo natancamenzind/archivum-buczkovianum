@@ -180,7 +180,7 @@ class TestSecondaryTextForm:
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        assert form_errors(response) == {"__all__": [BOTH_TEXTS]}
+        assert form_errors(response) == {"plain_text": [BOTH_TEXTS]}
         assert not Document.objects.exists()
 
     def test_us_wr_06_ac1_change_without_edits_keeps_the_plain_text(
