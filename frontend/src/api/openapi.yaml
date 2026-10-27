@@ -109,6 +109,32 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/search/autocomplete/:
+    get:
+      operationId: search_autocomplete_list
+      description: |-
+        Suggestions under the search fields (US-RA-17): published works and tags whose title
+        contains `q`. Empty for a blank `q`.
+      parameters:
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: What the reader has typed so far.
+      tags:
+      - search
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Suggestion'
+          description: ''
   /api/tags/:
     get:
       operationId: tags_list
@@ -284,6 +310,25 @@ components:
           type: boolean
           readOnly: true
           description: The text changed. Check the fragment, then clear this box.
+    Suggestion:
+      type: object
+      description: 'A suggestion under the search fields (US-RA-17): a work or a tag,
+        and its page.'
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+      required:
+      - title
+      - type
+      - url
     TagCount:
       type: object
       description: A tag with its occurrence count (US-RA-20), from a queryset with
@@ -335,6 +380,14 @@ components:
       - bio
       - name
       - role
+    TypeEnum:
+      enum:
+      - work
+      - tag
+      type: string
+      description: |-
+        * `work` - work
+        * `tag` - tag
     TypescriptGroup:
       type: object
       description: A work's group on the typescripts list (US-RA-19 AC2), from a work

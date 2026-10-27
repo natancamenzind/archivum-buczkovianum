@@ -51,7 +51,7 @@ describe("SiteLayout", () => {
 
       const header = screen.getByRole("banner");
       const form = within(header).getByRole("search", { name: "Szukaj w archiwum" });
-      expect(within(form).getByRole("searchbox", { name: "Szukaj w archiwum" })).toHaveAttribute(
+      expect(within(form).getByRole("combobox", { name: "Szukaj w archiwum" })).toHaveAttribute(
         "placeholder",
         "Szukaj w archiwum",
       );
@@ -63,13 +63,13 @@ describe("SiteLayout", () => {
     renderRoute("/about");
 
     const header = screen.getByRole("banner");
-    const field = within(header).getByRole("searchbox", { name: "Szukaj w archiwum" });
+    const field = within(header).getByRole("combobox", { name: "Szukaj w archiwum" });
     fireEvent.change(field, { target: { value: " Dezerter " } });
     fireEvent.submit(within(header).getByRole("search"));
 
     expect(screen.getByRole("heading", { level: 1, name: "Wyszukiwanie" })).toBeInTheDocument();
     const pageForm = screen.getByRole("search", { name: "Wyszukiwanie" });
-    expect(within(pageForm).getByRole("searchbox")).toHaveValue("Dezerter");
+    expect(within(pageForm).getByRole("combobox")).toHaveValue("Dezerter");
     expect(field).toHaveValue("");
   });
 
@@ -77,22 +77,22 @@ describe("SiteLayout", () => {
     renderRoute("/search?q=dezerter");
 
     const header = screen.getByRole("banner");
-    fireEvent.change(within(header).getByRole("searchbox"), { target: { value: "potok" } });
+    fireEvent.change(within(header).getByRole("combobox"), { target: { value: "potok" } });
     fireEvent.submit(within(header).getByRole("search"));
 
     const pageForm = screen.getByRole("search", { name: "Wyszukiwanie" });
-    expect(within(pageForm).getByRole("searchbox")).toHaveValue("potok");
+    expect(within(pageForm).getByRole("combobox")).toHaveValue("potok");
   });
 
   it("US-RA-14 AC1: a header search for the current query drops unsubmitted edits", () => {
     renderRoute("/search?q=dezerter");
 
     const pageField = within(screen.getByRole("search", { name: "Wyszukiwanie" })).getByRole(
-      "searchbox",
+      "combobox",
     );
     fireEvent.change(pageField, { target: { value: "potok" } });
     const header = screen.getByRole("banner");
-    fireEvent.change(within(header).getByRole("searchbox"), { target: { value: "dezerter" } });
+    fireEvent.change(within(header).getByRole("combobox"), { target: { value: "dezerter" } });
     fireEvent.submit(within(header).getByRole("search"));
 
     expect(pageField).toHaveValue("dezerter");
@@ -102,11 +102,11 @@ describe("SiteLayout", () => {
     renderRoute("/about");
 
     const header = screen.getByRole("banner");
-    fireEvent.change(within(header).getByRole("searchbox"), { target: { value: "  " } });
+    fireEvent.change(within(header).getByRole("combobox"), { target: { value: "  " } });
     fireEvent.submit(within(header).getByRole("search"));
 
     const pageForm = screen.getByRole("search", { name: "Wyszukiwanie" });
-    expect(within(pageForm).getByRole("searchbox")).toHaveValue("");
+    expect(within(pageForm).getByRole("combobox")).toHaveValue("");
   });
 
   it("US-RA-14 AC1: on mobile the header search is an icon linking to the search page", () => {
@@ -179,7 +179,7 @@ describe("SiteLayout", () => {
 
     const links = [
       ...within(screen.getByRole("banner")).getAllByRole("link"),
-      within(screen.getByRole("banner")).getByRole("searchbox"),
+      within(screen.getByRole("banner")).getByRole("combobox"),
       ...within(mainNav()).getAllByRole("link"),
     ];
     // A colour shift alone is invisible on the active item, which is already in the accent colour.

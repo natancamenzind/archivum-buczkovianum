@@ -148,6 +148,7 @@ class TestSchema:
                 "/api/about/",
                 "/api/editor/fragments/",
                 "/api/editor/fragments/{id}/",
+                "/api/search/autocomplete/",
                 "/api/tags/",
                 "/api/typescripts/",
                 "/api/works/",

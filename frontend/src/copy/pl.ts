@@ -124,6 +124,9 @@ export const copy = {
     clear: "Wyczyść",
     scope: "Przeszukiwane: tytuły, opisy, transkrypcje i tagi",
     hint: "Dokładna fraza: użyj cudzysłowu, np. „dezerter w stodole”",
+    /** The list of suggestions under both fields (US-RA-17), and each suggestion's type. */
+    suggestions: "Podpowiedzi",
+    suggestionTypes: { work: "Utwór", tag: "Tag" },
   },
   notFound: {
     title: "Nie znaleziono strony",

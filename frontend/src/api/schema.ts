@@ -57,6 +57,26 @@ export interface paths {
         patch: operations["editor_fragments_partial_update"];
         trace?: never;
     };
+    "/api/search/autocomplete/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Suggestions under the search fields (US-RA-17): published works and tags whose title
+         *     contains `q`. Empty for a blank `q`.
+         */
+        get: operations["search_autocomplete_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tags/": {
         parameters: {
             query?: never;
@@ -161,6 +181,12 @@ export interface components {
             /** @description The text changed. Check the fragment, then clear this box. */
             readonly needs_review?: boolean;
         };
+        /** @description A suggestion under the search fields (US-RA-17): a work or a tag, and its page. */
+        Suggestion: {
+            readonly type: components["schemas"]["TypeEnum"];
+            readonly title: string;
+            readonly url: string;
+        };
         /** @description A tag with its occurrence count (US-RA-20), from a queryset with `with_occurrences()`. */
         TagCount: {
             /** @description Part of the page address. */
@@ -180,6 +206,12 @@ export interface components {
             /** Short biography */
             readonly bio: string;
         };
+        /**
+         * @description * `work` - work
+         *     * `tag` - tag
+         * @enum {string}
+         */
+        TypeEnum: "work" | "tag";
         /** @description A work's group on the typescripts list (US-RA-19 AC2), from a work with `with_year()`. */
         TypescriptGroup: {
             slug: string;
@@ -330,6 +362,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EditorFragment"];
+                };
+            };
+        };
+    };
+    search_autocomplete_list: {
+        parameters: {
+            query?: {
+                /** @description What the reader has typed so far. */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Suggestion"][];
                 };
             };
         };

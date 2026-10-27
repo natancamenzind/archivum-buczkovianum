@@ -8,7 +8,7 @@ function searchForm(): HTMLElement {
 }
 
 function searchBox(): HTMLInputElement {
-  return within(searchForm()).getByRole<HTMLInputElement>("searchbox", {
+  return within(searchForm()).getByRole<HTMLInputElement>("combobox", {
     name: "Szukaj w archiwum",
   });
 }
