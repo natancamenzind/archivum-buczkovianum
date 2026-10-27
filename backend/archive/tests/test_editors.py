@@ -17,6 +17,24 @@ class TestEditorsGroup:
             with pytest.raises(NoReverseMatch):
                 reverse(name)
 
+    def test_us_wr_01_ac1_administrator_creates_accounts_in_the_admin(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        url = reverse("admin:auth_user_add")
+        data = {
+            "username": "neweditor",
+            "password1": "long-enough-pass!",
+            "password2": "long-enough-pass!",
+        }
+
+        # Act
+        response = admin_client.post(url, data)
+
+        # Assert
+        assert response.status_code == 302
+        assert User.objects.filter(username="neweditor").exists()
+
     def test_us_wr_01_ac2_redaktorzy_group_has_every_archive_permission(self) -> None:
         # Arrange
         archive_permissions = set(
@@ -48,7 +66,7 @@ class TestEditorsGroup:
         assert first_permissions == second_permissions
         assert first_permissions
 
-    def test_editors_can_open_the_admin_work_list(self, client: Client) -> None:
+    def test_us_wr_01_ac2_editors_can_open_the_admin_work_list(self, client: Client) -> None:
         # Arrange
         group = Group.objects.get(name=EDITORS_GROUP_NAME)
         user = User.objects.create_user(username="editor", password="secret", is_staff=True)
