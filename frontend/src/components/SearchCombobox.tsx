@@ -65,8 +65,9 @@ export function SearchCombobox({
   const query = useQuery({
     queryKey: ["autocomplete", q],
     queryFn: () => fetchSuggestions(q),
-    // Not for the query a field opens with, only once the reader types.
-    enabled: open && q.length >= MIN_LENGTH,
+    // Only once the reader has typed and paused; not for the query a field opens with.
+    enabled: open && q.length >= MIN_LENGTH && q === value.trim(),
+    // The list keeps the last suggestions while the text settles, instead of flickering.
     placeholderData: keepPreviousData,
   });
   const suggestions = value.trim().length >= MIN_LENGTH ? (query.data ?? []) : [];
@@ -93,9 +94,16 @@ export function SearchCombobox({
   }
 
   function keyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if ((event.key === "ArrowDown" || event.key === "ArrowUp") && suggestions.length > 0) {
+    if (event.nativeEvent.isComposing) {
+      return;
+    }
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
-      move(event.key === "ArrowDown" ? 1 : -1);
+      if (suggestions.length > 0) {
+        move(event.key === "ArrowDown" ? 1 : -1);
+      } else {
+        setOpen(true);
+      }
     } else if (event.key === "Enter") {
       const chosen = activeIndex === -1 ? undefined : suggestions[activeIndex];
       if (chosen) {
@@ -151,10 +159,13 @@ export function SearchCombobox({
               onMouseDown={(event) => {
                 event.preventDefault();
               }}
+              onMouseEnter={() => {
+                setActive(index);
+              }}
               onClick={() => {
                 choose(suggestion);
               }}
-              className="flex cursor-pointer items-baseline justify-between gap-16 px-16 py-8 hover:bg-accent aria-selected:bg-accent"
+              className="flex cursor-pointer items-baseline justify-between gap-16 px-16 py-8 aria-selected:bg-accent"
             >
               <span className="text-lora-tekst text-foreground">{suggestion.title}</span>{" "}
               <span className="text-cousine-metadane-male text-muted-foreground">

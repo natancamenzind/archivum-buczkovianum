@@ -93,19 +93,44 @@ describe("SearchCombobox", () => {
     expect(screen.queryByRole("listbox")).toBeNull();
   });
 
-  it("US-RA-17 AC2: clicking a suggestion opens its page", async () => {
+  it("US-RA-17 AC1: the field asks only once the typing pauses", async () => {
     renderRoute("/about");
+    const field = headerField();
+
+    for (const value of ["cz", "cza", "czar", "czarn"]) {
+      fireEvent.change(field, { target: { value } });
+    }
+    await suggestionsFor(field, "czarny");
+
+    expect(queries).toEqual(["czarny"]);
+  });
+
+  it("US-RA-17 AC1: the search page's query asks for nothing until the reader types", async () => {
+    renderRoute("/search?q=czarny");
+
+    pageField().focus();
+    await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+
+    expect(queries).toEqual([]);
+    fireEvent.keyDown(pageField(), { key: "ArrowDown" });
+    expect(await screen.findByRole("listbox", { name: "Podpowiedzi" })).toBeInTheDocument();
+    expect(queries).toEqual(["czarny"]);
+  });
+
+  it("US-RA-17 AC2: clicking a suggestion opens its page", async () => {
+    const { router } = renderRoute("/about");
 
     await suggestionsFor(headerField(), "czarny");
     fireEvent.click(option(WORK));
 
+    expect(router.state.location.pathname).toBe("/works/czarny-potok");
     expect(activeNavItem()).toBe("Utwory");
     expect(headerField()).toHaveValue("");
     expect(screen.queryByRole("listbox")).toBeNull();
   });
 
   it("US-RA-17 AC2: choosing a suggestion with the keyboard opens its page", async () => {
-    renderRoute("/about");
+    const { container, router } = renderRoute("/about");
     const field = headerField();
 
     await suggestionsFor(field, "czarny");
@@ -115,17 +140,38 @@ describe("SearchCombobox", () => {
     expect(field).toHaveAttribute("aria-activedescendant", option(TAG).id);
     expect(option(TAG)).toHaveAttribute("aria-selected", "true");
     expect(option(WORK)).toHaveAttribute("aria-selected", "false");
+    expect(await axeViolations(container)).toEqual([]);
     fireEvent.keyDown(field, { key: "Enter" });
-    expect(activeNavItem()).toBe("Tagi");
+    expect(router.state.location.pathname).toBe("/tags/czarny-las");
+  });
+
+  it("US-RA-17 AC2: pointing at a suggestion makes it the active one", async () => {
+    renderRoute("/about");
+
+    await suggestionsFor(headerField(), "czarny");
+    fireEvent.mouseEnter(option(TAG));
+
+    expect(headerField()).toHaveAttribute("aria-activedescendant", option(TAG).id);
+  });
+
+  it("US-RA-17 AC2: Enter while composing a letter chooses nothing", async () => {
+    const { router } = renderRoute("/about");
+    const field = headerField();
+
+    await suggestionsFor(field, "czarny");
+    fireEvent.keyDown(field, { key: "ArrowDown" });
+    fireEvent.keyDown(field, { key: "Enter", isComposing: true });
+
+    expect(router.state.location.pathname).toBe("/about");
   });
 
   it("US-RA-17 AC2: a suggestion on the search page opens its page", async () => {
-    renderRoute("/search");
+    const { router } = renderRoute("/search");
 
     await suggestionsFor(pageField(), "czarny");
     fireEvent.click(option(TAG));
 
-    expect(activeNavItem()).toBe("Tagi");
+    expect(router.state.location.pathname).toBe("/tags/czarny-las");
     expect(screen.queryByRole("search", { name: "Wyszukiwanie" })).toBeNull();
   });
 
