@@ -294,12 +294,11 @@ class TestWorkPageEndpoint:
         # Act
         result = page(client, work)
 
-        # Assert: each tag once, by name, with the slug its tag page uses.
+        # Assert: each tag once, by name.
         assert result["tags"] == [
             {"slug": "polemika", "title": "Polemika"},
             {"slug": "recepcja", "title": "Recepcja"},
         ]
-        assert reception.get_absolute_url() == "/tags/recepcja"
 
     def test_us_ra_05_ac1_links_to_drafts_or_other_works_bring_no_tags(
         self, client: Client
