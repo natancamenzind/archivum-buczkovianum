@@ -215,7 +215,7 @@ class Archival(models.Model):
         contextual material."""
         assert isinstance(self, Publishable)
         text = self.document.text if self.document else ""
-        work_ids, decades = search_filters(Work.objects.filter(**{self.works_lookup: self}))
+        work_ids, decades = search_filters(self.related_works())
         return IndexedContent(
             title=self.title,
             url=self.get_absolute_url(),
@@ -237,14 +237,15 @@ class Archival(models.Model):
         no longer has leave the index: that text has no owner now.
         """
         if self._indexed_document_id not in (None, self.document_id):
-            old = Fragment.objects.filter(document_id=self._indexed_document_id)
-            SearchEntry.remove(EntityType.FRAGMENT, *old.values_list("pk", flat=True))
+            SearchEntry.remove_fragments(
+                Fragment.objects.filter(document_id=self._indexed_document_id)
+            )
         self._indexed_document_id = self.document_id
         if self.document is None:
             return
         fragments = self.document.fragments.all()
         if owner is None:
-            SearchEntry.remove(EntityType.FRAGMENT, *fragments.values_list("pk", flat=True))
+            SearchEntry.remove_fragments(fragments)
             return
         for fragment in fragments:
             fragment.write_search_entry(owner)
@@ -750,7 +751,7 @@ class Document(BaseModel):
     def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
         """Unindex the fragments first: the database deletes them without `Fragment.delete()`."""
         with transaction.atomic():
-            SearchEntry.remove(EntityType.FRAGMENT, *self.fragments.values_list("pk", flat=True))
+            SearchEntry.remove_fragments(self.fragments.all())
             return super().delete(*args, **kwargs)
 
     @classmethod
@@ -953,7 +954,8 @@ class Fragment(BaseModel, Taggable):
             self.start, self.end = position, position + len(self.quote)
         self.needs_review = True
         if (self.start, self.end, self.needs_review) != before:
-            self.save(update_fields=["start", "end", "needs_review", "updated_at"])
+            # Skips `Fragment.save()`'s index write: `Document.save()` indexes every fragment next.
+            super().save(update_fields=["start", "end", "needs_review", "updated_at"])
 
 
 # --- Site content -----------------------------------------------------------------------

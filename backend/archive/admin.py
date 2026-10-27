@@ -58,7 +58,7 @@ class InstitutionAdmin(admin.ModelAdmin[Institution]):
 
 
 @admin.register(Tag)
-class TagAdmin(SearchIndexedAdmin[Tag]):
+class TagAdmin(admin.ModelAdmin[Tag]):
     list_display = ("title", "kind", "status", "updated_at")
     list_filter = ("status", "kind")
     search_fields = ("title",)

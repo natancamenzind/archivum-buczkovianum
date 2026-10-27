@@ -69,8 +69,7 @@ class TestWrites:
         typescript.save()
 
         # Assert
-        indexed = entry(EntityType.TYPESCRIPT, typescript.pk)
-        assert indexed is not None
+        indexed = stored(EntityType.TYPESCRIPT, typescript.pk)
         assert str(indexed) == "typescript: Pierwsza wersja"
         assert indexed.url == f"/typescripts/{typescript.pk}"
         assert indexed.body == "Maszynopis z poprawkami.\n\nCzarny potok płynie."
@@ -128,8 +127,7 @@ class TestWrites:
         )
 
         # Assert
-        indexed = entry(EntityType.FRAGMENT, fragment.pk)
-        assert indexed is not None
+        indexed = stored(EntityType.FRAGMENT, fragment.pk)
         assert indexed.url == f"/typescripts/{typescript.pk}?fragment={fragment.pk}"
         assert indexed.body == "potok\n\nMotyw wody."
         assert indexed.work_ids == [typescript.work_id]
@@ -176,8 +174,7 @@ class TestWrites:
         document.save()
 
         # Assert
-        indexed = entry(EntityType.SECONDARY_TEXT, secondary_text.pk)
-        assert indexed is not None
+        indexed = stored(EntityType.SECONDARY_TEXT, secondary_text.pk)
         assert indexed.body == "List o Wertepach."
         assert (indexed.has_scan, indexed.has_text) == (False, True)
 
@@ -206,8 +203,7 @@ class TestWrites:
 
         # Assert
         assert decades_with_first == [1940]
-        indexed = entry(EntityType.NOTE, note.pk)
-        assert indexed is not None
+        indexed = stored(EntityType.NOTE, note.pk)
         assert (indexed.work_ids, indexed.decades) == ([work.pk], [1950])
 
     def test_an_edition_reindexes_its_work_without_saving_it(self) -> None:
@@ -239,8 +235,7 @@ class TestWrites:
         tag.save()
 
         # Assert
-        indexed = entry(EntityType.TAG, tag.pk)
-        assert indexed is not None
+        indexed = stored(EntityType.TAG, tag.pk)
         assert (indexed.work_ids, indexed.decades) == ([work.pk], [1960])
 
     def test_us_ra_16_ac2_media_without_a_text_has_neither_scan_nor_text(self) -> None:
@@ -292,8 +287,7 @@ class TestWrites:
         work.save()
 
         # Assert
-        indexed = entry(EntityType.NOTE, note.pk)
-        assert indexed is not None
+        indexed = stored(EntityType.NOTE, note.pk)
         assert (indexed.work_ids, indexed.decades) == ([work.pk], [1940])
 
     def test_deleting_a_work_takes_it_out_of_related_entries(self) -> None:
@@ -307,8 +301,7 @@ class TestWrites:
         work.delete()
 
         # Assert
-        indexed = entry(EntityType.NOTE, note.pk)
-        assert indexed is not None
+        indexed = stored(EntityType.NOTE, note.pk)
         assert indexed.work_ids == []
 
     def test_deleting_the_last_carrier_takes_the_work_out_of_a_tag_entry(self) -> None:
@@ -325,8 +318,7 @@ class TestWrites:
         note.delete()
 
         # Assert
-        tag_entry = entry(EntityType.TAG, tag.pk)
-        assert tag_entry is not None
+        tag_entry = stored(EntityType.TAG, tag.pk)
         assert tag_entry.work_ids == []
 
 
@@ -354,8 +346,7 @@ class TestEditorPanel:
         # Assert
         assert response.status_code == 302
         note = SearchEntry.objects.get(entity_type=EntityType.NOTE)
-        tag_entry = entry(EntityType.TAG, tag.pk)
-        assert tag_entry is not None
+        tag_entry = stored(EntityType.TAG, tag.pk)
         assert (note.work_ids, note.decades) == ([work.pk], [1940])
         assert tag_entry.work_ids == [work.pk]
 
@@ -387,8 +378,7 @@ class TestEditorPanel:
 
         # Assert
         assert response.status_code == 302
-        tag_entry = entry(EntityType.TAG, tag.pk)
-        assert tag_entry is not None
+        tag_entry = stored(EntityType.TAG, tag.pk)
         assert tag_entry.work_ids == [work.pk]
 
 

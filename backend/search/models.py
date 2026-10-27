@@ -8,6 +8,7 @@ import operator
 from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import reduce
+from typing import Any
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
@@ -114,3 +115,10 @@ class SearchEntry(models.Model):
     @classmethod
     def remove(cls, entity_type: EntityType, *entity_ids: int) -> None:
         cls.objects.filter(entity_type=entity_type, entity_id__in=entity_ids).delete()
+
+    @classmethod
+    def remove_fragments(cls, fragments: "models.QuerySet[Any]") -> None:
+        """Remove the entries of a queryset of fragments, in one query."""
+        cls.objects.filter(
+            entity_type=EntityType.FRAGMENT, entity_id__in=fragments.values("pk")
+        ).delete()
