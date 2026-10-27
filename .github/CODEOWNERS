@@ -1,0 +1,5 @@
+# Core changes need the core owner's review (AGENTS.md, Ownership; docs/plan.md, D8).
+/backend/archive/ @natancamenzind
+/backend/search/ @natancamenzind
+/backend/api/ @natancamenzind
+**/migrations/ @natancamenzind

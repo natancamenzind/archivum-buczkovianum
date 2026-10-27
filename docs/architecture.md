@@ -24,7 +24,7 @@
 | Frontend | React, TypeScript, Vite, React Router, TanStack Query, Tailwind, shadcn/ui |
 | API client | Generated from the OpenAPI schema with `openapi-typescript` |
 | Scan viewer | `pdfjs-dist` (renders one PDF page at a time; also page thumbnails for fragment cards) |
-| Tests | pytest, pytest-django, factory_boy (backend core); `tsc` + ESLint (frontend) |
+| Tests | pytest, pytest-django, factory_boy (backend core); Vitest + Testing Library, `tsc` + ESLint (frontend) |
 | Dev environment | Replit (editors), local or Claude Code (core) |
 
 Hosting for production is not decided yet. The constraints above keep every option open.

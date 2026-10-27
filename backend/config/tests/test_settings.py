@@ -1,5 +1,6 @@
 import importlib
 from collections.abc import Iterator
+from pathlib import Path
 from types import ModuleType
 
 import pytest
@@ -36,3 +37,15 @@ def test_empty_s3_endpoint_falls_back_to_default(
     settings = importlib.reload(reload_settings)
 
     assert settings.AWS_S3_ENDPOINT_URL is None
+
+
+@pytest.mark.parametrize("built", [True, False])
+def test_frontend_build_is_a_static_dir_only_once_built(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType, built: bool
+) -> None:
+    monkeypatch.setattr(Path, "is_dir", lambda self: built)
+
+    settings = importlib.reload(reload_settings)
+
+    expected = [settings.FRONTEND_DIST_DIR] if built else []
+    assert expected == settings.STATICFILES_DIRS
