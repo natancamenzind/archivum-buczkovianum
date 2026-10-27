@@ -9,12 +9,18 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms.utils import ErrorDict
 from django.test import Client
 from django.urls import reverse
+from pytest_django import DjangoCaptureOnCommitCallbacks
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse
 
 from archive.models import Document, Fragment, Status, Typescript, Work
-from archive.tests.factories import FragmentFactory, TypescriptFactory, WorkFactory
+from archive.tests.factories import (
+    DocumentFactory,
+    FragmentFactory,
+    TypescriptFactory,
+    WorkFactory,
+)
 from archive.tests.files import ocr_file, scan_file
 from archive.uploads import load_ocr_upload
 from search.models import EntityType
@@ -327,6 +333,30 @@ class TestTypescriptForm:
         assert typescript.document is not None
         assert typescript.document.page_offsets == [0, 31]
 
+    def test_us_wr_04_ac2_replacing_text_deletes_the_old_scan(
+        self,
+        admin_client: Client,
+        django_capture_on_commit_callbacks: DjangoCaptureOnCommitCallbacks,
+    ) -> None:
+        # Arrange
+        typescript = TypescriptFactory.create()
+        assert typescript.document is not None
+        storage = typescript.document.scan.storage
+        old_name = typescript.document.scan.name
+        assert old_name and storage.exists(old_name)
+        data = typescript_data(typescript, scan=scan_file(1), ocr_file=ocr_file("Nowy tekst."))
+
+        # Act
+        with django_capture_on_commit_callbacks(execute=True):
+            response = admin_client.post(change_url(typescript), data)
+
+        # Assert
+        assert response.status_code == 302
+        new_name = Document.objects.get(pk=typescript.document.pk).scan.name
+        assert new_name and new_name != old_name
+        assert storage.exists(new_name)
+        assert not storage.exists(old_name)
+
     def test_us_wr_04_ac2_rejected_upload_keeps_old_document(self, admin_client: Client) -> None:
         # Arrange
         typescript = TypescriptFactory.create()
@@ -350,6 +380,18 @@ class TestTypescriptForm:
         )
         fragment.refresh_from_db()
         assert (fragment.start, fragment.end, fragment.needs_review) == (0, 12, False)
+
+    def test_us_wr_04_model_error_about_the_text_shows_above_the_form(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange: a typescript left holding a plain text, which the model rejects
+        typescript = TypescriptFactory.create(document=DocumentFactory.create())
+
+        # Act
+        response = admin_client.post(change_url(typescript), typescript_data(typescript))
+
+        # Assert
+        assert form_errors(response) == {"__all__": ["Choose a text of kind “Scan + OCR text”."]}
 
     def test_us_wr_04_unreadable_pdf_is_a_form_error(self, admin_client: Client) -> None:
         # Arrange

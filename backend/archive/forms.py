@@ -1,5 +1,6 @@
 """Admin forms that need more than the model gives them."""
 
+from functools import partial
 from typing import Any
 
 from django import forms
@@ -44,6 +45,8 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
     upload_fields = ("scan", "ocr_file")
     # The document loaded from the files, saved with the item.
     uploaded_document: Document | None = None
+    # The stored scan the upload replaces, deleted once the new one is committed.
+    replaced_scan: str = ""
 
     def clean(self) -> dict[str, Any]:
         super().clean()
@@ -63,11 +66,14 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
                 _("Upload the scan and the OCR file together, so their pages can be compared."),
             )
             return cleaned_data
+        document = self.instance.document
+        replaced_scan = (document.scan.name or "") if document is not None else ""
         try:
-            self.uploaded_document = load_ocr_upload(self.instance.document, scan, ocr_file)
+            self.uploaded_document = load_ocr_upload(document, scan, ocr_file)
         except ValidationError as error:
             self.add_error(None, error)
             return cleaned_data
+        self.replaced_scan = replaced_scan
         self.instance.document = self.uploaded_document
         return cleaned_data
 
@@ -93,9 +99,13 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
         """Save the uploaded document first, since the item refers to it.
 
         Saving a replaced text re-anchors its fragments and re-indexes the item. The admin
-        saves the form and the item in one transaction, so a failure undoes both.
+        saves the form and the item in one transaction, so a failure undoes both. The replaced
+        scan is deleted only after that transaction commits.
         """
         with transaction.atomic():
             if self.uploaded_document is not None:
                 self.uploaded_document.save()
+                if self.replaced_scan:
+                    storage = self.uploaded_document.scan.storage
+                    transaction.on_commit(partial(storage.delete, self.replaced_scan))
             return super().save(commit)
