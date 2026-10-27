@@ -97,7 +97,10 @@ export function SearchCombobox({
     if (event.nativeEvent.isComposing) {
       return;
     }
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    if (
+      (event.key === "ArrowDown" || event.key === "ArrowUp") &&
+      value.trim().length >= MIN_LENGTH
+    ) {
       event.preventDefault();
       if (suggestions.length > 0) {
         move(event.key === "ArrowDown" ? 1 : -1);
@@ -144,6 +147,10 @@ export function SearchCombobox({
           id={listId}
           role="listbox"
           aria-label={copy.search.suggestions}
+          // So Enter searches again once the pointer has left the list.
+          onMouseLeave={() => {
+            setActive(-1);
+          }}
           className={cn(
             "absolute top-full z-10 flex flex-col rounded-sm border border-accent-border bg-popover py-4 shadow-raised",
             listClassName,
@@ -159,7 +166,8 @@ export function SearchCombobox({
               onMouseDown={(event) => {
                 event.preventDefault();
               }}
-              onMouseEnter={() => {
+              // Only a moving pointer, not a list that appears under a resting one.
+              onMouseMove={() => {
                 setActive(index);
               }}
               onClick={() => {

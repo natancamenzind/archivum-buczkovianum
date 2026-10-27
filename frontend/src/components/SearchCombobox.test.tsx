@@ -145,13 +145,34 @@ describe("SearchCombobox", () => {
     expect(router.state.location.pathname).toBe("/tags/czarny-las");
   });
 
-  it("US-RA-17 AC2: pointing at a suggestion makes it the active one", async () => {
+  it("US-RA-17 AC2: pointing at a suggestion makes it the active one until the pointer leaves", async () => {
     renderRoute("/about");
 
     await suggestionsFor(headerField(), "czarny");
-    fireEvent.mouseEnter(option(TAG));
-
+    fireEvent.mouseMove(option(TAG));
     expect(headerField()).toHaveAttribute("aria-activedescendant", option(TAG).id);
+
+    fireEvent.mouseLeave(screen.getByRole("listbox"));
+    expect(headerField()).not.toHaveAttribute("aria-activedescendant");
+    expect(fireEvent.keyDown(headerField(), { key: "Enter" })).toBe(true);
+  });
+
+  it("US-RA-17 AC1: on the search page, the edited query is asked for, not the old one", async () => {
+    renderRoute("/search?q=czarny");
+
+    expect(await suggestionsFor(pageField(), "czarny p")).toEqual([WORK, TAG]);
+
+    expect(queries).toEqual(["czarny p"]);
+  });
+
+  it("US-RA-17 AC1: arrows in a one-letter field move the caret as usual", async () => {
+    renderRoute("/about");
+
+    fireEvent.change(headerField(), { target: { value: "c" } });
+
+    expect(fireEvent.keyDown(headerField(), { key: "ArrowDown" })).toBe(true);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
+    expect(queries).toEqual([]);
   });
 
   it("US-RA-17 AC2: Enter while composing a letter chooses nothing", async () => {
