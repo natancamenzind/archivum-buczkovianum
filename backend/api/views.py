@@ -15,6 +15,9 @@ from api.serializers import (
     AboutPageSerializer,
     ContextualMaterials,
     DocumentSerializer,
+    HomePage,
+    HomePageSerializer,
+    HomeStatistics,
     SuggestionSerializer,
     TagCountSerializer,
     TeamGroup,
@@ -61,6 +64,25 @@ def about(request: Request) -> Response:
         team=[group for group in team if group.members],
     )
     return Response(AboutPageSerializer(page).data)
+
+
+@extend_schema(responses=HomePageSerializer)
+@api_view(["GET"])
+def home(request: Request) -> Response:
+    """The home page (US-RA-01): introduction and portrait, the counts, the work cards and the
+    tag cloud."""
+    cards = list(Work.objects.published().with_year().with_fragment_count())
+    page = HomePage(
+        settings=SiteSettings.load(),
+        statistics=HomeStatistics(
+            works=len(cards),
+            fragments=Fragment.objects.visible().count(),
+            tags=Tag.objects.published().count(),
+        ),
+        works=cards,
+        tags=list(Tag.objects.published().in_use()),
+    )
+    return Response(HomePageSerializer(page).data)
 
 
 @extend_schema(responses=WorkCardSerializer(many=True))

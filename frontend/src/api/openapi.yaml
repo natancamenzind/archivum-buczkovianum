@@ -133,6 +133,24 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/home/:
+    get:
+      operationId: home_retrieve
+      description: |-
+        The home page (US-RA-01): introduction and portrait, the counts, the work cards and the
+        tag cloud.
+      tags:
+      - home
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomePage'
+          description: ''
   /api/search/autocomplete/:
     get:
       operationId: search_autocomplete_list
@@ -472,6 +490,55 @@ components:
         * `leadership` - Project leadership
         * `team` - Team members
         * `site` - Website development
+    HomePage:
+      type: object
+      description: 'US-RA-01. `intro` is rich text: HTML, sanitized when an editor
+        saves it.'
+      properties:
+        intro:
+          type: string
+          description: HTML.
+        portrait:
+          type: string
+          readOnly: true
+          description: Empty when there is no portrait.
+        portrait_alt:
+          type: string
+        statistics:
+          $ref: '#/components/schemas/HomeStatistics'
+        works:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkCard'
+          description: By first edition.
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagCount'
+          description: 'The tag cloud: tags in use, the most frequent first.'
+      required:
+      - intro
+      - portrait
+      - portrait_alt
+      - statistics
+      - tags
+      - works
+    HomeStatistics:
+      type: object
+      properties:
+        works:
+          type: integer
+          description: Published works.
+        fragments:
+          type: integer
+          description: Visible fragments of every document.
+        tags:
+          type: integer
+          description: Published tags.
+      required:
+      - fragments
+      - tags
+      - works
     KindEnum:
       enum:
       - ocr

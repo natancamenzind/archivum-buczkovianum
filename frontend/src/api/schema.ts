@@ -77,6 +77,26 @@ export interface paths {
         patch: operations["editor_fragments_partial_update"];
         trace?: never;
     };
+    "/api/home/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The home page (US-RA-01): introduction and portrait, the counts, the work cards and the
+         *     tag cloud.
+         */
+        get: operations["home_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/search/autocomplete/": {
         parameters: {
             query?: never;
@@ -267,6 +287,27 @@ export interface components {
          * @enum {string}
          */
         GroupEnum: "leadership" | "team" | "site";
+        /** @description US-RA-01. `intro` is rich text: HTML, sanitized when an editor saves it. */
+        HomePage: {
+            /** @description HTML. */
+            intro: string;
+            /** @description Empty when there is no portrait. */
+            readonly portrait: string;
+            portrait_alt: string;
+            statistics: components["schemas"]["HomeStatistics"];
+            /** @description By first edition. */
+            works: components["schemas"]["WorkCard"][];
+            /** @description The tag cloud: tags in use, the most frequent first. */
+            tags: components["schemas"]["TagCount"][];
+        };
+        HomeStatistics: {
+            /** @description Published works. */
+            works: number;
+            /** @description Visible fragments of every document. */
+            fragments: number;
+            /** @description Published tags. */
+            tags: number;
+        };
         /**
          * @description * `ocr` - Scan + OCR text
          *     * `plain` - Plain text
@@ -548,6 +589,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EditorFragment"];
+                };
+            };
+        };
+    };
+    home_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HomePage"];
                 };
             };
         };
