@@ -365,10 +365,10 @@ Odrzucone:
 
 ## 5. Otwarte pytania
 
-Story powyżej zakładają już domyślną odpowiedź podaną przy każdym pytaniu.
+Właściciel projektu rozstrzygnął pytania 1, 2, 3 i 5 dnia 27.10.2026 (`docs/plan.md`, D31). Otwarte pozostaje tylko pytanie 4.
 
-1. **Metryczka tagu.** Czy ma pola poza nazwą, rodzajem i opisem? *Domyślnie: nie.*
-2. **Kolejność list.** *Domyślnie: utwory według pierwszego wydania; wydania według roku; maszynopisy według utworu, potem sygnatury; tagi alfabetycznie; fragmenty według pozycji w tekście; wszystko inne według tytułu.*
-3. **Wideo i audio.** Według briefu w zapiskach są hostowane gdzie indziej. *Domyślnie: tak samo w materiałach kontekstowych, więc wgrywamy tylko obrazy i dokumenty.*
-4. **Przykład otagowanej relacji.** Redakcja musi go jeszcze znaleźć.
-5. **Poprawki w projekcie.** Figma wciąż pokazuje przeglądarkę maszynopisu z samym skanem i karty fragmentów z wyciętym skanem. *Domyślnie: wygrywają story. W Figmie trzeba dodać czytnik ze skanem obok tekstu i przełącznikiem na telefonie (R-11) oraz kartę fragmentu z cytatem i miniaturą strony (R-10).*
+1. **Metryczka tagu.** Czy ma pola poza nazwą, rodzajem i opisem? *Ustalone: nie.*
+2. **Kolejność list.** *Ustalone: utwory według pierwszego wydania; wydania według roku; maszynopisy według utworu, potem sygnatury; tagi alfabetycznie; fragmenty według pozycji w tekście; wszystko inne według tytułu.*
+3. **Wideo i audio.** Według briefu w zapiskach są hostowane gdzie indziej. *Ustalone: tak samo w materiałach kontekstowych, więc wgrywamy tylko obrazy i dokumenty.*
+4. **Przykład otagowanej relacji.** Otwarte: redakcja musi go jeszcze znaleźć.
+5. **Poprawki w projekcie.** Figma wciąż pokazuje przeglądarkę maszynopisu z samym skanem i karty fragmentów z wyciętym skanem. *Ustalone: wygrywają story, a Figma nie będzie poprawiana. Czytnik ze skanem obok tekstu i przełącznikiem na telefonie (R-11) oraz kartę fragmentu z cytatem i miniaturą strony (R-10) budujemy według story z istniejących komponentów Figmy.*
