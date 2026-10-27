@@ -275,6 +275,21 @@ class TestIndexedTexts:
         # Assert
         assert titles(results) == [found]
 
+    def test_d18_us_ra_14_ac2_a_tag_name_finds_a_fragment_whose_quote_lacks_it(self) -> None:
+        # Arrange
+        typescript = TypescriptFactory.create(
+            status=PUBLISHED, title="Pierwsza wersja", document__text="Szedł przez las nocą."
+        )
+        fragment = FragmentFactory.create(document=typescript.document, start=0, end=5)
+        fragment.tags.add(TagFactory.create(status=PUBLISHED, title="Dezerter"))
+        fragment.save()
+
+        # Act
+        results = search("dezerter")
+
+        # Assert
+        assert titles(results) == [("tag", "Dezerter"), ("fragment", "Szedł")]
+
 
 @pytest.mark.django_db
 class TestEdits:

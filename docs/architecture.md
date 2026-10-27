@@ -186,12 +186,14 @@ One row per published entity and one per visible fragment:
 
 A fragment's `body` is its quote and description. Its `url` points to its source document with `?fragment=<id>`.
 
+The names of the published tags a work, an item or a fragment carries go into its own `vector` (D18), so a tag name finds what carries it. They are not in `body`: snippets show the entity's own text.
+
 **Weights** (relevance within a group)
 
 | Weight | Content |
 |--------|---------|
 | A | titles, tag names |
-| B | tag descriptions, fragment quotes |
+| B | tag descriptions, fragment quotes, the names of the tags an entity carries |
 | C | other descriptions |
 | D | document texts |
 
@@ -204,6 +206,7 @@ Updates are explicit, never via signals:
 - `Fragment.save()` and `Fragment.delete()` write or remove the fragment's entry.
 - `Document.save()` re-anchors fragments (section 4.4) and then calls `update_search_entry()` on its owning entity.
 - `Work.save()` and `Work.delete()` also re-index the items related to the work (with their fragments) and every published tag, because the work's status and first-edition year are in their `work_ids` and `decades`. `Edition.save()` and `Edition.delete()` re-index the work and its entries this way, without saving the work.
+- `Tag.save()` also re-indexes the works, items and fragments that carry the tag, because their entries hold its name while it is published. Renaming, publishing and unpublishing a tag all go through `save()`.
 - Tag entries list the works a tag refers to through whatever carries it, so deletes re-index every published tag, and the admin re-indexes the saved item and every published tag after many-to-many fields and inlines are saved (they are saved after `save()`).
 - The management command `rebuild_search_index` rebuilds the whole table.
 

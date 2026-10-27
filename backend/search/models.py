@@ -36,7 +36,7 @@ class Weight(models.TextChoices):
     """Relevance weights of indexed texts (architecture section 6)."""
 
     TITLE = "A"  # titles, tag names
-    QUOTE = "B"  # tag descriptions, fragment quotes
+    QUOTE = "B"  # tag descriptions, fragment quotes, the names of the tags an entity carries
     DESCRIPTION = "C"  # other descriptions
     TEXT = "D"  # document texts
 
@@ -76,6 +76,8 @@ class IndexedContent:
     title: str
     url: str
     texts: Sequence[tuple[str, Weight]]
+    # The names of the published tags the entity carries (D18). Searched, never in snippets.
+    tags: Sequence[str] = ()
     work_ids: Sequence[int] = ()
     decades: Sequence[int] = ()
     has_scan: bool = False
@@ -119,11 +121,12 @@ class SearchEntry(models.Model):
     @classmethod
     def write(cls, entity_type: EntityType, entity_id: int, content: IndexedContent) -> None:
         """Create or replace the entry of one entity."""
+        texts = [*content.texts, *((tag, Weight.QUOTE) for tag in content.tags)]
         vector = reduce(
             operator.add,
             (
                 SearchVector(Value(text), weight=weight, config=settings.SEARCH_TS_CONFIG)
-                for text, weight in content.texts
+                for text, weight in texts
             ),
         )
         cls.objects.update_or_create(
