@@ -25,6 +25,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/documents/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The text of a published item for the reader (R-11), with its fragments and their
+         *     published tags. The text of a draft, or of no item, is not found (R-06).
+         */
+        get: operations["documents_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/editor/fragments/": {
         parameters: {
             query?: never;
@@ -117,6 +137,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/typescripts/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The typescript page (US-RA-08). A draft typescript is not found (R-06); a draft work
+         *     leaves out the work, its contextual materials and nothing else.
+         */
+        get: operations["typescripts_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/works/": {
         parameters: {
             query?: never;
@@ -147,6 +187,43 @@ export interface components {
             /** @description Groups that have members, in the order of TeamMember.Group. */
             team: components["schemas"]["TeamGroup"][];
         };
+        ContextualMaterials: {
+            /** @description By title. */
+            texts: components["schemas"]["MaterialText"][];
+            /** @description By title. */
+            visuals: components["schemas"]["VisualMaterial"][];
+        };
+        /** @description The text of an item for the reader (R-11, architecture section 4.4). */
+        Document: {
+            readonly id: number;
+            readonly kind: components["schemas"]["KindEnum"];
+            readonly text: string;
+            readonly page_offsets: number[];
+            /** @description PDF URL; empty for a plain text. */
+            readonly scan: string;
+            /** @description By position. */
+            readonly fragments: components["schemas"]["DocumentFragment"][];
+        };
+        /**
+         * @description A fragment for the reader (R-11), from a queryset with `with_number()`.
+         *
+         *     The context holds the fragments' `document` and the `institution` of its owner.
+         */
+        DocumentFragment: {
+            readonly id: number;
+            readonly start: number;
+            readonly end: number;
+            /** @description 1-based, by position in the text. */
+            readonly number: number;
+            /** @description 1-based scan page the fragment starts on; null for a plain text. */
+            readonly start_page: number | null;
+            /** @description E.g. rozdział I. */
+            readonly location: string;
+            /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
+            readonly shelfmark: string;
+            /** @description Published tags, by name. */
+            readonly tags: components["schemas"]["TagChip"][];
+        };
         EditorFragment: {
             readonly id: number;
             document: number;
@@ -163,6 +240,26 @@ export interface components {
             /** Name */
             readonly title: string;
         };
+        FragmentPreview: {
+            /** @description Featured first, then text order (R-09). */
+            items: components["schemas"]["FragmentRow"][];
+            /** @description The number of all the fragments. */
+            total: number;
+        };
+        /**
+         * @description A row of "Fragmenty z maszynopisu" (US-RA-08 AC3), from a queryset with `with_number()`.
+         *
+         *     The context's `institution` is the one of the fragments' document owner.
+         */
+        FragmentRow: {
+            readonly id: number;
+            /** @description 1-based, by position in the text. */
+            readonly number: number;
+            /** @description E.g. rozdział I. */
+            readonly location: string;
+            /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
+            readonly shelfmark: string;
+        };
         /**
          * @description * `leadership` - Project leadership
          *     * `team` - Team members
@@ -170,6 +267,23 @@ export interface components {
          * @enum {string}
          */
         GroupEnum: "leadership" | "team" | "site";
+        /**
+         * @description * `ocr` - Scan + OCR text
+         *     * `plain` - Plain text
+         * @enum {string}
+         */
+        KindEnum: "ocr" | "plain";
+        /**
+         * @description A row of "Teksty sekundarne" (R-08): a secondary text, or a contextual material that is
+         *     not an image, which shows its title only (D5).
+         */
+        MaterialText: {
+            url: string;
+            readonly author: string;
+            title: string;
+            /** @description Publisher, place, year, pages. */
+            readonly publication: string;
+        };
         PatchedEditorFragment: {
             readonly id?: number;
             document?: number;
@@ -186,6 +300,12 @@ export interface components {
             readonly type: components["schemas"]["TypeEnum"];
             readonly title: string;
             readonly url: string;
+        };
+        TagChip: {
+            /** @description Part of the page address. */
+            readonly slug: string;
+            /** Name */
+            readonly title: string;
         };
         /** @description A tag with its occurrence count (US-RA-20), from a queryset with `with_occurrences()`. */
         TagCount: {
@@ -222,11 +342,43 @@ export interface components {
             /** @description By shelfmark, as numbers. */
             typescripts: components["schemas"]["TypescriptRow"][];
         };
+        /** @description US-RA-08. `description` is rich text: HTML, sanitized when an editor saves it. */
+        TypescriptPage: {
+            id: number;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            /** @description E.g. "ML, sygn. 1618"; may be empty. */
+            shelfmark: string;
+            /** @description The text for the reader: /api/documents/<id>/. */
+            document: number;
+            page_count: number;
+            /** @description Null while the work is a draft. */
+            work: components["schemas"]["WorkSummary"] | null;
+            /** @description The work's typescripts by shelfmark, this one included. */
+            work_typescripts: components["schemas"]["TypescriptRow"][];
+            fragments: components["schemas"]["FragmentPreview"];
+            /** @description Tags on the typescript and on its fragments, by name. */
+            tags: components["schemas"]["TagChip"][];
+            /** @description Those linked to the typescript's work. */
+            materials: components["schemas"]["ContextualMaterials"];
+        };
         TypescriptRow: {
             readonly id: number;
             readonly title: string;
             /** @description E.g. "ML, sygn. 1618"; may be empty. */
             readonly shelfmark: string;
+        };
+        /** @description A thumbnail of "Materiały wizualne" (R-08), captioned with title and shelfmark. */
+        VisualMaterial: {
+            readonly url: string;
+            readonly title: string;
+            /** @description E.g. "ML, sygn. 1700"; may be empty. */
+            readonly shelfmark: string;
+            /** @description Empty when the material has no image. */
+            readonly image: string;
+            /** Image text alternative */
+            readonly image_alt: string;
         };
         /**
          * @description The work card (US-RA-01 AC3), from a queryset with `with_year()` and
@@ -244,6 +396,19 @@ export interface components {
             readonly cover_image: string;
             /** Cover image text alternative */
             readonly cover_image_alt: string;
+            /** @description Visible fragments of the main typescript (D19); 0 without one. */
+            readonly fragment_count: number;
+        };
+        /**
+         * @description A work in a context column (R-03), from a queryset with `with_year()` and
+         *     `with_fragment_count()`.
+         */
+        WorkSummary: {
+            /** @description Part of the page address. */
+            readonly slug: string;
+            readonly title: string;
+            /** @description The year of the first edition; null without editions. */
+            readonly year: number | null;
             /** @description Visible fragments of the main typescript (D19); 0 without one. */
             readonly fragment_count: number;
         };
@@ -271,6 +436,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AboutPage"];
+                };
+            };
+        };
+    };
+    documents_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Document"];
                 };
             };
         };
@@ -422,6 +608,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TypescriptGroup"][];
+                };
+            };
+        };
+    };
+    typescripts_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TypescriptPage"];
                 };
             };
         };

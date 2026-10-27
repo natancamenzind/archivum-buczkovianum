@@ -146,11 +146,13 @@ class TestSchema:
         assert sorted(response.json()["paths"]) == sorted(
             [
                 "/api/about/",
+                "/api/documents/{id}/",
                 "/api/editor/fragments/",
                 "/api/editor/fragments/{id}/",
                 "/api/search/autocomplete/",
                 "/api/tags/",
                 "/api/typescripts/",
+                "/api/typescripts/{id}/",
                 "/api/works/",
             ]
         )

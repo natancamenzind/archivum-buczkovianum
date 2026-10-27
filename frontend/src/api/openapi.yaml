@@ -22,6 +22,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/AboutPage'
           description: ''
+  /api/documents/{id}/:
+    get:
+      operationId: documents_retrieve
+      description: |-
+        The text of a published item for the reader (R-11), with its fragments and their
+        published tags. The text of a draft, or of no item, is not found (R-06).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - documents
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
   /api/editor/fragments/:
     get:
       operationId: editor_fragments_list
@@ -175,6 +199,30 @@ paths:
                 items:
                   $ref: '#/components/schemas/TypescriptGroup'
           description: ''
+  /api/typescripts/{id}/:
+    get:
+      operationId: typescripts_retrieve
+      description: |-
+        The typescript page (US-RA-08). A draft typescript is not found (R-06); a draft work
+        leaves out the work, its contextual materials and nothing else.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - typescripts
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TypescriptPage'
+          description: ''
   /api/works/:
     get:
       operationId: works_list
@@ -216,6 +264,110 @@ components:
       - intro
       - project
       - team
+    ContextualMaterials:
+      type: object
+      properties:
+        texts:
+          type: array
+          items:
+            $ref: '#/components/schemas/MaterialText'
+          description: By title.
+        visuals:
+          type: array
+          items:
+            $ref: '#/components/schemas/VisualMaterial'
+          description: By title.
+      required:
+      - texts
+      - visuals
+    Document:
+      type: object
+      description: The text of an item for the reader (R-11, architecture section
+        4.4).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        kind:
+          allOf:
+          - $ref: '#/components/schemas/KindEnum'
+          readOnly: true
+        text:
+          type: string
+          readOnly: true
+        page_offsets:
+          type: array
+          items:
+            type: integer
+            maximum: 2147483647
+            minimum: 0
+          readOnly: true
+        scan:
+          type: string
+          readOnly: true
+          description: PDF URL; empty for a plain text.
+        fragments:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentFragment'
+          readOnly: true
+          description: By position.
+      required:
+      - fragments
+      - id
+      - kind
+      - page_offsets
+      - scan
+      - text
+    DocumentFragment:
+      type: object
+      description: |-
+        A fragment for the reader (R-11), from a queryset with `with_number()`.
+
+        The context holds the fragments' `document` and the `institution` of its owner.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        start:
+          type: integer
+          readOnly: true
+        end:
+          type: integer
+          readOnly: true
+        number:
+          type: integer
+          readOnly: true
+          description: 1-based, by position in the text.
+        start_page:
+          type: integer
+          nullable: true
+          readOnly: true
+          description: 1-based scan page the fragment starts on; null for a plain
+            text.
+        location:
+          type: string
+          readOnly: true
+          description: E.g. rozdział I.
+        shelfmark:
+          type: string
+          readOnly: true
+          description: E.g. "ML, sygn. 1618.0009"; may be empty.
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagChip'
+          readOnly: true
+          description: Published tags, by name.
+      required:
+      - end
+      - id
+      - location
+      - number
+      - shelfmark
+      - start
+      - start_page
+      - tags
     EditorFragment:
       type: object
       properties:
@@ -269,6 +421,47 @@ components:
       required:
       - id
       - title
+    FragmentPreview:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FragmentRow'
+          description: Featured first, then text order (R-09).
+        total:
+          type: integer
+          description: The number of all the fragments.
+      required:
+      - items
+      - total
+    FragmentRow:
+      type: object
+      description: |-
+        A row of "Fragmenty z maszynopisu" (US-RA-08 AC3), from a queryset with `with_number()`.
+
+        The context's `institution` is the one of the fragments' document owner.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        number:
+          type: integer
+          readOnly: true
+          description: 1-based, by position in the text.
+        location:
+          type: string
+          readOnly: true
+          description: E.g. rozdział I.
+        shelfmark:
+          type: string
+          readOnly: true
+          description: E.g. "ML, sygn. 1618.0009"; may be empty.
+      required:
+      - id
+      - location
+      - number
+      - shelfmark
     GroupEnum:
       enum:
       - leadership
@@ -279,6 +472,36 @@ components:
         * `leadership` - Project leadership
         * `team` - Team members
         * `site` - Website development
+    KindEnum:
+      enum:
+      - ocr
+      - plain
+      type: string
+      description: |-
+        * `ocr` - Scan + OCR text
+        * `plain` - Plain text
+    MaterialText:
+      type: object
+      description: |-
+        A row of "Teksty sekundarne" (R-08): a secondary text, or a contextual material that is
+        not an image, which shows its title only (D5).
+      properties:
+        url:
+          type: string
+        author:
+          type: string
+          readOnly: true
+        title:
+          type: string
+        publication:
+          type: string
+          readOnly: true
+          description: Publisher, place, year, pages.
+      required:
+      - author
+      - publication
+      - title
+      - url
     PatchedEditorFragment:
       type: object
       properties:
@@ -329,6 +552,21 @@ components:
       - title
       - type
       - url
+    TagChip:
+      type: object
+      properties:
+        slug:
+          type: string
+          readOnly: true
+          description: Part of the page address.
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          readOnly: true
+          title: Name
+      required:
+      - slug
+      - title
     TagCount:
       type: object
       description: A tag with its occurrence count (US-RA-20), from a queryset with
@@ -414,6 +652,59 @@ components:
       - title
       - typescripts
       - year
+    TypescriptPage:
+      type: object
+      description: 'US-RA-08. `description` is rich text: HTML, sanitized when an
+        editor saves it.'
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          description: HTML.
+        shelfmark:
+          type: string
+          description: E.g. "ML, sygn. 1618"; may be empty.
+        document:
+          type: integer
+          description: 'The text for the reader: /api/documents/<id>/.'
+        page_count:
+          type: integer
+        work:
+          allOf:
+          - $ref: '#/components/schemas/WorkSummary'
+          nullable: true
+          description: Null while the work is a draft.
+        work_typescripts:
+          type: array
+          items:
+            $ref: '#/components/schemas/TypescriptRow'
+          description: The work's typescripts by shelfmark, this one included.
+        fragments:
+          $ref: '#/components/schemas/FragmentPreview'
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagChip'
+          description: Tags on the typescript and on its fragments, by name.
+        materials:
+          allOf:
+          - $ref: '#/components/schemas/ContextualMaterials'
+          description: Those linked to the typescript's work.
+      required:
+      - description
+      - document
+      - fragments
+      - id
+      - materials
+      - page_count
+      - shelfmark
+      - tags
+      - title
+      - work
+      - work_typescripts
     TypescriptRow:
       type: object
       properties:
@@ -431,6 +722,35 @@ components:
       - id
       - shelfmark
       - title
+    VisualMaterial:
+      type: object
+      description: A thumbnail of "Materiały wizualne" (R-08), captioned with title
+        and shelfmark.
+      properties:
+        url:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        shelfmark:
+          type: string
+          readOnly: true
+          description: E.g. "ML, sygn. 1700"; may be empty.
+        image:
+          type: string
+          readOnly: true
+          description: Empty when the material has no image.
+        image_alt:
+          type: string
+          readOnly: true
+          title: Image text alternative
+      required:
+      - image
+      - image_alt
+      - shelfmark
+      - title
+      - url
     WorkCard:
       type: object
       description: |-
@@ -471,6 +791,34 @@ components:
       - cover_image_alt
       - fragment_count
       - genre
+      - slug
+      - title
+      - year
+    WorkSummary:
+      type: object
+      description: |-
+        A work in a context column (R-03), from a queryset with `with_year()` and
+        `with_fragment_count()`.
+      properties:
+        slug:
+          type: string
+          readOnly: true
+          description: Part of the page address.
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          readOnly: true
+        year:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: The year of the first edition; null without editions.
+        fragment_count:
+          type: integer
+          readOnly: true
+          description: Visible fragments of the main typescript (D19); 0 without one.
+      required:
+      - fragment_count
       - slug
       - title
       - year
