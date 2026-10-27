@@ -587,7 +587,7 @@ class TestFragment:
         fragment.refresh_from_db()
         assert (fragment.start, fragment.end, fragment.needs_review) == (7, 12, False)
 
-    def test_us_wr_09_ac4_quote_found_once_follows_the_text(self) -> None:
+    def test_us_wr_09_ac4_quote_found_once_is_moved_and_flagged(self) -> None:
         # Arrange
         fragment = FragmentFactory.create(
             document=DocumentFactory.create(text="Czarny potok."), start=7, end=12
@@ -599,7 +599,7 @@ class TestFragment:
 
         # Assert
         fragment.refresh_from_db()
-        assert (fragment.start, fragment.end, fragment.needs_review) == (19, 24, False)
+        assert (fragment.start, fragment.end, fragment.needs_review) == (19, 24, True)
 
     @pytest.mark.parametrize("new_text", ["Biały strumień.", "potok i potok"])
     def test_us_wr_09_ac4_lost_or_ambiguous_quote_is_flagged_not_deleted(
@@ -686,7 +686,7 @@ class TestFragment:
         # Assert
         assert fragment.needs_review
 
-    def test_us_wr_09_ac4_quote_restored_in_place_is_no_longer_flagged(self) -> None:
+    def test_us_wr_09_ac4_quote_restored_in_place_stays_flagged(self) -> None:
         # Arrange
         document = DocumentFactory.create(text="Czarny potok.")
         fragment = FragmentFactory.create(document=document, start=7, end=12)
@@ -699,15 +699,50 @@ class TestFragment:
 
         # Assert
         fragment.refresh_from_db()
-        assert (fragment.start, fragment.end, fragment.needs_review) == (7, 12, False)
+        assert (fragment.start, fragment.end, fragment.needs_review) == (7, 12, True)
 
-    def test_us_wr_09_ac4_fragment_found_again_is_no_longer_flagged(self) -> None:
+    def test_us_wr_09_ac4_flagged_fragment_found_again_is_moved_and_stays_flagged(self) -> None:
         # Arrange
         document = DocumentFactory.create(text="Czarny potok.")
         fragment = FragmentFactory.create(document=document, start=7, end=12)
         document.text = "Biały strumień."
         document.save()
         document.text = "Wstęp. Czarny potok."
+
+        # Act
+        document.save()
+
+        # Assert
+        fragment.refresh_from_db()
+        assert (fragment.start, fragment.end, fragment.needs_review) == (14, 19, True)
+
+    def test_us_wr_09_ac4_flagged_fragment_still_lost_is_not_saved_again(self) -> None:
+        # Arrange
+        document = DocumentFactory.create(text="Czarny potok.")
+        fragment = FragmentFactory.create(document=document, start=7, end=12)
+        document.text = "Biały strumień."
+        document.save()
+        fragment.refresh_from_db()
+        flagged_at = fragment.updated_at
+        document.text = "Biały strumień płynie."
+
+        # Act
+        document.save()
+
+        # Assert
+        fragment.refresh_from_db()
+        assert fragment.updated_at == flagged_at
+
+    def test_us_wr_09_ac4_reviewed_fragment_stays_unflagged_while_it_matches(self) -> None:
+        # Arrange
+        document = DocumentFactory.create(text="Czarny potok.")
+        fragment = FragmentFactory.create(document=document, start=7, end=12)
+        document.text = "Wstęp. Czarny potok."
+        document.save()
+        fragment.refresh_from_db()
+        fragment.needs_review = False
+        fragment.save()
+        document.text = "Wstęp. Czarny potok płynie."
 
         # Act
         document.save()

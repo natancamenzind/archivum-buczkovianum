@@ -352,7 +352,10 @@ class Institution(BaseModel):
 class TagQuerySet(PublishableQuerySet["Tag"]):
     def with_occurrences(self) -> Self:
         """Annotate `occurrences`: the visible fragments, published items and visible work links
-        carrying the tag (glossary, "Occurrence")."""
+        carrying the tag (glossary, "Occurrence").
+
+        It ignores the tag's own status: public callers chain `published()` first.
+        """
         carriers: list[models.QuerySet[Any]] = [
             Fragment.objects.visible(),
             Work.objects.published(),
@@ -831,7 +834,11 @@ class FragmentQuerySet(models.QuerySet["Fragment"]):
         return self.annotate(number=count_of(earlier) + 1)
 
     def preview(self) -> Preview["Fragment"]:
-        """Featured fragments first, then text order (R-09)."""
+        """Featured fragments first, then text order (R-09).
+
+        Fragments of different documents follow document IDs, not a domain order. A preview
+        across documents passes its own order to `preview()` instead.
+        """
         return preview(self.order_by("-is_featured", "document_id", "start", "end", "pk"))
 
 
@@ -856,7 +863,7 @@ class Fragment(BaseModel, Taggable):
     )
     needs_review = models.BooleanField(
         default=False,
-        help_text=_("The text changed and the fragment was not found again."),
+        help_text=_("The text changed. Check the fragment, then clear this box."),
     )
 
     objects = FragmentQuerySet.as_manager()
@@ -928,21 +935,20 @@ class Fragment(BaseModel, Taggable):
     def reanchor(self, text: str) -> None:
         """Follow the quote after the document text changed (US-WR-09 AC4).
 
-        The fragment is moved only when its quote occurs exactly once in the new text.
-        Otherwise it is flagged for review. It is never deleted. A flagged fragment whose
-        quote is found again is unflagged.
+        A fragment whose quote is still in place is left alone. Otherwise it is flagged for
+        review, and also moved when its quote occurs exactly once in the new text, so it is
+        never moved silently (docs/plan.md, D1). It is never deleted, and only the editor
+        clears the flag.
         """
+        if text[self.start : self.end] == self.quote:
+            return
         before = (self.start, self.end, self.needs_review)
-        position = self.start
-        if text[self.start : self.end] != self.quote:
-            position = text.find(self.quote)
-            if text.find(self.quote, position + 1) != -1:
-                position = -1  # The quote occurs more than once.
-        self.needs_review = position == -1
-        if not self.needs_review:
+        position = text.find(self.quote)
+        if position != -1 and text.find(self.quote, position + 1) == -1:
             self.start, self.end = position, position + len(self.quote)
+        self.needs_review = True
         if (self.start, self.end, self.needs_review) != before:
-            self.save()
+            self.save(update_fields=["start", "end", "needs_review", "updated_at"])
 
 
 # --- Site content -----------------------------------------------------------------------
