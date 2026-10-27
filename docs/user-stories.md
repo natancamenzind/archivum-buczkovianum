@@ -99,7 +99,7 @@ A plain-text document is shown as text, with fragments highlighted as in point 2
 
 1. In order: header, hero, works, featured fragment (US-RA-02), tag cloud, footer (R-07).
 2. Hero: the title "Archivum Buczkovianum" and the introduction over Buczkowski's portrait, plus counts of published works, visible fragments and published tags ("4 utwory · 62 fragmenty · 12 tagów").
-3. Works: one card per published work, ordered by first edition: cover, genre and year, title, author, fragment count. Clicking opens the work page.
+3. Works: one card per published work, ordered by first edition: cover, genre and year, title, author, fragment count. The fragment count is the number of visible fragments of the work's main typescript; when it is 0 (no main typescript, a draft one, or no visible fragments), the card does not show it (R-02). Clicking opens the work page.
 4. Tag cloud: every published tag with at least one occurrence. Five sizes by occurrence count: 1–3, 4–7, 8–15, 16–25, 26+; the two largest use the accent colour. The layout is deterministic: the same data always gives the same cloud. Clicking a tag opens its page.
 5. The introduction and portrait are editable (US-WR-11).
 

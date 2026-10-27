@@ -68,6 +68,30 @@ export function LibraryIcon(props: IconProps) {
   );
 }
 
+/** design/assets/icons/obraz.svg */
+export function ImageIcon(props: IconProps) {
+  return (
+    <Icon
+      {...props}
+      paths={[
+        "M3.33333 2H12.6667C13.403 2 14 2.59695 14 3.33333V12.6667C14 13.403 13.403 14 12.6667 14H3.33333C2.59695 14 2 13.403 2 12.6667V3.33333C2 2.59695 2.59695 2 3.33333 2Z",
+        "M7.33341 6C7.33341 6.73638 6.73646 7.33333 6.00008 7.33333C5.2637 7.33333 4.66675 6.73638 4.66675 6C4.66675 5.26362 5.2637 4.66666 6.00008 4.66666C6.73646 4.66666 7.33341 5.26362 7.33341 6Z",
+        "M14 10L11.9427 7.94267C11.6926 7.6927 11.3536 7.55228 11 7.55228C10.6464 7.55228 10.3074 7.6927 10.0573 7.94267L4 14",
+      ]}
+    />
+  );
+}
+
+/** design/assets/icons/strzalka-ukos.svg */
+export function ArrowUpRightIcon(props: IconProps) {
+  return (
+    <Icon
+      {...props}
+      paths={["M4.66663 4.66666H11.3333V11.3333", "M4.66663 11.3333L11.3333 4.66666"]}
+    />
+  );
+}
+
 /** design/assets/icons/maszynopis.svg */
 export function TypescriptIcon(props: IconProps) {
   return (

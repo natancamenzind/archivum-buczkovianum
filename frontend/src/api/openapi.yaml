@@ -22,6 +22,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/AboutPage'
           description: ''
+  /api/works/:
+    get:
+      operationId: works_list
+      description: 'The works list (US-RA-18): every published work as a card, by
+        first edition.'
+      tags:
+      - works
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkCard'
+          description: ''
 components:
   schemas:
     AboutPage:
@@ -79,6 +98,48 @@ components:
       - bio
       - name
       - role
+    WorkCard:
+      type: object
+      description: |-
+        The work card (US-RA-01 AC3), from a queryset with `with_year()` and
+        `with_fragment_count()`.
+      properties:
+        slug:
+          type: string
+          readOnly: true
+          description: Part of the page address.
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          readOnly: true
+        genre:
+          type: string
+          readOnly: true
+          description: E.g. powieść.
+        year:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: The year of the first edition; null without editions.
+        cover_image:
+          type: string
+          readOnly: true
+          description: Empty when the work has no cover.
+        cover_image_alt:
+          type: string
+          readOnly: true
+        fragment_count:
+          type: integer
+          readOnly: true
+          description: Visible fragments of the main typescript (D19); 0 without one.
+      required:
+      - cover_image
+      - cover_image_alt
+      - fragment_count
+      - genre
+      - slug
+      - title
+      - year
   securitySchemes:
     cookieAuth:
       type: apiKey

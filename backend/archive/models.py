@@ -465,6 +465,16 @@ class WorkQuerySet(PublishableQuerySet["Work"]):
             F("year").asc(nulls_last=True), "title"
         )
 
+    def with_fragment_count(self) -> Self:
+        """Annotate `fragment_count`: the visible fragments of the work's main typescript (D19).
+
+        A work without a main typescript, or with a draft one, counts 0.
+        """
+        fragments = Fragment.objects.visible().filter(
+            document__typescript__work=OuterRef("pk"), document__typescript__is_main=True
+        )
+        return self.annotate(fragment_count=count_of(fragments))
+
     def referred_to_by(self, tag: "Tag") -> Self:
         """The works a tag refers to (US-RA-07 AC5): the tag is on the work, on a published item
         related to it, on a visible fragment of such an item, or on a visible work link."""
@@ -489,6 +499,8 @@ class Work(Publishable, Taggable):
     objects = WorkQuerySet.as_manager()
     # Set only by `WorkQuerySet.with_year()`.
     year: int | None
+    # Set only by `WorkQuerySet.with_fragment_count()`.
+    fragment_count: int
 
     search_type = EntityType.WORK
 

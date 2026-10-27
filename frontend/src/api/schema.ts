@@ -25,6 +25,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/works/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The works list (US-RA-18): every published work as a card, by first edition. */
+        get: operations["works_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -52,6 +69,24 @@ export interface components {
             readonly role: string;
             readonly bio: string;
         };
+        /**
+         * @description The work card (US-RA-01 AC3), from a queryset with `with_year()` and
+         *     `with_fragment_count()`.
+         */
+        WorkCard: {
+            /** @description Part of the page address. */
+            readonly slug: string;
+            readonly title: string;
+            /** @description E.g. powieść. */
+            readonly genre: string;
+            /** @description The year of the first edition; null without editions. */
+            readonly year: number | null;
+            /** @description Empty when the work has no cover. */
+            readonly cover_image: string;
+            readonly cover_image_alt: string;
+            /** @description Visible fragments of the main typescript (D19); 0 without one. */
+            readonly fragment_count: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -76,6 +111,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AboutPage"];
+                };
+            };
+        };
+    };
+    works_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkCard"][];
                 };
             };
         };
