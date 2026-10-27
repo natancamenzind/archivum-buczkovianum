@@ -184,6 +184,82 @@ class TestPreview:
 
 
 @pytest.mark.django_db
+class TestFragmentsSharingTags:
+    def test_us_ra_10_ac3_typescript_fragments_sharing_a_tag_with_the_item_or_its_fragments(
+        self,
+    ) -> None:
+        # Arrange
+        on_item, on_fragment, on_link, other = TagFactory.create_batch(4, status=PUBLISHED)
+        draft_tag = TagFactory.create(status=Status.DRAFT)
+        letter = SecondaryTextFactory.create(status=PUBLISHED)
+        letter.tags.add(on_item, draft_tag)
+        FragmentFactory.create(document=letter.document).tags.add(on_fragment)
+        SecondaryTextWorkLinkFactory.create(secondary_text=letter).tags.add(on_link)
+        typescript = TypescriptFactory.create(status=PUBLISHED)
+        draft = TypescriptFactory.create(status=Status.DRAFT)
+        by_item = FragmentFactory.create(document=typescript.document, start=0)
+        by_fragment = FragmentFactory.create(document=typescript.document, start=1)
+        by_both = FragmentFactory.create(document=typescript.document, start=2)
+        by_both.tags.add(on_item, on_fragment)
+        by_item.tags.add(on_item)
+        by_fragment.tags.add(on_fragment)
+        for tag in (on_link, other, draft_tag):
+            FragmentFactory.create(document=typescript.document, start=3).tags.add(tag)
+        FragmentFactory.create(document=draft.document).tags.add(on_item)
+        review = SecondaryTextFactory.create(status=PUBLISHED)
+        FragmentFactory.create(document=review.document).tags.add(on_item)
+
+        # Act
+        fragments = list(Fragment.objects.sharing_tags_with(letter))
+
+        # Assert: once each, only visible typescript fragments, never by a draft tag; work link
+        # tags are not the text's (US-RA-10 AC3).
+        assert fragments == [by_item, by_fragment, by_both]
+
+    def test_us_ra_10_ac3_featured_first_then_by_first_edition_and_text_order(self) -> None:
+        # Arrange
+        tag = TagFactory.create(status=PUBLISHED)
+        letter = SecondaryTextFactory.create(status=PUBLISHED)
+        letter.tags.add(tag)
+        later, earlier = WorkFactory.create(), WorkFactory.create()
+        EditionFactory.create(work=later, year=1966)
+        EditionFactory.create(work=earlier, year=1947)
+        late = TypescriptFactory.create(work=later, status=PUBLISHED)
+        early = TypescriptFactory.create(work=earlier, status=PUBLISHED)
+        fragments = [
+            FragmentFactory.create(document=late.document, start=0, is_featured=True),
+            FragmentFactory.create(document=early.document, start=0),
+            FragmentFactory.create(document=early.document, start=5),
+            FragmentFactory.create(document=late.document, start=0),
+        ]
+        for fragment in reversed(fragments):
+            fragment.tags.add(tag)
+
+        # Act
+        result = list(Fragment.objects.sharing_tags_with(letter))
+
+        # Assert
+        assert result == fragments
+
+    def test_us_ra_10_ac3_an_item_without_a_text_shares_only_its_own_tags(self) -> None:
+        # Arrange
+        tag = TagFactory.create(status=PUBLISHED)
+        note = NoteFactory.create(status=PUBLISHED)
+        typescript = TypescriptFactory.create(status=PUBLISHED)
+        FragmentFactory.create(document=typescript.document).tags.add(TagFactory.create())
+
+        # Act
+        before = list(Fragment.objects.sharing_tags_with(note))
+        note.tags.add(tag)
+        shared = FragmentFactory.create(document=typescript.document)
+        shared.tags.add(tag)
+        after = list(Fragment.objects.sharing_tags_with(note))
+
+        # Assert
+        assert (before, after) == ([], [shared])
+
+
+@pytest.mark.django_db
 class TestWorkLinks:
     @pytest.mark.parametrize(
         ("factory", "model", "item"),

@@ -177,6 +177,29 @@ paths:
                 items:
                   $ref: '#/components/schemas/Suggestion'
           description: ''
+  /api/secondary-texts/{id}/:
+    get:
+      operationId: secondary_texts_retrieve
+      description: The secondary text page (US-RA-10). A draft secondary text is not
+        found (R-06).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - secondary-texts
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecondaryTextPage'
+          description: ''
   /api/tags/:
     get:
       operationId: tags_list
@@ -330,7 +353,7 @@ components:
           readOnly: true
         kind:
           allOf:
-          - $ref: '#/components/schemas/KindEnum'
+          - $ref: '#/components/schemas/DocumentKindEnum'
           readOnly: true
         text:
           type: string
@@ -408,6 +431,14 @@ components:
       - start
       - start_page
       - tags
+    DocumentKindEnum:
+      enum:
+      - ocr
+      - plain
+      type: string
+      description: |-
+        * `ocr` - Scan + OCR text
+        * `plain` - Plain text
     Edition:
       type: object
       properties:
@@ -660,14 +691,6 @@ components:
       - fragments
       - tags
       - works
-    KindEnum:
-      enum:
-      - ocr
-      - plain
-      type: string
-      description: |-
-        * `ocr` - Scan + OCR text
-        * `plain` - Plain text
     MaterialText:
       type: object
       description: |-
@@ -763,6 +786,70 @@ components:
           type: boolean
           readOnly: true
           description: The text changed. Check the fragment, then clear this box.
+    SecondaryTextPage:
+      type: object
+      description: 'US-RA-10. `description` is rich text: HTML, sanitized when an
+        editor saves it.'
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          description: HTML.
+        kind:
+          $ref: '#/components/schemas/SecondaryTextPageKindEnum'
+        sender:
+          type: string
+          description: For letters; may be empty.
+        letter_date:
+          type: string
+          format: date
+          nullable: true
+          description: For letters.
+        document:
+          type: integer
+          description: 'The text for the reader: /api/documents/<id>/.'
+        works:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkSummary'
+          description: Related works, by first edition (R-03).
+        fragments:
+          allOf:
+          - $ref: '#/components/schemas/FragmentCardPreview'
+          description: Typescript fragments sharing a tag with the text or its fragments.
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagChip'
+          description: Tags on the text, its fragments and its work links, by name.
+      required:
+      - description
+      - document
+      - fragments
+      - id
+      - kind
+      - letter_date
+      - sender
+      - tags
+      - title
+      - works
+    SecondaryTextPageKindEnum:
+      enum:
+      - letter
+      - review
+      - study
+      - recording
+      - other
+      type: string
+      description: |-
+        * `letter` - Letter
+        * `review` - Review
+        * `study` - Study
+        * `recording` - Recording
+        * `other` - Other
     SourceTypeEnum:
       enum:
       - typescript

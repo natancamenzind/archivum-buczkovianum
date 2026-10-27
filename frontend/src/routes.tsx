@@ -5,6 +5,7 @@ import { AboutPage } from "@/pages/AboutPage";
 import { HomePage } from "@/pages/HomePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { SearchPage } from "@/pages/SearchPage";
+import { SecondaryTextPage } from "@/pages/SecondaryTextPage";
 import { TagsPage } from "@/pages/TagsPage";
 import { TypescriptPage } from "@/pages/TypescriptPage";
 import { TypescriptsPage } from "@/pages/TypescriptsPage";
@@ -23,6 +24,7 @@ export const routes: RouteObject[] = [
       { path: "tags", element: <TagsPage /> },
       { path: "works/:slug", element: <WorkPage /> },
       { path: "typescripts/:id", element: <TypescriptPage /> },
+      { path: "secondary-texts/:id", element: <SecondaryTextPage /> },
       { path: "about", element: <AboutPage /> },
       { path: "search", element: <SearchPage /> },
       { path: "*", element: <NotFoundPage /> },
