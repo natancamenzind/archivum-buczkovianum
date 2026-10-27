@@ -102,6 +102,19 @@ describe("SiteLayout", () => {
     expect(screen.getByRole("contentinfo")).toHaveClass("pb-64", "md:pb-0");
   });
 
+  it("R-12: every header and navigation link shows a focus outline, the active item too", () => {
+    renderRoute("/works");
+
+    const links = [
+      ...within(screen.getByRole("banner")).getAllByRole("link"),
+      ...within(mainNav()).getAllByRole("link"),
+    ];
+    // A colour shift alone is invisible on the active item, which is already in the accent colour.
+    for (const link of links) {
+      expect(link).toHaveClass("focus-visible:outline-2", "focus-visible:outline-ring");
+    }
+  });
+
   it("US-RA-03 AC1: every page renders inside the shell, a missing one too", () => {
     renderRoute("/works");
 

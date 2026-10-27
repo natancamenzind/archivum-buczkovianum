@@ -4,7 +4,7 @@ import { BookIcon } from "@/components/icons";
 import { copy } from "@/copy/pl";
 
 const LINK_CLASSES =
-  "transition-colors duration-150 ease-out motion-reduce:transition-none hover:text-accent-foreground focus-visible:text-accent-foreground";
+  "transition-colors duration-150 ease-out motion-reduce:transition-none hover:text-accent-foreground focus-visible:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 /** "Nagłówek serwisu" in design/components/: service name and subtitle, "O archiwum" (R-07). */
 export function SiteHeader() {
@@ -15,8 +15,9 @@ export function SiteHeader() {
         <span className="text-lora-tekst text-foreground md:text-lora-tytul-elementu">
           {copy.siteName}
         </span>{" "}
-        {/* Figma's mobile header drops the subtitle. The space keeps the link's accessible
-            name two words apart: "Archivum Buczkovianum Archiwum literackie". */}
+        {/* Figma's mobile header drops the subtitle, so below `md` the link's accessible name is
+            only "Archivum Buczkovianum". From `md` up, the space keeps the two parts apart:
+            "Archivum Buczkovianum Archiwum literackie". */}
         <span className="hidden text-cousine-metadane-male text-muted-foreground md:inline">
           {copy.layout.headerSubtitle}
         </span>

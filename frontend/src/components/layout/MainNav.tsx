@@ -43,6 +43,7 @@ export function MainNav() {
               "group flex h-64 flex-1 flex-col items-center justify-center gap-4 border-t-2 border-transparent px-4 py-8",
               "text-cousine-metadane-male text-muted-foreground transition-colors duration-150 ease-out motion-reduce:transition-none",
               "hover:text-accent-foreground focus-visible:text-accent-foreground",
+              "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
               "md:h-auto md:flex-none md:flex-row md:gap-8 md:px-16 md:py-32 md:text-cousine-nawigacja",
               isActive && "border-accent-border text-accent-foreground",
             )
