@@ -70,7 +70,7 @@ def about(request: Request) -> Response:
 @api_view(["GET"])
 def home(request: Request) -> Response:
     """The home page (US-RA-01): introduction and portrait, the counts, the work cards and the
-    tag cloud. The featured fragment (US-RA-02) is not here yet."""
+    tag cloud."""
     cards = list(Work.objects.published().with_year().with_fragment_count())
     page = HomePage(
         settings=SiteSettings.load(),
