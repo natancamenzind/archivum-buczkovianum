@@ -9,23 +9,33 @@ const FOCUS_CLASSES =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 interface SearchFieldProps {
-  /** The query the field starts with. */
+  /** The query in the URL. The field shows it, and shows a new one when the URL changes. */
   query: string;
   /** The ID of the heading that names the search landmark. */
   labelledBy: string;
+  /** The IDs of the texts that describe the field. */
+  describedBy: string;
 }
 
 /**
  * "Pole wyszukiwania" in design/components/: the search page's field, with "Wyczyść" while it
  * holds text. Submitting opens the search page for the trimmed query.
  */
-export function SearchField({ query, labelledBy }: SearchFieldProps) {
+export function SearchField({ query, labelledBy, describedBy }: SearchFieldProps) {
   const [value, setValue] = useState(query);
+  const [shownQuery, setShownQuery] = useState(query);
   const input = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
+  // Updated during render rather than by remounting, so a submit keeps the focus where it was.
+  if (query !== shownQuery) {
+    setShownQuery(query);
+    setValue(query);
+  }
+
   function search(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+    setValue(value.trim());
     void navigate(searchUrl(value));
   }
 
@@ -45,6 +55,7 @@ export function SearchField({ query, labelledBy }: SearchFieldProps) {
           setValue(event.target.value);
         }}
         aria-label={copy.search.label}
+        aria-describedby={describedBy}
         placeholder={copy.search.placeholder}
         className="min-w-0 flex-1 bg-transparent text-lora-tytul-elementu text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:appearance-none"
       />

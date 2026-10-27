@@ -69,8 +69,29 @@ describe("SiteLayout", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Wyszukiwanie" })).toBeInTheDocument();
     const pageForm = screen.getByRole("search", { name: "Wyszukiwanie" });
     expect(within(pageForm).getByRole("searchbox")).toHaveValue("Dezerter");
-    // The header field is emptied for the next search.
     expect(field).toHaveValue("");
+  });
+
+  it("US-RA-14 AC1: a header search on the search page replaces the query", () => {
+    renderRoute("/search?q=dezerter");
+
+    const header = screen.getByRole("banner");
+    fireEvent.change(within(header).getByRole("searchbox"), { target: { value: "potok" } });
+    fireEvent.submit(within(header).getByRole("search"));
+
+    const pageForm = screen.getByRole("search", { name: "Wyszukiwanie" });
+    expect(within(pageForm).getByRole("searchbox")).toHaveValue("potok");
+  });
+
+  it("US-RA-14 AC1: a blank header search opens the search page without a query", () => {
+    renderRoute("/about");
+
+    const header = screen.getByRole("banner");
+    fireEvent.change(within(header).getByRole("searchbox"), { target: { value: "  " } });
+    fireEvent.submit(within(header).getByRole("search"));
+
+    const pageForm = screen.getByRole("search", { name: "Wyszukiwanie" });
+    expect(within(pageForm).getByRole("searchbox")).toHaveValue("");
   });
 
   it("US-RA-14 AC1: on mobile the header search is an icon linking to the search page", () => {

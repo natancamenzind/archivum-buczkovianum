@@ -39,7 +39,7 @@ export function SiteHeader() {
           {copy.layout.headerSubtitle}
         </span>
       </Link>
-      <div className="flex items-center gap-16 md:gap-32">
+      <div className="flex items-center md:gap-32">
         <Link to="/about" className={`text-cousine-nawigacja text-foreground ${LINK_CLASSES}`}>
           {copy.layout.about}
         </Link>
@@ -62,7 +62,8 @@ export function SiteHeader() {
         <Link
           to="/search"
           aria-label={copy.search.label}
-          className={`p-16 text-foreground md:hidden ${LINK_CLASSES}`}
+          // The 48 px touch target reaches into the page margin, so the row fits a 360 px screen.
+          className={`-mr-16 p-16 text-foreground md:hidden ${LINK_CLASSES}`}
         >
           <SearchIcon className="size-16" />
         </Link>

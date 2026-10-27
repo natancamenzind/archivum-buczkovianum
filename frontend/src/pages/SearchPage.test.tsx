@@ -28,8 +28,29 @@ describe("SearchPage", () => {
     fireEvent.change(searchBox(), { target: { value: "  potok " } });
     fireEvent.click(within(searchForm()).getByRole("button", { name: "Szukaj" }));
 
-    // The field takes the trimmed query back from the URL it navigated to.
     expect(searchBox()).toHaveValue("potok");
+  });
+
+  it("US-RA-14 AC1: submitting with Enter keeps the focus in the field", () => {
+    renderRoute("/search?q=dezerter");
+
+    searchBox().focus();
+    fireEvent.change(searchBox(), { target: { value: "potok" } });
+    fireEvent.submit(searchForm());
+
+    expect(searchBox()).toHaveValue("potok");
+    expect(searchBox()).toHaveFocus();
+  });
+
+  it("US-RA-14 AC2: a quoted phrase survives the trip through the URL", () => {
+    renderRoute("/search");
+    const phrase = "„dezerter w stodole” & ł#?+";
+
+    fireEvent.change(searchBox(), { target: { value: phrase } });
+    fireEvent.submit(searchForm());
+
+    // The field shows the query decoded from the new URL.
+    expect(searchBox()).toHaveValue(phrase);
   });
 
   it("US-RA-14 AC1: the empty field shows the placeholder and no clear button", async () => {
@@ -69,6 +90,21 @@ describe("SearchPage", () => {
     expect(
       screen.getByText("Dokładna fraza: użyj cudzysłowu, np. „dezerter w stodole”"),
     ).toBeInTheDocument();
+    expect(searchBox()).toHaveAccessibleDescription(
+      "Przeszukiwane: tytuły, opisy, transkrypcje i tagi Dokładna fraza: użyj cudzysłowu, np. „dezerter w stodole”",
+    );
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("R-12: the field and its buttons show a focus outline", () => {
+    renderRoute("/search?q=dezerter");
+
+    expect(searchForm()).toHaveClass("has-[input:focus-visible]:outline-2");
+    for (const name of ["Wyczyść", "Szukaj"]) {
+      expect(within(searchForm()).getByRole("button", { name })).toHaveClass(
+        "focus-visible:outline-2",
+        "focus-visible:outline-ring",
+      );
+    }
   });
 });
