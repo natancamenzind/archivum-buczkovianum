@@ -39,7 +39,16 @@ class FakeIntersectionObserver implements IntersectionObserver {
   }
 
   report(element: Element, isIntersecting: boolean): void {
-    const entry = { target: element, isIntersecting } as IntersectionObserverEntry;
+    const bounds = element.getBoundingClientRect();
+    const entry: IntersectionObserverEntry = {
+      target: element,
+      isIntersecting,
+      intersectionRatio: isIntersecting ? 1 : 0,
+      boundingClientRect: bounds,
+      intersectionRect: bounds,
+      rootBounds: null,
+      time: 0,
+    };
     this.callback([entry], this);
   }
 }

@@ -5,7 +5,7 @@ import { useSearchParams } from "react-router";
 import type { components } from "@/api/schema";
 import { TagList } from "@/components/TagList";
 import { copy, fragmentLabel } from "@/copy/pl";
-import { loadPdf, type PDFDocumentProxy, type RenderTask } from "@/lib/pdf";
+import { loadPdf, type PDFDocumentProxy, type PDFPageProxy, type RenderTask } from "@/lib/pdf";
 import { type Segment, segments } from "@/lib/segments";
 import { cn } from "@/lib/utils";
 
@@ -66,11 +66,13 @@ function ScanPage({
       return;
     }
     let cancelled = false;
+    let drawn: PDFPageProxy | undefined;
     let task: RenderTask | undefined;
+    const element = canvas.current;
     pdf
       .getPage(number)
       .then((page) => {
-        const element = canvas.current;
+        drawn = page;
         if (cancelled || element === null) {
           return;
         }
@@ -85,6 +87,13 @@ function ScanPage({
     return () => {
       cancelled = true;
       task?.cancel();
+      // pdf.js keeps a drawn page's decoded scan until it is cleaned up, and Safari counts a
+      // removed canvas against its memory limit until it is collected.
+      drawn?.cleanup();
+      if (element !== null) {
+        element.width = 0;
+        element.height = 0;
+      }
     };
   }, [pdf, number, near]);
 
@@ -143,11 +152,14 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
 
   const { text, page_offsets: offsets, fragments } = document;
   const pageCount = offsets.length;
-  // Split once per text, not on every click: a whole typescript has hundreds of pages.
   const { pages, byId } = useMemo(() => {
     const split: Segment[][] = Array.from({ length: Math.max(offsets.length, 1) }, () => []);
+    let page = 0;
     for (const segment of segments(text.length, fragments, offsets)) {
-      split[pageOf(offsets, segment.start) - 1]?.push(segment);
+      while ((offsets[page + 1] ?? Infinity) <= segment.start) {
+        page++;
+      }
+      split[page]?.push(segment);
     }
     return { pages: split, byId: new Map(fragments.map((fragment) => [fragment.id, fragment])) };
   }, [text, offsets, fragments]);

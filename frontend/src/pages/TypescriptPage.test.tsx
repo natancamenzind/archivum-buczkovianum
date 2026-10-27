@@ -119,6 +119,22 @@ function mockPage(typescript: Partial<TypescriptData> = {}, document: Partial<Do
   );
 }
 
+const LONG_PAGES = Array.from({ length: 40 }, (_, index) => `Strona ${String(index + 1)}. `);
+const LONG_OFFSETS = LONG_PAGES.map((_, index) => LONG_PAGES.slice(0, index).join("").length);
+
+/** A 40-page typescript with one fragment, the first word of page 38. */
+function mockLongTypescript() {
+  const start = LONG_OFFSETS[37] ?? 0;
+  mockPage(
+    { page_count: LONG_PAGES.length },
+    {
+      text: LONG_PAGES.join(""),
+      page_offsets: LONG_OFFSETS,
+      fragments: [{ ...EXTRA_FRAGMENT, id: 9, start, end: start + 6, start_page: 38 }],
+    },
+  );
+}
+
 async function renderPage(url = "/typescripts/1") {
   const result = renderRoute(url);
   await screen.findByRole("heading", { level: 1, name: TYPESCRIPT.title });
@@ -254,22 +270,19 @@ describe("TypescriptPage", () => {
   });
 
   it("US-RA-09 AC1: a long typescript is read whole, and only the scan pages in view are drawn", async () => {
-    const pages = Array.from({ length: 40 }, (_, index) => `Strona ${String(index + 1)}. `);
-    mockPage(
-      { page_count: pages.length },
-      {
-        text: pages.join(""),
-        page_offsets: pages.map((_, index) => pages.slice(0, index).join("").length),
-        fragments: [{ ...EXTRA_FRAGMENT, id: 9, start: 1000, end: 1012 }],
-      },
-    );
+    mockLongTypescript();
 
     const { container } = await renderPage();
 
     const scan = card("Skan maszynopisu");
     expect(await within(scan).findByText("Skan · strona 40 z 40")).toBeVisible();
     const paragraphs = Array.from(scan.querySelectorAll("p.whitespace-pre-wrap"));
-    expect(paragraphs.map((p) => p.textContent)).toEqual(pages);
+    expect(paragraphs.map((p) => p.textContent)).toEqual(LONG_PAGES);
+    // A fragment far into the text is highlighted on its own page and can be opened.
+    const fragment = within(scan).getByRole("button", { name: "Fragment 04: Strona" });
+    expect(paragraphs[37]).toContainElement(fragment);
+    fireEvent.click(fragment);
+    expect(within(scan).getByText("Fragment 04")).toBeVisible();
     expect(within(scan).getAllByRole("img", { name: /Skan · strona/ })).toHaveLength(40);
     expect(scan.querySelectorAll("canvas")).toHaveLength(0);
 
@@ -287,6 +300,16 @@ describe("TypescriptPage", () => {
     expect(first).toHaveStyle({ aspectRatio: "210 / 297" });
     expect(scan.querySelectorAll("canvas")).toHaveLength(1);
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-09 AC1: a link to a fragment late in a long typescript scrolls to it", async () => {
+    mockLongTypescript();
+
+    await renderPage("/typescripts/1?fragment=9");
+
+    const fragment = await screen.findByRole("button", { name: "Fragment 04: Strona" });
+    expect(fragment).toHaveAttribute("aria-pressed", "true");
+    expect(scrollIntoView.mock.contexts[0]).toBe(fragment);
   });
 
   it("R-11 AC1: on mobile a Skan / Transkrypcja toggle switches the view", async () => {

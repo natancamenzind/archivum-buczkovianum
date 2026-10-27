@@ -16,8 +16,7 @@ export interface Segment {
 /**
  * Splits a text of `length` characters at every range boundary and at every `cut` (e.g. page
  * starts) into non-overlapping segments. A range a re-anchoring left past the end of a changed
- * text is clamped to it (#9); one with nothing left covers no segment. Each range visits only
- * the segments it covers.
+ * text is clamped to it (#9); one with nothing left covers no segment.
  */
 export function segments(length: number, ranges: Range[], cuts: number[] = []): Segment[] {
   const clamped = ranges.map(({ id, start, end }) => {

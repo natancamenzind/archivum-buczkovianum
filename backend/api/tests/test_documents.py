@@ -96,14 +96,14 @@ class TestDocumentEndpoint:
         document = ocr_document(is_main=True)
         old = document.typescript
         fragment = FragmentFactory.create(document=document, start=0, end=8)
-        old.is_main = False
-        old.save()
         TypescriptFactory.create(work=old.work, is_main=True, status=PUBLISHED)
 
         # Act
         result = payload(client, document)
 
         # Assert
+        old.refresh_from_db()
+        assert not old.is_main
         assert [item["id"] for item in result["fragments"]] == [fragment.pk]
 
     def test_r_11_a_plain_text_has_no_scan_or_pages(self, client: Client) -> None:
