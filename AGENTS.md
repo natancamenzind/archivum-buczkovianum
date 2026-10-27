@@ -21,7 +21,9 @@ Run everything from the repo root.
 | `make typecheck` | mypy (strict) and `tsc --noEmit` |
 | `make check` | All of the above. Must pass before every commit. |
 | `make test-backend`, `make lint-frontend`, … | One side only: `test`, `lint` and `typecheck` each have a `-backend` and a `-frontend` target. |
+| `make build-frontend` | Production build of the frontend into `frontend/dist/` |
 | `make api-client` | Regenerate `frontend/src/api/` from the OpenAPI schema |
+| `make check-api-client` | Regenerate the client and fail if `frontend/src/api/` changed |
 
 ## Workflow
 

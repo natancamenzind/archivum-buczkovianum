@@ -5,7 +5,8 @@ MANAGE = uv run python backend/manage.py
 NPM = npm --prefix frontend
 
 .PHONY: setup dev dev-backend dev-frontend test test-backend test-frontend lint lint-backend \
-	lint-frontend format typecheck typecheck-backend typecheck-frontend api-client check
+	lint-frontend format typecheck typecheck-backend typecheck-frontend build-frontend api-client \
+	check-api-client check
 
 setup:
 	uv sync
@@ -52,9 +53,20 @@ typecheck-backend:
 typecheck-frontend:
 	$(NPM) run typecheck
 
+# The production build into frontend/dist/. It catches what the type check misses: the token
+# plugin reading design/tokens/tokens.css, asset paths and the /static/ base.
+build-frontend:
+	$(NPM) run build
+
 # Regenerates frontend/src/api/ from the drf-spectacular schema. Commit the result.
 api-client:
 	$(MANAGE) spectacular --validate --file frontend/src/api/openapi.yaml
 	$(NPM) run api-client
+
+# Fails if the committed client differs from what `make api-client` generates (CI runs this).
+check-api-client: api-client
+	@git diff --exit-code -- frontend/src/api/ || { \
+		echo "frontend/src/api/ is out of date: run 'make api-client' and commit the result." >&2; \
+		exit 1; }
 
 check: lint typecheck test
