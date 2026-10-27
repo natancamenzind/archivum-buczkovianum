@@ -248,7 +248,7 @@ class TestContextualMaterialForm:
         # Arrange
         work = WorkFactory.create()
         data = form_data(
-            work, content_kind=ContentKind.PLAIN_TEXT, plain_text="Drogi Panie,\r\nlist.\r\n"
+            work, content_kind=ContentKind.PLAIN_TEXT, plain_text="Drogi Panie,\r\nlist."
         )
 
         # Act
@@ -418,7 +418,7 @@ class TestContextualMaterialForm:
         # Assert
         assert set(form_errors(response)) == {"scan", "ocr_file"}
 
-    def test_us_wr_07_ac2_a_text_is_never_dropped_for_another_kind_of_content(
+    def test_us_wr_07_ac2_text_becomes_a_link_and_the_text_is_deleted(
         self, admin_client: Client
     ) -> None:
         # Arrange
@@ -438,12 +438,38 @@ class TestContextualMaterialForm:
         response = admin_client.post(change_url(material), data)
 
         # Assert
-        assert form_errors(response)["content_kind"] == [
-            "This item has a text, which may carry fragments. "
-            "Keep a text kind of content, or delete the item and add it again."
-        ]
+        assert response.status_code == 302
         material.refresh_from_db()
-        assert material.document_id == document.pk
+        assert material.document is None
+        assert not Document.objects.exists()
+
+    def test_us_wr_07_ac2_text_with_fragments_is_not_dropped(self, admin_client: Client) -> None:
+        # Arrange
+        document = DocumentFactory.create()
+        material = ContextualMaterialFactory.create(
+            content_kind=ContentKind.PLAIN_TEXT, external_url="", document=document
+        )
+        MaterialWorkLinkFactory.create(material=material)
+        FragmentFactory.create(document=document)
+        data = material_data(
+            material,
+            content_kind=ContentKind.EXTERNAL_MEDIA,
+            external_url="https://example.com/film",
+            plain_text="",
+        )
+
+        # Act
+        response = admin_client.post(change_url(material), data)
+
+        # Assert
+        assert form_errors(response) == {
+            "__all__": [
+                "The text this item holds has 1 tagged fragment. "
+                "Delete them before removing the text."
+            ]
+        }
+        material.refresh_from_db()
+        assert material.document is not None
 
     def test_us_wr_07_ac2_plain_text_is_searchable(self, admin_client: Client) -> None:
         # Arrange
