@@ -17,9 +17,41 @@ env:
   DATABASE_URL: postgres://postgres:postgres@localhost:5432/buczkovianum
 
 jobs:
+  # Decides which side's checks run. A job skipped by its `if` counts as passed
+  # for required status checks. Gate on `!= 'false'` so the checks still run if
+  # this job fails and leaves its outputs empty.
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - Makefile
+              - .github/workflows/ci.yml
+              - backend/**
+              - pyproject.toml
+              - uv.lock
+              - .python-version
+            frontend:
+              - Makefile
+              - .github/workflows/ci.yml
+              - frontend/**
+              - design/tokens/**
+
   # Job names are referenced by the branch protection rule on main. Renaming one
   # requires updating the required status checks.
   lint:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +62,8 @@ jobs:
       - run: make lint-backend
 
   typecheck:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,6 +74,8 @@ jobs:
       - run: make typecheck-backend
 
   test:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
     runs-on: ubuntu-latest
     services:
       # Architecture §1 targets PostgreSQL 19; tests never run on SQLite.
@@ -68,18 +104,28 @@ jobs:
   # Frontend: one job per make target, reported as separate checks "frontend (lint)",
   # "frontend (typecheck)" and "frontend (test)". A human adds them to the required status
   # checks on main (docs/plan.md, D8).
+  # The gate is on the steps, not the job: a matrix job skipped by its `if` reports one
+  # unexpanded "frontend" check, so the required checks above would never arrive.
   frontend:
+    needs: changes
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         target: [lint, typecheck, test]
+    env:
+      RUN: ${{ needs.changes.outputs.frontend != 'false' }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - if: env.RUN == 'true'
+        uses: actions/checkout@v4
+      - if: env.RUN == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm ci --prefix frontend
-      - run: make ${{ matrix.target }}-frontend
+      - if: env.RUN == 'true'
+        run: npm ci --prefix frontend
+      - if: env.RUN == 'true'
+        run: make ${{ matrix.target }}-frontend
