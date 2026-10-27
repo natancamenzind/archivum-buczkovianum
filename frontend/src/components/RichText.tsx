@@ -16,7 +16,7 @@ export function RichText({ html, className }: RichTextProps) {
     <div
       className={cn(
         "flex flex-col gap-16",
-        "[&_a]:underline [&_a]:underline-offset-4",
+        "[&_a]:underline",
         "[&_ol]:list-decimal [&_ol]:pl-24 [&_ul]:list-disc [&_ul]:pl-24",
         "[&_h3]:text-lora-tytul-elementu [&_h4]:text-lora-tytul-elementu",
         className,

@@ -7,7 +7,7 @@ in field definitions, database constraints, `clean()` and `save()`. There are no
 from bisect import bisect_right
 from collections.abc import Callable, Collection
 from dataclasses import dataclass
-from typing import Any, ClassVar, Self
+from typing import Any, ClassVar, Self, cast
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
@@ -18,7 +18,7 @@ from django.db.models import Expression, F, Func, OuterRef, Q, Subquery, Value
 from django.utils.text import Truncator
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
-from django_prose_editor.fields import ProseEditorField
+from django_prose_editor.fields import ProseEditorField, create_sanitizer
 
 from search.models import EntityType, IndexedContent, SearchEntry, Weight, html_to_text
 
@@ -39,9 +39,21 @@ RICH_TEXT_EXTENSIONS: dict[str, Any] = {
 }
 
 
-def rich_text_field(**kwargs: Any) -> Any:
-    """A rich text field (architecture section 5): HTML, sanitized when it is cleaned."""
-    return ProseEditorField(extensions=RICH_TEXT_EXTENSIONS, sanitize=True, blank=True, **kwargs)
+def blank_if_empty(html: str) -> str:
+    """An emptied editor still holds empty paragraphs. Store nothing instead (R-02)."""
+    return html if html_to_text(html) else ""
+
+
+def rich_text_field(**kwargs: Any) -> "models.TextField[str, str]":
+    """A rich text field (architecture section 5): HTML, sanitized by `BaseModel.save()`."""
+    field = ProseEditorField(
+        extensions=RICH_TEXT_EXTENSIONS,
+        # Applied last to first.
+        sanitize=[blank_if_empty, create_sanitizer],
+        blank=True,
+        **kwargs,
+    )
+    return cast("models.TextField[str, str]", field)
 
 
 def format_shelfmark(institution: "Institution | None", number: str) -> str:
@@ -67,6 +79,13 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """Sanitize rich text on every save, not only in forms: the site renders it as HTML."""
+        for field in self._meta.concrete_fields:
+            if isinstance(field, ProseEditorField):
+                setattr(self, field.attname, field.sanitize(getattr(self, field.attname)))
+        super().save(*args, **kwargs)
 
     def clean(self) -> None:
         super().clean()

@@ -881,12 +881,28 @@ class TestRichText:
         # Assert
         assert getattr(settings, field) == RICH_TEXT + "<p>Opis</p>"
 
-    def test_an_empty_editor_saves_an_empty_description(self) -> None:
+    @pytest.mark.parametrize("html", ["<p></p>", "<p></p><p> </p>", "<ul><li><p></p></li></ul>"])
+    def test_r_02_an_empty_editor_saves_an_empty_description(self, html: str) -> None:
         # Arrange: the editor always holds at least one paragraph.
-        work = WorkFactory.create(description="<p></p>")
+        work = WorkFactory.build(description=html)
 
         # Act
-        work.full_clean()
+        work.save()
 
         # Assert
+        work.refresh_from_db()
         assert work.description == ""
+
+    def test_rich_text_is_sanitized_on_every_save(self) -> None:
+        # Arrange: code that saves without `full_clean()`, like a shell or a command.
+        tag = TagFactory.build(description=UNSAFE_TEXT)
+        settings = SiteSettingsFactory.build(about_project=UNSAFE_TEXT)
+
+        # Act
+        tag.save()
+        settings.save()
+
+        # Assert
+        tag.refresh_from_db()
+        settings.refresh_from_db()
+        assert (tag.description, settings.about_project) == ("<p>Opis</p>", "<p>Opis</p>")
