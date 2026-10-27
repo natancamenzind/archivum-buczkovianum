@@ -1,13 +1,30 @@
-import { Link } from "react-router";
+import { type SubmitEvent, useRef } from "react";
+import { Link, useNavigate } from "react-router";
 
-import { BookIcon } from "@/components/icons";
+import { BookIcon, SearchIcon } from "@/components/icons";
 import { copy } from "@/copy/pl";
+import { searchUrl } from "@/lib/search";
 
-const LINK_CLASSES =
-  "transition-colors duration-150 ease-out motion-reduce:transition-none hover:text-accent-foreground focus-visible:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+const FOCUS_CLASSES =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
-/** "Nagłówek serwisu" in design/components/: service name and subtitle, "O archiwum" (R-07). */
+const LINK_CLASSES = `transition-colors duration-150 ease-out motion-reduce:transition-none hover:text-accent-foreground focus-visible:text-accent-foreground ${FOCUS_CLASSES}`;
+
+/**
+ * "Nagłówek serwisu" in design/components/: service name and subtitle, "O archiwum" and the
+ * search field (R-07). On mobile the field becomes an icon linking to the search page.
+ */
 export function SiteHeader() {
+  const input = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+
+  function search(event: SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void navigate(searchUrl(input.current?.value ?? ""));
+    // The search page shows the query in its own field.
+    event.currentTarget.reset();
+  }
+
   return (
     <header className="flex h-64 items-center justify-between border-t-3 border-b border-t-primary border-b-border bg-background px-page-mobile md:h-auto md:px-page md:py-32">
       <Link to="/" className={`flex items-center gap-12 ${LINK_CLASSES}`}>
@@ -22,11 +39,35 @@ export function SiteHeader() {
           {copy.layout.headerSubtitle}
         </span>
       </Link>
-      <div className="flex items-center gap-32">
+      <div className="flex items-center md:gap-32">
         <Link to="/about" className={`text-cousine-nawigacja text-foreground ${LINK_CLASSES}`}>
           {copy.layout.about}
         </Link>
-        {/* The search field (an icon on mobile) comes here in step 29, US-RA-14. */}
+        <form
+          role="search"
+          aria-label={copy.search.label}
+          onSubmit={search}
+          className="hidden items-center gap-8 md:flex"
+        >
+          <SearchIcon className="size-16 shrink-0 text-icon" />
+          {/* The design shows the field as its placeholder, in the navigation's colour. */}
+          <input
+            ref={input}
+            type="search"
+            aria-label={copy.search.label}
+            placeholder={copy.search.label}
+            className={`max-w-xs bg-transparent text-cousine-nawigacja text-foreground field-sizing-content placeholder:text-foreground [&::-webkit-search-cancel-button]:appearance-none ${FOCUS_CLASSES}`}
+          />
+        </form>
+        <Link
+          to="/search"
+          aria-label={copy.search.label}
+          // The 48 px touch target reaches into the page margin, so the row fits a 360 px screen.
+          // It stops 4 px short of the edge, where the focus outline is drawn.
+          className={`-mr-12 p-16 text-foreground md:hidden ${LINK_CLASSES}`}
+        >
+          <SearchIcon className="size-16" />
+        </Link>
       </div>
     </header>
   );
