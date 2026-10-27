@@ -4,12 +4,13 @@ from io import StringIO
 
 import pytest
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import connection
 from django.test import Client
 from django.urls import reverse
 
-from archive.models import ContentKind, Status, Work
+from archive.models import ContentKind, Document, Status, Work
 from archive.tests.factories import (
     ContextualMaterialFactory,
     DocumentFactory,
@@ -258,7 +259,8 @@ class TestWrites:
         assert indexed is not None
         assert (indexed.has_scan, indexed.has_text, indexed.body) == (False, False, "")
 
-    def test_d4_fragments_of_a_replaced_text_leave_the_index(self) -> None:
+    def test_d4_a_text_with_fragments_cannot_be_replaced(self) -> None:
+        """Fragments stay with their text; the item must not drop that text (US-WR-09 AC4)."""
         # Arrange
         note = NoteFactory.create(
             status=PUBLISHED,
@@ -274,10 +276,12 @@ class TestWrites:
         note.document = DocumentFactory.create()
 
         # Act
-        note.save()
+        with pytest.raises(ValidationError):
+            note.save()
 
         # Assert
-        assert entry(EntityType.FRAGMENT, fragment.pk) is None
+        assert entry(EntityType.FRAGMENT, fragment.pk) is not None
+        assert Document.objects.filter(pk=old_document.pk).exists()
 
     def test_r_06_draft_works_are_not_in_the_filters(self) -> None:
         # Arrange

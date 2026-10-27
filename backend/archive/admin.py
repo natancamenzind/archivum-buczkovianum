@@ -12,7 +12,7 @@ from django.utils.html import format_html
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
 
-from archive.forms import OcrOrPlainTextForm, TextUploadForm
+from archive.forms import MediaContentForm, SecondaryTextForm, TextUploadForm
 from archive.models import (
     ContextualMaterial,
     Document,
@@ -48,7 +48,28 @@ class SearchIndexedAdmin[M: Publishable | Fragment](admin.ModelAdmin[M]):
         Tag.update_search_entries()
 
 
-class MediaContentAdmin[M: Note | ContextualMaterial](SearchIndexedAdmin[M]):
+class TextUploadAdmin[M: Typescript | Note | SecondaryText | ContextualMaterial](
+    SearchIndexedAdmin[M]
+):
+    """The admin of an item whose form uploads its text (`TextUploadForm`)."""
+
+    readonly_fields = ("current_scan", "page_count")
+
+    @admin.display(description=_("current scan"))
+    def current_scan(self, obj: M) -> SafeString | None:
+        if obj.document is None or not obj.document.scan:
+            return None
+        scan = obj.document.scan
+        return format_html('<a href="{}">{}</a>', scan.url, scan.name)
+
+    @admin.display(description=_("pages"))
+    def page_count(self, obj: M) -> int | None:
+        if obj.document is None or obj.document.kind != Document.Kind.OCR:
+            return None
+        return obj.document.page_count
+
+
+class MediaContentAdmin[M: Note | ContextualMaterial](TextUploadAdmin[M]):
     # Django 6.0 makes https the default scheme for URLs typed without one; opt in now.
     formfield_overrides: ClassVar[dict[type[models.Field[Any, Any]], dict[str, Any]]] = {
         models.URLField: {"assume_scheme": "https"},
@@ -93,28 +114,6 @@ class WorkAdmin(SearchIndexedAdmin[Work]):
     inlines = (EditionInline,)
 
 
-class TextUploadAdmin[M: Typescript | SecondaryText](SearchIndexedAdmin[M]):
-    """The admin of an item whose form uploads its text (`TextUploadForm`)."""
-
-    readonly_fields = ("current_scan", "page_count")
-
-    def save_model(self, request: HttpRequest, obj: M, form: Any, change: bool) -> None:
-        """Save the uploaded text first: the item refers to it."""
-        form.save_document()
-        super().save_model(request, obj, form, change)
-
-    @admin.display(description=_("current scan"))
-    def current_scan(self, obj: M) -> SafeString | None:
-        if obj.document is None or not obj.document.scan:
-            return None
-        scan = obj.document.scan
-        return format_html('<a href="{}">{}</a>', scan.url, scan.name)
-
-    @admin.display(description=_("pages"))
-    def page_count(self, obj: M) -> int | None:
-        return obj.document.page_count if obj.document else None
-
-
 class TypescriptForm(TextUploadForm[Typescript]):
     class Meta:
         model = Typescript
@@ -130,13 +129,19 @@ class TypescriptAdmin(TextUploadAdmin[Typescript]):
     form = TypescriptForm
 
 
+class NoteForm(MediaContentForm[Note]):
+    class Meta:
+        model = Note
+        exclude = ("document",)
+
+
 @admin.register(Note)
 class NoteAdmin(MediaContentAdmin[Note]):
     list_display = ("title", "content_kind", "shelfmark", "status", "updated_at")
     list_filter = ("status", "content_kind", "works")
     search_fields = ("title", "shelfmark")
     autocomplete_fields = ("works", "institution", "tags")
-    raw_id_fields = ("document",)
+    form = NoteForm
 
 
 class SecondaryTextWorkLinkInline(admin.TabularInline[SecondaryTextWorkLink, SecondaryText]):
@@ -152,7 +157,7 @@ class SecondaryTextWorkLinkInline(admin.TabularInline[SecondaryTextWorkLink, Sec
         return super().get_formset(request, obj, validate_min=True, **kwargs)
 
 
-class SecondaryTextForm(OcrOrPlainTextForm[SecondaryText]):
+class SecondaryTextAdminForm(SecondaryTextForm):
     class Meta:
         model = SecondaryText
         exclude = ("document",)
@@ -164,8 +169,15 @@ class SecondaryTextAdmin(TextUploadAdmin[SecondaryText]):
     list_filter = ("status", "kind")
     search_fields = ("title", "author")
     autocomplete_fields = ("institution", "tags")
-    form = SecondaryTextForm
+    form = SecondaryTextAdminForm
     inlines = (SecondaryTextWorkLinkInline,)
+
+    def save_model(
+        self, request: HttpRequest, obj: SecondaryText, form: SecondaryTextAdminForm, change: bool
+    ) -> None:
+        """Save the uploaded text first: the item refers to it."""
+        form.save_document()
+        super().save_model(request, obj, form, change)
 
 
 class MaterialWorkLinkInline(admin.TabularInline[MaterialWorkLink, ContextualMaterial]):
