@@ -18,7 +18,7 @@ export function SearchPage() {
       <h1 id={TITLE_ID} className="sr-only">
         {copy.search.title}
       </h1>
-      <div className="flex w-full flex-col gap-8 px-page-mobile pt-24 md:max-w-4xl md:box-content md:gap-12 md:px-page md:pt-48">
+      <div className="flex flex-col gap-8 px-page-mobile pt-24 md:max-w-4xl md:box-content md:gap-12 md:px-page md:pt-48">
         {/* A new query from the header or the URL resets the field. */}
         <SearchField key={query} query={query} labelledBy={TITLE_ID} />
         <div className="flex flex-col gap-4 text-cousine-metadane-male text-muted-foreground md:flex-row md:justify-between">
@@ -26,7 +26,6 @@ export function SearchPage() {
           <p>{copy.search.hint}</p>
         </div>
       </div>
-      {/* The results come in step 30 (US-RA-15). */}
     </main>
   );
 }
