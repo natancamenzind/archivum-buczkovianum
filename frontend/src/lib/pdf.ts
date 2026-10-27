@@ -1,7 +1,7 @@
-import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist/legacy/build/pdf.mjs";
+import type { PDFDocumentProxy, PDFPageProxy, RenderTask } from "pdfjs-dist/legacy/build/pdf.mjs";
 import workerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
 
-export type { PDFDocumentProxy, RenderTask };
+export type { PDFDocumentProxy, PDFPageProxy, RenderTask };
 
 /**
  * Opens a scan with pdf.js (architecture §2). The legacy build also runs in browsers that lack

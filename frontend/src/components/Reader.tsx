@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
 import type { components } from "@/api/schema";
 import { TagList } from "@/components/TagList";
 import { copy, fragmentLabel } from "@/copy/pl";
-import { loadPdf, type PDFDocumentProxy, type RenderTask } from "@/lib/pdf";
+import { loadPdf, type PDFDocumentProxy, type PDFPageProxy, type RenderTask } from "@/lib/pdf";
 import { type Segment, segments } from "@/lib/segments";
 import { cn } from "@/lib/utils";
 
@@ -16,12 +16,17 @@ type View = "scan" | "text";
 // Pages are drawn at 1.5× their PDF size and scaled down to the column, so text stays sharp.
 const SCAN_SCALE = 1.5;
 
+// A scan page is drawn while it is within one screen of the view, so a long typescript keeps
+// only a few drawn pages in memory.
+const DRAW_MARGIN = "100% 0px";
+
 const FOCUS_CLASSES =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 /**
- * One scan page, drawn by pdf.js once the scan is open. A page that fails to draw stays blank;
- * the reader reports a scan that cannot be opened.
+ * One scan page, drawn by pdf.js once the scan is open and the page nears the view, and dropped
+ * when it moves away. A page that fails to draw stays blank; the reader reports a scan that
+ * cannot be opened.
  */
 function ScanPage({
   pdf,
@@ -32,22 +37,47 @@ function ScanPage({
   number: number;
   label: string;
 }) {
+  const frame = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const [near, setNear] = useState(false);
+  // Until it is first drawn, a page keeps the A4 proportions of a typescript page, then its
+  // own, so the reader's scroll position holds as pages are drawn and dropped.
+  const [ratio, setRatio] = useState("210 / 297");
 
   useEffect(() => {
-    if (pdf === undefined) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          setNear(entry.isIntersecting);
+        }
+      },
+      { rootMargin: DRAW_MARGIN },
+    );
+    if (frame.current !== null) {
+      observer.observe(frame.current);
+    }
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (pdf === undefined || !near) {
       return;
     }
     let cancelled = false;
+    let drawn: PDFPageProxy | undefined;
     let task: RenderTask | undefined;
+    const element = canvas.current;
     pdf
       .getPage(number)
       .then((page) => {
-        const element = canvas.current;
+        drawn = page;
         if (cancelled || element === null) {
           return;
         }
         const viewport = page.getViewport({ scale: SCAN_SCALE });
+        setRatio(`${String(viewport.width)} / ${String(viewport.height)}`);
         element.width = viewport.width;
         element.height = viewport.height;
         task = page.render({ canvas: element, viewport });
@@ -57,21 +87,32 @@ function ScanPage({
     return () => {
       cancelled = true;
       task?.cancel();
+      // pdf.js keeps a drawn page's decoded scan until it is cleaned up, and Safari counts a
+      // removed canvas against its memory limit until it is collected.
+      drawn?.cleanup();
+      if (element !== null) {
+        element.width = 0;
+        element.height = 0;
+      }
     };
-  }, [pdf, number]);
+  }, [pdf, number, near]);
 
   return (
-    // Until it is drawn, the canvas keeps the A4 proportions of a typescript page, so the
-    // reader's scroll position holds when the scan arrives.
-    <canvas
-      ref={canvas}
-      width={210}
-      height={297}
+    <div
+      ref={frame}
       role="img"
       aria-label={label}
-      className="h-auto w-full shadow-document"
-    />
+      style={{ aspectRatio: ratio }}
+      className="w-full shadow-document"
+    >
+      {near && <canvas ref={canvas} className="block h-full w-full" />}
+    </div>
   );
+}
+
+/** The page (from 1) an offset is on: the last page starting at or before it. */
+function pageOf(offsets: number[], offset: number): number {
+  return Math.max(offsets.filter((start) => start <= offset).length, 1);
 }
 
 /** What the reader shows of a clicked fragment: its number, location and tags (R-11 AC2). */
@@ -111,20 +152,28 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
 
   const { text, page_offsets: offsets, fragments } = document;
   const pageCount = offsets.length;
-  const pageOf = (offset: number) => Math.max(offsets.filter((start) => start <= offset).length, 1);
-  const pages: Segment[][] = Array.from({ length: Math.max(pageCount, 1) }, () => []);
-  for (const segment of segments(text.length, fragments, offsets)) {
-    pages[pageOf(segment.start) - 1]?.push(segment);
-  }
-  const selectedFragment = fragments.find((fragment) => fragment.id === selected);
+  const { pages, byId } = useMemo(() => {
+    const split: Segment[][] = Array.from({ length: Math.max(offsets.length, 1) }, () => []);
+    let page = 0;
+    for (const segment of segments(text.length, fragments, offsets)) {
+      while ((offsets[page + 1] ?? Infinity) <= segment.start) {
+        page++;
+      }
+      split[page]?.push(segment);
+    }
+    return { pages: split, byId: new Map(fragments.map((fragment) => [fragment.id, fragment])) };
+  }, [text, offsets, fragments]);
+  const selectedFragment = selected === null ? undefined : byId.get(selected);
   const selectedPage =
-    selectedFragment === undefined ? null : pageOf(Math.min(selectedFragment.start, text.length));
+    selectedFragment === undefined
+      ? null
+      : pageOf(offsets, Math.min(selectedFragment.start, text.length));
   const hasScans = pageCount > 0 && !scanFailed;
 
   /** Of the fragments covering a segment, the shortest: the innermost one. */
   function innermost(segment: Segment): Fragment | undefined {
-    return fragments
-      .filter((fragment) => segment.ids.includes(fragment.id))
+    return segment.ids
+      .flatMap((id) => byId.get(id) ?? [])
       .reduce<Fragment | undefined>(
         (best, fragment) =>
           best === undefined || fragment.end - fragment.start < best.end - best.start

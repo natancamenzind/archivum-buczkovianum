@@ -3,6 +3,7 @@ import { delay, http, HttpResponse } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { components } from "@/api/schema";
+import { scrollIntoViewport, scrollOutOfViewport } from "@/test/intersection";
 import { axeViolations, renderRoute } from "@/test/render";
 import { server } from "@/test/server";
 
@@ -115,6 +116,22 @@ function mockPage(typescript: Partial<TypescriptData> = {}, document: Partial<Do
   server.use(
     http.get(TYPESCRIPT_URL, () => HttpResponse.json({ ...TYPESCRIPT, ...typescript })),
     http.get(DOCUMENT_URL, () => HttpResponse.json({ ...DOCUMENT, ...document })),
+  );
+}
+
+const LONG_PAGES = Array.from({ length: 40 }, (_, index) => `Strona ${String(index + 1)}. `);
+const LONG_OFFSETS = LONG_PAGES.map((_, index) => LONG_PAGES.slice(0, index).join("").length);
+
+/** A 40-page typescript with one fragment, the first word of page 38. */
+function mockLongTypescript() {
+  const start = LONG_OFFSETS[37] ?? 0;
+  mockPage(
+    { page_count: LONG_PAGES.length },
+    {
+      text: LONG_PAGES.join(""),
+      page_offsets: LONG_OFFSETS,
+      fragments: [{ ...EXTRA_FRAGMENT, id: 9, start, end: start + 6, start_page: 38 }],
+    },
   );
 }
 
@@ -242,8 +259,7 @@ describe("TypescriptPage", () => {
     expect(within(scan).getByText("Skan · strona 2 z 2")).toBeVisible();
     // Before pdf.js draws it, a page keeps A4 proportions, so the reader does not jump.
     for (const page of within(scan).getAllByRole("img", { name: /Skan · strona/ })) {
-      expect(page).toHaveAttribute("width", "210");
-      expect(page).toHaveAttribute("height", "297");
+      expect(page).toHaveStyle({ aspectRatio: "210 / 297" });
     }
     const paragraphs = Array.from(scan.querySelectorAll("p.whitespace-pre-wrap"));
     expect(paragraphs.map((p) => p.textContent)).toEqual([
@@ -251,6 +267,49 @@ describe("TypescriptPage", () => {
       "Druga strona tekstu.",
     ]);
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-09 AC1: a long typescript is read whole, and only the scan pages in view are drawn", async () => {
+    mockLongTypescript();
+
+    const { container } = await renderPage();
+
+    const scan = card("Skan maszynopisu");
+    expect(await within(scan).findByText("Skan · strona 40 z 40")).toBeVisible();
+    const paragraphs = Array.from(scan.querySelectorAll("p.whitespace-pre-wrap"));
+    expect(paragraphs.map((p) => p.textContent)).toEqual(LONG_PAGES);
+    // A fragment far into the text is highlighted on its own page and can be opened.
+    const fragment = within(scan).getByRole("button", { name: "Fragment 04: Strona" });
+    expect(paragraphs[37]).toContainElement(fragment);
+    fireEvent.click(fragment);
+    expect(within(scan).getByText("Fragment 04")).toBeVisible();
+    expect(within(scan).getAllByRole("img", { name: /Skan · strona/ })).toHaveLength(40);
+    expect(scan.querySelectorAll("canvas")).toHaveLength(0);
+
+    const first = within(scan).getByRole("img", { name: "Skan · strona 1 z 40" });
+    const second = within(scan).getByRole("img", { name: "Skan · strona 2 z 40" });
+    scrollIntoViewport(first);
+    scrollIntoViewport(second);
+    expect(first.querySelector("canvas")).not.toBeNull();
+    expect(second.querySelector("canvas")).not.toBeNull();
+    expect(scan.querySelectorAll("canvas")).toHaveLength(2);
+
+    // A page that scrolls away gives up its drawing and keeps its place in the reader.
+    scrollOutOfViewport(first);
+    expect(first.querySelector("canvas")).toBeNull();
+    expect(first).toHaveStyle({ aspectRatio: "210 / 297" });
+    expect(scan.querySelectorAll("canvas")).toHaveLength(1);
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-09 AC1: a link to a fragment late in a long typescript scrolls to it", async () => {
+    mockLongTypescript();
+
+    await renderPage("/typescripts/1?fragment=9");
+
+    const fragment = await screen.findByRole("button", { name: "Fragment 04: Strona" });
+    expect(fragment).toHaveAttribute("aria-pressed", "true");
+    expect(scrollIntoView.mock.contexts[0]).toBe(fragment);
   });
 
   it("R-11 AC1: on mobile a Skan / Transkrypcja toggle switches the view", async () => {

@@ -39,6 +39,27 @@ describe("segments", () => {
     ]);
   });
 
+  it("US-RA-09 AC1: keeps the ranges' order, skips empty ranges, and splits at a cut inside a range", () => {
+    expect(
+      segments(
+        10,
+        [
+          { id: 1, start: 2, end: 8 },
+          { id: 2, start: -3, end: 5 },
+          { id: 3, start: 6, end: 6 },
+        ],
+        [0, 4],
+      ),
+    ).toEqual([
+      { start: 0, end: 2, ids: [2] },
+      { start: 2, end: 4, ids: [1, 2] },
+      { start: 4, end: 5, ids: [1, 2] },
+      { start: 5, end: 6, ids: [1] },
+      { start: 6, end: 8, ids: [1] },
+      { start: 8, end: 10, ids: [] },
+    ]);
+  });
+
   it("gives an empty text no segments", () => {
     expect(segments(0, [{ id: 1, start: 0, end: 3 }])).toEqual([]);
   });

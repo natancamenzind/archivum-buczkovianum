@@ -28,12 +28,16 @@ export function segments(length: number, ranges: Range[], cuts: number[] = []): 
   ]
     .filter((offset) => offset >= 0 && offset <= length)
     .sort((a, b) => a - b);
+  const position = new Map(boundaries.map((offset, index) => [offset, index]));
 
-  return boundaries.slice(1).map((end, index) => {
-    const start = boundaries[index] ?? 0;
-    const ids = clamped
-      .filter((range) => range.start <= start && range.end >= end)
-      .map((range) => range.id);
-    return { start, end, ids };
-  });
+  const result: Segment[] = boundaries
+    .slice(1)
+    .map((end, index) => ({ start: boundaries[index] ?? 0, end, ids: [] }));
+  for (const range of clamped) {
+    const last = position.get(range.end) ?? 0;
+    for (let index = position.get(range.start) ?? last; index < last; index++) {
+      result[index]?.ids.push(range.id);
+    }
+  }
+  return result;
 }
