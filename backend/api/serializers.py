@@ -3,11 +3,15 @@ from dataclasses import dataclass
 from rest_framework import serializers
 
 from archive.models import (
+    Archival,
     ContextualMaterial,
     Document,
+    Edition,
     Fragment,
     Institution,
+    Note,
     Preview,
+    Publishable,
     SecondaryText,
     SiteSettings,
     Tag,
@@ -319,6 +323,146 @@ class TypescriptPageSerializer(serializers.Serializer[TypescriptPage]):
         many=True, help_text="Tags on the typescript and on its fragments, by name."
     )
     materials = ContextualMaterialsSerializer(help_text="Those linked to the typescript's work.")
+
+
+class EditionSerializer(serializers.ModelSerializer[Edition]):
+    class Meta:
+        model = Edition
+        fields = ("year", "publisher", "place")
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
+
+
+class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
+    """The fragment card (R-10), from a queryset with `with_number()`. Its source is the
+    published item holding the fragment's document."""
+
+    url = serializers.SerializerMethodField(help_text="The source, scrolled to the fragment.")
+    source_type = serializers.ChoiceField(
+        source="document.owner.search_type",
+        choices=(
+            EntityType.TYPESCRIPT,
+            EntityType.NOTE,
+            EntityType.SECONDARY_TEXT,
+            EntityType.MATERIAL,
+        ),
+        read_only=True,
+    )
+    work = serializers.SerializerMethodField(help_text="The source's published works, by year.")
+    number = serializers.IntegerField(read_only=True, help_text="1-based, by position in the text.")
+    scan = serializers.SerializerMethodField(help_text="PDF URL; empty for a plain text.")
+    start_page = serializers.IntegerField(
+        read_only=True,
+        allow_null=True,
+        help_text="1-based scan page the fragment starts on; null for a plain text.",
+    )
+    shelfmark = serializers.CharField(
+        source="shelfmark_display",
+        read_only=True,
+        help_text='E.g. "ML, sygn. 1618.0009"; may be empty.',
+    )
+    tags = TagChipSerializer(many=True, read_only=True, help_text="Published tags, by name.")
+
+    class Meta:
+        model = Fragment
+        fields = (
+            "id",
+            "url",
+            "source_type",
+            "work",
+            "number",
+            "location",
+            "quote",
+            "scan",
+            "start_page",
+            "shelfmark",
+            "description",
+            "tags",
+        )
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
+
+    def owner(self, fragment: Fragment) -> Archival:
+        owner = fragment.document.owner
+        assert owner is not None
+        return owner
+
+    def get_url(self, fragment: Fragment) -> str:
+        owner = self.owner(fragment)
+        assert isinstance(owner, Publishable)
+        return f"{owner.get_absolute_url()}?fragment={fragment.pk}"
+
+    def get_work(self, fragment: Fragment) -> str:
+        return ", ".join(work.title for work in self.owner(fragment).related_works())
+
+    def get_scan(self, fragment: Fragment) -> str:
+        return fragment.document.scan.url if fragment.document.scan else ""
+
+
+class FragmentCardPreviewSerializer(serializers.Serializer[Preview[Fragment]]):
+    items = FragmentCardSerializer(many=True, help_text="Featured first, then text order (R-09).")
+    total = serializers.IntegerField(help_text="The number of all the fragments.")
+
+
+class NoteCardSerializer(serializers.ModelSerializer[Note]):
+    """The note card (US-RA-04 AC3). `description` is rich text: HTML, sanitized when an editor
+    saves it."""
+
+    url = serializers.CharField(source="get_absolute_url", read_only=True)
+    shelfmark = serializers.CharField(
+        source="shelfmark_display", read_only=True, help_text='E.g. "ML, sygn. 1678"; may be empty.'
+    )
+    description = serializers.CharField(read_only=True, help_text="HTML.")
+    image = serializers.SerializerMethodField(help_text="Empty when the note is not an image.")
+    tags = TagChipSerializer(many=True, read_only=True, help_text="Published tags, by name.")
+
+    class Meta:
+        model = Note
+        fields = ("url", "title", "shelfmark", "description", "image", "image_alt", "tags")
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
+
+    def get_image(self, note: Note) -> str:
+        return note.image.url if note.image else ""
+
+
+@dataclass(frozen=True)
+class WorkPage:
+    work: Work
+    main_typescript: int | None
+    fragments: Preview[Fragment]
+    typescripts: list[Typescript]
+    notes: list[Note]
+    tags: list[Tag]
+    materials: ContextualMaterials
+
+
+class WorkPageSerializer(serializers.Serializer[WorkPage]):
+    """US-RA-04, from a work with `with_year()`. `description` is rich text: HTML, sanitized when
+    an editor saves it."""
+
+    slug = serializers.CharField(source="work.slug")
+    title = serializers.CharField(source="work.title")
+    description = serializers.CharField(
+        source="work.description", allow_blank=True, help_text="HTML."
+    )
+    year = serializers.IntegerField(
+        source="work.year",
+        allow_null=True,
+        help_text="The year of the first edition; null without editions.",
+    )
+    editions = EditionSerializer(source="work.editions", many=True, help_text="By year.")
+    main_typescript = serializers.IntegerField(
+        allow_null=True,
+        help_text="The typescript whose fragments the preview shows; null without a published one.",
+    )
+    fragments = FragmentCardPreviewSerializer(help_text="The main typescript's visible fragments.")
+    typescripts = TypescriptRowSerializer(many=True, help_text="By shelfmark, as numbers.")
+    notes = NoteCardSerializer(many=True, help_text="By title.")
+    tags = TagChipSerializer(
+        many=True, help_text="Tags that refer to the work (US-RA-07 AC5), by name."
+    )
+    materials = ContextualMaterialsSerializer(help_text="Those linked to the work.")
 
 
 class DocumentFragmentSerializer(FragmentRowSerializer):

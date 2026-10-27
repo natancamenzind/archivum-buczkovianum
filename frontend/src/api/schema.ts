@@ -194,6 +194,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/works/{slug}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The work page (US-RA-04). A draft work is not found (R-06). */
+        get: operations["works_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -244,6 +261,11 @@ export interface components {
             /** @description Published tags, by name. */
             readonly tags: components["schemas"]["TagChip"][];
         };
+        Edition: {
+            readonly year: number;
+            readonly publisher: string;
+            readonly place: string;
+        };
         EditorFragment: {
             readonly id: number;
             document: number;
@@ -259,6 +281,39 @@ export interface components {
             readonly id: number;
             /** Name */
             readonly title: string;
+        };
+        /**
+         * @description The fragment card (R-10), from a queryset with `with_number()`. Its source is the
+         *     published item holding the fragment's document.
+         */
+        FragmentCard: {
+            readonly id: number;
+            /** @description The source, scrolled to the fragment. */
+            readonly url: string;
+            readonly source_type: components["schemas"]["SourceTypeEnum"];
+            /** @description The source's published works, by year. */
+            readonly work: string;
+            /** @description 1-based, by position in the text. */
+            readonly number: number;
+            /** @description E.g. rozdział I. */
+            readonly location: string;
+            /** @description The selected text. */
+            readonly quote: string;
+            /** @description PDF URL; empty for a plain text. */
+            readonly scan: string;
+            /** @description 1-based scan page the fragment starts on; null for a plain text. */
+            readonly start_page: number | null;
+            /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
+            readonly shelfmark: string;
+            readonly description: string;
+            /** @description Published tags, by name. */
+            readonly tags: components["schemas"]["TagChip"][];
+        };
+        FragmentCardPreview: {
+            /** @description Featured first, then text order (R-09). */
+            items: components["schemas"]["FragmentCard"][];
+            /** @description The number of all the fragments. */
+            total: number;
         };
         FragmentPreview: {
             /** @description Featured first, then text order (R-09). */
@@ -325,6 +380,24 @@ export interface components {
             /** @description Publisher, place, year, pages. */
             readonly publication: string;
         };
+        /**
+         * @description The note card (US-RA-04 AC3). `description` is rich text: HTML, sanitized when an editor
+         *     saves it.
+         */
+        NoteCard: {
+            readonly url: string;
+            readonly title: string;
+            /** @description E.g. "ML, sygn. 1678"; may be empty. */
+            readonly shelfmark: string;
+            /** @description HTML. */
+            readonly description: string;
+            /** @description Empty when the note is not an image. */
+            readonly image: string;
+            /** Image text alternative */
+            readonly image_alt: string;
+            /** @description Published tags, by name. */
+            readonly tags: components["schemas"]["TagChip"][];
+        };
         PatchedEditorFragment: {
             readonly id?: number;
             document?: number;
@@ -336,6 +409,14 @@ export interface components {
             /** @description The text changed. Check the fragment, then clear this box. */
             readonly needs_review?: boolean;
         };
+        /**
+         * @description * `typescript` - typescript
+         *     * `note` - note
+         *     * `secondary_text` - secondary_text
+         *     * `material` - material
+         * @enum {string}
+         */
+        SourceTypeEnum: "typescript" | "note" | "secondary_text" | "material";
         /** @description A suggestion under the search fields (US-RA-17): a work or a tag, and its page. */
         Suggestion: {
             readonly type: components["schemas"]["TypeEnum"];
@@ -439,6 +520,32 @@ export interface components {
             readonly cover_image_alt: string;
             /** @description Visible fragments of the main typescript (D19); 0 without one. */
             readonly fragment_count: number;
+        };
+        /**
+         * @description US-RA-04, from a work with `with_year()`. `description` is rich text: HTML, sanitized when
+         *     an editor saves it.
+         */
+        WorkPage: {
+            slug: string;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            /** @description The year of the first edition; null without editions. */
+            year: number | null;
+            /** @description By year. */
+            editions: components["schemas"]["Edition"][];
+            /** @description The typescript whose fragments the preview shows; null without a published one. */
+            main_typescript: number | null;
+            /** @description The main typescript's visible fragments. */
+            fragments: components["schemas"]["FragmentCardPreview"];
+            /** @description By shelfmark, as numbers. */
+            typescripts: components["schemas"]["TypescriptRow"][];
+            /** @description By title. */
+            notes: components["schemas"]["NoteCard"][];
+            /** @description Tags that refer to the work (US-RA-07 AC5), by name. */
+            tags: components["schemas"]["TagChip"][];
+            /** @description Those linked to the work. */
+            materials: components["schemas"]["ContextualMaterials"];
         };
         /**
          * @description A work in a context column (R-03), from a queryset with `with_year()` and
@@ -708,6 +815,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkCard"][];
+                };
+            };
+        };
+    };
+    works_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkPage"];
                 };
             };
         };

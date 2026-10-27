@@ -260,6 +260,28 @@ paths:
                 items:
                   $ref: '#/components/schemas/WorkCard'
           description: ''
+  /api/works/{slug}/:
+    get:
+      operationId: works_retrieve
+      description: The work page (US-RA-04). A draft work is not found (R-06).
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - works
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkPage'
+          description: ''
 components:
   schemas:
     AboutPage:
@@ -386,6 +408,22 @@ components:
       - start
       - start_page
       - tags
+    Edition:
+      type: object
+      properties:
+        year:
+          type: integer
+          readOnly: true
+        publisher:
+          type: string
+          readOnly: true
+        place:
+          type: string
+          readOnly: true
+      required:
+      - place
+      - publisher
+      - year
     EditorFragment:
       type: object
       properties:
@@ -439,6 +477,89 @@ components:
       required:
       - id
       - title
+    FragmentCard:
+      type: object
+      description: |-
+        The fragment card (R-10), from a queryset with `with_number()`. Its source is the
+        published item holding the fragment's document.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+          description: The source, scrolled to the fragment.
+        source_type:
+          allOf:
+          - $ref: '#/components/schemas/SourceTypeEnum'
+          readOnly: true
+        work:
+          type: string
+          readOnly: true
+          description: The source's published works, by year.
+        number:
+          type: integer
+          readOnly: true
+          description: 1-based, by position in the text.
+        location:
+          type: string
+          readOnly: true
+          description: E.g. rozdział I.
+        quote:
+          type: string
+          readOnly: true
+          description: The selected text.
+        scan:
+          type: string
+          readOnly: true
+          description: PDF URL; empty for a plain text.
+        start_page:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: 1-based scan page the fragment starts on; null for a plain
+            text.
+        shelfmark:
+          type: string
+          readOnly: true
+          description: E.g. "ML, sygn. 1618.0009"; may be empty.
+        description:
+          type: string
+          readOnly: true
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagChip'
+          readOnly: true
+          description: Published tags, by name.
+      required:
+      - description
+      - id
+      - location
+      - number
+      - quote
+      - scan
+      - shelfmark
+      - source_type
+      - start_page
+      - tags
+      - url
+      - work
+    FragmentCardPreview:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FragmentCard'
+          description: Featured first, then text order (R-09).
+        total:
+          type: integer
+          description: The number of all the fragments.
+      required:
+      - items
+      - total
     FragmentPreview:
       type: object
       properties:
@@ -569,6 +690,48 @@ components:
       - publication
       - title
       - url
+    NoteCard:
+      type: object
+      description: |-
+        The note card (US-RA-04 AC3). `description` is rich text: HTML, sanitized when an editor
+        saves it.
+      properties:
+        url:
+          type: string
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        shelfmark:
+          type: string
+          readOnly: true
+          description: E.g. "ML, sygn. 1678"; may be empty.
+        description:
+          type: string
+          readOnly: true
+          description: HTML.
+        image:
+          type: string
+          readOnly: true
+          description: Empty when the note is not an image.
+        image_alt:
+          type: string
+          readOnly: true
+          title: Image text alternative
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagChip'
+          readOnly: true
+          description: Published tags, by name.
+      required:
+      - description
+      - image
+      - image_alt
+      - shelfmark
+      - tags
+      - title
+      - url
     PatchedEditorFragment:
       type: object
       properties:
@@ -600,6 +763,18 @@ components:
           type: boolean
           readOnly: true
           description: The text changed. Check the fragment, then clear this box.
+    SourceTypeEnum:
+      enum:
+      - typescript
+      - note
+      - secondary_text
+      - material
+      type: string
+      description: |-
+        * `typescript` - typescript
+        * `note` - note
+        * `secondary_text` - secondary_text
+        * `material` - material
     Suggestion:
       type: object
       description: 'A suggestion under the search fields (US-RA-17): a work or a tag,
@@ -860,6 +1035,68 @@ components:
       - genre
       - slug
       - title
+      - year
+    WorkPage:
+      type: object
+      description: |-
+        US-RA-04, from a work with `with_year()`. `description` is rich text: HTML, sanitized when
+        an editor saves it.
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          description: HTML.
+        year:
+          type: integer
+          nullable: true
+          description: The year of the first edition; null without editions.
+        editions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Edition'
+          description: By year.
+        main_typescript:
+          type: integer
+          nullable: true
+          description: The typescript whose fragments the preview shows; null without
+            a published one.
+        fragments:
+          allOf:
+          - $ref: '#/components/schemas/FragmentCardPreview'
+          description: The main typescript's visible fragments.
+        typescripts:
+          type: array
+          items:
+            $ref: '#/components/schemas/TypescriptRow'
+          description: By shelfmark, as numbers.
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteCard'
+          description: By title.
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagChip'
+          description: Tags that refer to the work (US-RA-07 AC5), by name.
+        materials:
+          allOf:
+          - $ref: '#/components/schemas/ContextualMaterials'
+          description: Those linked to the work.
+      required:
+      - description
+      - editions
+      - fragments
+      - main_typescript
+      - materials
+      - notes
+      - slug
+      - tags
+      - title
+      - typescripts
       - year
     WorkSummary:
       type: object

@@ -466,6 +466,27 @@ class TagQuerySet(PublishableQuerySet["Tag"]):
             .order_by(F("occurrences").desc(), "title")
         )
 
+    def referring_to(self, work: "Work") -> Self:
+        """The tags that refer to `work` (US-RA-04 AC4), the inverse of
+        `WorkQuerySet.referred_to_by()`: on the work, on a published item related to it, on a
+        visible fragment of such an item, or on a visible work link."""
+        referring = Q(works=work)
+        items: list[PublishableQuerySet[Any]] = [
+            Typescript.objects.published().filter(work=work),
+            Note.objects.published().filter(works=work),
+            SecondaryText.objects.published().filter(works=work),
+            ContextualMaterial.objects.published().filter(works=work),
+        ]
+        for related in items:
+            fragments = Fragment.objects.filter(document__in=related.values("document"))
+            referring |= Q(pk__in=related.values("tags")) | Q(pk__in=fragments.values("tags"))
+        for links in (
+            SecondaryTextWorkLink.objects.visible(),
+            MaterialWorkLink.objects.visible(),
+        ):
+            referring |= Q(pk__in=links.filter(work=work).values("tags"))
+        return self.filter(referring)
+
 
 class Tag(Publishable):
     class Kind(models.TextChoices):

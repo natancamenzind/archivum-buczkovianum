@@ -155,6 +155,7 @@ class TestSchema:
                 "/api/typescripts/",
                 "/api/typescripts/{id}/",
                 "/api/works/",
+                "/api/works/{slug}/",
             ]
         )
 

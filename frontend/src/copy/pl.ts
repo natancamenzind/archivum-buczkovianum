@@ -141,6 +141,32 @@ export const copy = {
     loading: "Wczytuję maszynopis…",
     error: "Nie udało się wczytać maszynopisu. Spróbuj ponownie później.",
   },
+  /** The work page (US-RA-04). */
+  work: {
+    type: "Utwór",
+    editions: "Wydania",
+    firstEdition: "pierwsze wydanie",
+    fragments: "Fragmenty maszynopisu",
+    fragmentsDescription: "Wybór redakcji, w kolejności tekstu",
+    typescripts: "Maszynopisy",
+    notes: "Zapiski",
+    notesDescription: "Zapiski autora związane z utworem",
+    loading: "Wczytuję utwór…",
+    error: "Nie udało się wczytać utworu. Spróbuj ponownie później.",
+  },
+  /** The fragment card (R-10) and the note card (US-RA-04 AC3). */
+  card: {
+    /** The source type chip, keyed by the API's `source_type`. */
+    types: {
+      typescript: "Maszynopis",
+      note: "Zapisek",
+      secondary_text: "Tekst sekundarny",
+      material: "Materiał kontekstowy",
+    },
+    scan: (page: number) => `Skan · strona ${String(page)}`,
+    /** The placeholder board for a note without an image (design/rules.md). */
+    notePlaceholder: "[Skan zapisku]",
+  },
   /** The reader (R-11). */
   reader: {
     views: "Widok",
