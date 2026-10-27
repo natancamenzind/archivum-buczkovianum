@@ -371,6 +371,113 @@ class TestWrites:
         assert tag_entry.work_ids == []
 
 
+def carries_at_weight_b(entity_type: EntityType, entity_id: int, word: str) -> bool:
+    """Whether the entry's vector holds `word` at weight B."""
+    sql = (
+        "SELECT 1 FROM search_searchentry WHERE entity_type = %s AND entity_id = %s"
+        " AND vector @@ to_tsquery(%s::regconfig, %s)"
+    )
+    with connection.cursor() as cursor:
+        cursor.execute(sql, [entity_type, entity_id, settings.SEARCH_TS_CONFIG, f"{word}:B"])
+        return cursor.fetchone() is not None
+
+
+@pytest.mark.django_db
+class TestTagNames:
+    @pytest.mark.parametrize(
+        ("factory", "entity_type"),
+        [
+            (WorkFactory, EntityType.WORK),
+            (TypescriptFactory, EntityType.TYPESCRIPT),
+            (NoteFactory, EntityType.NOTE),
+            (SecondaryTextFactory, EntityType.SECONDARY_TEXT),
+            (ContextualMaterialFactory, EntityType.MATERIAL),
+        ],
+    )
+    def test_d18_an_item_entry_holds_its_published_tag_names_at_weight_b(
+        self, factory: type[WorkFactory], entity_type: EntityType
+    ) -> None:
+        # Arrange
+        item = factory.create(status=PUBLISHED)
+        item.tags.add(TagFactory.create(status=PUBLISHED, title="Dezerter"))
+
+        # Act
+        item.save()
+
+        # Assert
+        assert carries_at_weight_b(entity_type, item.pk, "dezerter")
+        assert "Dezerter" not in stored(entity_type, item.pk).body
+
+    def test_d18_a_fragment_entry_holds_its_own_published_tag_names_at_weight_b(self) -> None:
+        # Arrange
+        typescript = TypescriptFactory.create(
+            status=PUBLISHED, document__text="Szedł przez las nocą."
+        )
+        typescript.tags.add(TagFactory.create(status=PUBLISHED, title="Las"))
+        fragment = FragmentFactory.create(document=typescript.document, start=0, end=5)
+        fragment.tags.add(TagFactory.create(status=PUBLISHED, title="Dezerter"))
+
+        # Act
+        fragment.save()
+
+        # Assert
+        assert carries_at_weight_b(EntityType.FRAGMENT, fragment.pk, "dezerter")
+        assert not carries_at_weight_b(EntityType.FRAGMENT, fragment.pk, "las")
+        assert stored(EntityType.FRAGMENT, fragment.pk).body == "Szedł"
+
+    def test_d18_draft_tag_names_stay_out_of_entries(self) -> None:
+        # Arrange
+        note = NoteFactory.create(status=PUBLISHED)
+        note.tags.add(TagFactory.create(title="Dezerter"))
+
+        # Act
+        note.save()
+
+        # Assert
+        assert not carries_at_weight_b(EntityType.NOTE, note.pk, "dezerter")
+
+    def test_d18_publishing_and_unpublishing_a_tag_reindexes_what_carries_it(self) -> None:
+        # Arrange
+        tag = TagFactory.create(title="Dezerter")
+        work = WorkFactory.create(status=PUBLISHED)
+        work.tags.add(tag)
+        typescript = TypescriptFactory.create(status=PUBLISHED, work=work)
+        fragment = FragmentFactory.create(document=typescript.document)
+        fragment.tags.add(tag)
+        work.save()
+        fragment.save()
+
+        # Act
+        tag.status = PUBLISHED
+        tag.save()
+        published = [
+            carries_at_weight_b(EntityType.WORK, work.pk, "dezerter"),
+            carries_at_weight_b(EntityType.FRAGMENT, fragment.pk, "dezerter"),
+        ]
+        tag.status = Status.DRAFT
+        tag.save()
+
+        # Assert
+        assert published == [True, True]
+        assert not carries_at_weight_b(EntityType.WORK, work.pk, "dezerter")
+        assert not carries_at_weight_b(EntityType.FRAGMENT, fragment.pk, "dezerter")
+
+    def test_d18_renaming_a_tag_reindexes_what_carries_it(self) -> None:
+        # Arrange
+        tag = TagFactory.create(status=PUBLISHED, title="Uciekinier")
+        secondary_text = SecondaryTextFactory.create(status=PUBLISHED)
+        secondary_text.tags.add(tag)
+        secondary_text.save()
+
+        # Act
+        tag.title = "Dezerter"
+        tag.save()
+
+        # Assert
+        assert carries_at_weight_b(EntityType.SECONDARY_TEXT, secondary_text.pk, "dezerter")
+        assert not carries_at_weight_b(EntityType.SECONDARY_TEXT, secondary_text.pk, "uciekinier")
+
+
 @pytest.mark.django_db
 class TestEditorPanel:
     def test_us_wr_04_ac4_works_and_tags_chosen_in_the_form_reach_the_index(
@@ -398,6 +505,48 @@ class TestEditorPanel:
         tag_entry = stored(EntityType.TAG, tag.pk)
         assert (note.work_ids, note.decades) == ([work.pk], [1940])
         assert tag_entry.work_ids == [work.pk]
+
+    def test_d18_tags_chosen_in_the_form_reach_the_item_entry(self, admin_client: Client) -> None:
+        # Arrange
+        tag = TagFactory.create(status=PUBLISHED, title="Dezerter")
+        data = {
+            "title": "Notes 18",
+            "status": PUBLISHED,
+            "content_kind": ContentKind.EXTERNAL_MEDIA,
+            "external_url": "https://example.com/nagranie",
+            "works": [WorkFactory.create(status=PUBLISHED).pk],
+            "tags": [tag.pk],
+        }
+
+        # Act
+        response = admin_client.post(reverse("admin:archive_note_add"), data)
+
+        # Assert
+        assert response.status_code == 302
+        note = SearchEntry.objects.get(entity_type=EntityType.NOTE)
+        assert carries_at_weight_b(EntityType.NOTE, note.entity_id, "dezerter")
+
+    def test_d18_tags_set_in_the_tagger_reach_the_fragment_entry(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        typescript = TypescriptFactory.create(is_main=True, status=PUBLISHED)
+        fragment = FragmentFactory.create(document=typescript.document)
+        fragment.tags.add(TagFactory.create(status=PUBLISHED, title="Uciekinier"))
+        fragment.save()
+        tag = TagFactory.create(status=PUBLISHED, title="Dezerter")
+
+        # Act
+        response = admin_client.patch(
+            reverse("editor-fragment", args=[fragment.pk]),
+            {"tag_ids": [tag.pk]},
+            content_type="application/json",
+        )
+
+        # Assert
+        assert response.status_code == 200
+        assert carries_at_weight_b(EntityType.FRAGMENT, fragment.pk, "dezerter")
+        assert not carries_at_weight_b(EntityType.FRAGMENT, fragment.pk, "uciekinier")
 
     def test_us_wr_10_ac2_a_tagged_work_link_files_the_tag_under_the_work(
         self, admin_client: Client
@@ -483,3 +632,15 @@ class TestRebuild:
         assert set(SearchEntry.objects.values_list("entity_type", "entity_id")) == expected
         assert len(expected) == 2
         assert output.getvalue() == "Indexed 2 entries.\n"
+
+    def test_d18_a_rebuild_keeps_the_tag_names_of_entries(self) -> None:
+        # Arrange
+        work = WorkFactory.create(status=PUBLISHED)
+        work.tags.add(TagFactory.create(status=PUBLISHED, title="Dezerter"))
+        SearchEntry.objects.all().delete()
+
+        # Act
+        call_command("rebuild_search_index", stdout=StringIO())
+
+        # Assert
+        assert carries_at_weight_b(EntityType.WORK, work.pk, "dezerter")

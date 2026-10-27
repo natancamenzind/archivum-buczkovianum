@@ -210,6 +210,10 @@ class Taggable(models.Model):
         """The tags shown with this item. Draft tags never are (R-06)."""
         return Tag.objects.published().filter(pk__in=self.tags.values("pk"))
 
+    def published_tag_names(self) -> list[str]:
+        """What the search entry holds of the tags this carries (D18)."""
+        return list(self.published_tags().values_list("title", flat=True))
+
 
 class Archival(models.Model):
     """An item held by an institution under a shelfmark, optionally with a text (`Document`)."""
@@ -315,7 +319,7 @@ class Archival(models.Model):
     def indexed_content(self) -> IndexedContent:
         """Title, description and the whole text of a typescript, note, secondary text or
         contextual material."""
-        assert isinstance(self, Publishable)
+        assert isinstance(self, Publishable) and isinstance(self, Taggable)
         text = self.document.text if self.document else ""
         work_ids, decades = search_filters(self.related_works())
         return IndexedContent(
@@ -326,6 +330,7 @@ class Archival(models.Model):
                 (self.description_text, Weight.DESCRIPTION),
                 (text, Weight.TEXT),
             ],
+            tags=self.published_tag_names(),
             work_ids=work_ids,
             decades=decades,
             has_scan=bool(self.document and self.document.scan),
@@ -491,6 +496,22 @@ class Tag(Publishable):
         verbose_name = _("tag")
         verbose_name_plural = _("tags")
 
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """Index again what carries the tag: its entry holds the tag's name while it is
+        published (D18)."""
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            carriers: list[Publishable | Fragment] = [
+                *Work.objects.filter(tags=self),
+                *Typescript.objects.filter(tags=self),
+                *Note.objects.filter(tags=self),
+                *SecondaryText.objects.filter(tags=self),
+                *ContextualMaterial.objects.filter(tags=self),
+                *Fragment.objects.filter(tags=self),
+            ]
+            for carrier in carriers:
+                carrier.update_search_entry()
+
     def get_absolute_url(self) -> str:
         return f"/tags/{self.slug}"
 
@@ -644,6 +665,7 @@ class Work(Publishable, Taggable):
             title=self.title,
             url=self.get_absolute_url(),
             texts=[(self.title, Weight.TITLE), (self.description_text, Weight.DESCRIPTION)],
+            tags=self.published_tag_names(),
             work_ids=[self.pk],
             decades=search_filters(Work.objects.filter(pk=self.pk))[1],
         )
@@ -1107,6 +1129,7 @@ class Fragment(BaseModel, Taggable):
                 title=str(self),
                 url=f"{owner.url}?fragment={self.pk}",
                 texts=[(self.quote, Weight.QUOTE), (self.description, Weight.DESCRIPTION)],
+                tags=self.published_tag_names(),
                 work_ids=owner.work_ids,
                 decades=owner.decades,
                 has_scan=owner.has_scan,

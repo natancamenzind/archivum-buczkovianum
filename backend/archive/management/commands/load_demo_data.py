@@ -262,7 +262,7 @@ class Command(BaseCommand):
 
         self.spread_tags(tags)
         # Index again with the works and tags added after saving, as the editor panel does.
-        for item in (note, letter, review, portrait):
+        for item in (*Typescript.objects.all(), note, letter, review, portrait):
             item.update_search_entry()
         Tag.update_search_entries()
         self.load_site_content()

@@ -4,6 +4,7 @@ import { SiteLayout } from "@/components/layout/SiteLayout";
 import { AboutPage } from "@/pages/AboutPage";
 import { HomePage } from "@/pages/HomePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
+import { SearchPage } from "@/pages/SearchPage";
 import { TypescriptsPage } from "@/pages/TypescriptsPage";
 import { WorksPage } from "@/pages/WorksPage";
 
@@ -17,6 +18,7 @@ export const routes: RouteObject[] = [
       { path: "works", element: <WorksPage /> },
       { path: "typescripts", element: <TypescriptsPage /> },
       { path: "about", element: <AboutPage /> },
+      { path: "search", element: <SearchPage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },

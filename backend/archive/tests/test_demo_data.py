@@ -22,9 +22,9 @@ from search.models import SearchEntry
 
 
 def index() -> set[tuple[object, ...]]:
-    """Every entry with what the filters and snippets use."""
+    """Every entry with what search, the filters and snippets use."""
     fields = ("entity_type", "entity_id", "url", "body", "work_ids", "decades", "has_scan")
-    rows = SearchEntry.objects.values_list(*fields)
+    rows = SearchEntry.objects.values_list(*fields, "vector")
     return {tuple(tuple(v) if isinstance(v, list) else v for v in row) for row in rows}
 
 
