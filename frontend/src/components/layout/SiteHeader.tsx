@@ -1,7 +1,8 @@
-import { type SubmitEvent, useRef } from "react";
+import { type SubmitEvent, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { BookIcon, SearchIcon } from "@/components/icons";
+import { SearchCombobox } from "@/components/SearchCombobox";
 import { copy } from "@/copy/pl";
 import { searchUrl } from "@/lib/search";
 
@@ -15,14 +16,14 @@ const LINK_CLASSES = `transition-colors duration-150 ease-out motion-reduce:tran
  * search field (R-07). On mobile the field becomes an icon linking to the search page.
  */
 export function SiteHeader() {
-  const input = useRef<HTMLInputElement>(null);
+  const [value, setValue] = useState("");
   const navigate = useNavigate();
 
   function search(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    void navigate(searchUrl(input.current?.value ?? ""));
+    void navigate(searchUrl(value));
     // The search page shows the query in its own field.
-    event.currentTarget.reset();
+    setValue("");
   }
 
   return (
@@ -47,16 +48,17 @@ export function SiteHeader() {
           role="search"
           aria-label={copy.search.label}
           onSubmit={search}
-          className="hidden items-center gap-8 md:flex"
+          className="relative hidden items-center gap-8 md:flex"
         >
           <SearchIcon className="size-16 shrink-0 text-icon" />
           {/* The design shows the field as its placeholder, in the navigation's colour. */}
-          <input
-            ref={input}
-            type="search"
+          <SearchCombobox
+            value={value}
+            onValueChange={setValue}
             aria-label={copy.search.label}
             placeholder={copy.search.label}
             className={`max-w-xs bg-transparent text-cousine-nawigacja text-foreground field-sizing-content placeholder:text-foreground [&::-webkit-search-cancel-button]:appearance-none ${FOCUS_CLASSES}`}
+            listClassName="right-0 mt-12 w-max min-w-full max-w-xs"
           />
         </form>
         <Link

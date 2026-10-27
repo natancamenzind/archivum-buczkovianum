@@ -2,6 +2,7 @@ import { type SubmitEvent, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { CloseIcon, SearchIcon } from "@/components/icons";
+import { SearchCombobox } from "@/components/SearchCombobox";
 import { copy } from "@/copy/pl";
 import { searchUrl } from "@/lib/search";
 
@@ -19,7 +20,8 @@ interface SearchFieldProps {
 
 /**
  * "Pole wyszukiwania" in design/components/: the search page's field, with "Wyczyść" while it
- * holds text. Submitting opens the search page for the trimmed query.
+ * holds text. Submitting opens the search page for the trimmed query; typing suggests works and
+ * tags (US-RA-17).
  */
 export function SearchField({ query, labelledBy, describedBy }: SearchFieldProps) {
   const [value, setValue] = useState(query);
@@ -45,20 +47,18 @@ export function SearchField({ query, labelledBy, describedBy }: SearchFieldProps
       role="search"
       aria-labelledby={labelledBy}
       onSubmit={search}
-      className="flex items-center gap-12 rounded-sm border border-accent-border bg-card py-8 pr-8 pl-16 has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-ring"
+      className="relative flex items-center gap-12 rounded-sm border border-accent-border bg-card py-8 pr-8 pl-16 has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-ring"
     >
       <SearchIcon className="size-16 shrink-0 text-icon" />
-      <input
+      <SearchCombobox
         ref={input}
-        type="search"
         value={value}
-        onChange={(event) => {
-          setValue(event.target.value);
-        }}
+        onValueChange={setValue}
         aria-label={copy.search.label}
         aria-describedby={describedBy}
         placeholder={copy.search.placeholder}
         className="min-w-0 flex-1 bg-transparent text-lora-tytul-elementu text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:appearance-none"
+        listClassName="inset-x-0 mt-4"
       />
       {value !== "" && (
         <button

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from rest_framework import serializers
 
 from archive.models import Tag, TeamMember, Typescript, Work
+from search.models import EntityType, SearchEntry
 
 
 @dataclass(frozen=True)
@@ -115,3 +116,17 @@ class TypescriptGroupSerializer(serializers.Serializer[TypescriptGroup]):
         help_text="The year of the first edition; null without editions.",
     )
     typescripts = TypescriptRowSerializer(many=True, help_text="By shelfmark, as numbers.")
+
+
+class SuggestionSerializer(serializers.ModelSerializer[SearchEntry]):
+    """A suggestion under the search fields (US-RA-17): a work or a tag, and its page."""
+
+    type = serializers.ChoiceField(
+        source="entity_type", choices=(EntityType.WORK, EntityType.TAG), read_only=True
+    )
+
+    class Meta:
+        model = SearchEntry
+        fields = ("type", "title", "url")
+        # Output only, so the schema marks every field as present.
+        read_only_fields = fields

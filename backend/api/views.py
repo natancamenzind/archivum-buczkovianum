@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
 
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from api.serializers import (
     AboutPage,
     AboutPageSerializer,
+    SuggestionSerializer,
     TagCountSerializer,
     TeamGroup,
     TypescriptGroup,
@@ -16,6 +17,7 @@ from api.serializers import (
     WorkCardSerializer,
 )
 from archive.models import SiteSettings, Tag, TeamMember, Typescript, Work
+from search.query import autocomplete
 
 
 @extend_schema(responses=AboutPageSerializer)
@@ -75,3 +77,15 @@ def typescripts(request: Request) -> Response:
         for work in Work.objects.published().filter(pk__in=list(by_work)).with_year()
     ]
     return Response([TypescriptGroupSerializer(group).data for group in groups])
+
+
+@extend_schema(
+    parameters=[OpenApiParameter("q", str, description="What the reader has typed so far.")],
+    responses=SuggestionSerializer(many=True),
+)
+@api_view(["GET"])
+def search_autocomplete(request: Request) -> Response:
+    """Suggestions under the search fields (US-RA-17): published works and tags whose title
+    contains `q`. Empty for a blank `q`."""
+    suggestions = autocomplete(request.query_params.get("q", ""))
+    return Response(SuggestionSerializer(suggestions, many=True).data)

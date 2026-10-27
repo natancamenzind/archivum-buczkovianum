@@ -1,7 +1,8 @@
 """Searching the index (docs/architecture.md, section 6; US-RA-15, US-RA-16).
 
 `search()` answers one search page in one call: the results grouped by type, and the counts of
-every tab and filter value over the same query.
+every tab and filter value over the same query. `autocomplete()` suggests works and tags while
+the reader types (US-RA-17).
 """
 
 from dataclasses import dataclass, replace
@@ -10,6 +11,7 @@ from django.conf import settings
 from django.contrib.postgres.search import SearchHeadline, SearchQuery, SearchRank
 from django.db import models
 from django.db.models import Case, Count, F, Func, QuerySet, Value, When
+from django.db.models.functions import Collate, Lower
 from django.utils.html import escape
 
 from archive.models import Tag
@@ -19,6 +21,11 @@ from search.models import EntityType, SearchEntry
 SUGGESTED_TAGS = 3
 # Control characters around matched terms in `ts_headline` output. Texts never contain them.
 MARK = ("\x02", "\x03")
+# How many suggestions the search fields show (US-RA-17).
+AUTOCOMPLETE_LIMIT = 8
+# A database with the "C" collation changes the case of ASCII letters only, so "ś" would not
+# match "Śmierć". ICU's root locale lowercases every letter and ships with PostgreSQL.
+CASE_FOLDING_COLLATION = "und-x-icu"
 
 
 class Tab(models.TextChoices):
@@ -186,3 +193,22 @@ def _value_counts(entries: QuerySet[SearchEntry], array_field: str) -> dict[int,
 
 def _suggested_tags() -> list[Tag]:
     return list(Tag.objects.published().in_use()[:SUGGESTED_TAGS])
+
+
+def autocomplete(text: str) -> list[SearchEntry]:
+    """Works and tags whose title contains `text`, in any case (US-RA-17). Titles that start
+    with it come first, then works before tags, then by title."""
+    text = text.strip().lower()
+    if not text:
+        return []
+    entries = SearchEntry.objects.annotate(
+        folded=Lower(Collate("title", CASE_FOLDING_COLLATION))
+    ).filter(entity_type__in=(EntityType.WORK, EntityType.TAG), folded__contains=text)
+    return list(
+        entries.order_by(
+            Case(When(folded__startswith=text, then=0), default=1),
+            Case(When(entity_type=EntityType.WORK, then=0), default=1),
+            "title",
+            "pk",
+        )[:AUTOCOMPLETE_LIMIT]
+    )

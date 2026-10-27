@@ -1,7 +1,7 @@
 from django.urls import path
 
 from api.editor_fragments import EditorFragmentDetail, EditorFragmentListCreate
-from api.views import about, tags, typescripts, works
+from api.views import about, search_autocomplete, tags, typescripts, works
 
 # The public, read-only API of the site's pages (docs/architecture.md, section 7).
 urlpatterns = [
@@ -9,6 +9,7 @@ urlpatterns = [
     path("works/", works, name="works"),
     path("typescripts/", typescripts, name="typescripts"),
     path("tags/", tags, name="tags"),
+    path("search/autocomplete/", search_autocomplete, name="search-autocomplete"),
     path("editor/fragments/", EditorFragmentListCreate.as_view(), name="editor-fragments"),
     path("editor/fragments/<int:pk>/", EditorFragmentDetail.as_view(), name="editor-fragment"),
 ]
