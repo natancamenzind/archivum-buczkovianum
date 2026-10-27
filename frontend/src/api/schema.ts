@@ -154,6 +154,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/tags/{slug}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The tag page (US-RA-07). A draft tag is not found (R-06). */
+        get: operations["tags_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/typescripts/": {
         parameters: {
             query?: never;
@@ -308,6 +325,9 @@ export interface components {
         /**
          * @description The fragment card (R-10), from a queryset with `with_number()`. Its source is the
          *     published item holding the fragment's document.
+         *
+         *     Without the context's `works` (the sources' published works by document ID, by year), each
+         *     card queries its source's works.
          */
         FragmentCard: {
             readonly id: number;
@@ -485,6 +505,27 @@ export interface components {
             /** Name */
             readonly title: string;
             readonly occurrences: number;
+        };
+        /**
+         * @description US-RA-07, from a tag with `with_occurrences()`. `description` is rich text: HTML,
+         *     sanitized when an editor saves it.
+         */
+        TagPage: {
+            slug: string;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            occurrences: number;
+            /** @description The works the tag refers to (US-RA-07 AC5), by first edition. `fragment_count` counts the main typescript's fragments that carry the tag (D19). */
+            works: components["schemas"]["WorkSummary"][];
+            /** @description Every visible fragment with the tag: by work, then text order. */
+            fragments: components["schemas"]["FragmentCard"][];
+            /** @description Notes with the tag on the whole note or a fragment, by title. */
+            notes: components["schemas"]["NoteCard"][];
+            /** @description Published related tags, by name. */
+            related: components["schemas"]["TagChip"][];
+            /** @description Those with the tag on the whole item, a fragment, or a work link. */
+            materials: components["schemas"]["ContextualMaterials"];
         };
         TeamGroup: {
             group: components["schemas"]["GroupEnum"];
@@ -826,6 +867,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TagCount"][];
+                };
+            };
+        };
+    };
+    tags_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagPage"];
                 };
             };
         };

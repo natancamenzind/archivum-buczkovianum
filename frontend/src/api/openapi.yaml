@@ -220,6 +220,28 @@ paths:
                 items:
                   $ref: '#/components/schemas/TagCount'
           description: ''
+  /api/tags/{slug}/:
+    get:
+      operationId: tags_retrieve
+      description: The tag page (US-RA-07). A draft tag is not found (R-06).
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - tags
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagPage'
+          description: ''
   /api/typescripts/:
     get:
       operationId: typescripts_list
@@ -513,6 +535,9 @@ components:
       description: |-
         The fragment card (R-10), from a queryset with `with_number()`. Its source is the
         published item holding the fragment's document.
+
+        Without the context's `works` (the sources' published works by document ID, by year), each
+        card queries its source's works.
       properties:
         id:
           type: integer
@@ -917,6 +942,58 @@ components:
       - occurrences
       - slug
       - title
+    TagPage:
+      type: object
+      description: |-
+        US-RA-07, from a tag with `with_occurrences()`. `description` is rich text: HTML,
+        sanitized when an editor saves it.
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          description: HTML.
+        occurrences:
+          type: integer
+        works:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkSummary'
+          description: The works the tag refers to (US-RA-07 AC5), by first edition.
+            `fragment_count` counts the main typescript's fragments that carry the
+            tag (D19).
+        fragments:
+          type: array
+          items:
+            $ref: '#/components/schemas/FragmentCard'
+          description: 'Every visible fragment with the tag: by work, then text order.'
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteCard'
+          description: Notes with the tag on the whole note or a fragment, by title.
+        related:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagChip'
+          description: Published related tags, by name.
+        materials:
+          allOf:
+          - $ref: '#/components/schemas/ContextualMaterials'
+          description: Those with the tag on the whole item, a fragment, or a work
+            link.
+      required:
+      - description
+      - fragments
+      - materials
+      - notes
+      - occurrences
+      - related
+      - slug
+      - title
+      - works
     TeamGroup:
       type: object
       properties:

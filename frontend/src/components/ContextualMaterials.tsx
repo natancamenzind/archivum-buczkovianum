@@ -59,10 +59,16 @@ function VisualItem({ item }: { item: VisualMaterial }) {
 /**
  * The contextual materials block (R-08, "Materiały kontekstowe" in design/components/): a
  * numbered list of secondary texts and other materials, and a gallery of visual materials.
- * Each page passes the items it includes. Empty parts, and an empty block, are not rendered
- * (R-02).
+ * Each page passes the items it includes, and a description of them unless they relate to a
+ * work. Empty parts, and an empty block, are not rendered (R-02).
  */
-export function ContextualMaterials({ materials }: { materials: Materials }) {
+export function ContextualMaterials({
+  materials,
+  description = copy.materials.description,
+}: {
+  materials: Materials;
+  description?: string;
+}) {
   const { texts, visuals } = materials;
   if (texts.length === 0 && visuals.length === 0) {
     return null;
@@ -70,7 +76,7 @@ export function ContextualMaterials({ materials }: { materials: Materials }) {
 
   return (
     <div className="flex flex-col gap-24">
-      <SectionHeader title={copy.materials.title} description={copy.materials.description} />
+      <SectionHeader title={copy.materials.title} description={description} />
       <div className="grid grid-cols-1 gap-24 md:grid-cols-2">
         {texts.length > 0 && (
           <Card className="gap-8 p-24 md:p-24">

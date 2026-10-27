@@ -153,6 +153,7 @@ class TestSchema:
                 "/api/search/autocomplete/",
                 "/api/secondary-texts/{id}/",
                 "/api/tags/",
+                "/api/tags/{slug}/",
                 "/api/typescripts/",
                 "/api/typescripts/{id}/",
                 "/api/works/",
