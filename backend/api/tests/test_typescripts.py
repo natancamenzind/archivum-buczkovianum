@@ -108,6 +108,18 @@ class TestTypescriptsEndpoint:
         # Assert
         assert titles(result) == [(work.title, ["C", "A", "B", "Bez sygnatury"])]
 
+    def test_us_ra_19_ac2_dotted_shelfmarks_compare_part_by_part(self, client: Client) -> None:
+        # Arrange
+        work = published_work(1947)
+        for title, shelfmark in (("C", "1618.10"), ("B", "1618.9"), ("A", "1618")):
+            published_typescript(work, title=title, shelfmark=shelfmark)
+
+        # Act
+        result = groups(client)
+
+        # Assert
+        assert titles(result) == [(work.title, ["A", "B", "C"])]
+
     def test_us_ra_19_ac2_drafts_are_left_out(self, client: Client) -> None:
         # Arrange
         work = published_work(1947, title="Wertepy")
