@@ -17,9 +17,41 @@ env:
   DATABASE_URL: postgres://postgres:postgres@localhost:5432/buczkovianum
 
 jobs:
+  # Decides which side's checks run. A job skipped by its `if` counts as passed
+  # for required status checks. Gate on `!= 'false'` so the checks still run if
+  # this job fails and leaves its outputs empty.
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - Makefile
+              - .github/workflows/ci.yml
+              - backend/**
+              - pyproject.toml
+              - uv.lock
+              - .python-version
+            frontend:
+              - Makefile
+              - .github/workflows/ci.yml
+              - frontend/**
+
   # Job names are referenced by the branch protection rule on main. Renaming one
   # requires updating the required status checks.
+  # Frontend jobs (fe/scaffold) gate on `needs.changes.outputs.frontend`.
   lint:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +62,8 @@ jobs:
       - run: make lint-backend
 
   typecheck:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,6 +74,8 @@ jobs:
       - run: make typecheck-backend
 
   test:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
     runs-on: ubuntu-latest
     services:
       # Architecture §1 targets PostgreSQL 19; tests never run on SQLite.
