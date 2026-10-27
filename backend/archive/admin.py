@@ -6,6 +6,7 @@ from typing import Any, ClassVar
 from django.contrib import admin
 from django.db import models
 from django.db.models import QuerySet
+from django.forms import ModelForm
 from django.http import HttpRequest
 
 from archive.models import (
@@ -15,8 +16,8 @@ from archive.models import (
     Fragment,
     Institution,
     MaterialWorkLink,
-    MediaContent,
     Note,
+    Publishable,
     SecondaryText,
     SecondaryTextWorkLink,
     SiteSettings,
@@ -30,7 +31,20 @@ from archive.models import (
 admin.site.disable_action("delete_selected")
 
 
-class MediaContentAdmin[M: MediaContent](admin.ModelAdmin[M]):
+class SearchIndexedAdmin[M: Publishable | Fragment](admin.ModelAdmin[M]):
+    def save_related(
+        self, request: HttpRequest, form: ModelForm[M], formsets: Any, change: bool
+    ) -> None:
+        """Index again once tags, works and work links are saved: `save()` ran before them.
+
+        Tags are indexed again too: their entries list the works they refer to.
+        """
+        super().save_related(request, form, formsets, change)
+        form.instance.update_search_entry()
+        Tag.update_search_entries()
+
+
+class MediaContentAdmin[M: Note | ContextualMaterial](SearchIndexedAdmin[M]):
     # Django 6.0 makes https the default scheme for URLs typed without one; opt in now.
     formfield_overrides: ClassVar[dict[type[models.Field[Any, Any]], dict[str, Any]]] = {
         models.URLField: {"assume_scheme": "https"},
@@ -66,7 +80,7 @@ class EditionInline(admin.TabularInline[Edition, Work]):
 
 
 @admin.register(Work)
-class WorkAdmin(admin.ModelAdmin[Work]):
+class WorkAdmin(SearchIndexedAdmin[Work]):
     list_display = ("title", "genre", "status", "updated_at")
     list_filter = ("status",)
     search_fields = ("title",)
@@ -76,7 +90,7 @@ class WorkAdmin(admin.ModelAdmin[Work]):
 
 
 @admin.register(Typescript)
-class TypescriptAdmin(admin.ModelAdmin[Typescript]):
+class TypescriptAdmin(SearchIndexedAdmin[Typescript]):
     list_display = ("title", "work", "shelfmark", "is_main", "status", "updated_at")
     list_filter = ("status", "is_main", "work")
     search_fields = ("title", "shelfmark")
@@ -101,7 +115,7 @@ class SecondaryTextWorkLinkInline(admin.TabularInline[SecondaryTextWorkLink, Sec
 
 
 @admin.register(SecondaryText)
-class SecondaryTextAdmin(admin.ModelAdmin[SecondaryText]):
+class SecondaryTextAdmin(SearchIndexedAdmin[SecondaryText]):
     list_display = ("title", "kind", "author", "status", "updated_at")
     list_filter = ("status", "kind")
     search_fields = ("title", "author")
@@ -143,7 +157,7 @@ class DocumentAdmin(admin.ModelAdmin[Document]):
 
 
 @admin.register(Fragment)
-class FragmentAdmin(admin.ModelAdmin[Fragment]):
+class FragmentAdmin(SearchIndexedAdmin[Fragment]):
     list_display = ("__str__", "document", "location", "is_featured", "needs_review")
     list_filter = ("needs_review", "is_featured")
     list_select_related = tuple(f"document__{owner}" for owner in Document.owner_accessors())

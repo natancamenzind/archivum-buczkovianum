@@ -15,7 +15,10 @@ TypeScript for the public website. No Docker, Celery, Redis or Elasticsearch.
 ## Getting started
 
 You need Python 3.12+, [uv](https://docs.astral.sh/uv/), Node.js 22+ with npm, and a running
-PostgreSQL server.
+PostgreSQL server. Search uses the `polish` text search configuration of PostgreSQL 19; check
+with `\dF polish` in `psql`. On an older server, set `SEARCH_TS_CONFIG=simple` in `.env`: everything
+works except Polish inflection (`potoku` no longer finds `potok`). After changing it, run
+`uv run python backend/manage.py rebuild_search_index`: stored entries keep the old configuration.
 
 ```bash
 make setup                 # install Python and npm dependencies, and pre-commit hooks

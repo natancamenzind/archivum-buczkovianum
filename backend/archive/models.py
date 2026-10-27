@@ -5,7 +5,7 @@ in field definitions, database constraints, `clean()` and `save()`. There are no
 """
 
 from bisect import bisect_right
-from collections.abc import Collection
+from collections.abc import Callable, Collection
 from dataclasses import dataclass
 from typing import Any, ClassVar, Self
 
@@ -17,6 +17,8 @@ from django.db import models, transaction
 from django.db.models import Expression, F, Func, OuterRef, Q, Subquery, Value
 from django.utils.text import Truncator
 from django.utils.translation import gettext_lazy as _
+
+from search.models import EntityType, IndexedContent, SearchEntry, Weight
 
 IMAGE_EXTENSIONS = FileExtensionValidator(["jpg", "jpeg", "png", "webp"])
 PDF_EXTENSION = FileExtensionValidator(["pdf"])
@@ -111,12 +113,42 @@ class Publishable(BaseModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
+    search_type: ClassVar[EntityType]
+    # Defined by every concrete model.
+    get_absolute_url: Callable[[], str]
+    indexed_content: Callable[[], IndexedContent]
+
     class Meta:
         abstract = True
         ordering = ("title",)
 
     def __str__(self) -> str:
         return self.title
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            self.update_search_entry()
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        with transaction.atomic():
+            SearchEntry.remove(self.search_type, self.pk)
+            result = super().delete(*args, **kwargs)
+            Tag.update_search_entries()
+        return result
+
+    def update_search_entry(self) -> None:
+        """Index a published entity, unindex a draft (architecture section 6).
+
+        The fragments of an item's text follow it, since their visibility does.
+        """
+        content = self.indexed_content() if self.status == Status.PUBLISHED else None
+        if content is None:
+            SearchEntry.remove(self.search_type, self.pk)
+        else:
+            SearchEntry.write(self.search_type, self.pk, content)
+        if isinstance(self, Archival):
+            self.update_fragment_entries(content)
 
 
 class Taggable(models.Model):
@@ -140,6 +172,7 @@ class Archival(models.Model):
     document_required = False
     # The reverse name from `Work` to this kind of item.
     works_lookup: ClassVar[str]
+    _indexed_document_id: int | None = None
 
     institution = models.ForeignKey(
         "Institution",
@@ -176,6 +209,55 @@ class Archival(models.Model):
     def related_works(self) -> "WorkQuerySet":
         """The published works this item relates to, by first edition (R-03)."""
         return Work.objects.published().filter(**{self.works_lookup: self}).with_year()
+
+    def indexed_content(self) -> IndexedContent:
+        """Title, description and the whole text of a typescript, note, secondary text or
+        contextual material."""
+        assert isinstance(self, Publishable)
+        text = self.document.text if self.document else ""
+        work_ids, decades = search_filters(self.related_works())
+        return IndexedContent(
+            title=self.title,
+            url=self.get_absolute_url(),
+            texts=[
+                (self.title, Weight.TITLE),
+                (self.description, Weight.DESCRIPTION),
+                (text, Weight.TEXT),
+            ],
+            work_ids=work_ids,
+            decades=decades,
+            has_scan=bool(self.document and self.document.scan),
+            has_text=bool(text),
+        )
+
+    def update_fragment_entries(self, owner: IndexedContent | None) -> None:
+        """Index the fragments of this item's text while the item is published (D4).
+
+        `owner` is the item's own entry, or None for a draft. The fragments of a text the item
+        no longer has leave the index: that text has no owner now.
+        """
+        if self._indexed_document_id not in (None, self.document_id):
+            SearchEntry.remove_fragments(
+                Fragment.objects.filter(document_id=self._indexed_document_id)
+            )
+        self._indexed_document_id = self.document_id
+        if self.document is None:
+            return
+        fragments = self.document.fragments.all()
+        if owner is None:
+            SearchEntry.remove_fragments(fragments)
+            return
+        for fragment in fragments:
+            fragment.write_search_entry(owner)
+
+    @classmethod
+    def from_db(
+        cls, db: str | None, field_names: Collection[str], values: Collection[Any], **kwargs: Any
+    ) -> Self:
+        """Remember the stored text, to unindex its fragments if the item gets another one."""
+        item = super().from_db(db, field_names, values, **kwargs)
+        item._indexed_document_id = item.__dict__.get("document_id")
+        return item
 
     def clean(self) -> None:
         super().clean()
@@ -271,7 +353,10 @@ class Institution(BaseModel):
 class TagQuerySet(PublishableQuerySet["Tag"]):
     def with_occurrences(self) -> Self:
         """Annotate `occurrences`: the visible fragments, published items and visible work links
-        carrying the tag (glossary, "Occurrence")."""
+        carrying the tag (glossary, "Occurrence").
+
+        It ignores the tag's own status: public callers chain `published()` first.
+        """
         carriers: list[models.QuerySet[Any]] = [
             Fragment.objects.visible(),
             Work.objects.published(),
@@ -286,6 +371,14 @@ class TagQuerySet(PublishableQuerySet["Tag"]):
         for carrier in carriers:
             occurrences += count_of(carrier.filter(tags=OuterRef("pk")))
         return self.annotate(occurrences=occurrences)
+
+    def in_use(self) -> Self:
+        """Tags with at least one occurrence, the most frequent first (US-RA-15 AC8)."""
+        return (
+            self.with_occurrences()
+            .filter(occurrences__gt=0)
+            .order_by(F("occurrences").desc(), "title")
+        )
 
 
 class Tag(Publishable):
@@ -306,8 +399,27 @@ class Tag(Publishable):
     # Set only by `TagQuerySet.with_occurrences()`.
     occurrences: int
 
+    search_type = EntityType.TAG
+
     def get_absolute_url(self) -> str:
         return f"/tags/{self.slug}"
+
+    def indexed_content(self) -> IndexedContent:
+        work_ids, decades = search_filters(Work.objects.referred_to_by(self))
+        return IndexedContent(
+            title=self.title,
+            url=self.get_absolute_url(),
+            texts=[(self.title, Weight.TITLE), (self.description, Weight.QUOTE)],
+            work_ids=work_ids,
+            decades=decades,
+        )
+
+    @classmethod
+    def update_search_entries(cls) -> None:
+        """Index every published tag again. A tag's entry lists the works it refers to through
+        whatever carries it, so a change to any tagged item, link or work can change it."""
+        for tag in cls.objects.published():
+            tag.update_search_entry()
 
     def usages(self, limit: int = 20) -> list[models.Model]:
         """Up to `limit` items carrying this tag. A tag in use cannot be deleted (US-WR-08 AC3)."""
@@ -328,6 +440,13 @@ class Tag(Publishable):
                 set(usages),
             )
         return super().delete(*args, **kwargs)
+
+
+def search_filters(works: "WorkQuerySet") -> tuple[list[int], list[int]]:
+    """The published works among `works`, and the decades of their first editions (e.g. 1940),
+    as the search filters store them (US-RA-16 AC2)."""
+    years = {work.pk: work.year for work in works.published().with_year()}
+    return list(years), sorted({year // 10 * 10 for year in years.values() if year is not None})
 
 
 def first_edition_year(work: str = "pk") -> Subquery:
@@ -371,8 +490,51 @@ class Work(Publishable, Taggable):
     # Set only by `WorkQuerySet.with_year()`.
     year: int | None
 
+    search_type = EntityType.WORK
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            self.update_related_search_entries(self.related_items())
+
     def get_absolute_url(self) -> str:
         return f"/works/{self.slug}"
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        items = self.related_items()
+        with transaction.atomic():
+            result = super().delete(*args, **kwargs)
+            self.update_related_search_entries(items)
+        return result
+
+    def related_items(self) -> list[Publishable]:
+        return [
+            *self.typescripts.all(),
+            *self.notes.all(),
+            *self.secondary_texts.all(),
+            *self.materials.all(),
+        ]
+
+    def update_search_entries(self) -> None:
+        """Index the work and what relates to it again, e.g. after its year changed."""
+        self.update_search_entry()
+        self.update_related_search_entries(self.related_items())
+
+    def update_related_search_entries(self, items: list[Publishable]) -> None:
+        """Index again what relates to this work. The search filters hold its id while it is
+        published, and the decade of its first edition."""
+        for item in items:
+            item.update_search_entry()
+        Tag.update_search_entries()
+
+    def indexed_content(self) -> IndexedContent:
+        return IndexedContent(
+            title=self.title,
+            url=self.get_absolute_url(),
+            texts=[(self.title, Weight.TITLE), (self.description, Weight.DESCRIPTION)],
+            work_ids=[self.pk],
+            decades=search_filters(Work.objects.filter(pk=self.pk))[1],
+        )
 
 
 class Edition(BaseModel):
@@ -389,10 +551,23 @@ class Edition(BaseModel):
     def __str__(self) -> str:
         return f"{self.publisher}, {self.place} {self.year}"
 
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """The work's year may change, and with it the decades in the search index."""
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            self.work.update_search_entries()
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        with transaction.atomic():
+            result = super().delete(*args, **kwargs)
+            self.work.update_search_entries()
+        return result
+
 
 class Typescript(Publishable, Taggable, Archival):
     document_required = True
     works_lookup = "typescripts"
+    search_type = EntityType.TYPESCRIPT
 
     work = models.ForeignKey(Work, on_delete=models.PROTECT, related_name="typescripts")
     is_main = models.BooleanField(
@@ -433,6 +608,7 @@ class Typescript(Publishable, Taggable, Archival):
 
 class Note(Publishable, Taggable, MediaContent):
     works_lookup = "notes"
+    search_type = EntityType.NOTE
 
     works = models.ManyToManyField(Work, related_name="notes")
 
@@ -452,6 +628,7 @@ class SecondaryText(Publishable, Taggable, Archival):
 
     document_required = True
     works_lookup = "secondary_texts"
+    search_type = EntityType.SECONDARY_TEXT
 
     kind = models.CharField(max_length=20, choices=Kind.choices)
     author = models.CharField(max_length=255, blank=True)
@@ -473,6 +650,7 @@ class SecondaryText(Publishable, Taggable, Archival):
 
 class ContextualMaterial(Publishable, Taggable, MediaContent):
     works_lookup = "materials"
+    search_type = EntityType.MATERIAL
 
     works = models.ManyToManyField(Work, through="MaterialWorkLink", related_name="materials")
 
@@ -564,8 +742,17 @@ class Document(BaseModel):
             if text_changed:
                 for fragment in self.fragments.all():
                     fragment.reanchor(self.text)
+            owner = self.owner
+            if isinstance(owner, Publishable):
+                owner.update_search_entry()
         self._saved_text = self.text
         self._saved_page_offsets = list(self.page_offsets)
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        """Unindex the fragments first: the database deletes them without `Fragment.delete()`."""
+        with transaction.atomic():
+            SearchEntry.remove_fragments(self.fragments.all())
+            return super().delete(*args, **kwargs)
 
     @classmethod
     def from_db(
@@ -653,7 +840,11 @@ class FragmentQuerySet(models.QuerySet["Fragment"]):
         return self.annotate(number=count_of(earlier) + 1)
 
     def preview(self) -> Preview["Fragment"]:
-        """Featured fragments first, then text order (R-09)."""
+        """Featured fragments first, then text order (R-09).
+
+        Fragments of different documents follow document IDs, not a domain order. A preview
+        across documents passes its own order to `preview()` instead.
+        """
         return preview(self.order_by("-is_featured", "document_id", "start", "end", "pk"))
 
 
@@ -697,7 +888,40 @@ class Fragment(BaseModel, Taggable):
     def save(self, *args: Any, **kwargs: Any) -> None:
         if not self.quote:
             self.quote = self.document.text[self.start : self.end]
-        super().save(*args, **kwargs)
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            self.update_search_entry()
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        with transaction.atomic():
+            SearchEntry.remove(EntityType.FRAGMENT, self.pk)
+            result = super().delete(*args, **kwargs)
+            Tag.update_search_entries()
+        return result
+
+    def update_search_entry(self) -> None:
+        """Index the fragment while it is visible: its document's owner is published."""
+        owner = self.document.owner
+        if isinstance(owner, Publishable) and owner.status == Status.PUBLISHED:
+            self.write_search_entry(owner.indexed_content())
+        else:
+            SearchEntry.remove(EntityType.FRAGMENT, self.pk)
+
+    def write_search_entry(self, owner: IndexedContent) -> None:
+        """Index the fragment under its owner: a link into the owner's page, and its filters."""
+        SearchEntry.write(
+            EntityType.FRAGMENT,
+            self.pk,
+            IndexedContent(
+                title=str(self),
+                url=f"{owner.url}?fragment={self.pk}",
+                texts=[(self.quote, Weight.QUOTE), (self.description, Weight.DESCRIPTION)],
+                work_ids=owner.work_ids,
+                decades=owner.decades,
+                has_scan=owner.has_scan,
+                has_text=True,
+            ),
+        )
 
     @property
     def start_page(self) -> int | None:
@@ -730,7 +954,8 @@ class Fragment(BaseModel, Taggable):
             self.start, self.end = position, position + len(self.quote)
         self.needs_review = True
         if (self.start, self.end, self.needs_review) != before:
-            self.save(update_fields=["start", "end", "needs_review", "updated_at"])
+            # Skips `Fragment.save()`'s index write: `Document.save()` indexes every fragment next.
+            super().save(update_fields=["start", "end", "needs_review", "updated_at"])
 
 
 # --- Site content -----------------------------------------------------------------------
