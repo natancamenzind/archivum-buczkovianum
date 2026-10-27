@@ -6,24 +6,29 @@ If the two disagree, the stories win. Fix this file in the same PR.
 
 ## 1. Where we are
 
-Done:
+Updated after Phase 1, on 2026-10-27.
 
-- Django skeleton, settings and CI (backend only).
-- Domain models and admin (PR #5). They already meet US-WR-02, US-WR-10, US-WR-11 and US-WR-14, and parts of the other WR stories.
+On `main`:
+
+- Django skeleton, settings, CI for both sides, run only for the side that changed (#6, #14).
+- Domain models and admin (#5). They already meet US-WR-02, US-WR-10, US-WR-11 and US-WR-14, and parts of the other WR stories.
 - Figma export in `design/`.
+- Step 1, frontend scaffold and `site_shell` (#11). Step 2, shared queries (#10). Step 4, re-anchoring (#9).
+
+**Not on `main` yet:** steps 3 (search index, #12) and 5 (demo data, #13). They were stacked PRs. Each was merged into its base branch after that base had already been squash-merged, so their code is only on `core/search-index`. That branch conflicts with `main` in `archive/models.py` (step 4's `reanchor()`) and `docs/plan.md`. Step 3L lands them.
 
 Missing:
 
-- the `search`, `api` and `site_shell` apps;
-- the whole frontend (no `frontend/`, and no frontend targets in the Makefile or CI);
-- uploading a text on an item's form, the OCR page check, rich text, the tagger.
+- the `api` app (no page endpoint yet);
+- every public page;
+- uploading a text on an item's form, the OCR page check, rich text, the tagger, the editors group.
 
 ## 2. How we work
 
-1. **Pick the first open step** in section 4 whose "Needs" are merged. Steps in the same phase without a dependency between them can run in parallel.
-2. **One step = one branch = one PR.** The branch name is in the table. A page story's PR contains its endpoint, its page and their tests (D11). The core owner reviews the core part (CODEOWNERS).
+1. **Pick the first open step** in section 4 whose "Needs" are on `main`. Steps in the same phase without a dependency between them can run in parallel. Step numbers are IDs, not order. A step added later takes a free ID (e.g. 3L).
+2. **One step = one branch = one PR, based on `main`.** Do not stack PRs. If a step needs an unmerged one, wait for it to merge. A PR merged into another feature branch does not count as done (see 3L). The branch name is in the table. A page story's PR contains its endpoint, its page and their tests (D11). The core owner reviews the core part (CODEOWNERS).
 3. **Brief the agent** with the step's row and its story. For example: *"Implement step 21 of `docs/plan.md` (US-RA-04). Read AGENTS.md, the story, architecture §… and the design files listed."*
-4. **Definition of done** is the one in `AGENTS.md`. In the same PR, tick the step's box in section 4.
+4. **Definition of done** is the one in `AGENTS.md`. In the same PR, tick the step's box in section 4. Notes a PR leaves for later steps go into those steps' rows in this file, in the same PR, not only into the PR description.
 5. **When in doubt, stop and ask.** This applies to an ambiguous story, a conflict with the docs, a new dependency, or a change to `docs/architecture.md`. Do not guess.
 6. A human reviews and merges. An agent never merges.
 
@@ -45,52 +50,72 @@ Answered by the project owner on 2026-10-26. Each one lands in the step named in
 | D10 | Architecture §2 says frontend tests are "`tsc` + ESLint", but AGENTS.md requires Vitest with 90% coverage. | **AGENTS.md wins.** Fix architecture §2. | 1 |
 | D11 | AGENTS.md says frontend work uses the API as it is. Who builds a page's endpoint? | **One PR per page story**, with its endpoint, page and tests. The core owner reviews the backend part. AGENTS.md is updated (done in the PR that adds this plan). | 13+ |
 
+Answered in Phase 1 PRs on 2026-10-27:
+
+| # | Question | Decision | Step |
+|---|----------|----------|------|
+| D12 | Can re-anchoring clear `needs_review` when a quote comes back? (#9) | **No.** Only the editor clears it. Architecture §4.4 says so. | 4 (done) |
+| D13 | The schema had no paths, so step 1 made `/api/schema/` document itself. (#11) | **Temporary.** The first page endpoint to merge removes it, together with the placeholder home page and its tests. | 14 or 15 |
+| D14 | Frontend dependencies D2 did not name. (#11) | **Approved:** `clsx`, `tailwind-merge`, `@vitest/coverage-v8`, `jsdom`, `@testing-library/jest-dom`, and the Vite/ESLint helpers. TypeScript is pinned to 5.9 until typescript-eslint supports 6. | 1 (done) |
+| D15 | A CI action to skip the side that didn't change. (#14) | **Approved:** `dorny/paths-filter@v3`. | done |
+
+Answered by the project owner on 2026-10-27, after the Phase 1 refinement:
+
+| # | Question | Decision | Step |
+|---|----------|----------|------|
+| D16 | Licence of the real *Czarny potok* excerpt that #13 committed (pages 5–9 of the book, scan and text) to a public MIT repo. | **Placeholder text only.** The real excerpt is removed and the demo uses invented text, like the other typescripts. | 3L |
+| D17 | Search needs PostgreSQL 19 (`polish`), but local machines ran 14. | **`SEARCH_TS_CONFIG` comes from the environment**, default `polish`. CI and production keep `polish`. A machine without PG 19 sets `simple` and loses only inflection. README says how to install PG 19. One line in architecture §6. | 3L |
+| D18 | Does search find items by the tags they carry? US-RA-14 AC2 promises "tytuły, opisy, transkrypcje i tagi". | **Yes.** The names of a fragment's or item's published tags go into its own entry, at weight B. Saving a tag re-indexes what carries it. Update architecture §6. | 37 |
+| D19 | What is "a work's fragment count" (US-RA-01 AC3, US-RA-18, US-RA-08 AC2, US-RA-07 AC2)? | **The main typescript's visible fragments.** On the tag page: the main typescript's fragments that carry the tag. Write it into US-RA-01 AC3 (`user-stories.md` and `user-stories.pl.md`). | 15 |
+| D20 | Where do the previews' "Wszystkie fragmenty (n)" links go? | **No new page.** On the typescript page, the link expands the list in place. On the work page, it opens the main typescript page with that list expanded. Write it into R-09 (both story files). | 19 |
+
 ## 4. Steps
 
 ### Phase 1 — Foundations
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
-| [ ] | 1 | FE: frontend scaffold and serving | `fe/scaffold` | — | `frontend/` with Vite, React, TS strict, React Router, TanStack Query, Tailwind on `design/tokens/tokens.css`, shadcn/ui, fonts, Vitest + Testing Library + MSW + axe, ESLint, Prettier. `copy/pl.ts` with the Polish plural helper. The generated client from `make api-client`. `site_shell`: Django serves `index.html` for every non-API URL, and Vite proxies in dev. Makefile `dev`/`test`/`lint`/`typecheck`/`api-client` cover both sides. CI runs the frontend jobs. One placeholder route proves the chain works. `.github/CODEOWNERS` (D8). Fix architecture §2 (D10). |
-| [x] | 2 | CORE: shared queries | `core/shared-queries` | — | Querysets in `archive`, reused by every endpoint and by search: published only (R-06), visible fragments (owner published, D4), published tags only, the year of a work, tag occurrences, the works an item relates to, and the works a tag refers to (US-RA-07 AC5). The preview helper with `PREVIEW_LIMIT` (§4.5), and fragment number and start page. Tests only, no endpoints. |
 | [x] | 1 | FE: frontend scaffold and serving | `fe/scaffold` | — | `frontend/` with Vite, React, TS strict, React Router, TanStack Query, Tailwind on `design/tokens/tokens.css`, shadcn/ui, fonts, Vitest + Testing Library + MSW + axe, ESLint, Prettier. `copy/pl.ts` with the Polish plural helper. The generated client from `make api-client`. `site_shell`: Django serves `index.html` for every non-API URL, and Vite proxies in dev. Makefile `dev`/`test`/`lint`/`typecheck`/`api-client` cover both sides. CI runs the frontend jobs. One placeholder route proves the chain works. `.github/CODEOWNERS` (D8). Fix architecture §2 (D10). |
-| [ ] | 2 | CORE: shared queries | `core/shared-queries` | — | Querysets in `archive`, reused by every endpoint and by search: published only (R-06), visible fragments (owner published, D4), published tags only, the year of a work, tag occurrences, the works an item relates to, and the works a tag refers to (US-RA-07 AC5). The preview helper with `PREVIEW_LIMIT` (§4.5), and fragment number and start page. Tests only, no endpoints. |
-| [ ] | 3 | CORE: search index | `core/search-index` | 2 | The `backend/search/` app: `SearchEntry`, writes and removals from `save()`/`delete()` (§6), `Edition` saves its work, `rebuild_search_index`, and a test that the `polish` config exists. A query service with tabs, filters, facet counts, sorting, snippets and the "no results" tags. No endpoint yet. Meets US-WR-04 AC4. |
+| [x] | 2 | CORE: shared queries | `core/shared-queries` | — | Querysets in `archive`, reused by every endpoint and by search: published only (R-06), visible fragments (owner published, D4), published tags only, the year of a work, tag occurrences, the works an item relates to, and the works a tag refers to (US-RA-07 AC5). The preview helper with `PREVIEW_LIMIT` (§4.5), and fragment number and start page. Tests only, no endpoints. |
+| [ ] | 3 | CORE: search index | `core/search-index` | 2 | The `backend/search/` app: `SearchEntry`, writes and removals from `save()`/`delete()` (§6), `Edition` saves its work, `rebuild_search_index`, and a test that the `polish` config exists. A query service with tabs, filters, facet counts, sorting, snippets and the "no results" tags. No endpoint yet. Meets US-WR-04 AC4. **Reviewed and merged as #12, but only into `core/shared-queries`; lands with 3L.** |
 | [x] | 4 | US-WR-09 AC4: flag every moved fragment | `us-wr-09-reanchor` | — | `Fragment.reanchor()` sets `needs_review` whenever it moves a fragment (D1). Update architecture §4.4. |
-| [ ] | 5 | DEV: demo data | `dev/demo-data` | 3 | `manage.py load_demo_data` loads the sample data from `design/rules.md`, including small committed PDF and OCR fixtures. It uses `save()` only, so the search index is filled. Every later PR is verified by hand with it. |
+| [ ] | 5 | DEV: demo data | `dev/demo-data` | 3 | `manage.py load_demo_data` loads the sample data from `design/rules.md`, including small committed PDF and OCR fixtures. It uses `save()` only, so the search index is filled. Every later PR is verified by hand with it. **Merged as #13, but only into `core/search-index`; lands with 3L.** |
+| [ ] | 3L | CORE: land search index and demo data | `core/land-search-index` | 4 | Merge `main` into `core/search-index` and open the PR against `main`. Resolve `Fragment.reanchor()`: keep step 4's body (D1, D12) and step 3's index write after it. Then: D16 (replace the real *Czarny potok* excerpt with placeholder text and drop its README note), D17 (`SEARCH_TS_CONFIG` from the environment). #13's review findings: the empty-database guard is tested for all five models, including `Institution` and `SiteSettings`. #10's review nits: `with_occurrences()` and `preview()` docstrings say callers chain `.published()` and pass their own cross-document order. Architecture: drop §10.3 (answered by D2). Ticks 3 and 5. |
+| [ ] | 36 | CI: frontend build and API client check | `ci/frontend-build` | — | CI runs `npm run build`, because `tsc --noEmit` misses what only fails at build time: the token plugin reading `design/tokens/tokens.css`, asset paths, the `/static/` base. CI also runs `make api-client` and fails if `frontend/src/api/` changed. Both are #11 review findings. |
+| [ ] | 37 | CORE: tags in search entries | `core/search-tags` | 3L | D18: a fragment's or item's published tag names go into its search entry at weight B. Saving, publishing or unpublishing a tag re-indexes what carries it. Update architecture §6. A test that "dezerter" finds a fragment tagged Dezerter whose quote lacks the word. |
 
 ### Phase 2 — Editor panel (can run in parallel with Phase 3)
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
-| [ ] | 6 | US-WR-04: typescript text upload | `us-wr-04-typescript-upload` | 3 | Scan and OCR file on the typescript form, with the page-count check and its message (AC2). The upload is built so steps 7–9 can reuse it. |
+| [ ] | 6 | US-WR-04: typescript text upload | `us-wr-04-typescript-upload` | 3L | Scan and OCR file on the typescript form, with the page-count check and its message (AC2). The upload is built so steps 7–9 can reuse it. Its `Document` is created and replaced from the item's form. The editor never opens a `Document` form or picks one by ID; the Document admin leaves the editors' menu. Try a full-length OCR text: PostgreSQL caps a `tsvector` at 1 MB, and the save must not fail on a whole novel (#16). |
 | [ ] | 7 | US-WR-05: note content | `us-wr-05-note-content` | 6 | All five content kinds on the note form, with OCR or plain text entered on that form. |
 | [ ] | 8 | US-WR-06: secondary text text | `us-wr-06-secondary-text` | 6 | OCR or plain text on the secondary text form. |
 | [ ] | 9 | US-WR-07: contextual material content | `us-wr-07-material-content` | 6 | As in step 7, for contextual materials. |
-| [ ] | 10 | CORE: rich text (US-WR-03, 08, 12) | `core/rich-text` | 3 | `ProseEditorField` for descriptions, with the mypy override (D3),, the About project text and the introductions. Search strips HTML from `body`. |
-| [ ] | 11 | US-WR-09: tagger | `us-wr-09-tagger` | 4 | The tagger admin view (§5) and `/api/editor/fragments/`. Offered only for the main typescript and for notes, secondary texts and materials that have a text. |
-| [ ] | 12 | US-WR-01: editors group | `us-wr-01-editors` | — | A data migration for the "Redaktorzy" group, and tests for both ACs. |
+| [ ] | 10 | CORE: rich text (US-WR-03, 08, 12) | `core/rich-text` | 3L | `ProseEditorField` for descriptions, with the mypy override (D3), the About project text and the introductions. Search strips HTML from `body`. |
+| [ ] | 11 | US-WR-09: tagger | `us-wr-09-tagger` | 3L, 6 | The tagger admin view (§5) and `/api/editor/fragments/`. Offered only for the main typescript and for notes, secondary texts and materials that have a text. The endpoint writes outside the admin, so after setting a fragment's tags it calls `fragment.update_search_entry()` and `Tag.update_search_entries()` (#12). Consider giving the work-link models their own index writes in `save()`/`delete()` instead (#16). A "Taguj fragmenty" link on the item's form opens the tagger. |
+| [ ] | 12 | US-WR-01: editors group | `us-wr-01-editors` | — | A data migration for the "Redaktorzy" group, and tests for both ACs. If another archive migration merges first, renumber this one. |
 
 ### Phase 3 — Public site: shell and simple pages
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
-| [ ] | 13 | US-RA-03: header, navigation, footer | `us-ra-03-footer` | 1 | The page shell from R-07 on desktop and mobile, the active navigation item. The funding note is hardcoded in `copy/pl.ts`; in this PR, update the stories, remove `SiteSettings.funding_note` and update architecture §4.2 (D7). The header search field comes in step 28. |
-| [ ] | 14 | US-RA-13: About | `us-ra-13-about` | 13 | `/api/about/`, the About page. |
-| [ ] | 15 | US-RA-18: works list | `us-ra-18-works-list` | 2, 13 | `/api/works/`, the work card, the list page. |
-| [ ] | 16 | US-RA-20: tags list | `us-ra-20-tags-list` | 2, 13 | `/api/tags/`, the deterministic tag cloud, the alphabetical index. |
-| [ ] | 17 | US-RA-01: home page | `us-ra-01-home` | 15, 16 | `/api/home/`, the hero with counts and portrait, works, tag cloud. |
-| [ ] | 18 | US-RA-19: typescripts list | `us-ra-19-typescripts-list` | 2, 13 | `/api/typescripts/`, grouped by work. Order shelfmarks as numbers, not strings. |
+| [ ] | 13 | US-RA-03: header, navigation, footer | `us-ra-03-footer` | 1 | The page shell from R-07 on desktop and mobile, the active navigation item. The funding note is hardcoded in `copy/pl.ts`; in this PR, update the stories, remove `SiteSettings.funding_note` and update architecture §4.2 (D7). The header search field comes in step 29. |
+| [ ] | 14 | US-RA-13: About | `us-ra-13-about` | 13 | `/api/about/`, the About page. If this is the first page endpoint to merge, it removes the schema's self-documentation (D13). |
+| [ ] | 15 | US-RA-18: works list | `us-ra-18-works-list` | 13 | `/api/works/`, the work card, the list page. The card's fragment count follows D19; write it into US-RA-01 AC3. If this is the first page endpoint to merge, it removes the schema's self-documentation (D13). |
+| [ ] | 16 | US-RA-20: tags list | `us-ra-20-tags-list` | 13 | `/api/tags/`, the deterministic tag cloud, the alphabetical index. Tags come from `Tag.objects.published()` chained with `with_occurrences()` or `in_use()`; neither filters the tag's own status. |
+| [ ] | 17 | US-RA-01: home page | `us-ra-01-home` | 15, 16 | `/api/home/`, the hero with counts and portrait, works, tag cloud. Replaces the placeholder at `/`. |
+| [ ] | 18 | US-RA-19: typescripts list | `us-ra-19-typescripts-list` | 13 | `/api/typescripts/`, grouped by work. Order shelfmarks as numbers, not strings. |
 
 ### Phase 4 — Entity pages
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
-| [ ] | 19 | US-RA-08: typescript page | `us-ra-08-typescript-page` | 5, 18 | `/api/typescripts/<id>/`, `/api/documents/<id>/`. The shared parts first built here: subpage layout (R-05), section header and preview (R-09), the reader (R-11) with `pdfjs-dist`, the text renderer (§4.4), the mobile toggle, `?fragment=`. |
+| [ ] | 19 | US-RA-08: typescript page | `us-ra-08-typescript-page` | 3L, 18 | `/api/typescripts/<id>/`, `/api/documents/<id>/`. The shared parts first built here: subpage layout (R-05), section header and preview (R-09), the reader (R-11) with `pdfjs-dist`, the text renderer (§4.4), the mobile toggle, `?fragment=`. The renderer clamps a lost fragment's offsets to the text (#9). The fragment list's "all" link follows D20; write it into R-09. |
 | [ ] | 20 | US-RA-09: reading the full typescript | `us-ra-09-full-typescript` | 19 | The reader handles a long typescript: pages render as they scroll into view. Fragments are highlighted wherever they exist (D4). |
 | [ ] | 21 | US-RA-04: work page | `us-ra-04-work-page` | 19 | `/api/works/<slug>/`. Built here: the fragment card (R-10) with page thumbnail, the note card, the contextual materials block (R-08), where a contextual material shows its title only (D5). |
 | [ ] | 22 | US-RA-05: relation tags | `us-ra-05-relation-tags` | 21 | Work link tags in the work page's tag column. |
-| [ ] | 23 | US-RA-07: tag page | `us-ra-07-tag-page` | 21 | `/api/tags/<slug>/`, the tag page. |
+| [ ] | 23 | US-RA-07: tag page | `us-ra-07-tag-page` | 21 | `/api/tags/<slug>/`, the tag page. Fragments are ordered by the work's year, then by position (`preview()` alone orders by document ID). The per-work count follows D19. |
 | [ ] | 24 | US-RA-10: secondary text page | `us-ra-10-secondary-text-page` | 21 | `/api/secondary-texts/<id>/`. Built here: the "Powiązane fragmenty" query (shared tags), reused in steps 25–26. |
 | [ ] | 25 | US-RA-11: note page | `us-ra-11-note-page` | 24 | `/api/notes/<id>/`, the content by type: image, PDF, download, embed or link, reader. |
 | [ ] | 26 | US-RA-12: contextual material page | `us-ra-12-material-page` | 25 | `/api/materials/<id>/`. |
@@ -101,8 +126,8 @@ Answered by the project owner on 2026-10-26. Each one lands in the step named in
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
-| [ ] | 29 | US-RA-14: search entry | `us-ra-14-search-entry` | 3, 13 | The header field (the icon on mobile), the `/search` page shell, the hint text. |
-| [ ] | 30 | US-RA-15: search results | `us-ra-15-search-results` | 29, 21 | `/api/search/`, groups, sorting, snippets, the loading state, no results. Opening a result scrolls to the first match (`?q=`, R-11 AC3). |
+| [ ] | 29 | US-RA-14: search entry | `us-ra-14-search-entry` | 3L, 13 | The header field (the icon on mobile), the `/search` page shell, the hint text. |
+| [ ] | 30 | US-RA-15: search results | `us-ra-15-search-results` | 29, 21, 37 | `/api/search/`, groups, sorting, snippets, the loading state, no results. Opening a result scrolls to the first match (`?q=`, R-11 AC3). Left by #12 for this step: how many of a work's fragments match (AC5), and a test that "potoku" finds "potok" (AC7). No pagination in v1: the archive is small, and the stories and design have none. Snippets: keep `ts_headline` off whole document bodies of results the page doesn't show. A query of only stopwords (`w`, `-`) behaves as an empty query, not as "no results" (#16). |
 | [ ] | 31 | US-RA-16: tabs and filters | `us-ra-16-search-filters` | 30 | Tabs, filters, facet counts, the mobile filter panel, state kept in the URL, the empty query. |
 
 ### Phase 6 — Should
@@ -116,8 +141,8 @@ Answered by the project owner on 2026-10-26. Each one lands in the step named in
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
-| [ ] | 34 | CORE: per-URL meta tags | `core/meta-tags` | 28 | `site_shell` sets `<title>` and the meta description for every route (user stories §4: SEO). |
-| [ ] | 35 | Production setup | `ops/production` | D9 (open) | Production settings and deployment notes for the chosen host. |
+| [ ] | 34 | CORE: per-URL meta tags | `core/meta-tags` | 31 | `site_shell` sets `<title>` and the meta description for every route (user stories §4: SEO). An unknown URL or a draft for an anonymous reader returns status 404, not a 200 with the React 404 page. Paths starting with a dot (`/.env`) return 404 (#11 review). |
+| [ ] | 35 | Production setup | `ops/production` | D9 (open) | Production settings and deployment notes for the chosen host. The deploy runs `npm run build` before `collectstatic` and before Django starts (#11). |
 
 ## 5. Story coverage
 
@@ -126,7 +151,7 @@ Answered by the project owner on 2026-10-26. Each one lands in the step named in
 | US-RA-01 | 17 | US-WR-01 | 12 |
 | US-RA-02 (Should) | 32 | US-WR-02 | done (PR #5) |
 | US-RA-03 | 13 (story changed, D7) | US-WR-03 | 10 (rest done) |
-| US-RA-04 | 21 | US-WR-04 | 6; AC3 done; AC4 in 3 |
+| US-RA-04 | 21 | US-WR-04 | 6; AC3 done; AC4 in 3 (lands with 3L) |
 | US-RA-05 | 22 | US-WR-05 | 7 |
 | US-RA-06 | 27 | US-WR-06 | 8 |
 | US-RA-07 | 23 | US-WR-07 | 9 |
@@ -151,8 +176,10 @@ Rules R-01 to R-12 have no step of their own. Each page step meets them for its 
 - **Stories beat Figma** (open question 5). Figma has no reader, no note page and no contextual material page, and its fragment card shows a scan crop. Build these from the stories, using the existing Figma components.
 - **Mobile is part of each page step**, not a separate PR. `design/rules.md` → Siatka gives the order.
 - **Shared UI parts** (layout, section header, fragment card, reader, contextual materials block) are built in the step named above and reused after that, never rebuilt.
+- **shadcn overlays need a token.** The theme removes Tailwind's default colours, so the generated `bg-black/50` of Dialog and Sheet compiles to nothing. Map it to a token in the first step that adds one (step 31's filter panel at the latest).
+- **Migrations from parallel steps** (10, 12, 13) can collide on a number. Whichever merges second renumbers.
 - **Each component test runs the axe check** (R-12). Polish copy lives in `copy/pl.ts` and counts use the plural helper.
-- **Draft tags are never shown**: not as chips, not in the cloud, not in counts. Step 3's querysets handle this.
-- **Links to pages built later are fine.** Step 28 checks them all.
+- **Draft tags are never shown**: not as chips, not in the cloud, not in counts. Step 2's querysets handle this.
+- **Links to pages built later are fine.** Step 27 checks them all.
 - **Descriptions are HTML** once step 10 lands. Render them as the sanitized HTML the API returns.
 - A page step builds only its own endpoint. If it needs anything else from the backend, say so in the PR (AGENTS.md). A change to `docs/architecture.md` needs asking first.
