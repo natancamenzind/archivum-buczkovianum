@@ -9,7 +9,7 @@ from django.db import connection
 from django.test import Client
 from django.urls import reverse
 
-from archive.models import ContentKind, Status
+from archive.models import ContentKind, Status, Work
 from archive.tests.factories import (
     ContextualMaterialFactory,
     DocumentFactory,
@@ -209,6 +209,23 @@ class TestWrites:
         indexed = entry(EntityType.NOTE, note.pk)
         assert indexed is not None
         assert (indexed.work_ids, indexed.decades) == ([work.pk], [1950])
+
+    def test_an_edition_reindexes_its_work_without_saving_it(self) -> None:
+        # Arrange
+        work = WorkFactory.create(status=PUBLISHED, title="Wertepy")
+        edition = EditionFactory.create(work=work, year=1957)
+        elsewhere = Work.objects.get(pk=work.pk)
+        elsewhere.title = "Changed elsewhere"
+        elsewhere.save()
+
+        # Act
+        edition.year = 1947
+        edition.save()
+
+        # Assert
+        work.refresh_from_db()
+        assert work.title == "Changed elsewhere"
+        assert stored(EntityType.WORK, work.pk).decades == [1940]
 
     def test_us_ra_16_ac2_a_tag_is_filed_under_the_works_it_refers_to(self) -> None:
         # Arrange

@@ -514,6 +514,11 @@ class Work(Publishable, Taggable):
             *self.materials.all(),
         ]
 
+    def update_search_entries(self) -> None:
+        """Index the work and what relates to it again, e.g. after its year changed."""
+        self.update_search_entry()
+        self.update_related_search_entries(self.related_items())
+
     def update_related_search_entries(self, items: list[Publishable]) -> None:
         """Index again what relates to this work. The search filters hold its id while it is
         published, and the decade of its first edition."""
@@ -549,12 +554,12 @@ class Edition(BaseModel):
         """The work's year may change, and with it the decades in the search index."""
         with transaction.atomic():
             super().save(*args, **kwargs)
-            self.work.save()
+            self.work.update_search_entries()
 
     def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
         with transaction.atomic():
             result = super().delete(*args, **kwargs)
-            self.work.save()
+            self.work.update_search_entries()
         return result
 
 

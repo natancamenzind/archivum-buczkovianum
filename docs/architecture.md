@@ -203,7 +203,7 @@ Updates are explicit, never via signals:
 - `Publishable.delete()` removes the entry, then calls `super().delete()`.
 - `Fragment.save()` and `Fragment.delete()` write or remove the fragment's entry.
 - `Document.save()` re-anchors fragments (section 4.4) and then calls `update_search_entry()` on its owning entity.
-- `Work.save()` and `Work.delete()` also re-index the items related to the work (with their fragments) and every published tag, because the work's status and first-edition year are in their `work_ids` and `decades`. `Edition.save()` and `Edition.delete()` call `work.save()`.
+- `Work.save()` and `Work.delete()` also re-index the items related to the work (with their fragments) and every published tag, because the work's status and first-edition year are in their `work_ids` and `decades`. `Edition.save()` and `Edition.delete()` re-index the work and its entries this way, without saving the work.
 - Tag entries list the works a tag refers to through whatever carries it, so deletes re-index every published tag, and the admin re-indexes the saved item and every published tag after many-to-many fields and inlines are saved (they are saved after `save()`).
 - The management command `rebuild_search_index` rebuilds the whole table.
 
