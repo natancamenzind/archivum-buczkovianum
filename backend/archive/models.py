@@ -868,6 +868,15 @@ class Document(BaseModel):
             return owner
         return None
 
+    def offers_tagger(self) -> bool:
+        """Whether US-WR-09 AC1 allows tagging this document's text."""
+        owner = self.owner
+        if owner is None:
+            return False
+        if isinstance(owner, Typescript):
+            return owner.is_main
+        return isinstance(owner, (Note, SecondaryText, ContextualMaterial))
+
     def set_ocr_text(self, raw: str) -> None:
         """Load Tesseract plain-text output: pages separated by a form feed (`\\f`)."""
         pages = raw.removesuffix("\f").split("\f")

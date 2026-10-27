@@ -22,6 +22,93 @@ paths:
               schema:
                 $ref: '#/components/schemas/AboutPage'
           description: ''
+  /api/editor/fragments/:
+    get:
+      operationId: editor_fragments_list
+      tags:
+      - editor
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EditorFragment'
+          description: ''
+    post:
+      operationId: editor_fragments_create
+      tags:
+      - editor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditorFragment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EditorFragment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EditorFragment'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditorFragment'
+          description: ''
+  /api/editor/fragments/{id}/:
+    patch:
+      operationId: editor_fragments_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - editor
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEditorFragment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEditorFragment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEditorFragment'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditorFragment'
+          description: ''
+    delete:
+      operationId: editor_fragments_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - editor
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/works/:
     get:
       operationId: works_list
@@ -63,6 +150,59 @@ components:
       - intro
       - project
       - team
+    EditorFragment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        document:
+          type: integer
+        start:
+          type: integer
+          minimum: 0
+        end:
+          type: integer
+          minimum: 0
+        quote:
+          type: string
+        tag_ids:
+          type: array
+          items:
+            type: integer
+            writeOnly: true
+          writeOnly: true
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/EditorTag'
+          readOnly: true
+        needs_review:
+          type: boolean
+          readOnly: true
+          description: The text changed. Check the fragment, then clear this box.
+      required:
+      - document
+      - end
+      - id
+      - needs_review
+      - quote
+      - start
+      - tag_ids
+      - tags
+    EditorTag:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+          title: Nazwa
+      required:
+      - id
+      - title
     GroupEnum:
       enum:
       - leadership
@@ -73,6 +213,37 @@ components:
         * `leadership` - Project leadership
         * `team` - Team members
         * `site` - Website development
+    PatchedEditorFragment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        document:
+          type: integer
+        start:
+          type: integer
+          minimum: 0
+        end:
+          type: integer
+          minimum: 0
+        quote:
+          type: string
+        tag_ids:
+          type: array
+          items:
+            type: integer
+            writeOnly: true
+          writeOnly: true
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/EditorTag'
+          readOnly: true
+        needs_review:
+          type: boolean
+          readOnly: true
+          description: The text changed. Check the fragment, then clear this box.
     TeamGroup:
       type: object
       properties:
