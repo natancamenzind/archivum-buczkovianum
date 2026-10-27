@@ -1,7 +1,7 @@
 """Load the sample archive of design/rules.md ("Dane przykładowe"), to try the site by hand.
 
 Everything goes through `full_clean()` and `save()`, so the search index is filled as it would be
-by an editor. The scans and OCR texts in archive/demo/ are placeholders, not Buczkowski's texts.
+by an editor. archive/demo/README.md says where the scans and OCR texts come from.
 """
 
 import re
@@ -134,6 +134,18 @@ SHOWN_FRAGMENTS: dict[tuple[str, int], dict[str, Any]] = {
     },
     ("1609", 2): {"shelfmark": "1609.0012", "tags": ["Dezerter"]},
 }
+
+
+def spread_sentences(text: str, count: int) -> list[re.Match[str]]:
+    """`count` sentences spread evenly over the text, for fragments across all its pages.
+
+    A sentence that starts with a lowercase letter, after any dash or quote, is skipped: it is
+    the tail of a sentence cut by a page break, or a dialogue tag such as "- spytał.".
+    """
+    sentences = [s for s in SENTENCE.finditer(text) if not s.group().lstrip('-" ')[:1].islower()]
+    if count > len(sentences):
+        raise CommandError(f"The text has {len(sentences)} sentences, not {count}.")
+    return [sentences[number * len(sentences) // count] for number in range(count)]
 
 
 def image(name: str) -> ContentFile[bytes]:
@@ -287,7 +299,7 @@ class Command(BaseCommand):
                     status=PUBLISHED,
                 )
             )
-            sentences = list(SENTENCE.finditer(document.text))[: typescript_data.fragments]
+            sentences = spread_sentences(document.text, typescript_data.fragments)
             for number, sentence in enumerate(sentences, start=1):
                 shown = {
                     "shelfmark": f"{typescript_data.shelfmark}.{number * 5 + 4:04d}",

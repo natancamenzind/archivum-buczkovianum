@@ -9,6 +9,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 
 from archive.management.commands import load_demo_data
+from archive.management.commands.load_demo_data import spread_sentences
 from archive.models import Document, Fragment, Status, Tag, Typescript, Work
 from archive.tests.factories import TagFactory, TeamMemberFactory, WorkFactory
 from search.models import SearchEntry
@@ -140,3 +141,26 @@ class TestDemoData:
 
         # Assert
         assert not Work.objects.exists()
+
+
+class TestSpreadSentences:
+    def test_fragments_spread_over_whole_sentences(self) -> None:
+        # Arrange
+        text = "cięte zdanie. Pierwsze. - Pytanie? - spytał. Drugie. Trzecie. Czwarte."
+
+        # Act
+        sentences = [match.group() for match in spread_sentences(text, 2)]
+
+        # Assert
+        assert sentences == ["Pierwsze.", "Drugie."]
+
+    def test_a_text_too_short_for_its_fragments_is_an_error(self) -> None:
+        # Arrange
+        text = "Jedno. Drugie."
+
+        # Act
+        with pytest.raises(CommandError, match="2 sentences, not 3"):
+            spread_sentences(text, 3)
+
+        # Assert
+        assert len(spread_sentences(text, 2)) == 2
