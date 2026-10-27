@@ -825,3 +825,84 @@ class TestSiteContent:
 
         # Assert
         assert members == [str(first), str(second)]
+
+
+# Bold, italic, a link, a list and a heading: what the toolbar offers (architecture section 5).
+RICH_TEXT = (
+    "<h3>Wstęp</h3><p><strong>Pierwsza</strong> <em>powieść</em>, "
+    '<a href="https://example.org/">źródło</a>.</p><ul><li><p>Punkt</p></li></ul>'
+)
+UNSAFE_TEXT = '<p onclick="steal()">Opis<script>steal()</script></p><img src="x.png">'
+
+
+@pytest.mark.django_db
+class TestRichText:
+    @pytest.mark.parametrize(
+        "factory",
+        [
+            WorkFactory,
+            TagFactory,
+            TypescriptFactory,
+            NoteFactory,
+            SecondaryTextFactory,
+            ContextualMaterialFactory,
+        ],
+    )
+    def test_us_wr_03_ac1_descriptions_keep_the_toolbar_formatting(
+        self, factory: type[WorkFactory]
+    ) -> None:
+        # Arrange
+        entity = factory.create(description=RICH_TEXT)
+
+        # Act
+        entity.full_clean()
+
+        # Assert
+        assert entity.description == RICH_TEXT
+
+    def test_us_wr_08_ac1_a_tag_description_is_sanitized(self) -> None:
+        # Arrange
+        tag = TagFactory.create(description=UNSAFE_TEXT)
+
+        # Act
+        tag.full_clean()
+
+        # Assert
+        assert tag.description == "<p>Opis</p>"
+
+    @pytest.mark.parametrize("field", ["intro_text", "about_intro", "about_project"])
+    def test_us_wr_12_ac1_site_texts_are_rich_text(self, field: str) -> None:
+        # Arrange
+        settings = SiteSettingsFactory.create(**{field: RICH_TEXT + UNSAFE_TEXT})
+
+        # Act
+        settings.full_clean()
+
+        # Assert
+        assert getattr(settings, field) == RICH_TEXT + "<p>Opis</p>"
+
+    @pytest.mark.parametrize("html", ["<p></p>", "<p></p><p> </p>", "<ul><li><p></p></li></ul>"])
+    def test_r_02_an_empty_editor_saves_an_empty_description(self, html: str) -> None:
+        # Arrange: the editor always holds at least one paragraph.
+        work = WorkFactory.build(description=html)
+
+        # Act
+        work.save()
+
+        # Assert
+        work.refresh_from_db()
+        assert work.description == ""
+
+    def test_rich_text_is_sanitized_on_every_save(self) -> None:
+        # Arrange: code that saves without `full_clean()`, like a shell or a command.
+        tag = TagFactory.build(description=UNSAFE_TEXT)
+        settings = SiteSettingsFactory.build(about_project=UNSAFE_TEXT)
+
+        # Act
+        tag.save()
+        settings.save()
+
+        # Assert
+        tag.refresh_from_db()
+        settings.refresh_from_db()
+        assert (tag.description, settings.about_project) == ("<p>Opis</p>", "<p>Opis</p>")

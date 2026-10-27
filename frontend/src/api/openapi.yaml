@@ -45,12 +45,15 @@ components:
   schemas:
     AboutPage:
       type: object
-      description: US-RA-13. Texts are plain text until step 10 makes them rich text.
+      description: 'US-RA-13. `intro` and `project` are rich text: HTML, sanitized
+        when an editor saves it.'
       properties:
         intro:
           type: string
+          description: HTML.
         project:
           type: string
+          description: HTML.
         team:
           type: array
           items:

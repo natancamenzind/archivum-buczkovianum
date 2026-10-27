@@ -84,6 +84,44 @@ class TestWrites:
         assert indexed.work_ids == [typescript.work_id]
         assert (indexed.has_scan, indexed.has_text) == (True, True)
 
+    @pytest.mark.parametrize(
+        ("factory", "entity_type"),
+        [
+            (WorkFactory, EntityType.WORK),
+            (TagFactory, EntityType.TAG),
+            (NoteFactory, EntityType.NOTE),
+        ],
+    )
+    def test_us_wr_03_ac1_a_rich_text_description_is_indexed_without_html(
+        self, factory: type[WorkFactory], entity_type: EntityType
+    ) -> None:
+        # Arrange
+        description = (
+            "<h3>Wstęp</h3><p><strong>Pierwsza</strong> powieść &amp; "
+            '<a href="https://example.org/">źródło</a></p><ul><li><p>tyfus</p></li></ul>'
+        )
+
+        # Act
+        entity = factory.create(status=PUBLISHED, description=description)
+
+        # Assert
+        indexed = stored(entity_type, entity.pk)
+        assert indexed.body == "Wstęp\nPierwsza powieść & źródło\ntyfus"
+        assert SearchEntry.objects.filter(pk=indexed.pk, vector="tyfus").exists()
+
+    def test_a_document_text_keeps_its_angle_brackets(self) -> None:
+        # Arrange: only descriptions are HTML, a typescript's text is not.
+        typescript = TypescriptFactory.create(
+            work__status=PUBLISHED, description="", document__text="Przypis <1> i <em>."
+        )
+
+        # Act
+        typescript.status = PUBLISHED
+        typescript.save()
+
+        # Assert
+        assert stored(EntityType.TYPESCRIPT, typescript.pk).body == "Przypis <1> i <em>."
+
     def test_r_06_a_draft_leaves_the_index(self) -> None:
         # Arrange
         work = WorkFactory.create(status=PUBLISHED)

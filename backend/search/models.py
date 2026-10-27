@@ -8,6 +8,7 @@ import operator
 from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import reduce
+from html.parser import HTMLParser
 from typing import Any
 
 from django.conf import settings
@@ -38,6 +39,34 @@ class Weight(models.TextChoices):
     QUOTE = "B"  # tag descriptions, fragment quotes
     DESCRIPTION = "C"  # other descriptions
     TEXT = "D"  # document texts
+
+
+class _TextExtractor(HTMLParser):
+    # Tags that start or end a block, so the words on either side of them stay apart.
+    blocks = frozenset({"p", "br", "li", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6"})
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.handle_endtag(tag)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in self.blocks:
+            self.parts.append("\n")
+
+    def handle_data(self, data: str) -> None:
+        self.parts.append(data)
+
+
+def html_to_text(html: str) -> str:
+    """The text of a rich text field, one line per block, for the index and its snippets."""
+    extractor = _TextExtractor()
+    extractor.feed(html)
+    extractor.close()
+    lines = "".join(extractor.parts).splitlines()
+    return "\n".join(line.strip() for line in lines if line.strip())
 
 
 @dataclass(frozen=True)

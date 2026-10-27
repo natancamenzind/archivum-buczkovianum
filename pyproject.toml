@@ -50,6 +50,11 @@ plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 module = "*.tests.factories"
 disallow_untyped_calls = false
 
+# django-prose-editor ships no type stubs (plan D3).
+[[tool.mypy.overrides]]
+module = "django_prose_editor.*"
+ignore_missing_imports = true
+
 [tool.django-stubs]
 django_settings_module = "config.settings"
 
