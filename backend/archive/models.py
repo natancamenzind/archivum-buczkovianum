@@ -210,7 +210,7 @@ class Taggable(models.Model):
         return Tag.objects.published().filter(pk__in=self.tags.values("pk"))
 
     def published_tag_names(self) -> list[str]:
-        """What the item's search entry holds of its tags (D18)."""
+        """What the search entry holds of the tags this carries (D18)."""
         return list(self.published_tags().values_list("title", flat=True))
 
 

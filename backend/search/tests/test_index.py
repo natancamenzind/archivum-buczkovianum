@@ -506,6 +506,48 @@ class TestEditorPanel:
         assert (note.work_ids, note.decades) == ([work.pk], [1940])
         assert tag_entry.work_ids == [work.pk]
 
+    def test_d18_tags_chosen_in_the_form_reach_the_item_entry(self, admin_client: Client) -> None:
+        # Arrange
+        tag = TagFactory.create(status=PUBLISHED, title="Dezerter")
+        data = {
+            "title": "Notes 18",
+            "status": PUBLISHED,
+            "content_kind": ContentKind.EXTERNAL_MEDIA,
+            "external_url": "https://example.com/nagranie",
+            "works": [WorkFactory.create(status=PUBLISHED).pk],
+            "tags": [tag.pk],
+        }
+
+        # Act
+        response = admin_client.post(reverse("admin:archive_note_add"), data)
+
+        # Assert
+        assert response.status_code == 302
+        note = SearchEntry.objects.get(entity_type=EntityType.NOTE)
+        assert carries_at_weight_b(EntityType.NOTE, note.entity_id, "dezerter")
+
+    def test_d18_tags_set_in_the_tagger_reach_the_fragment_entry(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        typescript = TypescriptFactory.create(is_main=True, status=PUBLISHED)
+        fragment = FragmentFactory.create(document=typescript.document)
+        fragment.tags.add(TagFactory.create(status=PUBLISHED, title="Uciekinier"))
+        fragment.save()
+        tag = TagFactory.create(status=PUBLISHED, title="Dezerter")
+
+        # Act
+        response = admin_client.patch(
+            reverse("editor-fragment", args=[fragment.pk]),
+            {"tag_ids": [tag.pk]},
+            content_type="application/json",
+        )
+
+        # Assert
+        assert response.status_code == 200
+        assert carries_at_weight_b(EntityType.FRAGMENT, fragment.pk, "dezerter")
+        assert not carries_at_weight_b(EntityType.FRAGMENT, fragment.pk, "uciekinier")
+
     def test_us_wr_10_ac2_a_tagged_work_link_files_the_tag_under_the_work(
         self, admin_client: Client
     ) -> None:
@@ -590,3 +632,15 @@ class TestRebuild:
         assert set(SearchEntry.objects.values_list("entity_type", "entity_id")) == expected
         assert len(expected) == 2
         assert output.getvalue() == "Indexed 2 entries.\n"
+
+    def test_d18_a_rebuild_keeps_the_tag_names_of_entries(self) -> None:
+        # Arrange
+        work = WorkFactory.create(status=PUBLISHED)
+        work.tags.add(TagFactory.create(status=PUBLISHED, title="Dezerter"))
+        SearchEntry.objects.all().delete()
+
+        # Act
+        call_command("rebuild_search_index", stdout=StringIO())
+
+        # Assert
+        assert carries_at_weight_b(EntityType.WORK, work.pk, "dezerter")
