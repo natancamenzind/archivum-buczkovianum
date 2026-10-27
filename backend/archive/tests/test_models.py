@@ -227,8 +227,7 @@ class TestArchival:
         secondary_text.document = DocumentFactory.create()
         expected = {
             "document": [
-                "The text this item holds has 2 tagged fragments. "
-                "Delete them before removing the text."
+                "Tekst tego bytu ma 2 otagowane fragmenty. Usuń je przed usunięciem tekstu."
             ]
         }
 
@@ -560,7 +559,7 @@ class TestDocument:
 
         # Assert
         assert owner is None
-        assert str(document) == f"Plain text #{document.pk}"
+        assert str(document) == f"Tekst lity #{document.pk}"
 
     def test_saving_without_text_change_skips_fragments(
         self, django_assert_max_num_queries: DjangoAssertNumQueries
@@ -803,7 +802,7 @@ class TestSiteContent:
             SiteSettingsFactory.create()
 
         # Assert
-        assert str(SiteSettings.load()) == "Site settings"
+        assert str(SiteSettings.load()) == "Treści serwisu"
 
     def test_us_wr_11_ac1_settings_are_created_on_first_load(self) -> None:
         # Arrange

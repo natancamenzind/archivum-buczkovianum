@@ -241,7 +241,7 @@ class TestContextualMaterialForm:
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        assert form_errors(response) == {"ocr_file": ["The scan has 3 pages, the OCR file has 1."]}
+        assert form_errors(response) == {"ocr_file": ["Skan ma 3 strony, plik OCR ma 1."]}
         assert not ContextualMaterial.objects.exists()
 
     def test_us_wr_07_ac2_plain_text_entered_on_the_form(self, admin_client: Client) -> None:
@@ -296,7 +296,7 @@ class TestContextualMaterialForm:
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        leave_empty = ["Leave this empty for this kind of content."]
+        leave_empty = ["Przy tym rodzaju treści zostaw to pole puste."]
         assert form_errors(response) == {
             "plain_text": leave_empty,
             "scan": leave_empty,
@@ -463,10 +463,7 @@ class TestContextualMaterialForm:
 
         # Assert
         assert form_errors(response) == {
-            "__all__": [
-                "The text this item holds has 1 tagged fragment. "
-                "Delete them before removing the text."
-            ]
+            "__all__": ["Tekst tego bytu ma 1 otagowany fragment. Usuń go przed usunięciem tekstu."]
         }
         material.refresh_from_db()
         assert material.document is not None

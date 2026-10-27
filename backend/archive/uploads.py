@@ -7,6 +7,7 @@ The functions here check the files and load them into a `Document` without savin
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 from pypdf import PdfReader
 from pypdf.errors import PyPdfError
 
@@ -64,7 +65,11 @@ def load_ocr_upload(
         raise ValidationError(
             {
                 "ocr_file": ValidationError(
-                    _("The scan has %(scan)d pages, the OCR file has %(ocr)d."),
+                    ngettext(
+                        "The scan has %(scan)d page, the OCR file has %(ocr)d.",
+                        "The scan has %(scan)d pages, the OCR file has %(ocr)d.",
+                        scan_pages,
+                    ),
                     code="page_count",
                     params={"scan": scan_pages, "ocr": loaded.page_count},
                 )

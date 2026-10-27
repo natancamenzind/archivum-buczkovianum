@@ -155,9 +155,28 @@ class TestLoadOcrUpload:
             load_ocr_upload(None, scan, ocr)
 
         # Assert
-        assert raised.value.message_dict == {
-            "ocr_file": ["The scan has 12 pages, the OCR file has 11."]
-        }
+        assert raised.value.message_dict == {"ocr_file": ["Skan ma 12 stron, plik OCR ma 11."]}
+
+    @pytest.mark.parametrize(
+        ("scan_pages", "expected"),
+        [
+            (1, "Skan ma 1 stronę, plik OCR ma 2."),
+            (22, "Skan ma 22 strony, plik OCR ma 23."),
+            (5, "Skan ma 5 stron, plik OCR ma 6."),
+        ],
+    )
+    def test_us_wr_04_ac2_page_count_mismatch_uses_polish_plural_forms(
+        self, scan_pages: int, expected: str
+    ) -> None:
+        # Arrange
+        scan, ocr = scan_file(scan_pages), ocr_file(*["Strona."] * (scan_pages + 1))
+
+        # Act
+        with pytest.raises(ValidationError) as raised:
+            load_ocr_upload(None, scan, ocr)
+
+        # Assert
+        assert raised.value.message_dict == {"ocr_file": [expected]}
 
     def test_us_wr_04_ac2_loads_a_new_text_into_the_same_document(self) -> None:
         # Arrange
@@ -198,8 +217,8 @@ class TestLoadOcrUpload:
 
         # Assert
         assert raised.value.message_dict == {
-            "scan": ["The scan is not a readable PDF file."],
-            "ocr_file": ["The OCR file is not UTF-8 text. Save it as UTF-8 and upload it again."],
+            "scan": ["Skan nie jest czytelnym plikiem PDF."],
+            "ocr_file": ["Plik OCR nie jest tekstem w UTF-8. Zapisz go w UTF-8 i wgraj ponownie."],
         }
 
 
@@ -283,7 +302,7 @@ class TestTypescriptForm:
         # Assert
         missing = "ocr_file" if uploaded == "scan" else "scan"
         assert form_errors(response) == {
-            missing: ["Upload the scan and the OCR file together, so their pages can be compared."]
+            missing: ["Wgraj skan i plik OCR razem, żeby dało się porównać ich strony."]
         }
         typescript.refresh_from_db()
         assert typescript.document is not None
@@ -300,9 +319,7 @@ class TestTypescriptForm:
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        assert form_errors(response) == {
-            "ocr_file": ["The scan has 12 pages, the OCR file has 11."]
-        }
+        assert form_errors(response) == {"ocr_file": ["Skan ma 12 stron, plik OCR ma 11."]}
         assert not Typescript.objects.exists()
         assert not Document.objects.exists()
 
@@ -371,7 +388,7 @@ class TestTypescriptForm:
         response = admin_client.post(change_url(typescript), data)
 
         # Assert
-        assert form_errors(response) == {"ocr_file": ["The scan has 3 pages, the OCR file has 2."]}
+        assert form_errors(response) == {"ocr_file": ["Skan ma 3 strony, plik OCR ma 2."]}
         stored = Document.objects.get(pk=document.pk)
         assert (stored.scan.name, stored.text, stored.page_offsets) == (
             document.scan.name,
@@ -391,7 +408,7 @@ class TestTypescriptForm:
         response = admin_client.post(change_url(typescript), typescript_data(typescript))
 
         # Assert
-        assert form_errors(response) == {"__all__": ["Choose a text of kind “Scan + OCR text”."]}
+        assert form_errors(response) == {"__all__": ["Wybierz tekst rodzaju „Skan + tekst OCR”."]}
 
     def test_us_wr_04_unreadable_pdf_is_a_form_error(self, admin_client: Client) -> None:
         # Arrange
@@ -403,7 +420,7 @@ class TestTypescriptForm:
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        assert form_errors(response) == {"scan": ["The scan is not a readable PDF file."]}
+        assert form_errors(response) == {"scan": ["Skan nie jest czytelnym plikiem PDF."]}
 
     def test_us_wr_04_non_utf8_ocr_file_is_a_form_error(self, admin_client: Client) -> None:
         # Arrange
@@ -416,7 +433,7 @@ class TestTypescriptForm:
 
         # Assert
         assert form_errors(response) == {
-            "ocr_file": ["The OCR file is not UTF-8 text. Save it as UTF-8 and upload it again."]
+            "ocr_file": ["Plik OCR nie jest tekstem w UTF-8. Zapisz go w UTF-8 i wgraj ponownie."]
         }
 
     def test_us_wr_04_wrong_file_extensions_are_form_errors(self, admin_client: Client) -> None:

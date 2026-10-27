@@ -80,6 +80,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "pl"
+# Polish for the editor panel's own strings, written in English in the code (`make messages`).
+LOCALE_PATHS = [BASE_DIR / "locale"]
 TIME_ZONE = "Europe/Warsaw"
 USE_I18N = True
 USE_TZ = True

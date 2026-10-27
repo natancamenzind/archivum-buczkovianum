@@ -74,8 +74,8 @@ class BaseModel(models.Model):
     Any file field `X` with a companion `X_alt` field must have `X_alt` filled when `X` is set.
     """
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(_("created"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("updated"), auto_now=True)
 
     class Meta:
         abstract = True
@@ -144,13 +144,14 @@ class Publishable(BaseModel):
     """A public entity with its own page. Only published entities are public (R-06)."""
 
     status = models.CharField(
+        _("status"),
         max_length=10,
         choices=Status.choices,
         default=Status.DRAFT,
         help_text=_("Only published items are visible to the public."),
     )
-    title = models.CharField(max_length=255)
-    description = rich_text_field()
+    title = models.CharField(_("title"), max_length=255)
+    description = rich_text_field(verbose_name=_("description"))
 
     search_type: ClassVar[EntityType]
     # Defined by every concrete model.
@@ -199,7 +200,7 @@ class Taggable(models.Model):
     """Tags on the whole item (US-WR-10)."""
 
     tags: "models.ManyToManyField[Tag, Any]" = models.ManyToManyField(
-        "Tag", blank=True, related_name="%(class)ss"
+        "Tag", verbose_name=_("tags"), blank=True, related_name="%(class)ss"
     )
 
     class Meta:
@@ -224,18 +225,21 @@ class Archival(models.Model):
 
     institution = models.ForeignKey(
         "Institution",
+        verbose_name=_("institution"),
         on_delete=models.PROTECT,
         null=True,
         blank=True,
         related_name="%(class)ss",
     )
     shelfmark = models.CharField(
+        _("shelfmark"),
         max_length=50,
         blank=True,
         help_text=_("Number only, e.g. 1618. The institution is chosen separately."),
     )
     document = models.OneToOneField(
         "Document",
+        verbose_name=_("text"),
         on_delete=models.PROTECT,
         null=True,
         blank=True,
@@ -384,11 +388,13 @@ CONTENT_FIELDS: dict[str, str] = {
 class MediaContent(Archival):
     """Content of a note or contextual material: exactly one kind (US-WR-05 AC2, US-WR-07 AC2)."""
 
-    content_kind = models.CharField(max_length=20, choices=ContentKind.choices)
-    image = models.FileField(upload_to="content/", blank=True, validators=[IMAGE_EXTENSIONS])
-    image_alt = models.CharField(max_length=255, blank=True)
-    file = models.FileField(upload_to="content/", blank=True)
-    external_url = models.URLField(blank=True)
+    content_kind = models.CharField(_("content kind"), max_length=20, choices=ContentKind.choices)
+    image = models.FileField(
+        _("image"), upload_to="content/", blank=True, validators=[IMAGE_EXTENSIONS]
+    )
+    image_alt = models.CharField(_("image text alternative"), max_length=255, blank=True)
+    file = models.FileField(_("document file"), upload_to="content/", blank=True)
+    external_url = models.URLField(_("external audio or video link"), blank=True)
 
     class Meta:
         abstract = True
@@ -416,11 +422,15 @@ class MediaContent(Archival):
 
 
 class Institution(BaseModel):
-    abbreviation = models.CharField(max_length=20, unique=True, help_text=_("E.g. ML."))
-    name = models.CharField(max_length=255, help_text=_("E.g. Muzeum Literatury."))
+    abbreviation = models.CharField(
+        _("abbreviation"), max_length=20, unique=True, help_text=_("E.g. ML.")
+    )
+    name = models.CharField(_("full name"), max_length=255, help_text=_("E.g. Muzeum Literatury."))
 
     class Meta:
         ordering = ("abbreviation",)
+        verbose_name = _("institution")
+        verbose_name_plural = _("institutions")
 
     def __str__(self) -> str:
         return self.abbreviation
@@ -463,19 +473,28 @@ class Tag(Publishable):
         INTERPRETATION = "interpretation", _("Interpretation")
 
     title = models.CharField(_("name"), max_length=255, unique=True)
-    slug = models.SlugField(max_length=255, unique=True)
+    slug = models.SlugField(
+        _("slug"), max_length=255, unique=True, help_text=_("Part of the page address.")
+    )
     kind = models.CharField(
+        _("kind"),
         max_length=20,
         choices=Kind.choices,
         help_text=_("Only for filtering in the editor panel. Never public."),
     )
-    related = models.ManyToManyField("self", blank=True, help_text=_("Works both ways."))
+    related = models.ManyToManyField(
+        "self", verbose_name=_("related tags"), blank=True, help_text=_("Works both ways.")
+    )
 
     objects = TagQuerySet.as_manager()
     # Set only by `TagQuerySet.with_occurrences()`.
     occurrences: int
 
     search_type = EntityType.TAG
+
+    class Meta(Publishable.Meta):
+        verbose_name = _("tag")
+        verbose_name_plural = _("tags")
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         """Index again what carries the tag: its entry holds the tag's name while it is
@@ -583,10 +602,16 @@ class WorkQuerySet(PublishableQuerySet["Work"]):
 
 
 class Work(Publishable, Taggable):
-    slug = models.SlugField(max_length=255, unique=True, help_text=_("Part of the page address."))
-    genre = models.CharField(max_length=100, blank=True, help_text=_("E.g. powieść."))
-    cover_image = models.FileField(upload_to="works/", blank=True, validators=[IMAGE_EXTENSIONS])
-    cover_image_alt = models.CharField(max_length=255, blank=True)
+    slug = models.SlugField(
+        _("slug"), max_length=255, unique=True, help_text=_("Part of the page address.")
+    )
+    genre = models.CharField(_("genre"), max_length=100, blank=True, help_text=_("E.g. powieść."))
+    cover_image = models.FileField(
+        _("cover image"), upload_to="works/", blank=True, validators=[IMAGE_EXTENSIONS]
+    )
+    cover_image_alt = models.CharField(
+        _("cover image text alternative"), max_length=255, blank=True
+    )
 
     objects = WorkQuerySet.as_manager()
     # Set only by `WorkQuerySet.with_year()`.
@@ -595,6 +620,10 @@ class Work(Publishable, Taggable):
     fragment_count: int
 
     search_type = EntityType.WORK
+
+    class Meta(Publishable.Meta):
+        verbose_name = _("work")
+        verbose_name_plural = _("works")
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         with transaction.atomic():
@@ -643,15 +672,23 @@ class Work(Publishable, Taggable):
 
 
 class Edition(BaseModel):
-    work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="editions")
-    publisher = models.CharField(max_length=255)
-    place = models.CharField(max_length=255)
-    year = models.PositiveSmallIntegerField()
-    cover_image = models.FileField(upload_to="editions/", blank=True, validators=[IMAGE_EXTENSIONS])
-    cover_image_alt = models.CharField(max_length=255, blank=True)
+    work = models.ForeignKey(
+        Work, verbose_name=_("work"), on_delete=models.CASCADE, related_name="editions"
+    )
+    publisher = models.CharField(_("publisher"), max_length=255)
+    place = models.CharField(_("place"), max_length=255)
+    year = models.PositiveSmallIntegerField(_("year"))
+    cover_image = models.FileField(
+        _("cover image"), upload_to="editions/", blank=True, validators=[IMAGE_EXTENSIONS]
+    )
+    cover_image_alt = models.CharField(
+        _("cover image text alternative"), max_length=255, blank=True
+    )
 
     class Meta:
         ordering = ("year",)
+        verbose_name = _("edition")
+        verbose_name_plural = _("editions")
 
     def __str__(self) -> str:
         return f"{self.publisher}, {self.place} {self.year}"
@@ -674,7 +711,9 @@ class Typescript(Publishable, Taggable, Archival):
     works_lookup = "typescripts"
     search_type = EntityType.TYPESCRIPT
 
-    work = models.ForeignKey(Work, on_delete=models.PROTECT, related_name="typescripts")
+    work = models.ForeignKey(
+        Work, verbose_name=_("work"), on_delete=models.PROTECT, related_name="typescripts"
+    )
     is_main = models.BooleanField(
         _("main typescript"),
         default=False,
@@ -685,6 +724,8 @@ class Typescript(Publishable, Taggable, Archival):
 
     class Meta:
         ordering = ("shelfmark", "title")
+        verbose_name = _("typescript")
+        verbose_name_plural = _("typescripts")
         constraints = (
             models.UniqueConstraint(
                 fields=["work"], condition=Q(is_main=True), name="one_main_typescript_per_work"
@@ -715,9 +756,13 @@ class Note(Publishable, Taggable, MediaContent):
     works_lookup = "notes"
     search_type = EntityType.NOTE
 
-    works = models.ManyToManyField(Work, related_name="notes")
+    works = models.ManyToManyField(Work, verbose_name=_("works"), related_name="notes")
 
     objects = PublishableQuerySet["Note"].as_manager()
+
+    class Meta(Publishable.Meta):
+        verbose_name = _("note")
+        verbose_name_plural = _("notes")
 
     def get_absolute_url(self) -> str:
         return f"/notes/{self.pk}"
@@ -735,19 +780,31 @@ class SecondaryText(Publishable, Taggable, Archival):
     works_lookup = "secondary_texts"
     search_type = EntityType.SECONDARY_TEXT
 
-    kind = models.CharField(max_length=20, choices=Kind.choices)
-    author = models.CharField(max_length=255, blank=True)
+    kind = models.CharField(_("kind"), max_length=20, choices=Kind.choices)
+    author = models.CharField(_("author"), max_length=255, blank=True)
     source = models.CharField(
-        max_length=500, blank=True, help_text=_("Publisher, place, year, pages, as one line.")
+        _("source"),
+        max_length=500,
+        blank=True,
+        help_text=_("Publisher, place, year, pages, as one line."),
     )
-    letter_date = models.DateField(null=True, blank=True, help_text=_("For letters."))
-    sender = models.CharField(max_length=255, blank=True, help_text=_("For letters."))
-    recipient = models.CharField(max_length=255, blank=True, help_text=_("For letters."))
+    letter_date = models.DateField(_("date"), null=True, blank=True, help_text=_("For letters."))
+    sender = models.CharField(_("sender"), max_length=255, blank=True, help_text=_("For letters."))
+    recipient = models.CharField(
+        _("recipient"), max_length=255, blank=True, help_text=_("For letters.")
+    )
     works = models.ManyToManyField(
-        Work, through="SecondaryTextWorkLink", related_name="secondary_texts"
+        Work,
+        verbose_name=_("works"),
+        through="SecondaryTextWorkLink",
+        related_name="secondary_texts",
     )
 
     objects = PublishableQuerySet["SecondaryText"].as_manager()
+
+    class Meta(Publishable.Meta):
+        verbose_name = _("secondary text")
+        verbose_name_plural = _("secondary texts")
 
     def get_absolute_url(self) -> str:
         return f"/secondary-texts/{self.pk}"
@@ -757,9 +814,15 @@ class ContextualMaterial(Publishable, Taggable, MediaContent):
     works_lookup = "materials"
     search_type = EntityType.MATERIAL
 
-    works = models.ManyToManyField(Work, through="MaterialWorkLink", related_name="materials")
+    works = models.ManyToManyField(
+        Work, verbose_name=_("works"), through="MaterialWorkLink", related_name="materials"
+    )
 
     objects = PublishableQuerySet["ContextualMaterial"].as_manager()
+
+    class Meta(Publishable.Meta):
+        verbose_name = _("contextual material")
+        verbose_name_plural = _("contextual materials")
 
     def get_absolute_url(self) -> str:
         return f"/materials/{self.pk}"
@@ -775,14 +838,21 @@ class SecondaryTextWorkLink(BaseModel, Taggable):
     """A secondary text's link to a work. Its tags appear on the work page (US-RA-05)."""
 
     secondary_text = models.ForeignKey(
-        SecondaryText, on_delete=models.CASCADE, related_name="work_links"
+        SecondaryText,
+        verbose_name=_("secondary text"),
+        on_delete=models.CASCADE,
+        related_name="work_links",
     )
-    work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="secondary_text_links")
+    work = models.ForeignKey(
+        Work, verbose_name=_("work"), on_delete=models.CASCADE, related_name="secondary_text_links"
+    )
 
     item_field = "secondary_text"
     objects = WorkLinkQuerySet["SecondaryTextWorkLink"].as_manager()
 
     class Meta:
+        verbose_name = _("link to a work")
+        verbose_name_plural = _("links to works")
         constraints = (
             models.UniqueConstraint(
                 fields=["secondary_text", "work"], name="unique_secondary_text_work"
@@ -797,14 +867,21 @@ class MaterialWorkLink(BaseModel, Taggable):
     """A contextual material's link to a work. Its tags appear on the work page (US-RA-05)."""
 
     material = models.ForeignKey(
-        ContextualMaterial, on_delete=models.CASCADE, related_name="work_links"
+        ContextualMaterial,
+        verbose_name=_("contextual material"),
+        on_delete=models.CASCADE,
+        related_name="work_links",
     )
-    work = models.ForeignKey(Work, on_delete=models.CASCADE, related_name="material_links")
+    work = models.ForeignKey(
+        Work, verbose_name=_("work"), on_delete=models.CASCADE, related_name="material_links"
+    )
 
     item_field = "material"
     objects = WorkLinkQuerySet["MaterialWorkLink"].as_manager()
 
     class Meta:
+        verbose_name = _("link to a work")
+        verbose_name_plural = _("links to works")
         constraints = (
             models.UniqueConstraint(fields=["material", "work"], name="unique_material_work"),
         )
@@ -823,11 +900,15 @@ class Document(BaseModel):
         OCR = "ocr", _("Scan + OCR text")
         PLAIN = "plain", _("Plain text")
 
-    kind = models.CharField(max_length=10, choices=Kind.choices)
+    kind = models.CharField(_("kind"), max_length=10, choices=Kind.choices)
     scan = models.FileField(
-        upload_to="scans/", blank=True, validators=[PDF_EXTENSION], help_text=_("PDF file.")
+        _("scan"),
+        upload_to="scans/",
+        blank=True,
+        validators=[PDF_EXTENSION],
+        help_text=_("PDF file."),
     )
-    text = models.TextField(blank=True)
+    text = models.TextField(_("text"), blank=True)
     page_offsets = ArrayField(models.PositiveIntegerField(), default=list, editable=False)
 
     _saved_text: str | None = None
@@ -835,6 +916,8 @@ class Document(BaseModel):
 
     class Meta:
         ordering = ("-created_at",)
+        verbose_name = _("document")
+        verbose_name_plural = _("documents")
 
     def __str__(self) -> str:
         owner = self.owner
@@ -973,23 +1056,29 @@ class FragmentQuerySet(models.QuerySet["Fragment"]):
 class Fragment(BaseModel, Taggable):
     """A tagged character range of a document's text. Fragments may overlap freely."""
 
-    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name="fragments")
-    start = models.PositiveIntegerField(editable=False)
-    end = models.PositiveIntegerField(editable=False)
-    quote = models.TextField(editable=False, help_text=_("The selected text."))
-    location = models.CharField(max_length=255, blank=True, help_text=_("E.g. rozdział I."))
+    document = models.ForeignKey(
+        Document, verbose_name=_("document"), on_delete=models.CASCADE, related_name="fragments"
+    )
+    start = models.PositiveIntegerField(_("start"), editable=False)
+    end = models.PositiveIntegerField(_("end"), editable=False)
+    quote = models.TextField(_("quote"), editable=False, help_text=_("The selected text."))
+    location = models.CharField(
+        _("location"), max_length=255, blank=True, help_text=_("E.g. rozdział I.")
+    )
     shelfmark = models.CharField(
+        _("shelfmark number"),
         max_length=50,
         blank=True,
         help_text=_("Number only, e.g. 1618.0009; institution from the document."),
     )
-    description = models.TextField(blank=True)
+    description = models.TextField(_("description"), blank=True)
     is_featured = models.BooleanField(
         _("featured"),
         default=False,
         help_text=_("Shown first in previews and on the home page."),
     )
     needs_review = models.BooleanField(
+        _("needs review"),
         default=False,
         help_text=_("The text changed. Check the fragment, then clear this box."),
     )
@@ -1000,6 +1089,8 @@ class Fragment(BaseModel, Taggable):
 
     class Meta:
         ordering = ("document", "start", "end")
+        verbose_name = _("fragment")
+        verbose_name_plural = _("fragments")
         constraints = (
             models.CheckConstraint(condition=Q(end__gt=F("start")), name="fragment_not_empty"),
         )
@@ -1088,11 +1179,19 @@ class SiteSettings(BaseModel):
     """Editable texts of the home and About pages. There is exactly one row."""
 
     id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
-    intro_text = rich_text_field(help_text=_("Introduction on the home page."))
-    portrait = models.FileField(upload_to="site/", blank=True, validators=[IMAGE_EXTENSIONS])
-    portrait_alt = models.CharField(max_length=255, blank=True)
-    about_intro = rich_text_field(help_text=_("Introduction on the About page."))
-    about_project = rich_text_field(help_text=_("“O projekcie” on the About page."))
+    intro_text = rich_text_field(
+        verbose_name=_("introduction"), help_text=_("Introduction on the home page.")
+    )
+    portrait = models.FileField(
+        _("portrait"), upload_to="site/", blank=True, validators=[IMAGE_EXTENSIONS]
+    )
+    portrait_alt = models.CharField(_("portrait text alternative"), max_length=255, blank=True)
+    about_intro = rich_text_field(
+        verbose_name=_("About page introduction"), help_text=_("Introduction on the About page.")
+    )
+    about_project = rich_text_field(
+        verbose_name=_("About the project"), help_text=_("“O projekcie” on the About page.")
+    )
 
     class Meta:
         verbose_name = _("site settings")
@@ -1113,16 +1212,18 @@ class TeamMember(BaseModel):
         TEAM = "team", _("Team members")
         SITE = "site", _("Website development")
 
-    name = models.CharField(max_length=255)
-    role = models.CharField(max_length=255, blank=True)
-    bio = models.TextField(blank=True)
-    group = models.CharField(max_length=20, choices=Group.choices)
+    name = models.CharField(_("full name"), max_length=255)
+    role = models.CharField(_("role"), max_length=255, blank=True)
+    bio = models.TextField(_("short biography"), blank=True)
+    group = models.CharField(_("group"), max_length=20, choices=Group.choices)
     order = models.PositiveSmallIntegerField(
-        default=0, help_text=_("Lower numbers are shown first.")
+        _("order"), default=0, help_text=_("Lower numbers are shown first.")
     )
 
     class Meta:
         ordering = ("order", "name")
+        verbose_name = _("team member")
+        verbose_name_plural = _("team members")
 
     def __str__(self) -> str:
         return self.name
