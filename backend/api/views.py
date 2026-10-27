@@ -145,7 +145,6 @@ def typescript(request: Request, pk: int) -> Response:
         .with_fragment_count()
         .first()
     )
-    fragments = Fragment.objects.filter(document=current.document).visible().with_number()
     page = TypescriptPage(
         typescript=current,
         work=work,
@@ -155,7 +154,7 @@ def typescript(request: Request, pk: int) -> Response:
             .select_related("institution"),
             key=shelfmark_order,
         ),
-        fragments=fragments.preview(),
+        fragments=Fragment.objects.filter(document=current.document).with_number().preview(),
         tags=list(
             Tag.objects.published()
             .filter(Q(typescripts=current) | Q(fragments__document=current.document))
