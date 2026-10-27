@@ -25,6 +25,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/editor/fragments/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["editor_fragments_list"];
+        put?: never;
+        post: operations["editor_fragments_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/editor/fragments/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["editor_fragments_destroy"];
+        options?: never;
+        head?: never;
+        patch: operations["editor_fragments_partial_update"];
+        trace?: never;
+    };
     "/api/works/": {
         parameters: {
             query?: never;
@@ -55,6 +87,22 @@ export interface components {
             /** @description Groups that have members, in the order of TeamMember.Group. */
             team: components["schemas"]["TeamGroup"][];
         };
+        EditorFragment: {
+            readonly id: number;
+            document: number;
+            start: number;
+            end: number;
+            quote: string;
+            tag_ids: number[];
+            readonly tags: components["schemas"]["EditorTag"][];
+            /** @description The text changed. Check the fragment, then clear this box. */
+            readonly needs_review: boolean;
+        };
+        EditorTag: {
+            readonly id: number;
+            /** Nazwa */
+            readonly title: string;
+        };
         /**
          * @description * `leadership` - Project leadership
          *     * `team` - Team members
@@ -62,6 +110,17 @@ export interface components {
          * @enum {string}
          */
         GroupEnum: "leadership" | "team" | "site";
+        PatchedEditorFragment: {
+            readonly id?: number;
+            document?: number;
+            start?: number;
+            end?: number;
+            quote?: string;
+            tag_ids?: number[];
+            readonly tags?: components["schemas"]["EditorTag"][];
+            /** @description The text changed. Check the fragment, then clear this box. */
+            readonly needs_review?: boolean;
+        };
         TeamGroup: {
             group: components["schemas"]["GroupEnum"];
             members: components["schemas"]["TeamMember"][];
@@ -113,6 +172,97 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AboutPage"];
+                };
+            };
+        };
+    };
+    editor_fragments_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorFragment"][];
+                };
+            };
+        };
+    };
+    editor_fragments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditorFragment"];
+                "application/x-www-form-urlencoded": components["schemas"]["EditorFragment"];
+                "multipart/form-data": components["schemas"]["EditorFragment"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorFragment"];
+                };
+            };
+        };
+    };
+    editor_fragments_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    editor_fragments_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedEditorFragment"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedEditorFragment"];
+                "multipart/form-data": components["schemas"]["PatchedEditorFragment"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorFragment"];
                 };
             };
         };

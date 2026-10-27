@@ -7,7 +7,10 @@ from django.contrib import admin
 from django.db import models
 from django.db.models import QuerySet
 from django.forms import BaseInlineFormSet, ModelForm
-from django.http import HttpRequest
+from django.http import Http404, HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404
+from django.template.response import TemplateResponse
+from django.urls import path, reverse
 from django.utils.html import format_html
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
@@ -30,6 +33,7 @@ from archive.models import (
     Typescript,
     Work,
 )
+from archive.tagger import highlight_segments, tagger_fragments
 
 # Bulk deletes skip each object's `delete()` and its side effects (architecture section 6).
 admin.site.disable_action("delete_selected")
@@ -48,12 +52,28 @@ class SearchIndexedAdmin[M: Publishable | Fragment](admin.ModelAdmin[M]):
         Tag.update_search_entries()
 
 
+class TaggerLinkMixin[M: Typescript | Note | SecondaryText | ContextualMaterial]:
+    @admin.display(description=_("fragments"))
+    def tag_fragments(self, obj: M) -> SafeString | str:
+        document = obj.document
+        if obj.pk is None or document is None or not document.offers_tagger():
+            return "—"
+        url = reverse("admin:archive_document_tagger", args=[obj.document_id])
+        return format_html('<a class="button" href="{}">{}</a>', url, _("Tag fragments"))
+
+
 class TextUploadAdmin[M: Typescript | Note | SecondaryText | ContextualMaterial](
-    SearchIndexedAdmin[M]
+    TaggerLinkMixin[M], SearchIndexedAdmin[M]
 ):
     """The admin of an item whose form uploads its text (`TextUploadForm`)."""
 
     readonly_fields = ("current_scan", "page_count")
+
+    def get_readonly_fields(self, request: HttpRequest, obj: M | None = None) -> tuple[str, ...]:
+        fields = list(super().get_readonly_fields(request, obj))
+        if obj is not None and obj.pk is not None:
+            fields.append("tag_fragments")
+        return tuple(fields)
 
     @admin.display(description=_("current scan"))
     def current_scan(self, obj: M) -> SafeString | None:
@@ -214,6 +234,36 @@ class DocumentAdmin(admin.ModelAdmin[Document]):
     list_display = ("__str__", "kind", "page_count", "updated_at")
     list_filter = ("kind",)
     list_select_related = tuple(Document.owner_accessors())
+
+    def get_urls(self) -> list[Any]:
+        return [
+            path(
+                "<int:object_id>/tagger/",
+                self.admin_site.admin_view(self.tagger_view),
+                name="archive_document_tagger",
+            ),
+            *super().get_urls(),
+        ]
+
+    def tagger_view(self, request: HttpRequest, object_id: int) -> HttpResponse:
+        document = get_object_or_404(
+            Document.objects.select_related(*Document.owner_accessors()),
+            pk=object_id,
+        )
+        if not document.offers_tagger():
+            raise Http404
+        fragments = list(tagger_fragments(document))
+        context = {
+            **self.admin_site.each_context(request),
+            "title": _("Tag fragments"),
+            "document": document,
+            "owner": document.owner,
+            "fragments": fragments,
+            "segments": highlight_segments(document.text, fragments),
+            "tags": Tag.objects.order_by("title"),
+            "opts": self.model._meta,
+        }
+        return TemplateResponse(request, "admin/archive/document/tagger.html", context)
 
     def get_model_perms(self, request: HttpRequest) -> dict[str, bool]:
         """Hide documents from the admin menu: an item's form uploads its text (US-WR-04).

@@ -1,0 +1,73 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'archive/tagger.css' %}">
+{% endblock %}
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% static 'archive/tagger.js' %}" defer></script>
+{% endblock %}
+{% block content %}
+  <div id="tagger" data-document-id="{{ document.pk }}" data-api-url="{% url 'editor-fragments' %}">
+    <h1>{% translate "Tag fragments" %}: {{ owner }}</h1>
+    <p class="help">{% translate "Select text, choose tags, then add a fragment." %}</p>
+
+    <div class="tagger-layout">
+      <section class="tagger-text-panel">
+        <h2>{% translate "Text" %}</h2>
+        <div id="tagger-text" class="tagger-text" tabindex="0">
+          {% for segment in segments %}
+            {% if segment.fragment_ids %}
+              <span class="tagger-fragment" data-fragment-ids="{{ segment.fragment_ids|join:',' }}">{{ segment.text }}</span>
+            {% else %}
+              {{ segment.text }}
+            {% endif %}
+          {% endfor %}
+        </div>
+        <form id="tagger-create" class="tagger-form">
+          <p>
+            <label for="tagger-selection">{% translate "Selection" %}</label>
+            <output id="tagger-selection" for="tagger-text">—</output>
+          </p>
+          <p>
+            <label for="tagger-tags">{% translate "Tags" %}</label>
+            <select id="tagger-tags" name="tag_ids" multiple required size="8">
+              {% for tag in tags %}
+                <option value="{{ tag.pk }}">{{ tag.title }}</option>
+              {% endfor %}
+            </select>
+          </p>
+          <button type="submit" class="button default">{% translate "Add fragment" %}</button>
+        </form>
+      </section>
+
+      <section class="tagger-fragments">
+        <h2>{% translate "Fragments" %}</h2>
+        <ul class="tagger-fragment-list">
+          {% for fragment in fragments %}
+            <li
+              class="tagger-fragment-item{% if fragment.needs_review %} tagger-needs-review{% endif %}"
+              data-fragment-id="{{ fragment.pk }}"
+            >
+              <p class="tagger-quote">{{ fragment.quote }}</p>
+              <p class="tagger-tags">
+                {% for tag in fragment.tags.all %}
+                  <span>{{ tag.title }}</span>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </p>
+              <p class="tagger-actions">
+                <a href="{% url 'admin:archive_fragment_change' fragment.pk %}">{% translate "Edit metadata" %}</a>
+                <button type="button" class="tagger-delete" data-fragment-id="{{ fragment.pk }}">
+                  {% translate "Delete" %}
+                </button>
+              </p>
+            </li>
+          {% empty %}
+            <li class="tagger-empty">{% translate "No fragments yet." %}</li>
+          {% endfor %}
+        </ul>
+      </section>
+    </div>
+  </div>
+{% endblock %}
