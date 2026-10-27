@@ -37,6 +37,8 @@ export const nouns = {
   fragment: { one: "fragment", few: "fragmenty", many: "fragmentów" },
   occurrence: { one: "wystąpienie", few: "wystąpienia", many: "wystąpień" },
   work: { one: "utwór", few: "utwory", many: "utworów" },
+  /** "w 1 utworze", "w 2 utworach". */
+  workLocative: { one: "utworze", few: "utworach", many: "utworach" },
   typescript: { one: "maszynopis", few: "maszynopisy", many: "maszynopisów" },
   note: { one: "zapisek", few: "zapiski", many: "zapisków" },
   tag: { one: "tag", few: "tagi", many: "tagów" },
@@ -170,6 +172,30 @@ export const copy = {
     tags: "Powiązane tagi",
     loading: "Wczytuję tekst sekundarny…",
     error: "Nie udało się wczytać tekstu sekundarnego. Spróbuj ponownie później.",
+  },
+  /** The tag page (US-RA-07). */
+  tag: {
+    /** The hero's type line: "Tag · 4 wystąpienia w 2 utworach". */
+    label: (occurrences: number, works: number) =>
+      [
+        "Tag",
+        [
+          formatCount(occurrences, nouns.occurrence),
+          works > 0 && `w ${formatCount(works, nouns.workLocative)}`,
+        ]
+          .filter(Boolean)
+          .join(" "),
+      ].join(" · "),
+    works: "Utwory",
+    /** A work's line in the context column: "2 fragmenty z tagiem". */
+    workFragments: (count: number) => `${formatCount(count, nouns.fragment)} z tagiem`,
+    fragments: "Fragmenty z tagiem",
+    fragmentsDescription: "W kolejności wydania utworów",
+    notes: "Zapiski z tagiem",
+    related: "Powiązane tagi",
+    materialsDescription: "Opracowania i materiały wizualne z tym tagiem",
+    loading: "Wczytuję tag…",
+    error: "Nie udało się wczytać tagu. Spróbuj ponownie później.",
   },
   /** The fragment card (R-10) and the note card (US-RA-04 AC3). */
   card: {

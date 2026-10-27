@@ -335,7 +335,11 @@ class EditionSerializer(serializers.ModelSerializer[Edition]):
 
 class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
     """The fragment card (R-10), from a queryset with `with_number()`. Its source is the
-    published item holding the fragment's document."""
+    published item holding the fragment's document.
+
+    Without the context's `works` (the sources' published works by document ID, by year), each
+    card queries its source's works.
+    """
 
     url = serializers.SerializerMethodField(help_text="The source, scrolled to the fragment.")
     source_type = serializers.ChoiceField(
@@ -393,7 +397,10 @@ class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
         return f"{owner.get_absolute_url()}?fragment={fragment.pk}"
 
     def get_work(self, fragment: Fragment) -> str:
-        return ", ".join(work.title for work in self.owner(fragment).related_works())
+        works: dict[int, list[Work]] | None = self.context.get("works")
+        if works is None:
+            return ", ".join(work.title for work in self.owner(fragment).related_works())
+        return ", ".join(work.title for work in works.get(fragment.document_id, []))
 
     def get_scan(self, fragment: Fragment) -> str:
         return fragment.document.scan.url if fragment.document.scan else ""
@@ -498,6 +505,43 @@ class SecondaryTextPageSerializer(serializers.Serializer[SecondaryTextPage]):
     )
     tags = TagChipSerializer(
         many=True, help_text="Tags on the text, its fragments and its work links, by name."
+    )
+
+
+@dataclass(frozen=True)
+class TagPage:
+    tag: Tag
+    works: list[Work]
+    fragments: list[Fragment]
+    notes: list[Note]
+    related: list[Tag]
+    materials: ContextualMaterials
+
+
+class TagPageSerializer(serializers.Serializer[TagPage]):
+    """US-RA-07, from a tag with `with_occurrences()`. `description` is rich text: HTML,
+    sanitized when an editor saves it."""
+
+    slug = serializers.CharField(source="tag.slug")
+    title = serializers.CharField(source="tag.title")
+    description = serializers.CharField(
+        source="tag.description", allow_blank=True, help_text="HTML."
+    )
+    occurrences = serializers.IntegerField(source="tag.occurrences")
+    works = WorkSummarySerializer(
+        many=True,
+        help_text="The works the tag refers to (US-RA-07 AC5), by first edition. "
+        "`fragment_count` counts the main typescript's fragments that carry the tag (D19).",
+    )
+    fragments = FragmentCardSerializer(
+        many=True, help_text="Every visible fragment with the tag: by work, then text order."
+    )
+    notes = NoteCardSerializer(
+        many=True, help_text="Notes with the tag on the whole note or a fragment, by title."
+    )
+    related = TagChipSerializer(many=True, help_text="Published related tags, by name.")
+    materials = ContextualMaterialsSerializer(
+        help_text="Those with the tag on the whole item, a fragment, or a work link."
     )
 
 

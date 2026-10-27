@@ -22,6 +22,8 @@ from api.serializers import (
     SecondaryTextPageSerializer,
     SuggestionSerializer,
     TagCountSerializer,
+    TagPage,
+    TagPageSerializer,
     TeamGroup,
     TypescriptGroup,
     TypescriptGroupSerializer,
@@ -36,6 +38,7 @@ from archive.models import (
     ContextualMaterial,
     Document,
     Fragment,
+    MaterialWorkLink,
     Note,
     Preview,
     Publishable,
@@ -268,6 +271,80 @@ def secondary_text(request: Request, pk: int) -> Response:
         ),
     )
     return Response(SecondaryTextPageSerializer(page).data)
+
+
+def source_works(fragments: list[Fragment], works: list[Work]) -> dict[int, list[Work]]:
+    """The published works of the fragments' sources, by first edition, keyed by document ID:
+    one query per kind of source instead of one per fragment. `works` holds them all."""
+    by_pk = {work.pk: work for work in works}
+    documents = {fragment.document_id for fragment in fragments}
+    sources: dict[int, list[Work]] = defaultdict(list)
+    for source in (Typescript, Note, SecondaryText, ContextualMaterial):
+        document = f"{source.works_lookup}__document"
+        pairs = (
+            Work.objects.published()
+            .with_year()
+            .filter(**{f"{document}__in": documents})
+            .values_list(document, "pk")
+        )
+        for document_id, work_id in pairs:
+            sources[document_id].append(by_pk[work_id])
+    return sources
+
+
+@extend_schema(responses=TagPageSerializer)
+@api_view(["GET"])
+def tag(request: Request, slug: str) -> Response:
+    """The tag page (US-RA-07). A draft tag is not found (R-06)."""
+    current = get_object_or_404(Tag.objects.published().with_occurrences(), slug=slug)
+    works = list(
+        Work.objects.published()
+        .referred_to_by(current)
+        .with_year()
+        .with_fragment_count(current)
+        .distinct()
+    )
+    published_tags = Prefetch("tags", Tag.objects.published())
+    owners = [f"document__{owner}__institution" for owner in Document.owner_accessors()]
+    fragments = list(
+        Fragment.objects.visible()
+        .filter(tags=current)
+        .select_related("document", *owners)
+        .prefetch_related(published_tags)
+        .with_number()
+    )
+    sources = source_works(fragments, works)
+    position = {work.pk: index for index, work in enumerate(works)}
+
+    def by_work_then_text(fragment: Fragment) -> tuple[int, int, int, int, int]:
+        first = sources.get(fragment.document_id)
+        work = position[first[0].pk] if first else len(position)
+        return (work, fragment.document_id, fragment.start, fragment.end, fragment.pk)
+
+    carrying = Q(tags=current) | Q(document__fragments__tags=current)
+    page = TagPage(
+        tag=current,
+        works=works,
+        fragments=sorted(fragments, key=by_work_then_text),
+        notes=list(
+            Note.objects.published()
+            .filter(carrying)
+            .distinct()
+            .select_related("institution")
+            .prefetch_related(published_tags)
+        ),
+        related=list(Tag.objects.published().filter(related=current).order_by("title")),
+        materials=contextual_materials(
+            SecondaryText.objects.filter(
+                carrying
+                | Q(work_links__in=SecondaryTextWorkLink.objects.visible().filter(tags=current))
+            ).distinct(),
+            ContextualMaterial.objects.filter(
+                carrying | Q(work_links__in=MaterialWorkLink.objects.visible().filter(tags=current))
+            ).distinct(),
+        ),
+    )
+    return Response(TagPageSerializer(page, context={"works": sources}).data)
 
 
 @extend_schema(responses=DocumentSerializer)

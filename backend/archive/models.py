@@ -597,14 +597,17 @@ class WorkQuerySet(PublishableQuerySet["Work"]):
             F("year").asc(nulls_last=True), "title"
         )
 
-    def with_fragment_count(self) -> Self:
-        """Annotate `fragment_count`: the visible fragments of the work's main typescript (D19).
+    def with_fragment_count(self, tag: "Tag | None" = None) -> Self:
+        """Annotate `fragment_count`: the visible fragments of the work's main typescript (D19),
+        only those carrying `tag` if one is given (US-RA-07 AC2).
 
         A work without a main typescript, or with a draft one, counts 0.
         """
         fragments = Fragment.objects.visible().filter(
             document__typescript__work=OuterRef("pk"), document__typescript__is_main=True
         )
+        if tag is not None:
+            fragments = fragments.filter(tags=tag)
         return self.annotate(fragment_count=count_of(fragments))
 
     def referred_to_by(self, tag: "Tag") -> Self:
