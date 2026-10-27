@@ -37,6 +37,13 @@ def stored(entity_type: EntityType, entity_id: int) -> SearchEntry:
     return SearchEntry.objects.get(entity_type=entity_type, entity_id=entity_id)
 
 
+def snapshot() -> set[tuple[object, ...]]:
+    """Every entry with what search reads from it, to compare the index with a rebuild."""
+    fields = ("entity_type", "entity_id", "title", "url", "body", "work_ids", "decades")
+    rows = SearchEntry.objects.values_list(*fields, "has_scan", "has_text")
+    return {tuple(tuple(v) if isinstance(v, list) else v for v in row) for row in rows}
+
+
 @pytest.mark.django_db
 def test_the_text_search_config_exists() -> None:
     """Architecture section 6: the database has the configured configuration (`polish` in CI)."""
@@ -152,8 +159,9 @@ class TestWrites:
     def test_deleting_removes_the_entries_of_an_item_and_its_fragments(self) -> None:
         # Arrange
         typescript = TypescriptFactory.create(status=PUBLISHED)
-        fragment = FragmentFactory.create(document=typescript.document)
+        FragmentFactory.create(document=typescript.document)
         other = FragmentFactory.create(document=typescript.document, start=1)
+        assert SearchEntry.objects.count() == 3
 
         # Act
         other.delete()
@@ -161,7 +169,6 @@ class TestWrites:
 
         # Assert
         assert not SearchEntry.objects.exists()
-        assert fragment.pk is not None
 
     def test_changing_a_text_updates_its_owner_entry(self) -> None:
         # Arrange
@@ -380,6 +387,36 @@ class TestEditorPanel:
         assert response.status_code == 302
         tag_entry = stored(EntityType.TAG, tag.pk)
         assert tag_entry.work_ids == [work.pk]
+
+    def test_publishing_in_the_panel_leaves_the_index_as_a_rebuild_would(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        tag = TagFactory.create(status=PUBLISHED)
+        work = WorkFactory.create(status=PUBLISHED)
+        EditionFactory.create(work=work, year=1947)
+        typescript = TypescriptFactory.create(work=work, title="Pierwsza wersja")
+        fragment = FragmentFactory.create(document=typescript.document)
+        fragment.tags.add(tag)
+        data = {
+            "title": typescript.title,
+            "status": PUBLISHED,
+            "work": work.pk,
+            "document": typescript.document_id,
+        }
+
+        # Act
+        response = admin_client.post(
+            reverse("admin:archive_typescript_change", args=[typescript.pk]), data
+        )
+
+        # Assert
+        assert response.status_code == 302
+        published = snapshot()
+        call_command("rebuild_search_index", stdout=StringIO())
+        assert snapshot() == published
+        assert stored(EntityType.TAG, tag.pk).work_ids == [work.pk]
+        assert entry(EntityType.FRAGMENT, fragment.pk) is not None
 
 
 @pytest.mark.django_db

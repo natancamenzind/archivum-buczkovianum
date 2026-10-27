@@ -1,9 +1,12 @@
 """The search query service (US-RA-15, US-RA-16)."""
 
+from collections.abc import Callable
+
 import pytest
 
-from archive.models import ContentKind, Status
+from archive.models import ContentKind, Status, Typescript, Work
 from archive.tests.factories import (
+    ContextualMaterialFactory,
     DocumentFactory,
     EditionFactory,
     FragmentFactory,
@@ -128,6 +131,31 @@ class TestResults:
         # Assert
         assert titles(results) == [("work", "Czarny potok")]
 
+    def test_us_ra_15_ac4_more_occurrences_rank_higher(self) -> None:
+        # Arrange
+        NoteFactory.create(status=PUBLISHED, title="Notes 1", description="Las.")
+        NoteFactory.create(status=PUBLISHED, title="Notes 2", description="Las, las i las.")
+
+        # Act
+        results = search("las")
+
+        # Assert
+        assert titles(results) == [("note", "Notes 2"), ("note", "Notes 1")]
+
+    def test_us_ra_15_minus_excludes_a_word_and_or_joins_alternatives(self) -> None:
+        # Arrange
+        WorkFactory.create(status=PUBLISHED, title="Czarny potok")
+        WorkFactory.create(status=PUBLISHED, title="Czarny las")
+        WorkFactory.create(status=PUBLISHED, title="Zielony las")
+
+        # Act
+        excluding = search("czarny -potok")
+        either = search("potok or zielony", sort=Sort.TITLE)
+
+        # Assert
+        assert titles(excluding) == [("work", "Czarny las")]
+        assert titles(either) == [("work", "Czarny potok"), ("work", "Zielony las")]
+
     def test_us_ra_15_ac8_no_results_suggest_the_most_frequent_tags(self) -> None:
         # Arrange
         work = WorkFactory.create(status=PUBLISHED)
@@ -157,6 +185,158 @@ class TestResults:
         # Assert
         assert titles(results) == [("work", "Czarny potok"), ("work", "Wertepy")]
         assert results.suggested_tags == []
+
+
+def note_with_text(title: str, text: str) -> None:
+    NoteFactory.create(
+        status=PUBLISHED,
+        title=title,
+        content_kind=ContentKind.PLAIN_TEXT,
+        external_url="",
+        document=DocumentFactory.create(text=text),
+    )
+
+
+def fragment_with_description(description: str) -> None:
+    typescript = TypescriptFactory.create(status=PUBLISHED, document__text="Szedł przez las.")
+    FragmentFactory.create(document=typescript.document, start=0, end=5, description=description)
+
+
+@pytest.mark.django_db
+class TestIndexedTexts:
+    """US-RA-15 AC1, read through `search()`: each kind of indexed text finds its entity."""
+
+    @pytest.mark.parametrize(
+        ("create", "found"),
+        [
+            pytest.param(
+                lambda: WorkFactory.create(
+                    status=PUBLISHED, title="Wertepy", description="Zegarmistrz z Dorohuczy."
+                ),
+                ("work", "Wertepy"),
+                id="work description",
+            ),
+            pytest.param(
+                lambda: TagFactory.create(status=PUBLISHED, title="Zegarmistrz"),
+                ("tag", "Zegarmistrz"),
+                id="tag name",
+            ),
+            pytest.param(
+                lambda: TagFactory.create(
+                    status=PUBLISHED, title="Rzemiosło", description="Zegarmistrz i warsztat."
+                ),
+                ("tag", "Rzemiosło"),
+                id="tag description",
+            ),
+            pytest.param(
+                lambda: fragment_with_description("Zegarmistrz w lesie."),
+                ("fragment", "Szedł"),
+                id="fragment description",
+            ),
+            pytest.param(
+                lambda: TypescriptFactory.create(
+                    status=PUBLISHED,
+                    title="Pierwsza wersja",
+                    document__text="Szedł zegarmistrz przez las.",
+                ),
+                ("typescript", "Pierwsza wersja"),
+                id="OCR text",
+            ),
+            pytest.param(
+                lambda: note_with_text("Notes 18", "Zegarmistrz wrócił."),
+                ("note", "Notes 18"),
+                id="plain text of a note",
+            ),
+            pytest.param(
+                lambda: SecondaryTextFactory.create(
+                    status=PUBLISHED, title="List", document__text="Pisze zegarmistrz."
+                ),
+                ("secondary_text", "List"),
+                id="plain text of a secondary text",
+            ),
+            pytest.param(
+                lambda: ContextualMaterialFactory.create(
+                    status=PUBLISHED, title="Zegarmistrz na fotografii"
+                ),
+                ("material", "Zegarmistrz na fotografii"),
+                id="material title",
+            ),
+        ],
+    )
+    def test_us_ra_15_ac1_every_indexed_text_is_found(
+        self, create: Callable[[], object], found: tuple[str, str]
+    ) -> None:
+        # Arrange
+        create()
+
+        # Act
+        results = search("zegarmistrz")
+
+        # Assert
+        assert titles(results) == [found]
+
+
+@pytest.mark.django_db
+class TestEdits:
+    """Search answers from the index, so every edit must reach it at once (architecture §6)."""
+
+    def test_us_wr_04_ac4_a_new_title_is_found_and_the_old_one_is_not(self) -> None:
+        # Arrange
+        work = WorkFactory.create(status=PUBLISHED, title="Wertepy")
+        work.title = "Bezdroża"
+
+        # Act
+        work.save()
+
+        # Assert
+        assert titles(search("bezdroża")) == [("work", "Bezdroża")]
+        assert search("wertepy").total == 0
+
+    def test_r_06_unpublishing_takes_an_item_and_its_fragments_out_of_results(
+        self, archive: dict[str, int]
+    ) -> None:
+        # Arrange
+        typescript = Typescript.objects.get(title="Pierwsza wersja")
+        assert search("dezerter").total == 5
+        typescript.status = Status.DRAFT
+
+        # Act
+        typescript.save()
+
+        # Assert
+        assert titles(search("dezerter")) == [
+            ("work", "Wertepy"),
+            ("tag", "Dezerter"),
+            ("note", "Notes 18"),
+        ]
+
+    def test_r_06_publishing_a_draft_makes_it_found(self, archive: dict[str, int]) -> None:
+        # Arrange
+        draft = Work.objects.get(title="Dezerter (szkic)")
+        assert search("szkic").total == 0
+        draft.status = PUBLISHED
+
+        # Act
+        draft.save()
+
+        # Assert
+        assert titles(search("szkic")) == [("work", "Dezerter (szkic)")]
+
+    def test_us_wr_09_ac4_a_changed_text_is_found_by_its_new_words(self) -> None:
+        # Arrange
+        secondary_text = SecondaryTextFactory.create(
+            status=PUBLISHED, title="List", document__text="Pisze o potoku."
+        )
+        document = secondary_text.document
+        assert document is not None
+        document.text = "Pisze o zegarmistrzu."
+
+        # Act
+        document.save()
+
+        # Assert
+        assert titles(search("zegarmistrzu")) == [("secondary_text", "List")]
+        assert search("potoku").total == 0
 
 
 @pytest.mark.django_db
