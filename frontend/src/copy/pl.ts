@@ -100,6 +100,17 @@ export const copy = {
     loading: "Wczytuję maszynopisy…",
     error: "Nie udało się wczytać maszynopisów. Spróbuj ponownie później.",
   },
+  /** The search field in the header and on the search page (US-RA-14). */
+  search: {
+    title: "Wyszukiwanie",
+    /** The header field's text, the mobile icon's name and the fields' accessible name. */
+    label: "Szukaj w archiwum",
+    placeholder: "Tytuł, opis, transkrypcja lub tag",
+    submit: "Szukaj",
+    clear: "Wyczyść",
+    scope: "Przeszukiwane: tytuły, opisy, transkrypcje i tagi",
+    hint: "Dokładna fraza: użyj cudzysłowu, np. „dezerter w stodole”",
+  },
   notFound: {
     title: "Nie znaleziono strony",
     body: "Pod tym adresem nie ma żadnej strony.",
