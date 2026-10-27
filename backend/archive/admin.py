@@ -194,7 +194,7 @@ class DocumentAdmin(admin.ModelAdmin[Document]):
     def get_model_perms(self, request: HttpRequest) -> dict[str, bool]:
         """Hide documents from the admin menu: an item's form uploads its text (US-WR-04).
 
-        The admin stays registered for the `document` lookup of the forms steps 7 and 9 replace.
+        The admin stays registered for the `document` lookup of the forms steps 7 to 9 replace.
         """
         return {}
 
