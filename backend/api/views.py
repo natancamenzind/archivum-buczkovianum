@@ -49,7 +49,7 @@ def works(request: Request) -> Response:
 def shelfmark_order(typescript: Typescript) -> tuple[bool, list[int | str], str]:
     """Shelfmarks compare as numbers ("999" before "1618"); typescripts without one come last."""
     parts = re.split(r"(\d+)", typescript.shelfmark)
-    number: list[int | str] = [int(part) if part.isdigit() else part for part in parts]
+    number: list[int | str] = [int(part) if part.isdecimal() else part for part in parts]
     return (typescript.shelfmark == "", number, typescript.title)
 
 
