@@ -110,8 +110,8 @@ def search(
 ) -> SearchResults:
     """Find entries matching `text` (web search syntax: "quoted phrases", or, -word).
 
-    An empty `text`, or one of stopwords only, matches everything in the tab and filters,
-    sorted by title (US-RA-16 AC5).
+    An empty `text`, or one without words to search for, matches everything in the tab and
+    filters, sorted by title (US-RA-16 AC5).
     """
     filters = filters or Filters()
     query = None
@@ -138,8 +138,8 @@ def search(
 
 
 def _has_lexemes(text: str) -> bool:
-    """Whether `text` has a word to search for. Stopwords ("w") and operators alone ("-") have
-    none, and PostgreSQL would match nothing with them."""
+    """Whether `text` has a word to search for. Operators alone ("-") and stopwords have none,
+    and PostgreSQL would match nothing with them. PostgreSQL's `polish` has no stopwords."""
     if not text.strip():
         return False
     with connection.cursor() as cursor:

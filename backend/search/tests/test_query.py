@@ -187,19 +187,18 @@ class TestResults:
         assert titles(results) == [("work", "Czarny potok"), ("work", "Wertepy")]
         assert results.suggested_tags == []
 
-    def test_us_ra_15_a_query_of_only_stopwords_is_an_empty_query(
+    def test_us_ra_15_a_query_without_words_is_an_empty_query(
         self, archive: dict[str, int]
     ) -> None:
         # Arrange
-        queries = ["-", "w"] if settings.SEARCH_TS_CONFIG == "polish" else ["-"]
+        query = "-"
 
         # Act
-        results = [search(query, tab=Tab.WORKS) for query in queries]
+        results = search(query, tab=Tab.WORKS)
 
         # Assert
-        for result in results:
-            assert titles(result) == [("work", "Czarny potok"), ("work", "Wertepy")]
-            assert result.suggested_tags == []
+        assert titles(results) == [("work", "Czarny potok"), ("work", "Wertepy")]
+        assert results.suggested_tags == []
 
     def test_us_ra_15_ac5_counts_the_matching_fragments_of_each_work(
         self, archive: dict[str, int]
