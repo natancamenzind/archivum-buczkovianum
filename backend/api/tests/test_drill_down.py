@@ -39,10 +39,9 @@ def built_site(settings: Settings, tmp_path: Path) -> None:
 
 
 def work_page_links(client: Client, work: Work) -> list[str]:
-    """Every link `frontend/src/pages/WorkPage.tsx` builds from the work's endpoint.
-
-    The main column, the tag column and the contextual materials block; editions have no page.
-    """
+    """The links `frontend/src/pages/WorkPage.tsx` builds from the work's endpoint to archive
+    pages: the main column, the tag column and the contextual materials block. Editions have no
+    page; links inside descriptions are the editors' own."""
     response = client.get(reverse("work", args=[work.slug]))
     assert response.status_code == 200
     page: dict[str, Any] = response.json()
@@ -53,7 +52,7 @@ def work_page_links(client: Client, work: Work) -> list[str]:
     links = [item["url"] for item in fragments + notes + materials]
     links += [f"/typescripts/{typescript['id']}" for typescript in page["typescripts"]]
     links += [f"/tags/{tag['slug']}" for tag in page["tags"] + chips]
-    if page["main_typescript"] is not None:
+    if page["main_typescript"] is not None and len(fragments) < page["fragments"]["total"]:
         links.append(f"/typescripts/{page['main_typescript']}?fragments=all")
     return links
 
@@ -84,7 +83,7 @@ class TestDrillDown:
             link for work in Work.objects.published() for link in work_page_links(client, work)
         ]
 
-        # Assert: the demo has an item of every kind the work page links to, so none goes untried.
+        # Assert: the demo has a link to every kind of page the work page links to.
         for link in links:
             assert_opens_a_page(client, link)
         assert {urlsplit(link).path.split("/")[1] for link in links} == {
@@ -95,6 +94,7 @@ class TestDrillDown:
             "materials",
         }
         assert any("?fragment=" in link for link in links)
+        assert any("?fragments=all" in link for link in links)
 
     def test_us_ra_06_ac1_items_linked_next_to_drafts_open_their_pages(
         self, client: Client
@@ -104,14 +104,9 @@ class TestDrillDown:
         EditionFactory.create(work=work)
         tag = TagFactory.create(status=PUBLISHED)
         draft_tag = TagFactory.create(status=Status.DRAFT)
-        main = TypescriptFactory.create(
-            work=work,
-            is_main=True,
-            status=PUBLISHED,
-            document=DocumentFactory.create(ocr=True, text="Pierwsza strona.", page_offsets=[0]),
-        )
-        assert main.document is not None
-        FragmentFactory.create(document=main.document).tags.add(tag, draft_tag)
+        document = DocumentFactory.create(ocr=True, text="Pierwsza strona.", page_offsets=[0])
+        TypescriptFactory.create(work=work, is_main=True, status=PUBLISHED, document=document)
+        FragmentFactory.create(document=document).tags.add(tag, draft_tag)
         TypescriptFactory.create(work=work, status=Status.DRAFT)
         for status in (PUBLISHED, Status.DRAFT):
             note = NoteFactory.create(status=status)
@@ -135,8 +130,8 @@ class TestDrillDown:
         # Act
         links = work_page_links(client, work)
 
-        # Assert: a fragment, its tag chip, a typescript, the "all" link, a note and its chip,
-        # the tag column's tag, a secondary text and two materials.
+        # Assert: a fragment and its tag chip, a typescript, a note and its tag chip, the tag
+        # column's tag, a secondary text and two materials.
         for link in links:
             assert_opens_a_page(client, link)
-        assert len(links) == 10
+        assert len(links) == 9

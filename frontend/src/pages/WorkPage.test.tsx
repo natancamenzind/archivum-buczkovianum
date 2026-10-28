@@ -392,18 +392,31 @@ describe("WorkPage", () => {
     const hrefs = within(screen.getByRole("main"))
       .getAllByRole("link")
       .map((link) => link.getAttribute("href") ?? "");
-    // A note's description is the one place with a link out of the archive.
-    expect(hrefs.filter((href) => !href.startsWith("/"))).toEqual(["https://example.com/notes"]);
-    const internal = hrefs.filter((href) => href.startsWith("/"));
-    for (const href of internal) {
+    // The note description's own link is the only one out of the archive.
+    expect([...hrefs].sort()).toEqual(
+      [
+        "/typescripts/1?fragment=5",
+        "/tags/epidemia",
+        "/typescripts/1?fragment=7",
+        "/typescripts/1?fragments=all",
+        "/typescripts/1",
+        "/typescripts/2",
+        "/notes/3",
+        "https://example.com/notes",
+        "/tags/dezerter",
+        "/notes/4",
+        "/tags/dezerter",
+        "/tags/epidemia",
+        "/secondary-texts/4",
+        "/materials/9",
+      ].sort(),
+    );
+    for (const href of hrefs.filter((link) => link.startsWith("/"))) {
       expect(
         matchRoutes(routes, href)?.map((match) => match.route.path),
         href,
       ).not.toContain("*");
     }
-    expect(new Set(internal.map((href) => href.split(/[/?]/)[1]))).toEqual(
-      new Set(["typescripts", "tags", "notes", "secondary-texts", "materials"]),
-    );
     expect(await axeViolations(container)).toEqual([]);
   });
 
