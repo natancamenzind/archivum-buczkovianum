@@ -812,7 +812,6 @@ class HomeStatistics:
 @dataclass(frozen=True)
 class FeaturedFragment:
     fragment: Fragment
-    # The source's first published work, with the fragments search finds in it.
     work: WorkFacet | None
 
 
