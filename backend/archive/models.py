@@ -1085,7 +1085,8 @@ class FragmentQuerySet(models.QuerySet["Fragment"]):
         share a published tag with `item` or with a fragment of its text. Featured first, then
         by the work's first edition and text order (R-09), ready for `preview()`.
 
-        Callers pass a published item: a draft's tags must not reach the public (R-06)."""
+        Callers pass a published item, or a draft only for staff previewing it (US-WR-13): a
+        draft's tags must not reach the public (R-06)."""
         own = (
             Fragment.objects.filter(document_id=item.document_id)
             if item.document_id

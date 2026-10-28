@@ -9,8 +9,10 @@ from archive.models import ContentKind, Publishable, Status
 from archive.tests.factories import (
     ContextualMaterialFactory,
     DocumentFactory,
+    MaterialWorkLinkFactory,
     NoteFactory,
     SecondaryTextFactory,
+    SecondaryTextWorkLinkFactory,
     TagFactory,
     TypescriptFactory,
     WorkFactory,
@@ -156,6 +158,65 @@ class TestDraftsStayUnlisted:
         # Assert
         assert [work["slug"] for work in result["works"]] == [published.slug]
         assert result["tags"] == []
+
+    @pytest.mark.parametrize(
+        ("factory", "link_factory", "item_field"),
+        (
+            (SecondaryTextFactory, SecondaryTextWorkLinkFactory, "secondary_text"),
+            (ContextualMaterialFactory, MaterialWorkLinkFactory, "material"),
+        ),
+    )
+    def test_us_wr_13_ac2_a_draft_preview_shows_its_work_link_tags(
+        self,
+        staff_client: Client,
+        factory: type[SecondaryTextFactory | ContextualMaterialFactory],
+        link_factory: type[SecondaryTextWorkLinkFactory | MaterialWorkLinkFactory],
+        item_field: str,
+    ) -> None:
+        # Arrange
+        item = factory.create(status=DRAFT)
+        wojna = TagFactory.create(title="Wojna", slug="wojna", status=PUBLISHED)
+        link_factory.create(
+            **{item_field: item, "work": WorkFactory.create(status=PUBLISHED)}
+        ).tags.add(wojna)
+        link_factory.create(
+            **{item_field: item, "work": WorkFactory.create(status=DRAFT)}
+        ).tags.add(TagFactory.create(status=PUBLISHED))
+
+        # Act
+        result = staff_client.get(page_url(item)).json()
+
+        # Assert: as the page will be once published; a link to a draft work brings none.
+        assert result["tags"] == [{"slug": "wojna", "title": "Wojna"}]
+
+    def test_r_06_a_draft_preview_leaves_out_draft_typescripts_and_related_tags(
+        self, staff_client: Client
+    ) -> None:
+        # Arrange
+        typescript = TypescriptFactory.create(status=DRAFT)
+        TypescriptFactory.create(status=DRAFT, work=typescript.work)
+        tag = TagFactory.create(status=DRAFT)
+        tag.related.add(TagFactory.create(status=DRAFT))
+
+        # Act
+        typescript_page = staff_client.get(page_url(typescript)).json()
+        tag_page = staff_client.get(page_url(tag)).json()
+
+        # Assert: only the previewed draft itself is shown.
+        assert [row["id"] for row in typescript_page["work_typescripts"]] == []
+        assert tag_page["related"] == []
+
+    def test_r_06_staff_sees_no_draft_in_lists_or_search(self, staff_client: Client) -> None:
+        # Arrange
+        WorkFactory.create(status=DRAFT, title="Szkicownik")
+
+        # Act
+        listed = staff_client.get(reverse("works")).json()
+        found = staff_client.get(reverse("search"), {"q": "Szkicownik"}).json()
+
+        # Assert
+        assert listed == []
+        assert found["works"] == []
 
     def test_r_06_staff_sees_no_draft_on_a_published_page(self, staff_client: Client) -> None:
         # Arrange

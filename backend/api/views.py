@@ -65,6 +65,7 @@ from archive.models import (
     Typescript,
     Work,
     preview,
+    published_q,
 )
 from search.models import EntityType
 from search.query import (
@@ -398,7 +399,7 @@ def secondary_text(request: Request, pk: int) -> Response:
     """The secondary text page (US-RA-10). A draft secondary text is shown only to staff (R-06)."""
     current = get_object_or_404(viewable(request, SecondaryText.objects.all()), pk=pk)
     published_tags = Tag.objects.published()
-    links = SecondaryTextWorkLink.objects.visible().filter(secondary_text=current)
+    links = SecondaryTextWorkLink.objects.filter(published_q("work__"), secondary_text=current)
     page = SecondaryTextPage(
         secondary_text=current,
         works=list(current.related_works().with_fragment_count()),
@@ -445,7 +446,7 @@ def material(request: Request, pk: int) -> Response:
         viewable(request, ContextualMaterial.objects.select_related("institution")), pk=pk
     )
     published_tags = Tag.objects.published()
-    links = MaterialWorkLink.objects.visible().filter(material=current)
+    links = MaterialWorkLink.objects.filter(published_q("work__"), material=current)
     page = MaterialPage(
         material=current,
         works=list(current.related_works().with_fragment_count()),
