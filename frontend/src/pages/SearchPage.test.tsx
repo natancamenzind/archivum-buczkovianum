@@ -707,6 +707,35 @@ describe("SearchPage tabs and filters", () => {
     expect(await panel.findByRole("checkbox", { name: "Wertepy 5" })).not.toBeChecked();
   });
 
+  it("US-RA-16 AC3: 'Wyczyść' without a query keeps listing everything, panel open", async () => {
+    mockSearch();
+
+    const { router } = renderRoute("/search?work=1");
+
+    const panel = within(await openPanel());
+    fireEvent.click(panel.getByRole("button", { name: "Wyczyść" }));
+
+    expect(router.state.location.search).toBe("?tab=all");
+    expect(await panel.findByRole("button", { name: "Pokaż wyniki (8)" })).toBeVisible();
+  });
+
+  it("US-RA-16 AC3: the panel stays open when clearing its filters finds nothing", async () => {
+    server.use(
+      http.get(SEARCH_URL, ({ request }) => {
+        const filtered = new URL(request.url).searchParams.has("work");
+        return HttpResponse.json(filtered ? RESULTS : { ...EMPTY, facets: RESULTS.facets });
+      }),
+    );
+
+    renderRoute("/search?q=dezerter&work=1");
+
+    const panel = within(await openPanel());
+    fireEvent.click(panel.getByRole("button", { name: "Wyczyść" }));
+
+    expect(await panel.findByRole("button", { name: "Pokaż wyniki (0)" })).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "Filtry" })).toBeVisible();
+  });
+
   it("US-RA-16 AC3: the close icon closes the panel", async () => {
     mockSearch();
 
@@ -744,7 +773,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC4: values that are not valid in a link are ignored", async () => {
     const requests = mockSearch();
 
-    renderRoute("/search?q=dezerter&tab=drafts&work=wertepy&work=0&decade=x");
+    renderRoute("/search?q=dezerter&tab=drafts&work=wertepy&work=0&decade=1945");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     const query = requests[0]?.searchParams;
@@ -794,6 +823,19 @@ describe("SearchPage tabs and filters", () => {
     expect(sort).toHaveValue("title");
     expect(sort).toBeDisabled();
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-16 AC5: without a query, 'Wszystko' lists everything", async () => {
+    const requests = mockSearch();
+
+    const { router } = renderRoute("/search?tab=works");
+
+    await screen.findByText("8 wyników w kategorii „Utwory”");
+    fireEvent.click(within(tabs()).getByRole("link", { name: "Wszystko 8" }));
+
+    expect(await screen.findByText("8 wyników we wszystkich kategoriach")).toBeVisible();
+    expect(router.state.location.search).toBe("?tab=all");
+    expect(requests.at(-1)?.searchParams.get("tab")).toBe("all");
   });
 
   it("US-RA-16 AC5: clearing the field keeps the tab and lists everything in it", async () => {

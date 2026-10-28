@@ -39,6 +39,11 @@ function id(value: string | null): number | null {
   return value !== null && Number.isInteger(number) && number > 0 ? number : null;
 }
 
+function decadeOf(value: string | null): number | null {
+  const year = id(value);
+  return year !== null && year % 10 === 0 ? year : null;
+}
+
 /** The state in `params`; values that are not valid are left out. */
 export function readSearch(params: URLSearchParams): SearchState {
   const tab = params.get("tab");
@@ -46,7 +51,7 @@ export function readSearch(params: URLSearchParams): SearchState {
     query: (params.get("q") ?? "").trim(),
     tab: isTab(tab) ? tab : "all",
     works: params.getAll("work").flatMap((value) => id(value) ?? []),
-    decade: id(params.get("decade")),
+    decade: decadeOf(params.get("decade")),
     hasScan: params.get("has_scan") === "1",
     hasText: params.get("has_text") === "1",
     sort: params.get("sort") === "title" ? "title" : "relevance",
@@ -70,30 +75,33 @@ export function withoutFilters(state: SearchState): SearchState {
 
 /**
  * The search page's URL for `query` in `state`'s tab, filters and sort (architecture §8), e.g.
- * `/search?q=…&tab=works`. Defaults are left out, so a blank query alone is `/search`.
+ * `/search?q=…&tab=works`. Defaults are left out, so a blank query alone is `/search`, the
+ * search entry. Within a search (`state` given), a blank query names its tab, even "all", so it
+ * still lists everything in it (US-RA-16 AC5).
  */
-export function searchUrl(query: string, state: SearchState = NO_SEARCH): string {
+export function searchUrl(query: string, state?: SearchState): string {
   const params = new URLSearchParams();
   const q = query.trim();
+  const { tab, works, decade, hasScan, hasText, sort } = state ?? NO_SEARCH;
   if (q !== "") {
     params.set("q", q);
   }
-  if (state.tab !== "all") {
-    params.set("tab", state.tab);
+  if (tab !== "all" || (state !== undefined && q === "")) {
+    params.set("tab", tab);
   }
-  for (const work of state.works) {
+  for (const work of works) {
     params.append("work", String(work));
   }
-  if (state.decade !== null) {
-    params.set("decade", String(state.decade));
+  if (decade !== null) {
+    params.set("decade", String(decade));
   }
-  if (state.hasScan) {
+  if (hasScan) {
     params.set("has_scan", "1");
   }
-  if (state.hasText) {
+  if (hasText) {
     params.set("has_text", "1");
   }
-  if (state.sort === "title") {
+  if (sort === "title") {
     params.set("sort", "title");
   }
   const search = params.toString();

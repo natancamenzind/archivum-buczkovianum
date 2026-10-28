@@ -164,6 +164,8 @@ paths:
           type: array
           items:
             type: integer
+            maximum: 32767
+            minimum: 0
         description: Decades of first editions, e.g. 1940 for 1940 to 1949.
       - in: query
         name: has_scan
@@ -219,6 +221,8 @@ paths:
           type: array
           items:
             type: integer
+            maximum: 2147483647
+            minimum: 1
         description: Ids of published works.
       tags:
       - search

@@ -154,7 +154,11 @@ export function FilterPanel({
   state,
   onChange,
   total,
+  open,
+  onOpenChange,
 }: Omit<FiltersProps, "facets"> & {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   /** Undefined until the first results arrive. */
   facets: Facets | undefined;
   /** The filtered result count; undefined while it loads. */
@@ -162,7 +166,7 @@ export function FilterPanel({
 }) {
   const { searchFilters } = copy;
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger
         disabled={facets === undefined}
         className={`flex grow items-center justify-between rounded-sm border border-accent-border bg-card px-12 py-8 text-cousine-metadane text-foreground disabled:opacity-40 md:hidden ${FOCUS_CLASSES}`}
@@ -181,7 +185,13 @@ export function FilterPanel({
               <CloseIcon className="size-16" />
             </DialogClose>
           </div>
-          <div className="flex-1 overflow-y-auto px-page-mobile pt-24 pb-48">
+          <div
+            aria-busy={total === undefined}
+            className={cn(
+              "flex-1 overflow-y-auto px-page-mobile pt-24 pb-48",
+              total === undefined && "opacity-40",
+            )}
+          >
             <SearchFilters facets={facets} state={state} onChange={onChange} />
           </div>
           <div className="flex gap-12 border-t border-border bg-background px-page-mobile py-16">

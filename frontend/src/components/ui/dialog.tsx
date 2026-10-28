@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 
 /*
  * shadcn/ui Dialog on the design's tokens. The design's only overlay is the full-screen mobile
- * filter panel (design/rules.md, Panel filtrów), so the content fills the screen. The overlay's
- * `bg-black/50` is ink at half strength, because the theme has no black.
+ * filter panel (design/rules.md, Panel filtrów), so the content fills the screen. The theme has
+ * no black, so shadcn's `bg-black/50` overlay is ink at half strength, `bg-inverse/50`.
  */
 
 function Dialog(props: ComponentProps<typeof DialogPrimitive.Root>) {

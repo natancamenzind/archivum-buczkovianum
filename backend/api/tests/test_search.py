@@ -407,11 +407,47 @@ class TestSearchTabsAndFilters:
         self, client: Client
     ) -> None:
         # Act
-        tab = client.get(reverse("search"), {"tab": "drafts"})
-        work = client.get(reverse("search"), {"work": "wertepy"})
+        statuses = [
+            client.get(reverse("search"), params).status_code
+            for params in (
+                {"tab": "drafts"},
+                {"work": "wertepy"},
+                {"work": 2**31},
+                {"decade": 40000},
+            )
+        ]
 
         # Assert
-        assert (tab.status_code, work.status_code) == (400, 400)
+        assert statuses == [400, 400, 400, 400]
+
+    def test_us_ra_16_ac2_filters_of_different_kinds_combine(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Act
+        page = results(client, "dezerter", work=[two_works["potok"]], has_scan="true")
+
+        # Assert
+        assert page["total"] == 0
+        assert page["facets"]["has_scan"] == 0
+        assert page["facets"]["works"][0] == {
+            "id": two_works["wertepy"],
+            "title": "Wertepy",
+            "count": 2,
+        }
+
+    def test_us_ra_16_ac2_a_selected_decade_stays_a_filter_value_without_results(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Act
+        page = results(client, "dezerter", decade=[1960])
+
+        # Assert
+        assert page["total"] == 0
+        assert page["facets"]["decades"] == [
+            {"decade": 1940, "count": 3},
+            {"decade": 1950, "count": 2},
+            {"decade": 1960, "count": 0},
+        ]
 
     def test_us_ra_16_ac5_an_empty_query_returns_everything_in_the_tab_by_title(
         self, client: Client, two_works: dict[str, int]
@@ -425,3 +461,14 @@ class TestSearchTabsAndFilters:
         # Assert
         assert titles(page, "works") == ["Bezimienny", "Czarny potok", "Wertepy"]
         assert page["facets"]["tabs"]["all"] == 7
+
+    def test_us_ra_16_ac5_an_empty_query_returns_everything_in_the_filters(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Act
+        page = results(client, "", work=[two_works["wertepy"]])
+
+        # Assert
+        assert page["total"] == 3
+        assert titles(page, "works") == ["Wertepy"]
+        assert len(page["typescripts"]) == len(page["fragments"]) == 1

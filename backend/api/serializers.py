@@ -711,11 +711,14 @@ class SearchParamsSerializer(serializers.Serializer[None]):
         default="", allow_blank=True, help_text="Web search syntax: quoted phrases, or, -word."
     )
     tab = serializers.ChoiceField(Tab.choices, default=Tab.ALL)
+    # The index stores work ids as PostgreSQL integers and decades as smallints.
     work = serializers.ListField(
-        child=serializers.IntegerField(), default=list, help_text="Ids of published works."
+        child=serializers.IntegerField(min_value=1, max_value=2**31 - 1),
+        default=list,
+        help_text="Ids of published works.",
     )
     decade = serializers.ListField(
-        child=serializers.IntegerField(),
+        child=serializers.IntegerField(min_value=0, max_value=32767),
         default=list,
         help_text="Decades of first editions, e.g. 1940 for 1940 to 1949.",
     )

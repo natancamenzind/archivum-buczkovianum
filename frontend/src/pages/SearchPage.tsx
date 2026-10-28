@@ -142,12 +142,14 @@ function SearchResults({ state }: { state: SearchState }) {
   const loading = results.isPending || results.isPlaceholderData;
   const data = loading ? undefined : results.data;
   const facets = results.data?.facets;
+  const [panelOpen, setPanelOpen] = useState(false);
 
   function change(next: SearchState) {
     void navigate(searchUrl(next.query, next));
   }
 
-  if (data?.total === 0 && state.tab === "all" && filterCount(state) === 0) {
+  // The open panel stays even when clearing its filters finds nothing (US-RA-16 AC3).
+  if (data?.total === 0 && state.tab === "all" && filterCount(state) === 0 && !panelOpen) {
     return (
       <div className={RESULTS_PADDING}>
         <NoResults query={state.query} tags={data.suggested_tags} />
@@ -198,7 +200,14 @@ function SearchResults({ state }: { state: SearchState }) {
               )}
             </div>
             <div className={cn("flex items-center gap-8", data === undefined && "opacity-40")}>
-              <FilterPanel facets={facets} state={state} onChange={change} total={data?.total} />
+              <FilterPanel
+                facets={facets}
+                state={state}
+                onChange={change}
+                total={data?.total}
+                open={panelOpen}
+                onOpenChange={setPanelOpen}
+              />
               <label htmlFor={SORT_ID} className="text-cousine-metadane text-muted-foreground">
                 {copy.searchResults.sort}
               </label>
@@ -282,7 +291,7 @@ function SearchResults({ state }: { state: SearchState }) {
 export function SearchPage() {
   const [params] = useSearchParams();
   const state = readSearch(params);
-  const searching = state.query !== "" || state.tab !== "all" || filterCount(state) > 0;
+  const searching = state.query !== "" || params.has("tab") || filterCount(state) > 0;
 
   return (
     <main className="flex flex-col">
