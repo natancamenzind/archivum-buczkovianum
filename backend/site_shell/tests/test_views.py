@@ -7,49 +7,34 @@ from django.http import StreamingHttpResponse
 from django.test import Client
 from pytest_django.fixtures import Settings
 
+from site_shell.tests.conftest import SCRIPT
 from site_shell.views import MISSING_BUILD_MESSAGE
 
-SCRIPT = "assets/index-B2gSypW-.js"
-INDEX_HTML = f'<!doctype html><html lang="pl"><script src="/static/{SCRIPT}"></script></html>'
 
-
-@pytest.fixture
-def frontend_dist(settings: Settings, tmp_path: Path) -> Path:
-    """A built frontend as Vite writes it: index.html and hashed assets under assets/."""
-    dist = tmp_path / "dist"
-    (dist / "assets").mkdir(parents=True)
-    (dist / "index.html").write_text(INDEX_HTML, encoding="utf-8")
-    (dist / SCRIPT).write_text("console.log('app')", encoding="utf-8")
-    # Vite links fonts by absolute URL under the `/static/` base.
-    (dist / "assets" / "index-D9RQlONl.css").write_text(
-        "@font-face{src:url(/static/assets/lora-latin-400-normal-DnxXpLNu.woff2)}",
-        encoding="utf-8",
-    )
-    (dist / "assets" / "lora-latin-400-normal-DnxXpLNu.woff2").write_bytes(b"font")
-    settings.FRONTEND_DIST_DIR = dist
-    settings.STATICFILES_DIRS = [dist]
-    return dist
-
-
-@pytest.mark.parametrize("url", ["/", "/works/wertepy", "/tags/dezerter/", "/search?q=dezerter"])
+@pytest.mark.parametrize("url", ["/", "/works", "/tags/", "/search?q=dezerter"])
 def test_public_urls_get_the_frontend_index(client: Client, frontend_dist: Path, url: str) -> None:
     response = client.get(url)
 
     assert response.status_code == 200
-    assert response.content.decode() == INDEX_HTML
+    assert f'<script type="module" crossorigin src="/static/{SCRIPT}"></script>' in response.text
+    assert '<div id="root"></div>' in response.text
     assert response["Content-Type"] == "text/html; charset=utf-8"
     assert "no-cache" in response["Cache-Control"]
 
 
 @pytest.mark.parametrize("url", ["/apiary", "/administration", "/statics/x", "/mediathek"])
-def test_paths_that_only_start_like_django_prefixes_are_pages(
+def test_paths_that_only_start_like_django_prefixes_get_the_frontend_index(
     client: Client, frontend_dist: Path, url: str
 ) -> None:
-    assert client.get(url).status_code == 200
+    response = client.get(url)
+
+    # No page has these URLs, so React shows its "not found" page with the status a crawler reads.
+    assert response.status_code == 404
+    assert '<div id="root"></div>' in response.text
 
 
 def test_api_urls_are_not_served_the_index(client: Client, frontend_dist: Path) -> None:
-    assert client.get("/api/schema/").content != INDEX_HTML.encode()
+    assert '<div id="root">' not in client.get("/api/schema/").text
     assert client.get("/api/unknown/").status_code == 404
 
 
@@ -58,7 +43,7 @@ def test_admin_urls_are_not_served_the_index(client: Client, frontend_dist: Path
     response = client.get("/admin/login/")
 
     assert response.status_code == 200
-    assert response.content != INDEX_HTML.encode()
+    assert '<div id="root">' not in response.text
 
 
 def test_django_prefixes_without_slash_are_not_pages(client: Client, frontend_dist: Path) -> None:
