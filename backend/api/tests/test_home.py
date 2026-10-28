@@ -10,6 +10,7 @@ from pytest_django.fixtures import Settings
 
 from archive.models import SiteSettings, Status
 from archive.tests.factories import (
+    DocumentFactory,
     EditionFactory,
     FragmentFactory,
     NoteFactory,
@@ -43,6 +44,7 @@ class TestHomeEndpoint:
             "portrait_alt": "",
             "statistics": {"works": 0, "fragments": 0, "tags": 0},
             "works": [],
+            "featured": None,
             "tags": [],
         }
 
@@ -158,6 +160,117 @@ class TestHomeEndpoint:
         assert result["portrait"] == "/media/site/nowy.jpg"
         assert result["portrait_alt"] == "Nowy portret"
 
+    def test_us_ra_02_ac1_features_a_visible_featured_fragment_as_a_card(
+        self, client: Client
+    ) -> None:
+        # Arrange
+        work = WorkFactory.create(status=PUBLISHED, title="Wertepy")
+        main = TypescriptFactory.create(work=work, status=PUBLISHED, is_main=True)
+        draft = TypescriptFactory.create(work=work, status=Status.DRAFT)
+        FragmentFactory.create(document=main.document, start=0, end=5)
+        featured = FragmentFactory.create(
+            document=main.document, start=6, end=12, is_featured=True, location="rozdział I"
+        )
+        FragmentFactory.create(document=draft.document, is_featured=True)
+
+        # Act
+        result = home(client)
+
+        # Assert
+        card = result["featured"]["fragment"]
+        assert card["id"] == featured.pk
+        assert card["url"] == f"/typescripts/{main.pk}?fragment={featured.pk}"
+        assert card["work"] == "Wertepy"
+        assert card["number"] == 2
+        assert card["location"] == "rozdział I"
+
+    def test_us_ra_02_ac1_picks_at_random_among_the_featured_fragments(
+        self, client: Client
+    ) -> None:
+        # Arrange
+        main = TypescriptFactory.create(status=PUBLISHED, is_main=True)
+        featured = {
+            FragmentFactory.create(document=main.document, start=start, is_featured=True).pk
+            for start in range(3)
+        }
+
+        # Act
+        picked = {home(client)["featured"]["fragment"]["id"] for _ in range(30)}
+
+        # Assert
+        assert len(picked) > 1
+        assert picked <= featured
+
+    def test_us_ra_02_ac1_features_nothing_without_a_visible_featured_fragment(
+        self, client: Client
+    ) -> None:
+        # Arrange
+        main = TypescriptFactory.create(status=PUBLISHED, is_main=True)
+        FragmentFactory.create(document=main.document)
+        draft = TypescriptFactory.create(status=Status.DRAFT)
+        FragmentFactory.create(document=draft.document, is_featured=True)
+
+        # Act
+        result = home(client)
+
+        # Assert
+        assert result["featured"] is None
+
+    def test_us_ra_02_ac2_names_the_work_with_the_fragments_search_finds_in_it(
+        self, client: Client
+    ) -> None:
+        # Arrange
+        work = WorkFactory.create(status=PUBLISHED, title="Wertepy")
+        EditionFactory.create(work=work, year=1947)
+        main = TypescriptFactory.create(work=work, status=PUBLISHED, is_main=True)
+        FragmentFactory.create(document=main.document, start=0, is_featured=True)
+        FragmentFactory.create(document=main.document, start=1)
+        note = NoteFactory.create(status=PUBLISHED, document=DocumentFactory.create())
+        note.works.add(work)
+        note.save()
+        FragmentFactory.create(document=note.document)
+        FragmentFactory.create(document=TypescriptFactory.create(status=PUBLISHED).document)
+
+        # Act
+        result = home(client)
+
+        # Assert
+        found = client.get(reverse("search"), {"tab": "fragments", "work": str(work.pk)}).json()
+        assert found["total"] == 3
+        assert result["featured"]["work"] == {"id": work.pk, "title": "Wertepy", "count": 3}
+
+    def test_us_ra_02_ac2_names_the_first_published_work_of_the_source(
+        self, client: Client
+    ) -> None:
+        # Arrange
+        later = WorkFactory.create(status=PUBLISHED, title="Czarny potok")
+        EditionFactory.create(work=later, year=1954)
+        earlier = WorkFactory.create(status=PUBLISHED, title="Wertepy")
+        EditionFactory.create(work=earlier, year=1947)
+        note = NoteFactory.create(status=PUBLISHED, document=DocumentFactory.create())
+        note.works.add(later, earlier, WorkFactory.create(status=Status.DRAFT))
+        note.save()
+        FragmentFactory.create(document=note.document, is_featured=True)
+
+        # Act
+        result = home(client)
+
+        # Assert
+        assert result["featured"]["fragment"]["work"] == "Wertepy, Czarny potok"
+        assert result["featured"]["work"] == {"id": earlier.pk, "title": "Wertepy", "count": 1}
+
+    def test_us_ra_02_ac2_names_no_work_when_the_source_has_none(self, client: Client) -> None:
+        # Arrange
+        note = NoteFactory.create(status=PUBLISHED, document=DocumentFactory.create())
+        note.works.add(WorkFactory.create(status=Status.DRAFT))
+        FragmentFactory.create(document=note.document, is_featured=True)
+
+        # Act
+        result = home(client)
+
+        # Assert
+        assert result["featured"]["work"] is None
+
     @pytest.mark.parametrize("method", ("post", "put", "patch", "delete"))
     def test_home_rejects_writes(self, client: Client, method: str) -> None:
         # Arrange
@@ -178,17 +291,17 @@ class TestHomeEndpoint:
             EditionFactory.create(work=work)
             main = TypescriptFactory.create(work=work, status=PUBLISHED, is_main=True)
             tag = TagFactory.create(status=PUBLISHED)
-            FragmentFactory.create(document=main.document).tags.add(tag)
+            FragmentFactory.create(document=main.document, is_featured=True).tags.add(tag)
 
         add_work()
         home(client)
-        with django_assert_num_queries(5):
+        with django_assert_num_queries(9):
             home(client)
         for _ in range(5):
             add_work()
 
         # Act & Assert
-        with django_assert_num_queries(5):
+        with django_assert_num_queries(9):
             result = home(client)
 
         assert len(result["works"]) == 6
@@ -204,6 +317,7 @@ class TestHomeSchema:
 
         # Assert
         assert sorted(schemas["HomePage"]["required"]) == [
+            "featured",
             "intro",
             "portrait",
             "portrait_alt",

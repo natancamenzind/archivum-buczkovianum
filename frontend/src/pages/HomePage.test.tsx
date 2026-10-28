@@ -7,8 +7,27 @@ import { axeViolations, renderRoute } from "@/test/render";
 import { server } from "@/test/server";
 
 type Home = components["schemas"]["HomePage"];
+type Featured = components["schemas"]["FeaturedFragment"];
 
 const HOME_URL = "*/api/home/";
+
+const FEATURED: Featured = {
+  fragment: {
+    id: 5,
+    url: "/typescripts/1?fragment=5",
+    source_type: "typescript",
+    work: "Wertepy",
+    number: 1,
+    location: "rozdział I",
+    quote: "Grzybniak chodził od chałupy do chałupy.",
+    scan: "",
+    start_page: null,
+    shelfmark: "ML, sygn. 1618.0009",
+    description: "Grzybniak leczy chorych podczas epidemii tyfusu.",
+    tags: [{ slug: "epidemia", title: "Epidemia" }],
+  },
+  work: { id: 7, title: "Wertepy", count: 24 },
+};
 
 const HOME: Home = {
   intro: "<p>Archiwum literackie <em>Leopolda Buczkowskiego</em>.</p>",
@@ -36,6 +55,7 @@ const HOME: Home = {
       fragment_count: 0,
     },
   ],
+  featured: FEATURED,
   // In the API's order: the most frequent first.
   tags: [
     { slug: "wojna", title: "Wojna", occurrences: 31 },
@@ -70,7 +90,7 @@ function precedes(first: Element, second: Element): boolean {
 }
 
 describe("HomePage", () => {
-  it("US-RA-01 AC1: header, hero, works, tag cloud and footer come in order", async () => {
+  it("US-RA-01 AC1: header, hero, works, featured fragment, tag cloud and footer come in order", async () => {
     mockHome();
 
     const { container } = renderRoute("/");
@@ -80,6 +100,7 @@ describe("HomePage", () => {
       screen.getByRole("banner"),
       hero(),
       section("Utwory"),
+      section("Wybrany fragment"),
       section("Chmura tagów"),
       screen.getByRole("contentinfo"),
     ];
@@ -159,6 +180,49 @@ describe("HomePage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("US-RA-02 AC1: the featured fragment is a fragment card counted among all visible fragments", async () => {
+    mockHome();
+
+    const { container } = renderRoute("/");
+
+    await screen.findByRole("heading", { level: 2, name: "Wybrany fragment" });
+    const featured = section("Wybrany fragment");
+    expect(within(featured).getByText("1 z 62")).toBeVisible();
+    expect(within(featured).getByText("Wybór redakcji")).toBeVisible();
+    expect(within(featured).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
+    expect(
+      within(featured).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
+    ).toHaveAttribute("href", "/typescripts/1?fragment=5");
+    expect(within(featured).getByRole("link", { name: "Epidemia" })).toHaveAttribute(
+      "href",
+      "/tags/epidemia",
+    );
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-02 AC2: the link opens search on the Fragmenty tab filtered to the fragment's work", async () => {
+    mockHome();
+
+    const { container } = renderRoute("/");
+
+    await screen.findByRole("heading", { level: 2, name: "Wybrany fragment" });
+    expect(
+      within(section("Wybrany fragment")).getByRole("link", {
+        name: "Wszystkie fragmenty „Wertepy” (24)",
+      }),
+    ).toHaveAttribute("href", "/search?tab=fragments&work=7");
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("R-02: a featured fragment whose source has no published work has no search link", async () => {
+    mockHome({ featured: { ...FEATURED, work: null } });
+
+    renderRoute("/");
+
+    await screen.findByRole("heading", { level: 2, name: "Wybrany fragment" });
+    expect(within(section("Wybrany fragment")).queryByText(/Wszystkie fragmenty/)).toBeNull();
+  });
+
   it("US-RA-01 AC5: the hero shows the introduction and portrait the editors set", async () => {
     mockHome({
       intro: "<p>Nowy wstęp redakcji.</p><p>Drugi akapit.</p>",
@@ -176,8 +240,8 @@ describe("HomePage", () => {
     );
   });
 
-  it("R-02: without introduction, portrait, works or tags those parts are not rendered", async () => {
-    mockHome({ intro: "", portrait: "", portrait_alt: "", works: [], tags: [] });
+  it("R-02: without introduction, portrait, works, featured fragment or tags those parts are not rendered", async () => {
+    mockHome({ intro: "", portrait: "", portrait_alt: "", works: [], featured: null, tags: [] });
 
     const { container } = renderRoute("/");
 

@@ -137,6 +137,12 @@ def search(
     )
 
 
+def work_fragment_count(work_id: int) -> int:
+    """How many fragments the Fragmenty tab filtered to the work lists (US-RA-02 AC2)."""
+    in_tab = SearchEntry.objects.filter(entity_type__in=TAB_TYPES[Tab.FRAGMENTS])
+    return _filtered(in_tab, Filters(work_ids=(work_id,))).count()
+
+
 def _has_lexemes(text: str) -> bool:
     """Whether `text` has a word to search for. Operators alone ("-") and stopwords have none,
     and PostgreSQL would match nothing with them. PostgreSQL's `polish` has no stopwords."""

@@ -16,6 +16,7 @@ from api.serializers import (
     ContextualMaterials,
     DecadeFacet,
     DocumentSerializer,
+    FeaturedFragment,
     Found,
     HomePage,
     HomePageSerializer,
@@ -66,7 +67,16 @@ from archive.models import (
     preview,
 )
 from search.models import EntityType
-from search.query import Facets, Filters, Hit, Sort, Tab, autocomplete, search
+from search.query import (
+    Facets,
+    Filters,
+    Hit,
+    Sort,
+    Tab,
+    autocomplete,
+    search,
+    work_fragment_count,
+)
 
 
 @extend_schema(responses=AboutPageSerializer)
@@ -93,9 +103,25 @@ def about(request: Request) -> Response:
 @extend_schema(responses=HomePageSerializer)
 @api_view(["GET"])
 def home(request: Request) -> Response:
-    """The home page (US-RA-01): introduction and portrait, the counts, the work cards and the
-    tag cloud."""
+    """The home page (US-RA-01): introduction and portrait, the counts, the work cards, a random
+    featured fragment (US-RA-02) and the tag cloud."""
     cards = list(Work.objects.published().with_year().with_fragment_count())
+    owners = [f"document__{owner}__institution" for owner in Document.owner_accessors()]
+    fragment = (
+        Fragment.objects.visible()
+        .filter(is_featured=True)
+        .with_number()
+        .select_related(*owners)
+        .prefetch_related(Prefetch("tags", Tag.objects.published()))
+        .order_by("?")
+        .first()
+    )
+    sources = source_works([fragment] if fragment else [], cards)
+    featured = (
+        FeaturedFragment(fragment, featured_work(sources.get(fragment.document_id, [])))
+        if fragment
+        else None
+    )
     page = HomePage(
         settings=SiteSettings.load(),
         statistics=HomeStatistics(
@@ -104,9 +130,16 @@ def home(request: Request) -> Response:
             tags=Tag.objects.published().count(),
         ),
         works=cards,
+        featured=featured,
         tags=list(Tag.objects.published().in_use()),
     )
-    return Response(HomePageSerializer(page).data)
+    return Response(HomePageSerializer(page, context={"works": sources}).data)
+
+
+def featured_work(works: list[Work]) -> WorkFacet | None:
+    """The first of a featured fragment's works, with the count of the Fragmenty search filtered
+    to it (US-RA-02 AC2)."""
+    return WorkFacet(works[0], work_fragment_count(works[0].pk)) if works else None
 
 
 @extend_schema(responses=WorkCardSerializer(many=True))

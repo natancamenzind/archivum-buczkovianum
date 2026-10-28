@@ -84,6 +84,11 @@ export const copy = {
   home: {
     works: "Utwory",
     worksDescription: "Wszystkie utwory w archiwum, w kolejności wydania",
+    /** The featured fragment (US-RA-02). */
+    featured: "Wybrany fragment",
+    featuredDescription: "Wybór redakcji",
+    workFragments: (work: string, count: number) =>
+      `Wszystkie fragmenty „${work}” (${String(count)})`,
     loading: "Wczytuję stronę…",
     error: "Nie udało się wczytać strony. Spróbuj ponownie później.",
   },
