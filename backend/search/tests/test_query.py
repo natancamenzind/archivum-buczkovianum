@@ -3,6 +3,7 @@
 from collections.abc import Callable
 
 import pytest
+from django.conf import settings
 
 from archive.models import ContentKind, Status, Typescript, Work
 from archive.tests.factories import (
@@ -185,6 +186,64 @@ class TestResults:
         # Assert
         assert titles(results) == [("work", "Czarny potok"), ("work", "Wertepy")]
         assert results.suggested_tags == []
+
+    def test_us_ra_15_a_query_without_words_is_an_empty_query(
+        self, archive: dict[str, int]
+    ) -> None:
+        # Arrange
+        query = "-"
+
+        # Act
+        results = search(query, tab=Tab.WORKS)
+
+        # Assert
+        assert titles(results) == [("work", "Czarny potok"), ("work", "Wertepy")]
+        assert results.suggested_tags == []
+
+    def test_us_ra_15_ac5_counts_the_matching_fragments_of_each_work(
+        self, archive: dict[str, int]
+    ) -> None:
+        # Arrange
+        potok = Work.objects.get(pk=archive["potok"])
+        typescript = TypescriptFactory.create(
+            status=PUBLISHED, work=potok, document__text="Dezerter i las."
+        )
+        FragmentFactory.create(document=typescript.document, start=0, end=8)
+        FragmentFactory.create(document=typescript.document, start=11, end=14)
+
+        # Act
+        results = search("dezerter", tab=Tab.WORKS)
+
+        # Assert
+        assert results.work_fragments == {archive["potok"]: 2}
+
+    @pytest.mark.skipif(
+        settings.SEARCH_TS_CONFIG != "polish",
+        reason="Inflection needs PostgreSQL 19's polish configuration (architecture section 6).",
+    )
+    def test_us_ra_15_ac7_an_inflected_form_finds_the_word(self) -> None:
+        # Arrange
+        WorkFactory.create(status=PUBLISHED, title="Czarny potok")
+
+        # Act
+        results = search("potoku")
+
+        # Assert
+        assert titles(results) == [("work", "Czarny potok")]
+
+    def test_r_11_ac3_a_hit_names_the_first_matched_word_of_its_snippet(
+        self, archive: dict[str, int]
+    ) -> None:
+        # Arrange
+        query = "dezerter"
+
+        # Act
+        results = search(query)
+
+        # Assert
+        terms = {group.entity_type: group.hits[0].term for group in results.groups}
+        assert terms[EntityType.TYPESCRIPT] == "dezerter"
+        assert terms[EntityType.WORK] == ""
 
 
 def note_with_text(title: str, text: str) -> None:

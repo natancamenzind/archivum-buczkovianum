@@ -235,6 +235,42 @@ export const copy = {
     suggestions: "Podpowiedzi",
     suggestionTypes: { work: "Utwór", tag: "Tag" },
   },
+  /** The search results (US-RA-15). */
+  searchResults: {
+    title: (query: string) => `Wyniki dla „${query}”`,
+    total: (count: number) => `${formatCount(count, nouns.result)} we wszystkich kategoriach`,
+    loading: "Przeszukuję utwory, fragmenty, zapiski i tagi…",
+    error: "Nie udało się wczytać wyników. Spróbuj ponownie później.",
+    sort: "Sortuj",
+    /** Keyed by the API's `sort`. */
+    sorts: { relevance: "Trafność", title: "Tytuł" },
+    /** The groups in their order (US-RA-15 AC3), keyed by the API's group names. */
+    groups: {
+      works: "Utwory",
+      tags: "Tagi",
+      fragments: "Fragmenty",
+      notes: "Zapiski",
+      typescripts: "Maszynopisy",
+      secondary_texts: "Teksty sekundarne",
+      materials: "Materiały kontekstowe",
+    },
+    /** Each result's type (R-04), keyed by the API's group names. */
+    types: {
+      works: "Utwór",
+      tags: "Tag",
+      notes: "Zapisek",
+      typescripts: "Maszynopis",
+      secondary_texts: "Tekst sekundarny",
+      materials: "Materiał kontekstowy",
+    },
+    openTag: "Otwórz tag",
+    noResults: (query: string) => `Brak wyników dla „${query}”`,
+    noResultsHint:
+      "Sprawdź pisownię albo skróć frazę. Wyszukiwanie obejmuje tytuły, opisy, transkrypcje i tagi.",
+    suggestedTags: "Śladami motywów",
+    suggestedTagsDescription:
+      "Tagi łączą fragmenty z różnych utworów. Otwórz tag, by podążyć za motywem w całym archiwum.",
+  },
   notFound: {
     title: "Nie znaleziono strony",
     body: "Pod tym adresem nie ma żadnej strony.",

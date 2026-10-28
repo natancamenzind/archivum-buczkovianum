@@ -21,6 +21,16 @@ function pageOf(offsets: number[], offset: number): number {
   return Math.max(offsets.filter((start) => start <= offset).length, 1);
 }
 
+/** The first case-insensitive occurrence of `term` as a whole word in `text`, or null (R-11 AC3). */
+function findTerm(text: string, term: string): { start: number; end: number } | null {
+  if (term === "") {
+    return null;
+  }
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = new RegExp(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`, "iu").exec(text);
+  return match === null ? null : { start: match.index, end: match.index + match[0].length };
+}
+
 /** What the reader shows of a clicked fragment: its number, location and tags (R-11 AC2). */
 function FragmentDetails({ fragment }: { fragment: Fragment }) {
   return (
@@ -39,36 +49,45 @@ interface ReaderBodyProps {
   scanFailed: boolean;
   /** The fragment the URL names (`?fragment=`), or null. */
   target: number | null;
+  /** The search term the URL names (`?q=`), or "". */
+  term: string;
 }
 
-function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
+function ReaderBody({ document, pdf, scanFailed, target, term }: ReaderBodyProps) {
+  const { text, page_offsets: offsets, fragments } = document;
+  const match = useMemo(() => findTerm(text, term), [text, term]);
   const [selected, setSelected] = useState(target);
-  const [view, setView] = useState<View>(target === null ? "scan" : "text");
+  const [view, setView] = useState<View>(target === null && match === null ? "scan" : "text");
   const textColumn = useRef<HTMLDivElement>(null);
 
-  // R-11 AC3: opened with a fragment reference, the reader scrolls to it, and again if a scan
-  // that cannot be opened leaves the text alone, at full width.
+  // R-11 AC3: opened with a fragment reference or a search term, the reader scrolls to the
+  // fragment or to the first match, and again if a scan that cannot be opened leaves the text
+  // alone, at full width.
   useEffect(() => {
-    if (target !== null) {
-      textColumn.current
-        ?.querySelector(`[data-fragments~="${String(target)}"]`)
-        ?.scrollIntoView({ block: "center" });
+    const selector =
+      target !== null
+        ? `[data-fragments~="${String(target)}"]`
+        : match !== null
+          ? "[data-search-match]"
+          : null;
+    if (selector !== null) {
+      textColumn.current?.querySelector(selector)?.scrollIntoView({ block: "center" });
     }
-  }, [target, scanFailed]);
+  }, [target, match, scanFailed]);
 
-  const { text, page_offsets: offsets, fragments } = document;
   const pageCount = offsets.length;
   const { pages, byId } = useMemo(() => {
     const split: Segment[][] = Array.from({ length: Math.max(offsets.length, 1) }, () => []);
     let page = 0;
-    for (const segment of segments(text.length, fragments, offsets)) {
+    const cuts = match === null ? offsets : [...offsets, match.start, match.end];
+    for (const segment of segments(text.length, fragments, cuts)) {
       while ((offsets[page + 1] ?? Infinity) <= segment.start) {
         page++;
       }
       split[page]?.push(segment);
     }
     return { pages: split, byId: new Map(fragments.map((fragment) => [fragment.id, fragment])) };
-  }, [text, offsets, fragments]);
+  }, [text, offsets, fragments, match]);
   const selectedFragment = selected === null ? undefined : byId.get(selected);
   const selectedPage =
     selectedFragment === undefined
@@ -152,8 +171,20 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
               <p className="text-lora-tekst whitespace-pre-wrap text-foreground">
                 {pageSegments.map((segment) => {
                   const part = text.slice(segment.start, segment.end);
+                  const content =
+                    match !== null && segment.start >= match.start && segment.end <= match.end ? (
+                      <mark
+                        key={segment.start}
+                        data-search-match
+                        className="bg-primary text-primary-foreground"
+                      >
+                        {part}
+                      </mark>
+                    ) : (
+                      part
+                    );
                   if (segment.ids.length === 0) {
-                    return part;
+                    return content;
                   }
                   const isSelected = selected !== null && segment.ids.includes(selected);
                   const fragment = innermost(segment);
@@ -182,7 +213,7 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
                         FOCUS_CLASSES,
                       )}
                     >
-                      {part}
+                      {content}
                     </mark>
                   );
                 })}
@@ -204,22 +235,25 @@ function ReaderBody({ document, pdf, scanFailed, target }: ReaderBodyProps) {
 /**
  * The reader of every OCR document (R-11): on desktop each scan page next to its OCR text, on
  * mobile a "Skan" / "Transkrypcja" toggle. Fragments are highlighted; clicking one shows its
- * tags. `?fragment=<id>` scrolls to that fragment and selects it. A plain text is shown as text
+ * tags. `?fragment=<id>` scrolls to that fragment and selects it; `?q=<term>`, from a search
+ * result, highlights the first match and scrolls to it. A plain text is shown as text
  * only. The text is split as architecture §4.4 describes.
  */
 export function Reader({ document }: { document: Document }) {
   const [params] = useSearchParams();
   const target = Number(params.get("fragment")) || null;
+  const term = params.get("q") ?? "";
   const pdf = usePdf(document.scan);
 
   return (
-    // A new fragment reference starts over: select it, show the text and scroll to it.
+    // A new fragment reference or search term starts over: show the text and scroll to it.
     <ReaderBody
-      key={target ?? ""}
+      key={`${String(target)} ${term}`}
       document={document}
       pdf={pdf.data}
       scanFailed={pdf.isError}
       target={target}
+      term={term}
     />
   );
 }

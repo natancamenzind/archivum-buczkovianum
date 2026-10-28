@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from urllib.parse import urlencode
 
 from rest_framework import serializers
 
@@ -21,6 +22,7 @@ from archive.models import (
     format_shelfmark,
 )
 from search.models import EntityType, SearchEntry
+from search.query import Hit
 
 
 @dataclass(frozen=True)
@@ -581,3 +583,114 @@ class DocumentSerializer(serializers.ModelSerializer[Document]):
 
     def get_scan(self, document: Document) -> str:
         return document.scan.url if document.scan else ""
+
+
+@dataclass(frozen=True)
+class Found[M]:
+    """A search result: the entity and its hit (US-RA-15)."""
+
+    item: M
+    hit: Hit
+
+
+@dataclass(frozen=True)
+class SearchPage:
+    works: list[Found[Work]]
+    tags: list[Found[Tag]]
+    fragments: list[Fragment]
+    notes: list[Found[Note]]
+    typescripts: list[Found[Typescript]]
+    secondary_texts: list[Found[SecondaryText]]
+    materials: list[Found[ContextualMaterial]]
+    suggested_tags: list[Tag]
+
+    @property
+    def total(self) -> int:
+        return sum(
+            len(group)
+            for group in (
+                self.works,
+                self.tags,
+                self.fragments,
+                self.notes,
+                self.typescripts,
+                self.secondary_texts,
+                self.materials,
+            )
+        )
+
+
+class WorkResultSerializer(serializers.Serializer[Found[Work]]):
+    """A work result (US-RA-15 AC5), from a work with `with_year()`. Works show no snippet."""
+
+    url = serializers.CharField(source="hit.entry.url")
+    title = serializers.CharField(source="item.title")
+    genre = serializers.CharField(source="item.genre", allow_blank=True)
+    year = serializers.IntegerField(
+        source="item.year",
+        allow_null=True,
+        help_text="The year of the first edition; null without editions.",
+    )
+    fragments = serializers.SerializerMethodField(
+        help_text="The work's fragments that match the query."
+    )
+
+    def get_fragments(self, found: Found[Work]) -> int:
+        work_fragments: dict[int, int] = self.context["work_fragments"]
+        return work_fragments.get(found.item.pk, 0)
+
+
+class SnippetField(serializers.CharField):
+    def __init__(self) -> None:
+        super().__init__(
+            source="hit.snippet",
+            allow_blank=True,
+            help_text="HTML: the escaped text around the match, the search terms in <mark>.",
+        )
+
+
+class TagResultSerializer(serializers.Serializer[Found[Tag]]):
+    """A tag result, from a tag with `with_occurrences()`. The snippet is cut from its
+    description."""
+
+    url = serializers.CharField(source="hit.entry.url")
+    title = serializers.CharField(source="item.title")
+    occurrences = serializers.IntegerField(source="item.occurrences")
+    snippet = SnippetField()
+
+
+class ItemResultSerializer(serializers.Serializer[Found[Archival]]):
+    """A note, typescript, secondary text or contextual material result."""
+
+    url = serializers.SerializerMethodField(
+        help_text="The item's page; with `?q=` naming the first match, for the reader (R-11 AC3)."
+    )
+    title = serializers.CharField(source="hit.entry.title")
+    shelfmark = serializers.CharField(
+        source="item.shelfmark_display", help_text='E.g. "ML, sygn. 1678"; may be empty.'
+    )
+    snippet = SnippetField()
+
+    def get_url(self, found: Found[Archival]) -> str:
+        url, term = found.hit.entry.url, found.hit.term
+        return f"{url}?{urlencode({'q': term})}" if term else url
+
+
+class SearchPageSerializer(serializers.Serializer[SearchPage]):
+    """The search results (US-RA-15): each group by relevance or by title, as asked.
+
+    The context's `work_fragments` holds the matching fragments of each work, by work id, and
+    `works` the fragment cards' works (see `FragmentCardSerializer`).
+    """
+
+    total = serializers.IntegerField(help_text="Results in all the groups.")
+    works = WorkResultSerializer(many=True)
+    tags = TagResultSerializer(many=True)
+    fragments = FragmentCardSerializer(many=True)
+    notes = ItemResultSerializer(many=True)
+    typescripts = ItemResultSerializer(many=True)
+    secondary_texts = ItemResultSerializer(many=True)
+    materials = ItemResultSerializer(many=True)
+    suggested_tags = TagCountSerializer(
+        many=True, help_text="The most frequent tags, only when nothing was found (US-RA-15 AC8)."
+    )
