@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from django.core.validators import slug_re
-from django.http import HttpRequest
+from django.http import HttpRequest, QueryDict
 from django.utils.text import Truncator
 
 from archive.models import (
@@ -76,7 +76,7 @@ ENTITIES: dict[str, tuple[Callable[[], PublishableQuerySet[Any]], str]] = {
 
 def page_meta(request: HttpRequest) -> PageMeta | None:
     """The meta tags of the page at the request's URL, or None when no page is there."""
-    segments = request.path[1:].removesuffix("/").split("/")
+    segments = request.path[1:].rstrip("/").split("/")
     if any(segment.startswith(".") for segment in segments):
         return None
     # React Router matches route paths case-insensitively.
@@ -92,7 +92,12 @@ def page_meta(request: HttpRequest) -> PageMeta | None:
 
 
 def is_id(value: str, maximum: int) -> bool:
-    return value.isascii() and value.isdigit() and 0 < int(value) <= maximum
+    return value.isascii() and value.isdigit() and len(value) <= 10 and 0 < int(value) <= maximum
+
+
+def first(params: QueryDict, key: str) -> str:
+    """The first value of `key`, as `URLSearchParams.get()` reads it; `QueryDict` gives the last."""
+    return next(iter(params.getlist(key)), "")
 
 
 def search_meta(request: HttpRequest) -> PageMeta:
@@ -102,14 +107,14 @@ def search_meta(request: HttpRequest) -> PageMeta:
     `frontend/src/lib/search.ts` decides; without either it is the entry.
     """
     params = request.GET
-    query = params.get("q", "").strip()
-    decade = next(iter(params.getlist("decade")), "")
+    query = first(params, "q").strip()
+    decade = first(params, "decade")
     if query:
         name = f"Wyniki dla „{query}”"
     elif (
         "tab" in params
-        or params.get("has_scan") == "1"
-        or params.get("has_text") == "1"
+        or first(params, "has_scan") == "1"
+        or first(params, "has_text") == "1"
         or any(is_id(work, MAX_ID) for work in params.getlist("work"))
         or (is_id(decade, MAX_DECADE) and int(decade) % 10 == 0)
     ):

@@ -121,6 +121,12 @@ def test_seo_every_list_page_has_its_title_and_description(
         ("/search?has_scan=1", "Wszystkie wyniki — Archivum Buczkovianum"),
         ("/search?has_text=1", "Wszystkie wyniki — Archivum Buczkovianum"),
         ("/search?q=", "Wyszukiwanie — Archivum Buczkovianum"),
+        ("/search?q=abc&q=", "Wyniki dla „abc” — Archivum Buczkovianum"),
+        ("/search?q=&q=abc", "Wyszukiwanie — Archivum Buczkovianum"),
+        ("/search?has_scan=1&has_scan=0", "Wszystkie wyniki — Archivum Buczkovianum"),
+        ("/search?has_text=0&has_text=1", "Wyszukiwanie — Archivum Buczkovianum"),
+        ("/search?work=2147483648&decade=32770", "Wyszukiwanie — Archivum Buczkovianum"),
+        (f"/search?work={'1' * 5000}&decade={'1' * 5000}", "Wyszukiwanie — Archivum Buczkovianum"),
         (
             "/search?work=abc&work=0&decade=1955&decade=1950&has_scan=true&sort=title",
             "Wyszukiwanie — Archivum Buczkovianum",
@@ -153,7 +159,7 @@ class TestEntityPages:
                 "Powieść o Wertepach. Drugi akapit.",
             )
 
-    @pytest.mark.parametrize("url", ["/works/wertepy/", "/Works/wertepy"])
+    @pytest.mark.parametrize("url", ["/works/wertepy/", "/works/wertepy//", "/Works/wertepy"])
     def test_seo_an_entity_url_matches_as_react_router_matches_it(
         self, client: Client, url: str
     ) -> None:
@@ -233,7 +239,9 @@ class TestEntityPages:
             "/works/missing",
             "/tags/missing/",
             "/typescripts/999999",
+            "/typescripts/2147483648",
             "/typescripts/99999999999999999999",
+            f"/typescripts/{'1' * 5000}",
             "/notes/abc",
             "/notes/%EF%BC%91",  # a full-width digit one
             "/secondary-texts/-1",
