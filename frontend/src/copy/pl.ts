@@ -182,6 +182,22 @@ export const copy = {
     loading: "Wczytuję zapisek…",
     error: "Nie udało się wczytać zapisku. Spróbuj ponownie później.",
   },
+  /** The contextual material page (US-RA-12). */
+  material: {
+    /** The type line's kind, keyed by the API's `content.kind`. */
+    kinds: {
+      image: "Materiał wizualny",
+      document: "Dokument",
+      external_media: "Nagranie",
+      ocr_text: "Skan z transkrypcją",
+      plain_text: "Tekst lity",
+    },
+    works: "Powiązane utwory",
+    fragments: "Powiązane fragmenty",
+    tags: "Powiązane tagi",
+    loading: "Wczytuję materiał kontekstowy…",
+    error: "Nie udało się wczytać materiału kontekstowego. Spróbuj ponownie później.",
+  },
   /** The content of a note or contextual material, by its kind (US-RA-11 AC3). */
   content: {
     text: "Transkrypcja",

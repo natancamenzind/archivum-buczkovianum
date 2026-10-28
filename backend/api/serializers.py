@@ -566,6 +566,36 @@ class NotePageSerializer(serializers.Serializer[NotePage]):
 
 
 @dataclass(frozen=True)
+class MaterialPage:
+    material: ContextualMaterial
+    works: list[Work]
+    fragments: Preview[Fragment]
+    tags: list[Tag]
+
+
+class MaterialPageSerializer(serializers.Serializer[MaterialPage]):
+    """US-RA-12. `description` is rich text: HTML, sanitized when an editor saves it. The type
+    line's kind is `content.kind`."""
+
+    id = serializers.IntegerField(source="material.pk")
+    title = serializers.CharField(source="material.title")
+    description = serializers.CharField(
+        source="material.description", allow_blank=True, help_text="HTML."
+    )
+    shelfmark = serializers.CharField(
+        source="material.shelfmark_display", help_text='E.g. "ML, sygn. 1700"; may be empty.'
+    )
+    content = MediaContentSerializer(source="material")
+    works = WorkSummarySerializer(many=True, help_text="Related works, by first edition (R-03).")
+    fragments = FragmentCardPreviewSerializer(
+        help_text="Typescript fragments sharing a tag with the material or its fragments."
+    )
+    tags = TagChipSerializer(
+        many=True, help_text="Tags on the material, its fragments and its work links, by name."
+    )
+
+
+@dataclass(frozen=True)
 class TagPage:
     tag: Tag
     works: list[Work]

@@ -20,6 +20,8 @@ from api.serializers import (
     HomePage,
     HomePageSerializer,
     HomeStatistics,
+    MaterialPage,
+    MaterialPageSerializer,
     NotePage,
     NotePageSerializer,
     SearchFacets,
@@ -392,6 +394,32 @@ def note(request: Request, pk: int) -> Response:
         ),
     )
     return Response(NotePageSerializer(page).data)
+
+
+@extend_schema(responses=MaterialPageSerializer)
+@api_view(["GET"])
+def material(request: Request, pk: int) -> Response:
+    """The contextual material page (US-RA-12). A draft material is not found (R-06)."""
+    current = get_object_or_404(
+        ContextualMaterial.objects.published().select_related("institution"), pk=pk
+    )
+    published_tags = Tag.objects.published()
+    links = MaterialWorkLink.objects.visible().filter(material=current)
+    page = MaterialPage(
+        material=current,
+        works=list(current.related_works().with_fragment_count()),
+        fragments=related_fragments(current),
+        tags=list(
+            published_tags.filter(
+                Q(contextualmaterials=current)
+                | Q(fragments__document__contextualmaterial=current)
+                | Q(pk__in=links.values("tags"))
+            )
+            .distinct()
+            .order_by("title")
+        ),
+    )
+    return Response(MaterialPageSerializer(page).data)
 
 
 # The kinds of item a fragment's text belongs to, in the order the tag page lists their

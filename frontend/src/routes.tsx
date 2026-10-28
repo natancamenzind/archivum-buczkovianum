@@ -3,6 +3,7 @@ import type { RouteObject } from "react-router";
 import { SiteLayout } from "@/components/layout/SiteLayout";
 import { AboutPage } from "@/pages/AboutPage";
 import { HomePage } from "@/pages/HomePage";
+import { MaterialPage } from "@/pages/MaterialPage";
 import { NotePage } from "@/pages/NotePage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { SearchPage } from "@/pages/SearchPage";
@@ -28,6 +29,7 @@ export const routes: RouteObject[] = [
       { path: "tags/:slug", element: <TagPage /> },
       { path: "typescripts/:id", element: <TypescriptPage /> },
       { path: "notes/:id", element: <NotePage /> },
+      { path: "materials/:id", element: <MaterialPage /> },
       { path: "secondary-texts/:id", element: <SecondaryTextPage /> },
       { path: "about", element: <AboutPage /> },
       { path: "search", element: <SearchPage /> },

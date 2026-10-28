@@ -97,6 +97,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/materials/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The contextual material page (US-RA-12). A draft material is not found (R-06). */
+        get: operations["materials_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/notes/{id}/": {
         parameters: {
             query?: never;
@@ -457,6 +474,25 @@ export interface components {
             shelfmark: string;
             /** @description HTML: the escaped text around the match, the search terms in <mark>. */
             snippet: string;
+        };
+        /**
+         * @description US-RA-12. `description` is rich text: HTML, sanitized when an editor saves it. The type
+         *     line's kind is `content.kind`.
+         */
+        MaterialPage: {
+            id: number;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            /** @description E.g. "ML, sygn. 1700"; may be empty. */
+            shelfmark: string;
+            content: components["schemas"]["MediaContent"];
+            /** @description Related works, by first edition (R-03). */
+            works: components["schemas"]["WorkSummary"][];
+            /** @description Typescript fragments sharing a tag with the material or its fragments. */
+            fragments: components["schemas"]["FragmentCardPreview"];
+            /** @description Tags on the material, its fragments and its work links, by name. */
+            tags: components["schemas"]["TagChip"][];
         };
         /**
          * @description A row of "Teksty sekundarne" (R-08): a secondary text, or a contextual material that is
@@ -965,6 +1001,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HomePage"];
+                };
+            };
+        };
+    };
+    materials_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterialPage"];
                 };
             };
         };
