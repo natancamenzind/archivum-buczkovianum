@@ -85,8 +85,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * @description The home page (US-RA-01): introduction and portrait, the counts, the work cards and the
-         *     tag cloud.
+         * @description The home page (US-RA-01): introduction and portrait, the counts, the work cards, a random
+         *     featured fragment (US-RA-02) and the tag cloud.
          */
         get: operations["home_retrieve"];
         put?: never;
@@ -364,6 +364,12 @@ export interface components {
             /** Name */
             readonly title: string;
         };
+        /** @description US-RA-02. The context's `works` holds the card's works (see `FragmentCardSerializer`). */
+        FeaturedFragment: {
+            fragment: components["schemas"]["FragmentCard"];
+            /** @description The source's first published work, by first edition, and the count of the Fragmenty search filtered to it; null when the source has no published work. */
+            work: components["schemas"]["WorkFacet"] | null;
+        };
         /**
          * @description The fragment card (R-10), from a queryset with `with_number()`. Its source is the
          *     published item holding the fragment's document.
@@ -437,6 +443,8 @@ export interface components {
             statistics: components["schemas"]["HomeStatistics"];
             /** @description By first edition. */
             works: components["schemas"]["WorkCard"][];
+            /** @description A random visible featured fragment; null when there is none. */
+            featured: components["schemas"]["FeaturedFragment"] | null;
             /** @description The tag cloud: tags in use, the most frequent first. */
             tags: components["schemas"]["TagCount"][];
         };

@@ -137,8 +137,8 @@ paths:
     get:
       operationId: home_retrieve
       description: |-
-        The home page (US-RA-01): introduction and portrait, the counts, the work cards and the
-        tag cloud.
+        The home page (US-RA-01): introduction and portrait, the counts, the work cards, a random
+        featured fragment (US-RA-02) and the tag cloud.
       tags:
       - home
       security:
@@ -648,6 +648,22 @@ components:
       required:
       - id
       - title
+    FeaturedFragment:
+      type: object
+      description: US-RA-02. The context's `works` holds the card's works (see `FragmentCardSerializer`).
+      properties:
+        fragment:
+          $ref: '#/components/schemas/FragmentCard'
+        work:
+          allOf:
+          - $ref: '#/components/schemas/WorkFacet'
+          nullable: true
+          description: The source's first published work, by first edition, and the
+            count of the Fragmenty search filtered to it; null when the source has
+            no published work.
+      required:
+      - fragment
+      - work
     FragmentCard:
       type: object
       description: |-
@@ -806,12 +822,18 @@ components:
           items:
             $ref: '#/components/schemas/WorkCard'
           description: By first edition.
+        featured:
+          allOf:
+          - $ref: '#/components/schemas/FeaturedFragment'
+          nullable: true
+          description: A random visible featured fragment; null when there is none.
         tags:
           type: array
           items:
             $ref: '#/components/schemas/TagCount'
           description: 'The tag cloud: tags in use, the most frequent first.'
       required:
+      - featured
       - intro
       - portrait
       - portrait_alt

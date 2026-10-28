@@ -1,15 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 
 import type { components } from "@/api/schema";
+import { ArrowLink } from "@/components/ArrowLink";
+import { FragmentCard } from "@/components/FragmentCard";
 import { RichText } from "@/components/RichText";
 import { SectionHeader } from "@/components/SectionHeader";
 import { TagCloud } from "@/components/TagCloud";
 import { Card } from "@/components/ui/card";
 import { WorkCard } from "@/components/WorkCard";
-import { copy, formatCount, nouns } from "@/copy/pl";
+import { copy, formatCount, nouns, previewCount } from "@/copy/pl";
 import { api } from "@/lib/api";
+import { browseUrl, readSearch } from "@/lib/search";
 
 type Home = components["schemas"]["HomePage"];
+type FeaturedFragment = components["schemas"]["FeaturedFragment"];
 
 async function fetchHome(): Promise<Home> {
   const { data, response } = await api.GET("/api/home/");
@@ -70,8 +74,36 @@ function Hero({ home }: { home: Home | undefined }) {
 }
 
 /**
- * The home page (US-RA-01): the hero, the work cards in the API's order (by first edition) and
- * the tag cloud. Sections without content are hidden (R-02).
+ * "Wybrany fragment" (US-RA-02): the fragment card, counted among all visible fragments, and a
+ * link to the Fragmenty search filtered to its work.
+ */
+function Featured({ featured, total }: { featured: FeaturedFragment; total: number }) {
+  const { fragment, work } = featured;
+  return (
+    <Card>
+      <SectionHeader
+        title={copy.home.featured}
+        count={previewCount(1, total)}
+        description={copy.home.featuredDescription}
+      />
+      <FragmentCard fragment={fragment} />
+      {work !== null && (
+        <ArrowLink
+          label={copy.home.workFragments(work.title, work.count)}
+          to={browseUrl({
+            ...readSearch(new URLSearchParams()),
+            tab: "fragments",
+            works: [work.id],
+          })}
+        />
+      )}
+    </Card>
+  );
+}
+
+/**
+ * The home page (US-RA-01): the hero, the work cards in the API's order (by first edition), the
+ * featured fragment and the tag cloud. Sections without content are hidden (R-02).
  */
 export function HomePage() {
   const home = useQuery({ queryKey: ["home"], queryFn: fetchHome });
@@ -103,6 +135,9 @@ export function HomePage() {
                   ))}
                 </ul>
               </Card>
+            )}
+            {data.featured !== null && (
+              <Featured featured={data.featured} total={data.statistics.fragments} />
             )}
             {data.tags.length > 0 && (
               <Card>
