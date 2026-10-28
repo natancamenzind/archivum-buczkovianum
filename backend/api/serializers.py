@@ -400,9 +400,12 @@ class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
 
     def get_work(self, fragment: Fragment) -> str:
         works: dict[int, list[Work]] | None = self.context.get("works")
-        if works is None:
-            return ", ".join(work.title for work in self.owner(fragment).related_works())
-        return ", ".join(work.title for work in works.get(fragment.document_id, []))
+        related = (
+            self.owner(fragment).related_works()
+            if works is None
+            else works.get(fragment.document_id, [])
+        )
+        return ", ".join(work.title for work in related)
 
     def get_scan(self, fragment: Fragment) -> str:
         return fragment.document.scan.url if fragment.document.scan else ""
