@@ -28,7 +28,6 @@ from archive.tests.factories import (
 )
 
 PUBLISHED = Status.PUBLISHED
-DRAFT = Status.DRAFT
 
 
 @pytest.fixture(autouse=True)
@@ -104,7 +103,7 @@ class TestDrillDown:
         work = WorkFactory.create(status=PUBLISHED)
         EditionFactory.create(work=work)
         tag = TagFactory.create(status=PUBLISHED)
-        draft_tag = TagFactory.create(status=DRAFT)
+        draft_tag = TagFactory.create(status=Status.DRAFT)
         main = TypescriptFactory.create(
             work=work,
             is_main=True,
@@ -113,8 +112,8 @@ class TestDrillDown:
         )
         assert main.document is not None
         FragmentFactory.create(document=main.document).tags.add(tag, draft_tag)
-        TypescriptFactory.create(work=work, status=DRAFT)
-        for status in (PUBLISHED, DRAFT):
+        TypescriptFactory.create(work=work, status=Status.DRAFT)
+        for status in (PUBLISHED, Status.DRAFT):
             note = NoteFactory.create(status=status)
             note.works.add(work)
             note.tags.add(tag, draft_tag)
