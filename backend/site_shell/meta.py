@@ -9,6 +9,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from django.core.validators import slug_re
 from django.http import HttpRequest
 from django.utils.text import Truncator
 
@@ -28,6 +29,9 @@ DESCRIPTION = (
     "i materiały kontekstowe."
 )
 DESCRIPTION_LENGTH = 160
+# The largest id and decade the database stores: PostgreSQL integer and smallint.
+MAX_ID = 2**31 - 1
+MAX_DECADE = 32767
 
 
 @dataclass(frozen=True)
@@ -72,9 +76,11 @@ ENTITIES: dict[str, tuple[Callable[[], PublishableQuerySet[Any]], str]] = {
 
 def page_meta(request: HttpRequest) -> PageMeta | None:
     """The meta tags of the page at the request's URL, or None when no page is there."""
-    segments = request.path.strip("/").split("/")
+    segments = request.path[1:].removesuffix("/").split("/")
     if any(segment.startswith(".") for segment in segments):
         return None
+    # React Router matches route paths case-insensitively.
+    segments[0] = segments[0].lower()
     match segments:
         case ["search"]:
             return search_meta(request)
@@ -85,15 +91,28 @@ def page_meta(request: HttpRequest) -> PageMeta | None:
     return None
 
 
+def is_id(value: str, maximum: int) -> bool:
+    return value.isascii() and value.isdigit() and 0 < int(value) <= maximum
+
+
 def search_meta(request: HttpRequest) -> PageMeta:
     """The search page's title follows what it shows: the entry, a query's results or everything.
 
-    A blank query with a tab lists everything in it (US-RA-16 AC5); without one it is the entry.
+    A blank query with a tab or a filter lists everything (US-RA-16 AC5), as `isBrowsing()` in
+    `frontend/src/lib/search.ts` decides; without either it is the entry.
     """
-    query = request.GET.get("q", "").strip()
+    params = request.GET
+    query = params.get("q", "").strip()
+    decade = next(iter(params.getlist("decade")), "")
     if query:
         name = f"Wyniki dla „{query}”"
-    elif "tab" in request.GET:
+    elif (
+        "tab" in params
+        or params.get("has_scan") == "1"
+        or params.get("has_text") == "1"
+        or any(is_id(work, MAX_ID) for work in params.getlist("work"))
+        or (is_id(decade, MAX_DECADE) and int(decade) % 10 == 0)
+    ):
         name = "Wszystkie wyniki"
     else:
         name = "Wyszukiwanie"
@@ -103,7 +122,7 @@ def search_meta(request: HttpRequest) -> PageMeta:
 def entity_meta(request: HttpRequest, kind: str, key: str) -> PageMeta | None:
     """A published entity's page; a draft's only for staff (R-06, US-WR-13)."""
     entities, field = ENTITIES[kind]
-    if field == "pk" and not (key.isascii() and key.isdigit()):
+    if not (is_id(key, MAX_ID) if field == "pk" else slug_re.match(key)):
         return None
     queryset = entities() if request.user.is_staff else entities().published()
     entity = queryset.filter(**{field: key}).first()

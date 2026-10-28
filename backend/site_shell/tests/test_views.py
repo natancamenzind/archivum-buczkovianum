@@ -28,7 +28,6 @@ def test_paths_that_only_start_like_django_prefixes_get_the_frontend_index(
 ) -> None:
     response = client.get(url)
 
-    # No page has these URLs, so React shows its "not found" page with the status a crawler reads.
     assert response.status_code == 404
     assert '<div id="root"></div>' in response.text
 

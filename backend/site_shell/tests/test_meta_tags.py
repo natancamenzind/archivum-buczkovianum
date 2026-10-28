@@ -86,6 +86,11 @@ def head(client: Client, url: str, status: int = 200) -> tuple[str, str]:
             "O projekcie Archivum Buczkovianum i jego zespole.",
         ),
         (
+            "/About/",
+            "O archiwum — Archivum Buczkovianum",
+            "O projekcie Archivum Buczkovianum i jego zespole.",
+        ),
+        (
             "/search",
             "Wyszukiwanie — Archivum Buczkovianum",
             "Szukaj w archiwum: tytuły, opisy, transkrypcje i tagi.",
@@ -111,7 +116,15 @@ def test_seo_every_list_page_has_its_title_and_description(
         ("/search?q=+czarny+potok+&tab=works", "Wyniki dla „czarny potok” — Archivum Buczkovianum"),
         ("/search?tab=all", "Wszystkie wyniki — Archivum Buczkovianum"),
         ("/search?q=+&tab=fragments&work=3", "Wszystkie wyniki — Archivum Buczkovianum"),
+        ("/search?work=3", "Wszystkie wyniki — Archivum Buczkovianum"),
+        ("/search?decade=1950&decade=x", "Wszystkie wyniki — Archivum Buczkovianum"),
+        ("/search?has_scan=1", "Wszystkie wyniki — Archivum Buczkovianum"),
+        ("/search?has_text=1", "Wszystkie wyniki — Archivum Buczkovianum"),
         ("/search?q=", "Wyszukiwanie — Archivum Buczkovianum"),
+        (
+            "/search?work=abc&work=0&decade=1955&decade=1950&has_scan=true&sort=title",
+            "Wyszukiwanie — Archivum Buczkovianum",
+        ),
     ],
 )
 def test_seo_the_search_page_title_follows_its_state(client: Client, url: str, title: str) -> None:
@@ -140,10 +153,13 @@ class TestEntityPages:
                 "Powieść o Wertepach. Drugi akapit.",
             )
 
-    def test_seo_an_entity_url_with_a_trailing_slash_is_the_same_page(self, client: Client) -> None:
+    @pytest.mark.parametrize("url", ["/works/wertepy/", "/Works/wertepy"])
+    def test_seo_an_entity_url_matches_as_react_router_matches_it(
+        self, client: Client, url: str
+    ) -> None:
         WorkFactory.create(title="Wertepy", slug="wertepy", status=PUBLISHED)
 
-        assert head(client, "/works/wertepy/")[0] == "Wertepy — Archivum Buczkovianum"
+        assert head(client, url)[0] == "Wertepy — Archivum Buczkovianum"
 
     def test_seo_an_entity_without_a_description_gets_the_site_description(
         self, client: Client
@@ -176,7 +192,7 @@ class TestEntityPages:
             '"/><script>',
         )
 
-    def test_seo_a_draft_is_404_for_an_anonymous_reader(self, client: Client) -> None:
+    def test_r_06_a_draft_is_404_for_an_anonymous_reader(self, client: Client) -> None:
         drafts: list[Publishable] = [
             WorkFactory.create(title="Szkic utworu"),
             TagFactory.create(title="Brulion"),
@@ -190,13 +206,22 @@ class TestEntityPages:
             title, _ = head(client, draft.get_absolute_url(), status=404)
             assert title == "Nie znaleziono strony — Archivum Buczkovianum"
 
-    def test_seo_a_draft_is_shown_to_staff(self, client: Client) -> None:
-        work = WorkFactory.create(title="Szkic utworu")
+    def test_r_06_a_draft_is_shown_to_staff(self, client: Client) -> None:
+        drafts: list[Publishable] = [
+            WorkFactory.create(title="Szkic utworu"),
+            TagFactory.create(title="Brulion"),
+            TypescriptFactory.create(title="Szkic maszynopisu"),
+            NoteFactory.create(title="Szkic zapisku"),
+            SecondaryTextFactory.create(title="Szkic listu"),
+            ContextualMaterialFactory.create(title="Szkic materiału"),
+        ]
         client.force_login(User.objects.create_user(username="editor", is_staff=True))
 
-        assert head(client, work.get_absolute_url())[0] == "Szkic utworu — Archivum Buczkovianum"
+        for draft in drafts:
+            title = head(client, draft.get_absolute_url())[0]
+            assert title == f"{draft.title} — Archivum Buczkovianum"
 
-    def test_seo_a_draft_is_404_for_a_user_who_is_not_staff(self, client: Client) -> None:
+    def test_r_06_a_draft_is_404_for_a_user_who_is_not_staff(self, client: Client) -> None:
         work = WorkFactory.create()
         client.force_login(User.objects.create_user(username="reader"))
 
@@ -215,6 +240,8 @@ class TestEntityPages:
             "/materials/",
             "/works/wertepy/extra",
             "/works//wertepy",
+            "/works/%00",
+            "/tags/zażółć",
         ],
     )
     def test_seo_an_entity_url_with_no_entity_is_404(self, client: Client, url: str) -> None:
