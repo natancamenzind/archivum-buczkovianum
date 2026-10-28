@@ -137,8 +137,8 @@ paths:
     get:
       operationId: home_retrieve
       description: |-
-        The home page (US-RA-01): introduction and portrait, the counts, the work cards and the
-        tag cloud.
+        The home page (US-RA-01): introduction and portrait, the counts, the work cards, a random
+        featured fragment (US-RA-02) and the tag cloud.
       tags:
       - home
       security:
@@ -150,6 +150,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HomePage'
+          description: ''
+  /api/materials/{id}/:
+    get:
+      operationId: materials_retrieve
+      description: The contextual material page (US-RA-12). A draft material is not
+        found (R-06).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - materials
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialPage'
           description: ''
   /api/notes/{id}/:
     get:
@@ -648,6 +671,22 @@ components:
       required:
       - id
       - title
+    FeaturedFragment:
+      type: object
+      description: US-RA-02. The context's `works` holds the card's works (see `FragmentCardSerializer`).
+      properties:
+        fragment:
+          $ref: '#/components/schemas/FragmentCard'
+        work:
+          allOf:
+          - $ref: '#/components/schemas/WorkFacet'
+          nullable: true
+          description: The source's first published work, by first edition, and the
+            count of the Fragmenty search filtered to it; null when the source has
+            no published work.
+      required:
+      - fragment
+      - work
     FragmentCard:
       type: object
       description: |-
@@ -806,12 +845,18 @@ components:
           items:
             $ref: '#/components/schemas/WorkCard'
           description: By first edition.
+        featured:
+          allOf:
+          - $ref: '#/components/schemas/FeaturedFragment'
+          nullable: true
+          description: A random visible featured fragment; null when there is none.
         tags:
           type: array
           items:
             $ref: '#/components/schemas/TagCount'
           description: 'The tag cloud: tags in use, the most frequent first.'
       required:
+      - featured
       - intro
       - portrait
       - portrait_alt
@@ -857,6 +902,49 @@ components:
       - snippet
       - title
       - url
+    MaterialPage:
+      type: object
+      description: |-
+        US-RA-12. `description` is rich text: HTML, sanitized when an editor saves it. The type
+        line's kind is `content.kind`.
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          description: HTML.
+        shelfmark:
+          type: string
+          description: E.g. "ML, sygn. 1700"; may be empty.
+        content:
+          $ref: '#/components/schemas/MediaContent'
+        works:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkSummary'
+          description: Related works, by first edition (R-03).
+        fragments:
+          allOf:
+          - $ref: '#/components/schemas/FragmentCardPreview'
+          description: Typescript fragments sharing a tag with the material or its
+            fragments.
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagChip'
+          description: Tags on the material, its fragments and its work links, by
+            name.
+      required:
+      - content
+      - description
+      - fragments
+      - id
+      - shelfmark
+      - tags
+      - title
+      - works
     MaterialText:
       type: object
       description: |-

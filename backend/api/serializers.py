@@ -107,43 +107,6 @@ class TagCountSerializer(serializers.ModelSerializer[Tag]):
 
 
 @dataclass(frozen=True)
-class HomeStatistics:
-    works: int
-    fragments: int
-    tags: int
-
-
-@dataclass(frozen=True)
-class HomePage:
-    settings: SiteSettings
-    statistics: HomeStatistics
-    works: list[Work]
-    tags: list[Tag]
-
-
-class HomeStatisticsSerializer(serializers.Serializer[HomeStatistics]):
-    works = serializers.IntegerField(help_text="Published works.")
-    fragments = serializers.IntegerField(help_text="Visible fragments of every document.")
-    tags = serializers.IntegerField(help_text="Published tags.")
-
-
-class HomePageSerializer(serializers.Serializer[HomePage]):
-    """US-RA-01. `intro` is rich text: HTML, sanitized when an editor saves it."""
-
-    intro = serializers.CharField(source="settings.intro_text", allow_blank=True, help_text="HTML.")
-    portrait = serializers.SerializerMethodField(help_text="Empty when there is no portrait.")
-    portrait_alt = serializers.CharField(source="settings.portrait_alt", allow_blank=True)
-    statistics = HomeStatisticsSerializer()
-    works = WorkCardSerializer(many=True, help_text="By first edition.")
-    tags = TagCountSerializer(
-        many=True, help_text="The tag cloud: tags in use, the most frequent first."
-    )
-
-    def get_portrait(self, page: HomePage) -> str:
-        return page.settings.portrait.url if page.settings.portrait else ""
-
-
-@dataclass(frozen=True)
 class TypescriptGroup:
     work: Work
     typescripts: list[Typescript]
@@ -566,6 +529,36 @@ class NotePageSerializer(serializers.Serializer[NotePage]):
 
 
 @dataclass(frozen=True)
+class MaterialPage:
+    material: ContextualMaterial
+    works: list[Work]
+    fragments: Preview[Fragment]
+    tags: list[Tag]
+
+
+class MaterialPageSerializer(serializers.Serializer[MaterialPage]):
+    """US-RA-12. `description` is rich text: HTML, sanitized when an editor saves it. The type
+    line's kind is `content.kind`."""
+
+    id = serializers.IntegerField(source="material.pk")
+    title = serializers.CharField(source="material.title")
+    description = serializers.CharField(
+        source="material.description", allow_blank=True, help_text="HTML."
+    )
+    shelfmark = serializers.CharField(
+        source="material.shelfmark_display", help_text='E.g. "ML, sygn. 1700"; may be empty.'
+    )
+    content = MediaContentSerializer(source="material")
+    works = WorkSummarySerializer(many=True, help_text="Related works, by first edition (R-03).")
+    fragments = FragmentCardPreviewSerializer(
+        help_text="Typescript fragments sharing a tag with the material or its fragments."
+    )
+    tags = TagChipSerializer(
+        many=True, help_text="Tags on the material, its fragments and its work links, by name."
+    )
+
+
+@dataclass(frozen=True)
 class TagPage:
     tag: Tag
     works: list[Work]
@@ -837,3 +830,63 @@ class SearchPageSerializer(serializers.Serializer[SearchPage]):
     suggested_tags = TagCountSerializer(
         many=True, help_text="The most frequent tags, only when nothing was found (US-RA-15 AC8)."
     )
+
+
+@dataclass(frozen=True)
+class HomeStatistics:
+    works: int
+    fragments: int
+    tags: int
+
+
+@dataclass(frozen=True)
+class FeaturedFragment:
+    fragment: Fragment
+    work: WorkFacet | None
+
+
+@dataclass(frozen=True)
+class HomePage:
+    settings: SiteSettings
+    statistics: HomeStatistics
+    works: list[Work]
+    featured: FeaturedFragment | None
+    tags: list[Tag]
+
+
+class HomeStatisticsSerializer(serializers.Serializer[HomeStatistics]):
+    works = serializers.IntegerField(help_text="Published works.")
+    fragments = serializers.IntegerField(help_text="Visible fragments of every document.")
+    tags = serializers.IntegerField(help_text="Published tags.")
+
+
+class FeaturedFragmentSerializer(serializers.Serializer[FeaturedFragment]):
+    """US-RA-02. The context's `works` holds the card's works (see `FragmentCardSerializer`)."""
+
+    fragment = FragmentCardSerializer()
+    work = WorkFacetSerializer(
+        allow_null=True,
+        help_text=(
+            "The source's first published work, by first edition, and the count of the "
+            "Fragmenty search filtered to it; null when the source has no published work."
+        ),
+    )
+
+
+class HomePageSerializer(serializers.Serializer[HomePage]):
+    """US-RA-01. `intro` is rich text: HTML, sanitized when an editor saves it."""
+
+    intro = serializers.CharField(source="settings.intro_text", allow_blank=True, help_text="HTML.")
+    portrait = serializers.SerializerMethodField(help_text="Empty when there is no portrait.")
+    portrait_alt = serializers.CharField(source="settings.portrait_alt", allow_blank=True)
+    statistics = HomeStatisticsSerializer()
+    works = WorkCardSerializer(many=True, help_text="By first edition.")
+    featured = FeaturedFragmentSerializer(
+        allow_null=True, help_text="A random visible featured fragment; null when there is none."
+    )
+    tags = TagCountSerializer(
+        many=True, help_text="The tag cloud: tags in use, the most frequent first."
+    )
+
+    def get_portrait(self, page: HomePage) -> str:
+        return page.settings.portrait.url if page.settings.portrait else ""

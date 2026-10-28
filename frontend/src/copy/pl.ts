@@ -84,6 +84,11 @@ export const copy = {
   home: {
     works: "Utwory",
     worksDescription: "Wszystkie utwory w archiwum, w kolejności wydania",
+    /** The featured fragment (US-RA-02). */
+    featured: "Wybrany fragment",
+    featuredDescription: "Wybór redakcji",
+    workFragments: (work: string, count: number) =>
+      `Wszystkie fragmenty „${work}” (${String(count)})`,
     loading: "Wczytuję stronę…",
     error: "Nie udało się wczytać strony. Spróbuj ponownie później.",
   },
@@ -181,6 +186,22 @@ export const copy = {
     tags: "Powiązane tagi",
     loading: "Wczytuję zapisek…",
     error: "Nie udało się wczytać zapisku. Spróbuj ponownie później.",
+  },
+  /** The contextual material page (US-RA-12). */
+  material: {
+    /** The type line's kind, keyed by the API's `content.kind`. */
+    kinds: {
+      image: "Materiał wizualny",
+      document: "Dokument",
+      external_media: "Nagranie",
+      ocr_text: "Skan z transkrypcją",
+      plain_text: "Tekst lity",
+    },
+    works: "Powiązane utwory",
+    fragments: "Powiązane fragmenty",
+    tags: "Powiązane tagi",
+    loading: "Wczytuję materiał kontekstowy…",
+    error: "Nie udało się wczytać materiału kontekstowego. Spróbuj ponownie później.",
   },
   /** The content of a note or contextual material, by its kind (US-RA-11 AC3). */
   content: {

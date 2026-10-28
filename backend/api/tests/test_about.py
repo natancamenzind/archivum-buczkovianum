@@ -150,6 +150,7 @@ class TestSchema:
                 "/api/editor/fragments/",
                 "/api/editor/fragments/{id}/",
                 "/api/home/",
+                "/api/materials/{id}/",
                 "/api/notes/{id}/",
                 "/api/search/",
                 "/api/search/autocomplete/",
