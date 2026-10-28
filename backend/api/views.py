@@ -64,8 +64,17 @@ from archive.models import (
     Work,
     preview,
 )
-from search.models import EntityType, SearchEntry
-from search.query import Facets, Filters, Hit, Sort, Tab, autocomplete, search
+from search.models import EntityType
+from search.query import (
+    Facets,
+    Filters,
+    Hit,
+    Sort,
+    Tab,
+    autocomplete,
+    search,
+    work_fragment_count,
+)
 
 
 @extend_schema(responses=AboutPageSerializer)
@@ -105,13 +114,12 @@ def home(request: Request) -> Response:
         .order_by("?")
         .first()
     )
-    featured = None
-    sources: dict[int, list[Work]] = {}
-    if fragment:
-        owner = fragment.document.owner
-        assert owner is not None
-        works = sources[fragment.document_id] = list(owner.related_works())
-        featured = FeaturedFragment(fragment, featured_work(works))
+    sources = source_works([fragment] if fragment else [], cards)
+    featured = (
+        FeaturedFragment(fragment, featured_work(sources.get(fragment.document_id, [])))
+        if fragment
+        else None
+    )
     page = HomePage(
         settings=SiteSettings.load(),
         statistics=HomeStatistics(
@@ -128,13 +136,8 @@ def home(request: Request) -> Response:
 
 def featured_work(works: list[Work]) -> WorkFacet | None:
     """The first of a featured fragment's works, with the count of the Fragmenty search filtered
-    to it (US-RA-02 AC2): the fragments whose search entry lists the work."""
-    if not works:
-        return None
-    count = SearchEntry.objects.filter(
-        entity_type=EntityType.FRAGMENT, work_ids__contains=[works[0].pk]
-    ).count()
-    return WorkFacet(works[0], count)
+    to it (US-RA-02 AC2)."""
+    return WorkFacet(works[0], work_fragment_count(works[0].pk)) if works else None
 
 
 @extend_schema(responses=WorkCardSerializer(many=True))

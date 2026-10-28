@@ -60,6 +60,9 @@ export function readSearch(params: URLSearchParams): SearchState {
   };
 }
 
+/** A fresh search: every value at its default. */
+export const NEW_SEARCH: SearchState = readSearch(new URLSearchParams());
+
 /** How many filter values are selected: the "n" of "Filtry (n)" (US-RA-16 AC3). */
 export function filterCount(state: SearchState): number {
   return (

@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { WorkCard } from "@/components/WorkCard";
 import { copy, formatCount, nouns, previewCount } from "@/copy/pl";
 import { api } from "@/lib/api";
-import { browseUrl, readSearch } from "@/lib/search";
+import { browseUrl, NEW_SEARCH } from "@/lib/search";
 
 type Home = components["schemas"]["HomePage"];
 type FeaturedFragment = components["schemas"]["FeaturedFragment"];
@@ -90,11 +90,7 @@ function Featured({ featured, total }: { featured: FeaturedFragment; total: numb
       {work !== null && (
         <ArrowLink
           label={copy.home.workFragments(work.title, work.count)}
-          to={browseUrl({
-            ...readSearch(new URLSearchParams()),
-            tab: "fragments",
-            works: [work.id],
-          })}
+          to={browseUrl({ ...NEW_SEARCH, tab: "fragments", works: [work.id] })}
         />
       )}
     </Card>
