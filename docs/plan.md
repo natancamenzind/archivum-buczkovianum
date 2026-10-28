@@ -262,7 +262,7 @@ These steps do not depend on each other, but they edit the same files. Run them 
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
-| [ ] | 32 | US-RA-02: featured fragment | `us-ra-02-featured-fragment` | 17, 21, 31 | A random featured fragment on the home page, linking to the filtered search. From step 17: `/api/home/` (`home` in `backend/api/views.py`, `HomePageSerializer`) has no featured fragment yet; add it there, as architecture §7 lists. `pages/HomePage.tsx` renders the hero, then the works card, then the cloud card; the fragment card goes between them (US-RA-01 AC1). Its counter's total is `statistics.fragments`, all visible fragments. From step 21: render it with `components/FragmentCard.tsx` and serialize it with `FragmentCardSerializer`. From step 31: the filtered search is `/search?tab=fragments&work=<work id>` (`searchUrl()` in `lib/search.ts` builds it from a `SearchState`); `/api/search/` takes `tab`, repeated `work`, `decade`, `has_scan`, `has_text` and `sort`. |
+| [x] | 32 | US-RA-02: featured fragment | `us-ra-02-featured-fragment` | 17, 21, 31 | A random featured fragment on the home page, linking to the filtered search. From step 17: `/api/home/` (`home` in `backend/api/views.py`, `HomePageSerializer`) has no featured fragment yet; add it there, as architecture §7 lists. `pages/HomePage.tsx` renders the hero, then the works card, then the cloud card; the fragment card goes between them (US-RA-01 AC1). Its counter's total is `statistics.fragments`, all visible fragments. From step 21: render it with `components/FragmentCard.tsx` and serialize it with `FragmentCardSerializer`. From step 31: the filtered search is `/search?tab=fragments&work=<work id>` (`searchUrl()` in `lib/search.ts` builds it from a `SearchState`); `/api/search/` takes `tab`, repeated `work`, `decade`, `has_scan`, `has_text` and `sort`. |
 | [x] | 33 | US-RA-17: autocomplete | `us-ra-17-autocomplete` | 29 | `/api/search/autocomplete/` and the suggestions under the field. From step 29: two fields take suggestions, the desktop header form in `components/layout/SiteHeader.tsx` and `components/SearchField.tsx` on the search page. On mobile the header has only an icon link to `/search`. |
 
 ### Phase 7 — Release
@@ -277,7 +277,7 @@ These steps do not depend on each other, but they edit the same files. Run them 
 | Story | Step | Story | Step |
 |-------|------|-------|------|
 | US-RA-01 | 17 | US-WR-01 | done (12) |
-| US-RA-02 (Should) | 32 | US-WR-02 | done (PR #5) |
+| US-RA-02 (Should) | done (32) | US-WR-02 | done (PR #5) |
 | US-RA-03 | done (13; story changed, D7) | US-WR-03 | done (10) |
 | US-RA-04 | done (21) | US-WR-04 | done (6) |
 | US-RA-05 | done (22) | US-WR-05 | done (7) |
