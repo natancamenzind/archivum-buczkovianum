@@ -281,6 +281,17 @@ describe("NotePage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("US-RA-11 AC3: opened with ?fragment=, the reader scrolls to the fragment", async () => {
+    mockContent({ kind: "plain_text", document: 20 });
+
+    const { container } = await renderPage("/notes/3?fragment=30");
+
+    const fragment = await screen.findByRole("button", { name: "Fragment 01: Dezerter" });
+    expect(fragment).toHaveAttribute("aria-pressed", "true");
+    expect(scrollIntoView.mock.contexts[0]).toBe(fragment);
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
   it("US-RA-11 AC3: opened from a search result, the reader highlights and scrolls to the match", async () => {
     mockContent({ kind: "ocr_text", document: 20 });
 

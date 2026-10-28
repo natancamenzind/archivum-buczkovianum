@@ -129,7 +129,7 @@ export function MediaContent({ content }: { content: Content }) {
           <iframe
             src={player}
             title={copy.content.player}
-            allow="fullscreen; picture-in-picture"
+            allow="encrypted-media; fullscreen; picture-in-picture"
             className="aspect-video w-full rounded-md"
           />
         ))}
