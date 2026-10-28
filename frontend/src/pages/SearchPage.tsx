@@ -14,7 +14,15 @@ import { TagList } from "@/components/TagList";
 import { Card } from "@/components/ui/card";
 import { copy } from "@/copy/pl";
 import { api } from "@/lib/api";
-import { filterCount, readSearch, type SearchState, searchUrl } from "@/lib/search";
+import {
+  browseUrl,
+  filterCount,
+  isBrowsing,
+  isSort,
+  readSearch,
+  type SearchState,
+  SORTS,
+} from "@/lib/search";
 import { cn } from "@/lib/utils";
 
 type Results = components["schemas"]["SearchPage"];
@@ -145,7 +153,7 @@ function SearchResults({ state }: { state: SearchState }) {
   const [panelOpen, setPanelOpen] = useState(false);
 
   function change(next: SearchState) {
-    void navigate(searchUrl(next.query, next));
+    void navigate(browseUrl(next));
   }
 
   // The open panel stays even when clearing its filters finds nothing (US-RA-16 AC3).
@@ -217,14 +225,12 @@ function SearchResults({ state }: { state: SearchState }) {
                 value={state.query === "" ? "title" : state.sort}
                 disabled={data === undefined || state.query === ""}
                 onChange={(event) => {
-                  change({
-                    ...state,
-                    sort: event.target.value === "title" ? "title" : "relevance",
-                  });
+                  const sort = event.target.value;
+                  change({ ...state, sort: isSort(sort) ? sort : "relevance" });
                 }}
                 className="grow rounded-sm border border-accent-border bg-card px-12 py-8 text-cousine-metadane text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:grow-0"
               >
-                {(["relevance", "title"] as const).map((option) => (
+                {SORTS.map((option) => (
                   <option key={option} value={option}>
                     {copy.searchResults.sorts[option]}
                   </option>
@@ -291,7 +297,7 @@ function SearchResults({ state }: { state: SearchState }) {
 export function SearchPage() {
   const [params] = useSearchParams();
   const state = readSearch(params);
-  const searching = state.query !== "" || params.has("tab") || filterCount(state) > 0;
+  const searching = state.query !== "" || isBrowsing(params);
 
   return (
     <main className="flex flex-col">

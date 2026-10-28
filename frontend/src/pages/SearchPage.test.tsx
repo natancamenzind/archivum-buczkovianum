@@ -116,6 +116,16 @@ function mockSearch(results: Results = RESULTS): URL[] {
   return requests;
 }
 
+/** A search that never answers, so the page stays loading. */
+function mockPendingSearch(): void {
+  server.use(
+    http.get(SEARCH_URL, async () => {
+      await delay("infinite");
+      return HttpResponse.json(RESULTS);
+    }),
+  );
+}
+
 function group(name: string): HTMLElement {
   const heading = screen.getByRole("heading", { level: 2, name });
   const panel = heading.closest<HTMLElement>("[data-slot=card]");
@@ -424,12 +434,7 @@ describe("SearchPage", () => {
   });
 
   it("US-RA-15: while results load, the page says it is searching and disables sorting", async () => {
-    server.use(
-      http.get(SEARCH_URL, async () => {
-        await delay("infinite");
-        return HttpResponse.json(RESULTS);
-      }),
-    );
+    mockPendingSearch();
 
     const { container } = renderRoute("/search?q=dezerter");
 
@@ -439,12 +444,7 @@ describe("SearchPage", () => {
   });
 
   it("US-RA-15: the loading skeleton shows only after 300 ms", async () => {
-    server.use(
-      http.get(SEARCH_URL, async () => {
-        await delay("infinite");
-        return HttpResponse.json(RESULTS);
-      }),
-    );
+    mockPendingSearch();
     const skeleton = "[aria-hidden=true][data-slot=card]";
 
     const { container } = renderRoute("/search?q=dezerter");
@@ -537,12 +537,7 @@ describe("SearchPage tabs and filters", () => {
   });
 
   it("US-RA-16 AC1: while results load, the tab counts show a dash", async () => {
-    server.use(
-      http.get(SEARCH_URL, async () => {
-        await delay("infinite");
-        return HttpResponse.json(RESULTS);
-      }),
-    );
+    mockPendingSearch();
 
     renderRoute("/search?q=dezerter");
 
@@ -636,12 +631,7 @@ describe("SearchPage tabs and filters", () => {
     renderRoute("/search?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
-    server.use(
-      http.get(SEARCH_URL, async () => {
-        await delay("infinite");
-        return HttpResponse.json(RESULTS);
-      }),
-    );
+    mockPendingSearch();
     fireEvent.click(within(filters()).getByRole("checkbox", { name: "Wertepy 5" }));
 
     expect(await screen.findByText("Przeszukuję utwory, fragmenty, zapiski i tagi…")).toBeVisible();
@@ -743,12 +733,7 @@ describe("SearchPage tabs and filters", () => {
     renderRoute("/search?q=dezerter");
 
     const panel = within(await openPanel());
-    server.use(
-      http.get(SEARCH_URL, async () => {
-        await delay("infinite");
-        return HttpResponse.json(RESULTS);
-      }),
-    );
+    mockPendingSearch();
     const scan = panel.getByRole("checkbox", { name: "Ze skanem 3" });
     fireEvent.click(scan);
 

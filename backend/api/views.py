@@ -210,9 +210,14 @@ def search_results(request: Request) -> Response:
     )
     fragments = [by_pk[pk] for pk in fragment_ids if pk in by_pk]
     works = list(Work.objects.published().with_year())
+    works_by_pk = {work.pk: work for work in works}
     page = SearchPage(
         facets=search_facets(results.facets, filters, works),
-        works=found(Work.objects.with_year(), hits.get(EntityType.WORK, [])),
+        works=[
+            Found(works_by_pk[hit.entry.entity_id], hit)
+            for hit in hits.get(EntityType.WORK, [])
+            if hit.entry.entity_id in works_by_pk
+        ],
         tags=found(Tag.objects.with_occurrences(), hits.get(EntityType.TAG, [])),
         fragments=fragments,
         notes=found(Note.objects.select_related("institution"), hits.get(EntityType.NOTE, [])),

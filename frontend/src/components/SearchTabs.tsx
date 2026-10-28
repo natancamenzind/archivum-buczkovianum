@@ -2,7 +2,7 @@ import { Link } from "react-router";
 
 import type { components } from "@/api/schema";
 import { copy } from "@/copy/pl";
-import { type SearchState, searchUrl, TABS } from "@/lib/search";
+import { browseUrl, type SearchState, TABS } from "@/lib/search";
 import { cn } from "@/lib/utils";
 
 type TabCounts = components["schemas"]["TabCounts"];
@@ -23,7 +23,7 @@ export function SearchTabs({ state, counts }: { state: SearchState; counts?: Tab
           return (
             <li key={tab} className="shrink-0">
               <Link
-                to={searchUrl(state.query, { ...state, tab })}
+                to={browseUrl({ ...state, tab })}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-8 border-b-2 py-12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
