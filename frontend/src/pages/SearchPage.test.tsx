@@ -11,6 +11,13 @@ type Results = components["schemas"]["SearchPage"];
 const SEARCH_URL = "*/api/search/";
 
 const EMPTY: Results = {
+  facets: {
+    tabs: { all: 0, works: 0, fragments: 0, notes: 0, tags: 0 },
+    works: [],
+    decades: [],
+    has_scan: 0,
+    has_text: 0,
+  },
   total: 0,
   works: [],
   tags: [],
@@ -23,6 +30,19 @@ const EMPTY: Results = {
 };
 
 const RESULTS: Results = {
+  facets: {
+    tabs: { all: 8, works: 1, fragments: 1, notes: 1, tags: 1 },
+    works: [
+      { id: 1, title: "Wertepy", count: 5 },
+      { id: 2, title: "Czarny potok", count: 2 },
+    ],
+    decades: [
+      { decade: 1940, count: 5 },
+      { decade: 1950, count: 2 },
+    ],
+    has_scan: 3,
+    has_text: 0,
+  },
   total: 8,
   works: [{ url: "/works/wertepy", title: "Wertepy", genre: "powieść", year: 1947, fragments: 2 }],
   tags: [
@@ -232,7 +252,8 @@ describe("SearchPage", () => {
     renderRoute("/search?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
-    const headings = screen.getAllByRole("heading", { level: 2 }).slice(1);
+    // After the filters' heading and the results' title.
+    const headings = screen.getAllByRole("heading", { level: 2 }).slice(2);
     expect(headings.map((heading) => heading.textContent)).toEqual([
       "Utwory",
       "Tagi",
@@ -446,12 +467,359 @@ describe("SearchPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("US-RA-15: without a query, nothing is searched", () => {
+  it("US-RA-15: without a query, a tab or a filter, nothing is searched", () => {
     const requests = mockSearch();
 
-    renderRoute("/search");
+    renderRoute("/search?sort=title");
 
     expect(screen.queryByRole("heading", { level: 2 })).toBeNull();
     expect(requests).toEqual([]);
+  });
+});
+
+describe("SearchPage tabs and filters", () => {
+  function tabs(): HTMLElement {
+    return screen.getByRole("navigation", { name: "Kategorie wyników" });
+  }
+
+  function filters(): HTMLElement {
+    const heading = screen.getByRole("heading", { level: 2, name: "Filtry" });
+    const aside = heading.closest("aside");
+    if (aside === null) {
+      throw new Error("No filters column.");
+    }
+    return aside;
+  }
+
+  async function openPanel(): Promise<HTMLElement> {
+    const button = await screen.findByRole("button", { name: /^Filtry \(\d+\)$/ });
+    await waitFor(() => {
+      expect(button).toBeEnabled();
+    });
+    fireEvent.click(button);
+    return screen.findByRole("dialog", { name: "Filtry" });
+  }
+
+  it("US-RA-16 AC1: the tabs, each with its count, 'Wszystko' by default", async () => {
+    mockSearch();
+
+    const { container } = renderRoute("/search?q=dezerter");
+
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+    expect(
+      within(tabs())
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["Wszystko 8", "Utwory 1", "Fragmenty 1", "Zapiski 1", "Tagi 1"]);
+    expect(within(tabs()).getByRole("link", { name: "Wszystko 8" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-16 AC1: a tab shows only its results and keeps the query and filters", async () => {
+    const requests = mockSearch();
+
+    const { router } = renderRoute("/search?q=dezerter&work=1");
+
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+    fireEvent.click(within(tabs()).getByRole("link", { name: "Utwory 1" }));
+
+    expect(await screen.findByText("8 wyników w kategorii „Utwory”")).toBeVisible();
+    expect(router.state.location.search).toBe("?q=dezerter&tab=works&work=1");
+    expect(requests.at(-1)?.searchParams.get("tab")).toBe("works");
+    expect(within(tabs()).getByRole("link", { name: "Utwory 1" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
+
+  it("US-RA-16 AC1: while results load, the tab counts show a dash", async () => {
+    server.use(
+      http.get(SEARCH_URL, async () => {
+        await delay("infinite");
+        return HttpResponse.json(RESULTS);
+      }),
+    );
+
+    renderRoute("/search?q=dezerter");
+
+    await screen.findByText("Przeszukuję utwory, fragmenty, zapiski i tagi…");
+    expect(within(tabs()).getByRole("link", { name: "Utwory –" })).toBeVisible();
+  });
+
+  it("US-RA-16 AC2: every filter value shows its count", async () => {
+    mockSearch();
+
+    const { container } = renderRoute("/search?q=dezerter");
+
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+    const column = within(filters());
+    expect(
+      column.getByRole("heading", { level: 3, name: "Utwór" }).parentElement,
+    ).toHaveTextContent("Utwór2");
+    expect(column.getByRole("checkbox", { name: "Wertepy 5" })).not.toBeChecked();
+    expect(column.getByRole("checkbox", { name: "Czarny potok 2" })).not.toBeChecked();
+    expect(column.getByRole("checkbox", { name: "Ze skanem 3" })).not.toBeChecked();
+    expect(column.getByRole("checkbox", { name: "Z transkrypcją 0" })).not.toBeChecked();
+    const period = column.getByRole<HTMLSelectElement>("combobox", { name: "Okres" });
+    expect(period).toHaveValue("");
+    expect([...period.options].map((option) => option.text)).toEqual([
+      "Wszystkie lata",
+      "1940–1949 (5)",
+      "1950–1959 (2)",
+    ]);
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-16 AC2: choosing works filters the results by them", async () => {
+    const requests = mockSearch();
+
+    const { router } = renderRoute("/search?q=dezerter");
+
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+    fireEvent.click(within(filters()).getByRole("checkbox", { name: "Wertepy 5" }));
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+    fireEvent.click(within(filters()).getByRole("checkbox", { name: "Czarny potok 2" }));
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+
+    expect(router.state.location.search).toBe("?q=dezerter&work=1&work=2");
+    expect(requests.at(-1)?.searchParams.getAll("work")).toEqual(["1", "2"]);
+    expect(within(filters()).getByRole("checkbox", { name: "Wertepy 5" })).toBeChecked();
+
+    fireEvent.click(within(filters()).getByRole("checkbox", { name: "Wertepy 5" }));
+    expect(router.state.location.search).toBe("?q=dezerter&work=2");
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+  });
+
+  it("US-RA-16 AC2: choosing a decade filters by it; 'Wszystkie lata' clears it", async () => {
+    const requests = mockSearch();
+
+    const { router } = renderRoute("/search?q=dezerter");
+
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+    fireEvent.change(within(filters()).getByRole("combobox", { name: "Okres" }), {
+      target: { value: "1950" },
+    });
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+
+    expect(router.state.location.search).toBe("?q=dezerter&decade=1950");
+    expect(requests.at(-1)?.searchParams.get("decade")).toBe("1950");
+    fireEvent.change(within(filters()).getByRole("combobox", { name: "Okres" }), {
+      target: { value: "" },
+    });
+    expect(router.state.location.search).toBe("?q=dezerter");
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+  });
+
+  it("US-RA-16 AC2: the availability filters keep results with a scan or a transcription", async () => {
+    const requests = mockSearch();
+
+    const { router } = renderRoute("/search?q=dezerter");
+
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+    fireEvent.click(within(filters()).getByRole("checkbox", { name: "Ze skanem 3" }));
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+    fireEvent.click(within(filters()).getByRole("checkbox", { name: "Z transkrypcją 0" }));
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+
+    expect(router.state.location.search).toBe("?q=dezerter&has_scan=1&has_text=1");
+    expect(requests.at(-1)?.searchParams.get("has_scan")).toBe("true");
+    expect(requests.at(-1)?.searchParams.get("has_text")).toBe("true");
+  });
+
+  it("US-RA-16 AC2: while results load, the previous filters stay, dimmed", async () => {
+    mockSearch();
+
+    renderRoute("/search?q=dezerter");
+
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+    server.use(
+      http.get(SEARCH_URL, async () => {
+        await delay("infinite");
+        return HttpResponse.json(RESULTS);
+      }),
+    );
+    fireEvent.click(within(filters()).getByRole("checkbox", { name: "Wertepy 5" }));
+
+    expect(await screen.findByText("Przeszukuję utwory, fragmenty, zapiski i tagi…")).toBeVisible();
+    expect(filters()).toHaveClass("opacity-40");
+    expect(filters()).toHaveAttribute("aria-busy", "true");
+    expect(within(filters()).getByRole("checkbox", { name: "Wertepy 5" })).toBeChecked();
+  });
+
+  it("US-RA-16 AC3: 'Filtry (n)' opens the filters in a full-screen panel", async () => {
+    mockSearch();
+
+    renderRoute("/search?q=dezerter&work=1&has_scan=1");
+
+    const panel = within(await openPanel());
+    expect(panel.getByRole("heading", { name: "Filtry" })).toBeVisible();
+    expect(panel.getByRole("checkbox", { name: "Wertepy 5" })).toBeChecked();
+    expect(panel.getByRole("checkbox", { name: "Ze skanem 3" })).toBeChecked();
+    expect(panel.getByRole("button", { name: "Zamknij filtry" })).toBeVisible();
+    expect(panel.getByRole("button", { name: "Pokaż wyniki (8)" })).toBeVisible();
+    expect(await axeViolations(document.body)).toEqual([]);
+  });
+
+  it("US-RA-16 AC3: 'Filtry (n)' counts the selected filter values", async () => {
+    mockSearch();
+
+    renderRoute("/search?q=dezerter&work=1&work=2&decade=1940&has_text=1");
+
+    expect(await screen.findByRole("button", { name: "Filtry (4)" })).toBeVisible();
+  });
+
+  it("US-RA-16 AC3: 'Pokaż wyniki (n)' shows the filtered count and closes the panel", async () => {
+    server.use(
+      http.get(SEARCH_URL, ({ request }) => {
+        const filtered = new URL(request.url).searchParams.has("work");
+        return HttpResponse.json(filtered ? { ...RESULTS, total: 3 } : RESULTS);
+      }),
+    );
+
+    renderRoute("/search?q=dezerter");
+
+    const panel = within(await openPanel());
+    fireEvent.click(panel.getByRole("checkbox", { name: "Wertepy 5" }));
+    const show = await panel.findByRole("button", { name: "Pokaż wyniki (3)" });
+    fireEvent.click(show);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+    expect(screen.getByText("3 wyniki we wszystkich kategoriach")).toBeVisible();
+  });
+
+  it("US-RA-16 AC3: 'Wyczyść' clears every filter and keeps the panel open", async () => {
+    mockSearch();
+
+    const { router } = renderRoute(
+      "/search?q=dezerter&tab=works&work=1&decade=1940&has_scan=1&sort=title",
+    );
+
+    const panel = within(await openPanel());
+    fireEvent.click(panel.getByRole("button", { name: "Wyczyść" }));
+
+    expect(router.state.location.search).toBe("?q=dezerter&tab=works&sort=title");
+    expect(screen.getByRole("dialog", { name: "Filtry" })).toBeVisible();
+    expect(await panel.findByRole("checkbox", { name: "Wertepy 5" })).not.toBeChecked();
+  });
+
+  it("US-RA-16 AC3: the close icon closes the panel", async () => {
+    mockSearch();
+
+    renderRoute("/search?q=dezerter");
+
+    const panel = within(await openPanel());
+    fireEvent.click(panel.getByRole("button", { name: "Zamknij filtry" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+  });
+
+  it("US-RA-16 AC4: a link restores the tab, filters and sort", async () => {
+    const requests = mockSearch();
+
+    renderRoute("/search?q=dezerter&tab=fragments&work=2&decade=1950&has_text=1&sort=title");
+
+    await screen.findByText("8 wyników w kategorii „Fragmenty”");
+    const query = requests[0]?.searchParams;
+    expect(query?.get("tab")).toBe("fragments");
+    expect(query?.getAll("work")).toEqual(["2"]);
+    expect(query?.get("decade")).toBe("1950");
+    expect(query?.get("has_text")).toBe("true");
+    expect(query?.get("sort")).toBe("title");
+    expect(within(tabs()).getByRole("link", { name: "Fragmenty 1" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(within(filters()).getByRole("checkbox", { name: "Czarny potok 2" })).toBeChecked();
+    expect(within(filters()).getByRole("combobox", { name: "Okres" })).toHaveValue("1950");
+    expect(screen.getByRole("combobox", { name: "Sortuj" })).toHaveValue("title");
+  });
+
+  it("US-RA-16 AC4: values that are not valid in a link are ignored", async () => {
+    const requests = mockSearch();
+
+    renderRoute("/search?q=dezerter&tab=drafts&work=wertepy&work=0&decade=x");
+
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+    const query = requests[0]?.searchParams;
+    expect(query?.get("tab")).toBe("all");
+    expect(query?.getAll("work")).toEqual([]);
+    expect(query?.has("decade")).toBe(false);
+  });
+
+  it("US-RA-16 AC4: a new search from the page's field keeps the tab, filters and sort", async () => {
+    mockSearch();
+
+    const { router } = renderRoute("/search?q=dezerter&tab=works&work=1&sort=title");
+
+    await screen.findByText("8 wyników w kategorii „Utwory”");
+    fireEvent.change(searchBox(), { target: { value: "potok" } });
+    fireEvent.submit(searchForm());
+
+    expect(router.state.location.search).toBe("?q=potok&tab=works&work=1&sort=title");
+    await screen.findByText("8 wyników w kategorii „Utwory”");
+  });
+
+  it("US-RA-16 AC4: a search from the header's field starts afresh", async () => {
+    mockSearch();
+
+    const { router } = renderRoute("/search?q=dezerter&tab=works&work=1");
+
+    await screen.findByText("8 wyników w kategorii „Utwory”");
+    const header = screen.getByRole("banner");
+    fireEvent.change(within(header).getByRole("combobox"), { target: { value: "potok" } });
+    fireEvent.submit(within(header).getByRole("search"));
+
+    expect(router.state.location.search).toBe("?q=potok");
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+  });
+
+  it("US-RA-16 AC5: an empty query lists everything in the tab and filters by title", async () => {
+    const requests = mockSearch();
+
+    const { container } = renderRoute("/search?tab=works&work=1");
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Wszystkie wyniki" }),
+    ).toBeVisible();
+    expect(requests[0]?.searchParams.get("q")).toBe("");
+    expect(requests[0]?.searchParams.get("tab")).toBe("works");
+    const sort = screen.getByRole("combobox", { name: "Sortuj" });
+    expect(sort).toHaveValue("title");
+    expect(sort).toBeDisabled();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-16 AC5: clearing the field keeps the tab and lists everything in it", async () => {
+    mockSearch();
+
+    const { router } = renderRoute("/search?q=dezerter&tab=works");
+
+    await screen.findByText("8 wyników w kategorii „Utwory”");
+    fireEvent.click(within(searchForm()).getByRole("button", { name: "Wyczyść" }));
+    fireEvent.submit(searchForm());
+
+    expect(router.state.location.search).toBe("?tab=works");
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Wszystkie wyniki" }),
+    ).toBeVisible();
+  });
+
+  it("US-RA-16 AC2: with no filtered results, the tabs and filters stay to change them", async () => {
+    mockSearch({ ...EMPTY, facets: RESULTS.facets });
+
+    const { container } = renderRoute("/search?tab=notes&has_scan=1");
+
+    expect(await screen.findByRole("heading", { level: 2, name: "Brak wyników" })).toBeVisible();
+    expect(screen.getByText("Wybierz inną kategorię albo wyczyść filtry.")).toBeVisible();
+    expect(within(tabs()).getByRole("link", { name: "Zapiski 1" })).toBeVisible();
+    expect(within(filters()).getByRole("checkbox", { name: "Ze skanem 3" })).toBeChecked();
+    expect(await axeViolations(container)).toEqual([]);
   });
 });

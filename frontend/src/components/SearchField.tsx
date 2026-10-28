@@ -1,10 +1,10 @@
 import { type SubmitEvent, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
 
 import { CloseIcon, SearchIcon } from "@/components/icons";
 import { SearchCombobox } from "@/components/SearchCombobox";
 import { copy } from "@/copy/pl";
-import { searchUrl } from "@/lib/search";
+import { readSearch, searchUrl } from "@/lib/search";
 
 const FOCUS_CLASSES =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
@@ -20,11 +20,12 @@ interface SearchFieldProps {
 
 /**
  * "Pole wyszukiwania" in design/components/: the search page's field, with "Wyczyść" while it
- * holds text. Submitting opens the search page for the trimmed query; typing suggests works and
- * tags (US-RA-17).
+ * holds text. Submitting searches for the trimmed query in the same tab, filters and sort, unlike
+ * the header's field, which starts afresh; typing suggests works and tags (US-RA-17).
  */
 export function SearchField({ query, labelledBy, describedBy }: SearchFieldProps) {
   const [value, setValue] = useState(query);
+  const [params] = useSearchParams();
   const location = useLocation();
   const [shownLocation, setShownLocation] = useState(location.key);
   const input = useRef<HTMLInputElement>(null);
@@ -39,7 +40,7 @@ export function SearchField({ query, labelledBy, describedBy }: SearchFieldProps
 
   function search(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    void navigate(searchUrl(value));
+    void navigate(searchUrl(value, readSearch(params)));
   }
 
   return (

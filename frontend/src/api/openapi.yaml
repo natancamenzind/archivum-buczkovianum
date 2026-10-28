@@ -155,22 +155,71 @@ paths:
     get:
       operationId: search_retrieve
       description: |-
-        The search results (US-RA-15), grouped by type. A blank `q`, or one of stopwords only,
-        finds everything.
+        The search results (US-RA-15, US-RA-16) in the tab and filters, grouped by type. A blank
+        `q`, or one of stopwords only, finds everything.
       parameters:
+      - in: query
+        name: decade
+        schema:
+          type: array
+          items:
+            type: integer
+        description: Decades of first editions, e.g. 1940 for 1940 to 1949.
+      - in: query
+        name: has_scan
+        schema:
+          type: boolean
+          default: false
+      - in: query
+        name: has_text
+        schema:
+          type: boolean
+          default: false
       - in: query
         name: q
         schema:
           type: string
+          default: ''
         description: 'Web search syntax: quoted phrases, or, -word.'
       - in: query
         name: sort
         schema:
-          type: string
           enum:
           - relevance
           - title
-        description: Within each group.
+          type: string
+          default: relevance
+          minLength: 1
+        description: |-
+          Within each group. An empty query is always sorted by title.
+
+          * `relevance` - Relevance
+          * `title` - Title
+      - in: query
+        name: tab
+        schema:
+          enum:
+          - all
+          - works
+          - fragments
+          - notes
+          - tags
+          type: string
+          default: all
+          minLength: 1
+        description: |-
+          * `all` - All
+          * `works` - Works
+          * `fragments` - Fragments
+          * `notes` - Notes
+          * `tags` - Tags
+      - in: query
+        name: work
+        schema:
+          type: array
+          items:
+            type: integer
+        description: Ids of published works.
       tags:
       - search
       security:
@@ -397,6 +446,17 @@ components:
       required:
       - texts
       - visuals
+    DecadeFacet:
+      type: object
+      properties:
+        decade:
+          type: integer
+          description: E.g. 1940 for 1940 to 1949.
+        count:
+          type: integer
+      required:
+      - count
+      - decade
     Document:
       type: object
       description: The text of an item for the reader (R-11, architecture section
@@ -866,14 +926,50 @@ components:
           type: boolean
           readOnly: true
           description: The text changed. Check the fragment, then clear this box.
+    SearchFacets:
+      type: object
+      description: Each filter's counts apply the tab and the other filters, but not
+        that filter itself.
+      properties:
+        tabs:
+          allOf:
+          - $ref: '#/components/schemas/TabCounts'
+          description: Results in each tab, with the filters applied.
+        works:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkFacet'
+          description: Works with results in the tab, and the selected ones, by first
+            edition.
+        decades:
+          type: array
+          items:
+            $ref: '#/components/schemas/DecadeFacet'
+          description: Decades with results in the tab, and the selected ones, in
+            order.
+        has_scan:
+          type: integer
+          description: Results with a scan.
+        has_text:
+          type: integer
+          description: Results with a transcription.
+      required:
+      - decades
+      - has_scan
+      - has_text
+      - tabs
+      - works
     SearchPage:
       type: object
       description: |-
-        The search results (US-RA-15): each group by relevance or by title, as asked.
+        The search results (US-RA-15, US-RA-16): the groups of the tab, each by relevance or by
+        title, as asked, and the facet counts.
 
         The context's `work_fragments` holds the matching fragments of each work, by work id, and
         `works` the fragment cards' works (see `FragmentCardSerializer`).
       properties:
+        facets:
+          $ref: '#/components/schemas/SearchFacets'
         total:
           type: integer
           description: Results in all the groups.
@@ -912,6 +1008,7 @@ components:
           description: The most frequent tags, only when nothing was found (US-RA-15
             AC8).
       required:
+      - facets
       - fragments
       - materials
       - notes
@@ -1016,6 +1113,25 @@ components:
       - title
       - type
       - url
+    TabCounts:
+      type: object
+      properties:
+        all:
+          type: integer
+        works:
+          type: integer
+        fragments:
+          type: integer
+        notes:
+          type: integer
+        tags:
+          type: integer
+      required:
+      - all
+      - fragments
+      - notes
+      - tags
+      - works
     TagChip:
       type: object
       properties:
@@ -1331,6 +1447,19 @@ components:
       - slug
       - title
       - year
+    WorkFacet:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        count:
+          type: integer
+      required:
+      - count
+      - id
+      - title
     WorkPage:
       type: object
       description: |-
