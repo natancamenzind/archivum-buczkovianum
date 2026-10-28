@@ -107,7 +107,7 @@ export function MediaContent({ content }: { content: Content }) {
   if (content.document !== null) {
     return (
       <Card>
-        <SectionHeader title={copy.note.text} />
+        <SectionHeader title={copy.content.text} />
         <Text id={content.document} />
       </Card>
     );

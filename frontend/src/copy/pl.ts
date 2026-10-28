@@ -177,7 +177,6 @@ export const copy = {
   note: {
     label: "Zapisek",
     works: "Powiązane utwory",
-    text: "Transkrypcja",
     fragments: "Powiązane fragmenty",
     tags: "Powiązane tagi",
     loading: "Wczytuję zapisek…",
@@ -185,6 +184,7 @@ export const copy = {
   },
   /** The content of a note or contextual material, by its kind (US-RA-11 AC3). */
   content: {
+    text: "Transkrypcja",
     page: (number: number, count: number) => `Strona ${String(number)} z ${String(count)}`,
     loading: "Wczytuję dokument…",
     download: "Pobierz plik",
