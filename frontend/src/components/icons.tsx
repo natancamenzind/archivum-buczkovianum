@@ -131,6 +131,16 @@ export function CloseIcon(props: IconProps) {
   return <Icon {...props} paths={["M12 4L4 12", "M4 4L12 12"]} />;
 }
 
+/** design/assets/icons/zaznacz.svg */
+export function CheckIcon(props: IconProps) {
+  return <Icon {...props} paths={["M13.3334 4L6.00008 11.3333L2.66675 8"]} />;
+}
+
+/** design/assets/icons/rozwin.svg */
+export function ChevronDownIcon(props: IconProps) {
+  return <Icon {...props} paths={["M4 6L8 10L12 6"]} />;
+}
+
 /** design/assets/icons/tag.svg */
 export function TagIcon(props: IconProps) {
   return (

@@ -255,8 +255,13 @@ export const copy = {
   },
   /** The search results (US-RA-15). */
   searchResults: {
-    title: (query: string) => `Wyniki dla „${query}”`,
-    total: (count: number) => `${formatCount(count, nouns.result)} we wszystkich kategoriach`,
+    /** An empty query lists everything in the tab and filters (US-RA-16 AC5). */
+    title: (query: string) => (query === "" ? "Wszystkie wyniki" : `Wyniki dla „${query}”`),
+    /** `tab` is the selected tab's name; null for "Wszystko". */
+    total: (count: number, tab: string | null) =>
+      tab === null
+        ? `${formatCount(count, nouns.result)} we wszystkich kategoriach`
+        : `${formatCount(count, nouns.result)} w kategorii „${tab}”`,
     loading: "Przeszukuję utwory, fragmenty, zapiski i tagi…",
     error: "Nie udało się wczytać wyników. Spróbuj ponownie później.",
     sort: "Sortuj",
@@ -282,12 +287,42 @@ export const copy = {
       materials: "Materiał kontekstowy",
     },
     openTag: "Otwórz tag",
-    noResults: (query: string) => `Brak wyników dla „${query}”`,
+    noResults: (query: string) => (query === "" ? "Brak wyników" : `Brak wyników dla „${query}”`),
     noResultsHint:
       "Sprawdź pisownię albo skróć frazę. Wyszukiwanie obejmuje tytuły, opisy, transkrypcje i tagi.",
+    /** With an empty query, only the tab and filters can be changed. */
+    noResultsFilteredHint: "Wybierz inną kategorię albo wyczyść filtry.",
     suggestedTags: "Śladami motywów",
     suggestedTagsDescription:
       "Tagi łączą fragmenty z różnych utworów. Otwórz tag, by podążyć za motywem w całym archiwum.",
+  },
+  /** The search tabs and filters (US-RA-16). */
+  searchFilters: {
+    tabsLabel: "Kategorie wyników",
+    /** Keyed by the API's `tab`. */
+    tabs: {
+      all: "Wszystko",
+      works: "Utwory",
+      fragments: "Fragmenty",
+      notes: "Zapiski",
+      tags: "Tagi",
+    },
+    /** A count that is still loading (design/rules.md, Stany ładowania). */
+    pending: "–",
+    title: "Filtry",
+    open: (count: number) => `Filtry (${String(count)})`,
+    close: "Zamknij filtry",
+    work: "Utwór",
+    availability: "Dostępność",
+    hasScan: "Ze skanem",
+    hasText: "Z transkrypcją",
+    period: "Okres",
+    allYears: "Wszystkie lata",
+    decade: (decade: number, count: number) =>
+      `${String(decade)}–${String(decade + 9)} (${String(count)})`,
+    clear: "Wyczyść",
+    /** `count` is the filtered total, or `pending` while it loads. */
+    show: (count: string) => `Pokaż wyniki (${count})`,
   },
   notFound: {
     title: "Nie znaleziono strony",

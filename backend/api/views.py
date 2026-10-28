@@ -14,6 +14,7 @@ from api.serializers import (
     AboutPage,
     AboutPageSerializer,
     ContextualMaterials,
+    DecadeFacet,
     DocumentSerializer,
     Found,
     HomePage,
@@ -21,8 +22,10 @@ from api.serializers import (
     HomeStatistics,
     NotePage,
     NotePageSerializer,
+    SearchFacets,
     SearchPage,
     SearchPageSerializer,
+    SearchParamsSerializer,
     SecondaryTextPage,
     SecondaryTextPageSerializer,
     SuggestionSerializer,
@@ -35,6 +38,7 @@ from api.serializers import (
     TypescriptPage,
     TypescriptPageSerializer,
     WorkCardSerializer,
+    WorkFacet,
     WorkPage,
     WorkPageSerializer,
 )
@@ -60,7 +64,7 @@ from archive.models import (
     preview,
 )
 from search.models import EntityType
-from search.query import Hit, Sort, autocomplete, search
+from search.query import Facets, Filters, Hit, Sort, Tab, autocomplete, search
 
 
 @extend_schema(responses=AboutPageSerializer)
@@ -159,19 +163,42 @@ def found[M: Publishable](queryset: PublishableQuerySet[M], hits: list[Hit]) -> 
     return [Found(items[hit.entry.entity_id], hit) for hit in hits if hit.entry.entity_id in items]
 
 
-@extend_schema(
-    parameters=[
-        OpenApiParameter("q", str, description="Web search syntax: quoted phrases, or, -word."),
-        OpenApiParameter("sort", str, enum=list(Sort), description="Within each group."),
-    ],
-    responses=SearchPageSerializer,
-)
+def search_facets(facets: Facets, filters: Filters, works: list[Work]) -> SearchFacets:
+    """The filter values to offer: those with results, and the selected ones, so they can be
+    cleared. `works` are the published works, by first edition."""
+    return SearchFacets(
+        tabs={tab.value: count for tab, count in facets.tabs.items()},
+        works=[
+            WorkFacet(work, facets.works.get(work.pk, 0))
+            for work in works
+            if work.pk in facets.works or work.pk in filters.work_ids
+        ],
+        decades=[
+            DecadeFacet(decade, facets.decades.get(decade, 0))
+            for decade in sorted({*facets.decades, *filters.decades})
+        ],
+        has_scan=facets.has_scan,
+        has_text=facets.has_text,
+    )
+
+
+@extend_schema(parameters=[SearchParamsSerializer], responses=SearchPageSerializer)
 @api_view(["GET"])
 def search_results(request: Request) -> Response:
-    """The search results (US-RA-15), grouped by type. A blank `q`, or one of stopwords only,
-    finds everything."""
-    sort = Sort.TITLE if request.query_params.get("sort") == Sort.TITLE else Sort.RELEVANCE
-    results = search(request.query_params.get("q", ""), sort=sort)
+    """The search results (US-RA-15, US-RA-16) in the tab and filters, grouped by type. A blank
+    `q`, or one of stopwords only, finds everything."""
+    params = SearchParamsSerializer(data=request.query_params)
+    params.is_valid(raise_exception=True)
+    options = params.validated_data
+    filters = Filters(
+        work_ids=tuple(options["work"]),
+        decades=tuple(options["decade"]),
+        has_scan=options["has_scan"],
+        has_text=options["has_text"],
+    )
+    results = search(
+        options["q"], tab=Tab(options["tab"]), filters=filters, sort=Sort(options["sort"])
+    )
     hits = {group.entity_type: group.hits for group in results.groups}
 
     fragment_ids = [hit.entry.entity_id for hit in hits.get(EntityType.FRAGMENT, [])]
@@ -184,8 +211,15 @@ def search_results(request: Request) -> Response:
         .in_bulk(fragment_ids)
     )
     fragments = [by_pk[pk] for pk in fragment_ids if pk in by_pk]
+    works = list(Work.objects.published().with_year())
+    works_by_pk = {work.pk: work for work in works}
     page = SearchPage(
-        works=found(Work.objects.with_year(), hits.get(EntityType.WORK, [])),
+        facets=search_facets(results.facets, filters, works),
+        works=[
+            Found(works_by_pk[hit.entry.entity_id], hit)
+            for hit in hits.get(EntityType.WORK, [])
+            if hit.entry.entity_id in works_by_pk
+        ],
         tags=found(Tag.objects.with_occurrences(), hits.get(EntityType.TAG, [])),
         fragments=fragments,
         notes=found(Note.objects.select_related("institution"), hits.get(EntityType.NOTE, [])),
@@ -204,7 +238,7 @@ def search_results(request: Request) -> Response:
     )
     context = {
         "work_fragments": results.work_fragments,
-        "works": source_works(fragments, list(Work.objects.published().with_year())),
+        "works": source_works(fragments, works),
     }
     return Response(SearchPageSerializer(page, context=context).data)
 

@@ -26,7 +26,7 @@ PUBLISHED = Status.PUBLISHED
 GROUPS = ("works", "tags", "fragments", "notes", "typescripts", "secondary_texts", "materials")
 
 
-def results(client: Client, q: str, **params: str) -> dict[str, Any]:
+def results(client: Client, q: str, **params: str | list[int]) -> dict[str, Any]:
     response = client.get(reverse("search"), {"q": q, **params})
     assert response.status_code == 200
     result: dict[str, Any] = response.json()
@@ -302,3 +302,173 @@ class TestSearchEndpoint:
 
         assert len(page["fragments"]) == 8
         assert {card["work"] for card in page["fragments"]} == {"Wertepy"}
+
+
+@pytest.fixture
+def two_works() -> dict[str, int]:
+    """ "Dezerter" in two works of two decades: "Wertepy" (1947) has a scanned typescript with a
+    fragment, "Czarny potok" (1954) a plain-text note. A tag of the same name refers to neither."""
+    wertepy = published_work("Wertepy", 1947, description="Dezerter w lesie.")
+    potok = published_work("Czarny potok", 1954, description="Dezerter nad potokiem.")
+    typescript = TypescriptFactory.create(
+        status=PUBLISHED, work=wertepy, document__text="Szedł dezerter."
+    )
+    FragmentFactory.create(document=typescript.document, start=6, end=14)
+    note = NoteFactory.create(
+        status=PUBLISHED,
+        content_kind=ContentKind.PLAIN_TEXT,
+        external_url="",
+        document=DocumentFactory.create(text="Dezerter."),
+    )
+    note.works.add(potok)
+    note.save()
+    TagFactory.create(status=PUBLISHED, title="Dezerter")
+    return {"wertepy": wertepy.pk, "potok": potok.pk}
+
+
+@pytest.mark.django_db
+class TestSearchTabsAndFilters:
+    def test_us_ra_16_ac1_a_tab_narrows_the_results_and_every_tab_has_its_count(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Act
+        page = results(client, "dezerter", tab="works")
+
+        # Assert
+        assert page["total"] == 2
+        assert sorted(titles(page, "works")) == ["Czarny potok", "Wertepy"]
+        assert all(page[group] == [] for group in GROUPS if group != "works")
+        assert page["facets"]["tabs"] == {
+            "all": 6,
+            "works": 2,
+            "fragments": 1,
+            "notes": 1,
+            "tags": 1,
+        }
+
+    def test_us_ra_16_ac2_the_work_filter_keeps_results_related_to_the_selected_works(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Act
+        one = results(client, "dezerter", work=[two_works["wertepy"]])
+        both = results(client, "dezerter", work=[two_works["wertepy"], two_works["potok"]])
+
+        # Assert
+        assert (one["total"], both["total"]) == (3, 5)
+        assert titles(one, "works") == ["Wertepy"]
+        assert one["facets"]["works"] == [
+            {"id": two_works["wertepy"], "title": "Wertepy", "count": 3},
+            {"id": two_works["potok"], "title": "Czarny potok", "count": 2},
+        ]
+
+    def test_us_ra_16_ac2_a_selected_work_stays_a_filter_value_without_results(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Act
+        page = results(client, "dezerter", tab="notes", work=[two_works["wertepy"]])
+
+        # Assert
+        assert page["total"] == 0
+        assert page["facets"]["works"] == [
+            {"id": two_works["wertepy"], "title": "Wertepy", "count": 0},
+            {"id": two_works["potok"], "title": "Czarny potok", "count": 1},
+        ]
+
+    def test_us_ra_16_ac2_the_period_filter_keeps_works_first_published_in_the_decade(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Act
+        page = results(client, "dezerter", decade=[1950])
+
+        # Assert
+        assert titles(page, "works") == ["Czarny potok"]
+        assert page["total"] == 2
+        assert page["facets"]["decades"] == [
+            {"decade": 1940, "count": 3},
+            {"decade": 1950, "count": 2},
+        ]
+
+    def test_us_ra_16_ac2_the_availability_filters_keep_scans_and_transcriptions(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Act
+        everything = results(client, "dezerter")
+        with_scan = results(client, "dezerter", has_scan="true")
+        with_text = results(client, "dezerter", has_text="true")
+
+        # Assert
+        assert (everything["facets"]["has_scan"], everything["facets"]["has_text"]) == (2, 3)
+        assert with_scan["total"] == 2
+        assert len(with_scan["typescripts"]) == len(with_scan["fragments"]) == 1
+        assert with_text["total"] == 3
+        assert with_text["notes"] != []
+
+    def test_us_ra_16_ac4_an_unknown_tab_or_filter_value_is_a_bad_request(
+        self, client: Client
+    ) -> None:
+        # Act
+        statuses = [
+            client.get(reverse("search"), params).status_code
+            for params in (
+                {"tab": "drafts"},
+                {"work": "wertepy"},
+                {"work": 2**31},
+                {"decade": 40000},
+            )
+        ]
+
+        # Assert
+        assert statuses == [400, 400, 400, 400]
+
+    def test_us_ra_16_ac2_filters_of_different_kinds_combine(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Act
+        page = results(client, "dezerter", work=[two_works["potok"]], has_scan="true")
+
+        # Assert
+        assert page["total"] == 0
+        assert page["facets"]["has_scan"] == 0
+        assert page["facets"]["works"][0] == {
+            "id": two_works["wertepy"],
+            "title": "Wertepy",
+            "count": 2,
+        }
+
+    def test_us_ra_16_ac2_a_selected_decade_stays_a_filter_value_without_results(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Act
+        page = results(client, "dezerter", decade=[1960])
+
+        # Assert
+        assert page["total"] == 0
+        assert page["facets"]["decades"] == [
+            {"decade": 1940, "count": 3},
+            {"decade": 1950, "count": 2},
+            {"decade": 1960, "count": 0},
+        ]
+
+    def test_us_ra_16_ac5_an_empty_query_returns_everything_in_the_tab_by_title(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Arrange
+        published_work("Bezimienny", 1960)
+
+        # Act
+        page = results(client, "", tab="works", sort="relevance")
+
+        # Assert
+        assert titles(page, "works") == ["Bezimienny", "Czarny potok", "Wertepy"]
+        assert page["facets"]["tabs"]["all"] == 7
+
+    def test_us_ra_16_ac5_an_empty_query_returns_everything_in_the_filters(
+        self, client: Client, two_works: dict[str, int]
+    ) -> None:
+        # Act
+        page = results(client, "", work=[two_works["wertepy"]])
+
+        # Assert
+        assert page["total"] == 3
+        assert titles(page, "works") == ["Wertepy"]
+        assert len(page["typescripts"]) == len(page["fragments"]) == 1

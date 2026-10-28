@@ -23,7 +23,7 @@ from archive.models import (
     format_shelfmark,
 )
 from search.models import EntityType, SearchEntry
-from search.query import Hit
+from search.query import Hit, Sort, Tab
 
 
 @dataclass(frozen=True)
@@ -649,7 +649,31 @@ class Found[M]:
 
 
 @dataclass(frozen=True)
+class WorkFacet:
+    work: Work
+    count: int
+
+
+@dataclass(frozen=True)
+class DecadeFacet:
+    decade: int
+    count: int
+
+
+@dataclass(frozen=True)
+class SearchFacets:
+    """The counts next to every tab and filter value (US-RA-16 AC1, AC2)."""
+
+    tabs: dict[str, int]
+    works: list[WorkFacet]
+    decades: list[DecadeFacet]
+    has_scan: int
+    has_text: int
+
+
+@dataclass(frozen=True)
 class SearchPage:
+    facets: SearchFacets
     works: list[Found[Work]]
     tags: list[Found[Tag]]
     fragments: list[Fragment]
@@ -731,13 +755,77 @@ class ItemResultSerializer(serializers.Serializer[Found[Archival]]):
         return f"{url}?{urlencode({'q': term})}" if term else url
 
 
+class SearchParamsSerializer(serializers.Serializer[None]):
+    """The search page's query string (US-RA-16 AC4). The values of one filter are alternatives;
+    different filters combine."""
+
+    q = serializers.CharField(
+        default="", allow_blank=True, help_text="Web search syntax: quoted phrases, or, -word."
+    )
+    tab = serializers.ChoiceField(Tab.choices, default=Tab.ALL)
+    # The index stores work ids as PostgreSQL integers and decades as smallints.
+    work = serializers.ListField(
+        child=serializers.IntegerField(min_value=1, max_value=2**31 - 1),
+        default=list,
+        help_text="Ids of published works.",
+    )
+    decade = serializers.ListField(
+        child=serializers.IntegerField(min_value=0, max_value=32767),
+        default=list,
+        help_text="Decades of first editions, e.g. 1940 for 1940 to 1949.",
+    )
+    has_scan = serializers.BooleanField(default=False)
+    has_text = serializers.BooleanField(default=False)
+    sort = serializers.ChoiceField(
+        Sort.choices,
+        default=Sort.RELEVANCE,
+        help_text="Within each group. An empty query is always sorted by title.",
+    )
+
+
+class TabCountsSerializer(serializers.Serializer[dict[str, int]]):
+    all = serializers.IntegerField()
+    works = serializers.IntegerField()
+    fragments = serializers.IntegerField()
+    notes = serializers.IntegerField()
+    tags = serializers.IntegerField()
+
+
+class WorkFacetSerializer(serializers.Serializer[WorkFacet]):
+    id = serializers.IntegerField(source="work.pk")
+    title = serializers.CharField(source="work.title")
+    count = serializers.IntegerField()
+
+
+class DecadeFacetSerializer(serializers.Serializer[DecadeFacet]):
+    decade = serializers.IntegerField(help_text="E.g. 1940 for 1940 to 1949.")
+    count = serializers.IntegerField()
+
+
+class SearchFacetsSerializer(serializers.Serializer[SearchFacets]):
+    """Each filter's counts apply the tab and the other filters, but not that filter itself."""
+
+    tabs = TabCountsSerializer(help_text="Results in each tab, with the filters applied.")
+    works = WorkFacetSerializer(
+        many=True,
+        help_text="Works with results in the tab, and the selected ones, by first edition.",
+    )
+    decades = DecadeFacetSerializer(
+        many=True, help_text="Decades with results in the tab, and the selected ones, in order."
+    )
+    has_scan = serializers.IntegerField(help_text="Results with a scan.")
+    has_text = serializers.IntegerField(help_text="Results with a transcription.")
+
+
 class SearchPageSerializer(serializers.Serializer[SearchPage]):
-    """The search results (US-RA-15): each group by relevance or by title, as asked.
+    """The search results (US-RA-15, US-RA-16): the groups of the tab, each by relevance or by
+    title, as asked, and the facet counts.
 
     The context's `work_fragments` holds the matching fragments of each work, by work id, and
     `works` the fragment cards' works (see `FragmentCardSerializer`).
     """
 
+    facets = SearchFacetsSerializer()
     total = serializers.IntegerField(help_text="Results in all the groups.")
     works = WorkResultSerializer(many=True)
     tags = TagResultSerializer(many=True)

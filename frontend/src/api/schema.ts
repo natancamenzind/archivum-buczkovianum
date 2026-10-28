@@ -122,8 +122,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * @description The search results (US-RA-15), grouped by type. A blank `q`, or one of stopwords only,
-         *     finds everything.
+         * @description The search results (US-RA-15, US-RA-16) in the tab and filters, grouped by type. A blank
+         *     `q`, or one of stopwords only, finds everything.
          */
         get: operations["search_retrieve"];
         put?: never;
@@ -300,6 +300,11 @@ export interface components {
             texts: components["schemas"]["MaterialText"][];
             /** @description By title. */
             visuals: components["schemas"]["VisualMaterial"][];
+        };
+        DecadeFacet: {
+            /** @description E.g. 1940 for 1940 to 1949. */
+            decade: number;
+            count: number;
         };
         /** @description The text of an item for the reader (R-11, architecture section 4.4). */
         Document: {
@@ -534,13 +539,28 @@ export interface components {
             /** @description The text changed. Check the fragment, then clear this box. */
             readonly needs_review?: boolean;
         };
+        /** @description Each filter's counts apply the tab and the other filters, but not that filter itself. */
+        SearchFacets: {
+            /** @description Results in each tab, with the filters applied. */
+            tabs: components["schemas"]["TabCounts"];
+            /** @description Works with results in the tab, and the selected ones, by first edition. */
+            works: components["schemas"]["WorkFacet"][];
+            /** @description Decades with results in the tab, and the selected ones, in order. */
+            decades: components["schemas"]["DecadeFacet"][];
+            /** @description Results with a scan. */
+            has_scan: number;
+            /** @description Results with a transcription. */
+            has_text: number;
+        };
         /**
-         * @description The search results (US-RA-15): each group by relevance or by title, as asked.
+         * @description The search results (US-RA-15, US-RA-16): the groups of the tab, each by relevance or by
+         *     title, as asked, and the facet counts.
          *
          *     The context's `work_fragments` holds the matching fragments of each work, by work id, and
          *     `works` the fragment cards' works (see `FragmentCardSerializer`).
          */
         SearchPage: {
+            facets: components["schemas"]["SearchFacets"];
             /** @description Results in all the groups. */
             total: number;
             works: components["schemas"]["WorkResult"][];
@@ -598,6 +618,13 @@ export interface components {
             readonly type: components["schemas"]["TypeEnum"];
             readonly title: string;
             readonly url: string;
+        };
+        TabCounts: {
+            all: number;
+            works: number;
+            fragments: number;
+            notes: number;
+            tags: number;
         };
         TagChip: {
             /** @description Part of the page address. */
@@ -728,6 +755,11 @@ export interface components {
             readonly cover_image_alt: string;
             /** @description Visible fragments of the main typescript (D19); 0 without one. */
             readonly fragment_count: number;
+        };
+        WorkFacet: {
+            id: number;
+            title: string;
+            count: number;
         };
         /**
          * @description US-RA-04, from a work with `with_year()`. `description` is rich text: HTML, sanitized when
@@ -961,10 +993,29 @@ export interface operations {
     search_retrieve: {
         parameters: {
             query?: {
+                /** @description Decades of first editions, e.g. 1940 for 1940 to 1949. */
+                decade?: number[];
+                has_scan?: boolean;
+                has_text?: boolean;
                 /** @description Web search syntax: quoted phrases, or, -word. */
                 q?: string;
-                /** @description Within each group. */
+                /**
+                 * @description Within each group. An empty query is always sorted by title.
+                 *
+                 *     * `relevance` - Relevance
+                 *     * `title` - Title
+                 */
                 sort?: "relevance" | "title";
+                /**
+                 * @description * `all` - All
+                 *     * `works` - Works
+                 *     * `fragments` - Fragments
+                 *     * `notes` - Notes
+                 *     * `tags` - Tags
+                 */
+                tab?: "all" | "works" | "fragments" | "notes" | "tags";
+                /** @description Ids of published works. */
+                work?: number[];
             };
             header?: never;
             path?: never;

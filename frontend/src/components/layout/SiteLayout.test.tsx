@@ -99,7 +99,7 @@ describe("SiteLayout", () => {
   });
 
   it("US-RA-14 AC1: a blank header search opens the search page without a query", () => {
-    renderRoute("/about");
+    const { router } = renderRoute("/about");
 
     const header = screen.getByRole("banner");
     fireEvent.change(within(header).getByRole("combobox"), { target: { value: "  " } });
@@ -107,6 +107,8 @@ describe("SiteLayout", () => {
 
     const pageForm = screen.getByRole("search", { name: "Wyszukiwanie" });
     expect(within(pageForm).getByRole("combobox")).toHaveValue("");
+    expect(router.state.location.pathname).toBe("/search");
+    expect(router.state.location.search).toBe("");
   });
 
   it("US-RA-14 AC1: on mobile the header search is an icon linking to the search page", () => {
