@@ -34,7 +34,8 @@ export interface paths {
         };
         /**
          * @description The text of a published item for the reader (R-11), with its fragments and their
-         *     published tags. The text of a draft, or of no item, is not found (R-06).
+         *     published tags. The text of a draft is shown only to staff; of no item, it is not found
+         *     (R-06).
          */
         get: operations["documents_retrieve"];
         put?: never;
@@ -104,7 +105,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description The contextual material page (US-RA-12). A draft material is not found (R-06). */
+        /** @description The contextual material page (US-RA-12). A draft material is shown only to staff (R-06). */
         get: operations["materials_retrieve"];
         put?: never;
         post?: never;
@@ -121,7 +122,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description The note page (US-RA-11). A draft note is not found (R-06). */
+        /** @description The note page (US-RA-11). A draft note is shown only to staff (R-06). */
         get: operations["notes_retrieve"];
         put?: never;
         post?: never;
@@ -178,7 +179,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description The secondary text page (US-RA-10). A draft secondary text is not found (R-06). */
+        /** @description The secondary text page (US-RA-10). A draft secondary text is shown only to staff (R-06). */
         get: operations["secondary_texts_retrieve"];
         put?: never;
         post?: never;
@@ -215,7 +216,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description The tag page (US-RA-07). A draft tag is not found (R-06). */
+        /** @description The tag page (US-RA-07). A draft tag is shown only to staff (R-06). */
         get: operations["tags_retrieve"];
         put?: never;
         post?: never;
@@ -253,8 +254,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * @description The typescript page (US-RA-08). A draft typescript is not found (R-06); a draft work
-         *     leaves out the work, its contextual materials and nothing else.
+         * @description The typescript page (US-RA-08). A draft typescript is shown only to staff (R-06); a draft
+         *     work leaves out the work, its contextual materials and nothing else.
          */
         get: operations["typescripts_retrieve"];
         put?: never;
@@ -289,7 +290,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description The work page (US-RA-04). A draft work is not found (R-06). */
+        /** @description The work page (US-RA-04). A draft work is shown only to staff (R-06). */
         get: operations["works_retrieve"];
         put?: never;
         post?: never;
@@ -331,6 +332,8 @@ export interface components {
             readonly page_offsets: number[];
             /** @description PDF URL; empty for a plain text. */
             readonly scan: string;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            readonly is_draft: boolean;
             /** @description By position. */
             readonly fragments: components["schemas"]["DocumentFragment"][];
         };
@@ -489,6 +492,8 @@ export interface components {
          */
         MaterialPage: {
             id: number;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
             title: string;
             /** @description HTML. */
             description: string;
@@ -559,6 +564,8 @@ export interface components {
         /** @description US-RA-11. `description` is rich text: HTML, sanitized when an editor saves it. */
         NotePage: {
             id: number;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
             title: string;
             /** @description HTML. */
             description: string;
@@ -620,6 +627,8 @@ export interface components {
         /** @description US-RA-10. `description` is rich text: HTML, sanitized when an editor saves it. */
         SecondaryTextPage: {
             id: number;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
             title: string;
             /** @description HTML. */
             description: string;
@@ -690,6 +699,8 @@ export interface components {
          */
         TagPage: {
             slug: string;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
             title: string;
             /** @description HTML. */
             description: string;
@@ -746,6 +757,8 @@ export interface components {
         /** @description US-RA-08. `description` is rich text: HTML, sanitized when an editor saves it. */
         TypescriptPage: {
             id: number;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
             title: string;
             /** @description HTML. */
             description: string;
@@ -811,6 +824,8 @@ export interface components {
          */
         WorkPage: {
             slug: string;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
             title: string;
             /** @description HTML. */
             description: string;

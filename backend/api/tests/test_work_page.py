@@ -421,6 +421,7 @@ class TestWorkPageSchema:
                 "WorkPage",
                 (
                     "slug",
+                    "is_draft",
                     "title",
                     "description",
                     "year",

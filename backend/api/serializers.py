@@ -269,6 +269,9 @@ class TypescriptPageSerializer(serializers.Serializer[TypescriptPage]):
     """US-RA-08. `description` is rich text: HTML, sanitized when an editor saves it."""
 
     id = serializers.IntegerField(source="typescript.pk")
+    is_draft = serializers.BooleanField(
+        source="typescript.is_draft", help_text="True only for staff previewing a draft (US-WR-13)."
+    )
     title = serializers.CharField(source="typescript.title")
     description = serializers.CharField(
         source="typescript.description", allow_blank=True, help_text="HTML."
@@ -418,6 +421,9 @@ class WorkPageSerializer(serializers.Serializer[WorkPage]):
     an editor saves it."""
 
     slug = serializers.CharField(source="work.slug")
+    is_draft = serializers.BooleanField(
+        source="work.is_draft", help_text="True only for staff previewing a draft (US-WR-13)."
+    )
     title = serializers.CharField(source="work.title")
     description = serializers.CharField(
         source="work.description", allow_blank=True, help_text="HTML."
@@ -453,6 +459,10 @@ class SecondaryTextPageSerializer(serializers.Serializer[SecondaryTextPage]):
     """US-RA-10. `description` is rich text: HTML, sanitized when an editor saves it."""
 
     id = serializers.IntegerField(source="secondary_text.pk")
+    is_draft = serializers.BooleanField(
+        source="secondary_text.is_draft",
+        help_text="True only for staff previewing a draft (US-WR-13).",
+    )
     title = serializers.CharField(source="secondary_text.title")
     description = serializers.CharField(
         source="secondary_text.description", allow_blank=True, help_text="HTML."
@@ -513,6 +523,9 @@ class NotePageSerializer(serializers.Serializer[NotePage]):
     """US-RA-11. `description` is rich text: HTML, sanitized when an editor saves it."""
 
     id = serializers.IntegerField(source="note.pk")
+    is_draft = serializers.BooleanField(
+        source="note.is_draft", help_text="True only for staff previewing a draft (US-WR-13)."
+    )
     title = serializers.CharField(source="note.title")
     description = serializers.CharField(
         source="note.description", allow_blank=True, help_text="HTML."
@@ -541,6 +554,9 @@ class MaterialPageSerializer(serializers.Serializer[MaterialPage]):
     line's kind is `content.kind`."""
 
     id = serializers.IntegerField(source="material.pk")
+    is_draft = serializers.BooleanField(
+        source="material.is_draft", help_text="True only for staff previewing a draft (US-WR-13)."
+    )
     title = serializers.CharField(source="material.title")
     description = serializers.CharField(
         source="material.description", allow_blank=True, help_text="HTML."
@@ -573,6 +589,9 @@ class TagPageSerializer(serializers.Serializer[TagPage]):
     sanitized when an editor saves it."""
 
     slug = serializers.CharField(source="tag.slug")
+    is_draft = serializers.BooleanField(
+        source="tag.is_draft", help_text="True only for staff previewing a draft (US-WR-13)."
+    )
     title = serializers.CharField(source="tag.title")
     description = serializers.CharField(
         source="tag.description", allow_blank=True, help_text="HTML."
@@ -621,11 +640,16 @@ class DocumentSerializer(serializers.ModelSerializer[Document]):
     """The text of an item for the reader (R-11, architecture section 4.4)."""
 
     scan = serializers.SerializerMethodField(help_text="PDF URL; empty for a plain text.")
+    is_draft = serializers.BooleanField(
+        source="owner.is_draft",
+        read_only=True,
+        help_text="True only for staff previewing a draft (US-WR-13).",
+    )
     fragments = DocumentFragmentSerializer(many=True, read_only=True, help_text="By position.")
 
     class Meta:
         model = Document
-        fields = ("id", "kind", "text", "page_offsets", "scan", "fragments")
+        fields = ("id", "kind", "text", "page_offsets", "scan", "is_draft", "fragments")
         # Output only, so the schema marks every field as present, the blank ones too.
         read_only_fields = fields
 

@@ -178,6 +178,10 @@ class Publishable(BaseModel):
         return result
 
     @property
+    def is_draft(self) -> bool:
+        return self.status == Status.DRAFT
+
+    @property
     def description_text(self) -> str:
         """The description without its HTML, for the search index."""
         return html_to_text(self.description)

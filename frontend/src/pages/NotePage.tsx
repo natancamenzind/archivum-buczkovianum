@@ -59,6 +59,7 @@ export function NotePage() {
 
   return (
     <EntityLayout
+      isDraft={note.is_draft}
       header={
         <PageHeader
           label={[copy.note.label, note.shelfmark].filter(Boolean).join(" · ")}

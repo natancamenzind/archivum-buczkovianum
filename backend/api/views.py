@@ -1,6 +1,7 @@
 import re
 from collections import defaultdict
 from operator import attrgetter
+from typing import Any
 
 from django.db.models import Prefetch, Q
 from django.http import Http404
@@ -59,7 +60,6 @@ from archive.models import (
     SecondaryText,
     SecondaryTextWorkLink,
     SiteSettings,
-    Status,
     Tag,
     TeamMember,
     Typescript,
@@ -295,13 +295,19 @@ def contextual_materials(
     )
 
 
+def viewable[S: PublishableQuerySet[Any]](request: Request, queryset: S) -> S:
+    """What an entity page may show (R-06): published entities, and drafts for staff, who
+    preview them (US-WR-13). Lists, previews and related items never take drafts."""
+    return queryset if request.user.is_staff else queryset.published()
+
+
 @extend_schema(responses=TypescriptPageSerializer)
 @api_view(["GET"])
 def typescript(request: Request, pk: int) -> Response:
-    """The typescript page (US-RA-08). A draft typescript is not found (R-06); a draft work
-    leaves out the work, its contextual materials and nothing else."""
+    """The typescript page (US-RA-08). A draft typescript is shown only to staff (R-06); a draft
+    work leaves out the work, its contextual materials and nothing else."""
     current = get_object_or_404(
-        Typescript.objects.published().select_related("institution", "document"), pk=pk
+        viewable(request, Typescript.objects.select_related("institution", "document")), pk=pk
     )
     work = (
         Work.objects.published()
@@ -340,9 +346,9 @@ def typescript(request: Request, pk: int) -> Response:
 @extend_schema(responses=WorkPageSerializer)
 @api_view(["GET"])
 def work(request: Request, slug: str) -> Response:
-    """The work page (US-RA-04). A draft work is not found (R-06)."""
+    """The work page (US-RA-04). A draft work is shown only to staff (R-06)."""
     current = get_object_or_404(
-        Work.objects.published().with_year().prefetch_related("editions"), slug=slug
+        viewable(request, Work.objects.with_year().prefetch_related("editions")), slug=slug
     )
     typescripts = Typescript.objects.published().filter(work=current)
     main = typescripts.filter(is_main=True).first()
@@ -389,8 +395,8 @@ def related_fragments(item: Note | SecondaryText | ContextualMaterial) -> Previe
 @extend_schema(responses=SecondaryTextPageSerializer)
 @api_view(["GET"])
 def secondary_text(request: Request, pk: int) -> Response:
-    """The secondary text page (US-RA-10). A draft secondary text is not found (R-06)."""
-    current = get_object_or_404(SecondaryText.objects.published(), pk=pk)
+    """The secondary text page (US-RA-10). A draft secondary text is shown only to staff (R-06)."""
+    current = get_object_or_404(viewable(request, SecondaryText.objects.all()), pk=pk)
     published_tags = Tag.objects.published()
     links = SecondaryTextWorkLink.objects.visible().filter(secondary_text=current)
     page = SecondaryTextPage(
@@ -413,8 +419,10 @@ def secondary_text(request: Request, pk: int) -> Response:
 @extend_schema(responses=NotePageSerializer)
 @api_view(["GET"])
 def note(request: Request, pk: int) -> Response:
-    """The note page (US-RA-11). A draft note is not found (R-06)."""
-    current = get_object_or_404(Note.objects.published().select_related("institution"), pk=pk)
+    """The note page (US-RA-11). A draft note is shown only to staff (R-06)."""
+    current = get_object_or_404(
+        viewable(request, Note.objects.select_related("institution")), pk=pk
+    )
     published_tags = Tag.objects.published()
     page = NotePage(
         note=current,
@@ -432,9 +440,9 @@ def note(request: Request, pk: int) -> Response:
 @extend_schema(responses=MaterialPageSerializer)
 @api_view(["GET"])
 def material(request: Request, pk: int) -> Response:
-    """The contextual material page (US-RA-12). A draft material is not found (R-06)."""
+    """The contextual material page (US-RA-12). A draft material is shown only to staff (R-06)."""
     current = get_object_or_404(
-        ContextualMaterial.objects.published().select_related("institution"), pk=pk
+        viewable(request, ContextualMaterial.objects.select_related("institution")), pk=pk
     )
     published_tags = Tag.objects.published()
     links = MaterialWorkLink.objects.visible().filter(material=current)
@@ -486,8 +494,8 @@ def source_works(fragments: list[Fragment], works: list[Work]) -> dict[int, list
 @extend_schema(responses=TagPageSerializer)
 @api_view(["GET"])
 def tag(request: Request, slug: str) -> Response:
-    """The tag page (US-RA-07). A draft tag is not found (R-06)."""
-    current = get_object_or_404(Tag.objects.published().with_occurrences(), slug=slug)
+    """The tag page (US-RA-07). A draft tag is shown only to staff (R-06)."""
+    current = get_object_or_404(viewable(request, Tag.objects.with_occurrences()), slug=slug)
     works = list(
         Work.objects.published()
         .referred_to_by(current)
@@ -543,7 +551,8 @@ def tag(request: Request, slug: str) -> Response:
 @api_view(["GET"])
 def document(request: Request, pk: int) -> Response:
     """The text of a published item for the reader (R-11), with its fragments and their
-    published tags. The text of a draft, or of no item, is not found (R-06)."""
+    published tags. The text of a draft is shown only to staff; of no item, it is not found
+    (R-06)."""
     fragments = Fragment.objects.with_number().order_by("start", "end", "pk")
     text = get_object_or_404(
         Document.objects.prefetch_related(
@@ -555,7 +564,7 @@ def document(request: Request, pk: int) -> Response:
         pk=pk,
     )
     owner = text.owner
-    if not isinstance(owner, Publishable) or owner.status != Status.PUBLISHED:
+    if not isinstance(owner, Publishable) or (owner.is_draft and not request.user.is_staff):
         raise Http404
     context = {"document": text, "institution": owner.institution}
     return Response(DocumentSerializer(text, context=context).data)

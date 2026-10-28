@@ -30,6 +30,7 @@ const FRAGMENT: Fragment = {
 
 const LETTER: SecondaryTextData = {
   id: 4,
+  is_draft: false,
   title: "List nr 32",
   description: "<p>Transkrypcja listu z zachowaniem układu oryginału.</p>",
   kind: "letter",
@@ -56,6 +57,7 @@ const LETTER: SecondaryTextData = {
 
 const DOCUMENT: Document = {
   id: 20,
+  is_draft: false,
   kind: "plain",
   text: "Drogi Panie, piszę z Dolinoszczęsnej.",
   page_offsets: [],
@@ -163,6 +165,23 @@ describe("SecondaryTextPage", () => {
       expect(await axeViolations(container)).toEqual([]);
     },
   );
+
+  it("US-WR-13 AC2: a draft that staff preview shows the draft banner", async () => {
+    mockPage({ is_draft: true });
+
+    const { container } = await renderPage();
+
+    expect(screen.getByText("Szkic — niewidoczny publicznie")).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-WR-13 AC2: a published page has no draft banner", async () => {
+    mockPage();
+
+    await renderPage();
+
+    expect(screen.queryByText("Szkic — niewidoczny publicznie")).not.toBeInTheDocument();
+  });
 
   it("US-RA-10 AC1: a letter without sender or date shows what it has (R-02)", async () => {
     mockPage({ sender: "", letter_date: "1947-12-24" });
