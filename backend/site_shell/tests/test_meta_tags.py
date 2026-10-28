@@ -1,7 +1,6 @@
 """Every public URL gets its own `<title>` and meta description (user stories §4, SEO)."""
 
 from html.parser import HTMLParser
-from pathlib import Path
 
 import pytest
 from django.contrib.auth.models import User
@@ -240,9 +239,7 @@ def test_seo_a_path_with_a_dot_segment_is_404(client: Client, url: str) -> None:
     assert client.get(url).status_code == 404
 
 
-def test_seo_the_404_page_keeps_the_frontend_and_its_caching(
-    client: Client, frontend_dist: Path
-) -> None:
+def test_seo_the_404_page_keeps_the_frontend_and_its_caching(client: Client) -> None:
     response = client.get("/unknown")
 
     assert '<div id="root"></div>' in response.text
