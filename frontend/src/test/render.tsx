@@ -28,6 +28,7 @@ export function renderRoute(
 
 /** The accessibility violations axe finds in `container` (R-12); a test expects none. */
 export async function axeViolations(container: Element): Promise<string[]> {
-  const results = await axe(container);
+  // An embedded player's frame is the provider's page, which jsdom cannot load or check.
+  const results = await axe(container, { iframes: false });
   return results.violations.map((violation) => `${violation.id}: ${violation.help}`);
 }
