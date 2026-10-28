@@ -4,7 +4,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router";
 import { CloseIcon, SearchIcon } from "@/components/icons";
 import { SearchCombobox } from "@/components/SearchCombobox";
 import { copy } from "@/copy/pl";
-import { readSearch, searchUrl } from "@/lib/search";
+import { filterCount, readSearch, searchUrl } from "@/lib/search";
 
 const FOCUS_CLASSES =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
@@ -40,7 +40,9 @@ export function SearchField({ query, labelledBy, describedBy }: SearchFieldProps
 
   function search(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    void navigate(searchUrl(value, readSearch(params)));
+    const state = readSearch(params);
+    const browsing = params.has("tab") || filterCount(state) > 0;
+    void navigate(value.trim() === "" && !browsing ? searchUrl("") : searchUrl(value, state));
   }
 
   return (

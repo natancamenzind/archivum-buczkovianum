@@ -199,12 +199,13 @@ describe("SearchPage", () => {
   });
 
   it("US-RA-14 AC1: a blank query opens the search page without one", () => {
-    renderRoute("/search?q=dezerter");
+    const { router } = renderRoute("/search?q=dezerter&sort=title");
 
     fireEvent.change(searchBox(), { target: { value: "   " } });
     fireEvent.submit(searchForm());
 
     expect(searchBox()).toHaveValue("");
+    expect(router.state.location.search).toBe("");
   });
 
   it("US-RA-14 AC2: under the field, what is searched and the exact-phrase hint", async () => {
@@ -736,6 +737,27 @@ describe("SearchPage tabs and filters", () => {
     expect(screen.getByRole("dialog", { name: "Filtry" })).toBeVisible();
   });
 
+  it("US-RA-16 AC3: while results load, the panel's filters are dimmed", async () => {
+    mockSearch();
+
+    renderRoute("/search?q=dezerter");
+
+    const panel = within(await openPanel());
+    server.use(
+      http.get(SEARCH_URL, async () => {
+        await delay("infinite");
+        return HttpResponse.json(RESULTS);
+      }),
+    );
+    const scan = panel.getByRole("checkbox", { name: "Ze skanem 3" });
+    fireEvent.click(scan);
+
+    expect(await panel.findByRole("button", { name: "Pokaż wyniki (–)" })).toBeVisible();
+    const filtersArea = scan.closest("[aria-busy]");
+    expect(filtersArea).toHaveAttribute("aria-busy", "true");
+    expect(filtersArea).toHaveClass("opacity-40");
+  });
+
   it("US-RA-16 AC3: the close icon closes the panel", async () => {
     mockSearch();
 
@@ -773,7 +795,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC4: values that are not valid in a link are ignored", async () => {
     const requests = mockSearch();
 
-    renderRoute("/search?q=dezerter&tab=drafts&work=wertepy&work=0&decade=1945");
+    renderRoute("/search?q=dezerter&tab=drafts&work=wertepy&work=0&work=2147483648&decade=1945");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     const query = requests[0]?.searchParams;

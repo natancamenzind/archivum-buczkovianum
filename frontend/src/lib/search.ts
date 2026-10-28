@@ -34,13 +34,17 @@ function isTab(value: string | null): value is Tab {
   return TABS.some((tab) => tab === value);
 }
 
-function id(value: string | null): number | null {
+// The largest work id and decade the API accepts: PostgreSQL integer and smallint.
+const MAX_ID = 2 ** 31 - 1;
+const MAX_DECADE = 32767;
+
+function id(value: string | null, max = MAX_ID): number | null {
   const number = Number(value);
-  return value !== null && Number.isInteger(number) && number > 0 ? number : null;
+  return value !== null && Number.isInteger(number) && number > 0 && number <= max ? number : null;
 }
 
 function decadeOf(value: string | null): number | null {
-  const year = id(value);
+  const year = id(value, MAX_DECADE);
   return year !== null && year % 10 === 0 ? year : null;
 }
 
