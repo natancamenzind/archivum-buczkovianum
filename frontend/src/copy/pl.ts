@@ -173,6 +173,24 @@ export const copy = {
     loading: "Wczytuję tekst sekundarny…",
     error: "Nie udało się wczytać tekstu sekundarnego. Spróbuj ponownie później.",
   },
+  /** The note page (US-RA-11). */
+  note: {
+    label: "Zapisek",
+    works: "Powiązane utwory",
+    text: "Transkrypcja",
+    fragments: "Powiązane fragmenty",
+    tags: "Powiązane tagi",
+    loading: "Wczytuję zapisek…",
+    error: "Nie udało się wczytać zapisku. Spróbuj ponownie później.",
+  },
+  /** The content of a note or contextual material, by its kind (US-RA-11 AC3). */
+  content: {
+    page: (number: number, count: number) => `Strona ${String(number)} z ${String(count)}`,
+    loading: "Wczytuję dokument…",
+    download: "Pobierz plik",
+    player: "Odtwarzacz nagrania",
+    link: "Otwórz nagranie",
+  },
   /** The tag page (US-RA-07). */
   tag: {
     /** The hero's type line: "Tag · 4 wystąpienia w 2 utworach". */

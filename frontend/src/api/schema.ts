@@ -97,6 +97,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/notes/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The note page (US-RA-11). A draft note is not found (R-06). */
+        get: operations["notes_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/search/": {
         parameters: {
             query?: never;
@@ -448,6 +465,31 @@ export interface components {
             readonly publication: string;
         };
         /**
+         * @description The content of a note or contextual material (US-RA-11 AC3): only the field of its kind
+         *     is filled.
+         */
+        MediaContent: {
+            kind: components["schemas"]["MediaContentKindEnum"];
+            /** @description Empty unless the kind is `image`. */
+            readonly image: string;
+            image_alt: string;
+            /** @description Empty unless the kind is `document`. */
+            readonly file: string;
+            /** @description An audio or video link; empty unless `external_media`. */
+            external_url: string;
+            /** @description The text for the reader, /api/documents/<id>/; null unless a text kind. */
+            document: number | null;
+        };
+        /**
+         * @description * `image` - Image
+         *     * `document` - Document file
+         *     * `external_media` - External audio or video link
+         *     * `ocr_text` - OCR text (scan + OCR file)
+         *     * `plain_text` - Plain text
+         * @enum {string}
+         */
+        MediaContentKindEnum: "image" | "document" | "external_media" | "ocr_text" | "plain_text";
+        /**
          * @description The note card (US-RA-04 AC3). `description` is rich text: HTML, sanitized when an editor
          *     saves it.
          */
@@ -464,6 +506,22 @@ export interface components {
             readonly image_alt: string;
             /** @description Published tags, by name. */
             readonly tags: components["schemas"]["TagChip"][];
+        };
+        /** @description US-RA-11. `description` is rich text: HTML, sanitized when an editor saves it. */
+        NotePage: {
+            id: number;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            /** @description E.g. "ML, sygn. 1678"; may be empty. */
+            shelfmark: string;
+            content: components["schemas"]["MediaContent"];
+            /** @description Related works, by first edition (R-03). */
+            works: components["schemas"]["WorkSummary"][];
+            /** @description Typescript fragments sharing a tag with the note or its fragments. */
+            fragments: components["schemas"]["FragmentCardPreview"];
+            /** @description Tags on the note and its fragments, by name. */
+            tags: components["schemas"]["TagChip"][];
         };
         PatchedEditorFragment: {
             readonly id?: number;
@@ -875,6 +933,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HomePage"];
+                };
+            };
+        };
+    };
+    notes_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotePage"];
                 };
             };
         };

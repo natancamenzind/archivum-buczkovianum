@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from archive.models import (
     Archival,
+    ContentKind,
     ContextualMaterial,
     Document,
     Edition,
@@ -511,6 +512,57 @@ class SecondaryTextPageSerializer(serializers.Serializer[SecondaryTextPage]):
     tags = TagChipSerializer(
         many=True, help_text="Tags on the text, its fragments and its work links, by name."
     )
+
+
+class MediaContentSerializer(serializers.Serializer[Note | ContextualMaterial]):
+    """The content of a note or contextual material (US-RA-11 AC3): only the field of its kind
+    is filled."""
+
+    kind = serializers.ChoiceField(source="content_kind", choices=ContentKind.choices)
+    image = serializers.SerializerMethodField(help_text="Empty unless the kind is `image`.")
+    image_alt = serializers.CharField(allow_blank=True)
+    file = serializers.SerializerMethodField(help_text="Empty unless the kind is `document`.")
+    external_url = serializers.CharField(
+        allow_blank=True, help_text="An audio or video link; empty unless `external_media`."
+    )
+    document = serializers.IntegerField(
+        source="document_id",
+        allow_null=True,
+        help_text="The text for the reader, /api/documents/<id>/; null unless a text kind.",
+    )
+
+    def get_image(self, item: Note | ContextualMaterial) -> str:
+        return item.image.url if item.image else ""
+
+    def get_file(self, item: Note | ContextualMaterial) -> str:
+        return item.file.url if item.file else ""
+
+
+@dataclass(frozen=True)
+class NotePage:
+    note: Note
+    works: list[Work]
+    fragments: Preview[Fragment]
+    tags: list[Tag]
+
+
+class NotePageSerializer(serializers.Serializer[NotePage]):
+    """US-RA-11. `description` is rich text: HTML, sanitized when an editor saves it."""
+
+    id = serializers.IntegerField(source="note.pk")
+    title = serializers.CharField(source="note.title")
+    description = serializers.CharField(
+        source="note.description", allow_blank=True, help_text="HTML."
+    )
+    shelfmark = serializers.CharField(
+        source="note.shelfmark_display", help_text='E.g. "ML, sygn. 1678"; may be empty.'
+    )
+    content = MediaContentSerializer(source="note")
+    works = WorkSummarySerializer(many=True, help_text="Related works, by first edition (R-03).")
+    fragments = FragmentCardPreviewSerializer(
+        help_text="Typescript fragments sharing a tag with the note or its fragments."
+    )
+    tags = TagChipSerializer(many=True, help_text="Tags on the note and its fragments, by name.")
 
 
 @dataclass(frozen=True)
