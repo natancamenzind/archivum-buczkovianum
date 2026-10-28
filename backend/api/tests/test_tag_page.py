@@ -360,7 +360,7 @@ class TestTagPageEndpoint:
 
         add_related()
         page(client, tag)
-        with django_assert_num_queries(13) as before:
+        with django_assert_num_queries(12) as before:
             page(client, tag)
         for _ in range(4):
             add_related()
