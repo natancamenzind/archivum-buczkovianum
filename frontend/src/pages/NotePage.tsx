@@ -2,17 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router";
 
 import type { components } from "@/api/schema";
-import { ColumnHeader } from "@/components/ColumnHeader";
 import { EntityLayout } from "@/components/EntityLayout";
-import { FragmentCard } from "@/components/FragmentCard";
 import { MediaContent } from "@/components/MediaContent";
 import { PageHeader } from "@/components/PageHeader";
+import { RelatedFragments, RelatedTags, RelatedWorks } from "@/components/Related";
 import { RichText } from "@/components/RichText";
-import { SectionHeader } from "@/components/SectionHeader";
-import { SideListItem } from "@/components/SideListItem";
-import { TagList } from "@/components/TagList";
-import { Card } from "@/components/ui/card";
-import { copy, previewCount } from "@/copy/pl";
+import { copy } from "@/copy/pl";
 import { api } from "@/lib/api";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
@@ -72,52 +67,17 @@ export function NotePage() {
         />
       }
       context={
-        works.length > 0 ? (
-          <div className="flex flex-col gap-8">
-            <ColumnHeader label={copy.note.works} count={works.length} />
-            <ul>
-              {works.map((work) => (
-                <li key={work.slug}>
-                  <SideListItem
-                    meta={work.year === null ? undefined : String(work.year)}
-                    title={work.title}
-                    to={`/works/${work.slug}`}
-                  />
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : undefined
+        works.length > 0 ? <RelatedWorks label={copy.note.works} works={works} /> : undefined
       }
       main={
         <>
           <MediaContent content={note.content} />
-          {/* A preview without an "all" link (US-RA-10 AC3). */}
           {fragments.total > 0 && (
-            <Card>
-              <SectionHeader
-                title={copy.note.fragments}
-                count={previewCount(fragments.items.length, fragments.total)}
-              />
-              <ul className="flex flex-col gap-24">
-                {fragments.items.map((fragment) => (
-                  <li key={fragment.id}>
-                    <FragmentCard fragment={fragment} />
-                  </li>
-                ))}
-              </ul>
-            </Card>
+            <RelatedFragments title={copy.note.fragments} fragments={fragments} />
           )}
         </>
       }
-      tags={
-        tags.length > 0 ? (
-          <div className="flex flex-col gap-8">
-            <ColumnHeader label={copy.note.tags} count={tags.length} />
-            <TagList tags={tags} />
-          </div>
-        ) : undefined
-      }
+      tags={tags.length > 0 ? <RelatedTags label={copy.note.tags} tags={tags} /> : undefined}
     />
   );
 }

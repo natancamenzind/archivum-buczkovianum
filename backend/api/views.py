@@ -307,6 +307,16 @@ def work(request: Request, slug: str) -> Response:
     return Response(WorkPageSerializer(page).data)
 
 
+def related_fragments(item: Note | SecondaryText | ContextualMaterial) -> Preview[Fragment]:
+    """The preview of an item's related fragments (US-RA-10 AC3), loaded for fragment cards."""
+    return preview(
+        Fragment.objects.sharing_tags_with(item)
+        .select_related("document__typescript__institution")
+        .prefetch_related(Prefetch("tags", Tag.objects.published()))
+        .with_number()
+    )
+
+
 @extend_schema(responses=SecondaryTextPageSerializer)
 @api_view(["GET"])
 def secondary_text(request: Request, pk: int) -> Response:
@@ -317,12 +327,7 @@ def secondary_text(request: Request, pk: int) -> Response:
     page = SecondaryTextPage(
         secondary_text=current,
         works=list(current.related_works().with_fragment_count()),
-        fragments=preview(
-            Fragment.objects.sharing_tags_with(current)
-            .select_related("document__typescript__institution")
-            .prefetch_related(Prefetch("tags", published_tags))
-            .with_number()
-        ),
+        fragments=related_fragments(current),
         tags=list(
             published_tags.filter(
                 Q(secondarytexts=current)
@@ -345,12 +350,7 @@ def note(request: Request, pk: int) -> Response:
     page = NotePage(
         note=current,
         works=list(current.related_works().with_fragment_count()),
-        fragments=preview(
-            Fragment.objects.sharing_tags_with(current)
-            .select_related("document__typescript__institution")
-            .prefetch_related(Prefetch("tags", published_tags))
-            .with_number()
-        ),
+        fragments=related_fragments(current),
         tags=list(
             published_tags.filter(Q(notes=current) | Q(fragments__document__note=current))
             .distinct()

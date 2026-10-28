@@ -1,29 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
-
 import type { components } from "@/api/schema";
-import { Reader } from "@/components/Reader";
+import { DocumentReader } from "@/components/Reader";
 import { ScanPage } from "@/components/ScanPage";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { copy } from "@/copy/pl";
-import { api } from "@/lib/api";
 import { usePdf } from "@/lib/pdf";
 
 type Content = components["schemas"]["MediaContent"];
-type Document = components["schemas"]["Document"];
 
 const LINK_CLASSES =
   "w-fit text-cousine-metadane text-accent-foreground underline underline-offset-3 hover:text-accent-foreground-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
-
-async function fetchDocument(id: number): Promise<Document> {
-  const { data, response } = await api.GET("/api/documents/{id}/", {
-    params: { path: { id } },
-  });
-  if (data === undefined) {
-    throw new Error(`The document request failed with ${String(response.status)}.`);
-  }
-  return data;
-}
 
 /** The player address of a YouTube or Vimeo link; null for any other provider. */
 function embedUrl(link: string): string | null {
@@ -86,18 +72,6 @@ function PdfPages({ file }: { file: string }) {
   );
 }
 
-function Text({ id }: { id: number }) {
-  const text = useQuery({ queryKey: ["document", id], queryFn: () => fetchDocument(id) });
-  if (text.data === undefined) {
-    return (
-      <p className="text-cousine-metadane text-muted-foreground" role="status">
-        {text.isPending ? copy.reader.loading : copy.reader.error}
-      </p>
-    );
-  }
-  return <Reader document={text.data} />;
-}
-
 /**
  * The content of a note or contextual material, by its kind (US-RA-11 AC3): an image inline; a
  * PDF inline, another file as a download; a YouTube or Vimeo link as an embedded player, another
@@ -108,7 +82,7 @@ export function MediaContent({ content }: { content: Content }) {
     return (
       <Card>
         <SectionHeader title={copy.content.text} />
-        <Text id={content.document} />
+        <DocumentReader id={content.document} />
       </Card>
     );
   }

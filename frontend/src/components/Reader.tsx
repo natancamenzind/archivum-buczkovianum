@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 
@@ -5,6 +6,7 @@ import type { components } from "@/api/schema";
 import { ScanPage } from "@/components/ScanPage";
 import { TagList } from "@/components/TagList";
 import { copy, fragmentLabel } from "@/copy/pl";
+import { fetchDocument } from "@/lib/api";
 import { type PDFDocumentProxy, usePdf } from "@/lib/pdf";
 import { type Segment, segments } from "@/lib/segments";
 import { cn } from "@/lib/utils";
@@ -256,4 +258,17 @@ export function Reader({ document }: { document: Document }) {
       term={term}
     />
   );
+}
+
+/** The reader of the document `id`, with a status line while it loads or when it fails. */
+export function DocumentReader({ id }: { id: number }) {
+  const text = useQuery({ queryKey: ["document", id], queryFn: () => fetchDocument(id) });
+  if (text.data === undefined) {
+    return (
+      <p className="text-cousine-metadane text-muted-foreground" role="status">
+        {text.isPending ? copy.reader.loading : copy.reader.error}
+      </p>
+    );
+  }
+  return <Reader document={text.data} />;
 }
