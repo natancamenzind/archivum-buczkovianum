@@ -19,6 +19,8 @@ from api.serializers import (
     HomePage,
     HomePageSerializer,
     HomeStatistics,
+    NotePage,
+    NotePageSerializer,
     SearchPage,
     SearchPageSerializer,
     SecondaryTextPage,
@@ -305,6 +307,16 @@ def work(request: Request, slug: str) -> Response:
     return Response(WorkPageSerializer(page).data)
 
 
+def related_fragments(item: Note | SecondaryText | ContextualMaterial) -> Preview[Fragment]:
+    """The preview of an item's related fragments (US-RA-10 AC3), loaded for fragment cards."""
+    return preview(
+        Fragment.objects.sharing_tags_with(item)
+        .select_related("document__typescript__institution")
+        .prefetch_related(Prefetch("tags", Tag.objects.published()))
+        .with_number()
+    )
+
+
 @extend_schema(responses=SecondaryTextPageSerializer)
 @api_view(["GET"])
 def secondary_text(request: Request, pk: int) -> Response:
@@ -315,12 +327,7 @@ def secondary_text(request: Request, pk: int) -> Response:
     page = SecondaryTextPage(
         secondary_text=current,
         works=list(current.related_works().with_fragment_count()),
-        fragments=preview(
-            Fragment.objects.sharing_tags_with(current)
-            .select_related("document__typescript__institution")
-            .prefetch_related(Prefetch("tags", published_tags))
-            .with_number()
-        ),
+        fragments=related_fragments(current),
         tags=list(
             published_tags.filter(
                 Q(secondarytexts=current)
@@ -332,6 +339,25 @@ def secondary_text(request: Request, pk: int) -> Response:
         ),
     )
     return Response(SecondaryTextPageSerializer(page).data)
+
+
+@extend_schema(responses=NotePageSerializer)
+@api_view(["GET"])
+def note(request: Request, pk: int) -> Response:
+    """The note page (US-RA-11). A draft note is not found (R-06)."""
+    current = get_object_or_404(Note.objects.published().select_related("institution"), pk=pk)
+    published_tags = Tag.objects.published()
+    page = NotePage(
+        note=current,
+        works=list(current.related_works().with_fragment_count()),
+        fragments=related_fragments(current),
+        tags=list(
+            published_tags.filter(Q(notes=current) | Q(fragments__document__note=current))
+            .distinct()
+            .order_by("title")
+        ),
+    )
+    return Response(NotePageSerializer(page).data)
 
 
 # The kinds of item a fragment's text belongs to, in the order the tag page lists their

@@ -16,7 +16,7 @@ import { SideListItem } from "@/components/SideListItem";
 import { TagList } from "@/components/TagList";
 import { Card } from "@/components/ui/card";
 import { copy, formatCount, fragmentLabel, nouns, previewCount } from "@/copy/pl";
-import { api } from "@/lib/api";
+import { api, fetchDocument } from "@/lib/api";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 type TypescriptData = components["schemas"]["TypescriptPage"];
@@ -37,16 +37,6 @@ async function fetchTypescript(id: number): Promise<TypescriptData> {
   }
   if (data === undefined) {
     throw new Error(`The typescript request failed with ${String(response.status)}.`);
-  }
-  return data;
-}
-
-async function fetchDocument(id: number): Promise<Document> {
-  const { data, response } = await api.GET("/api/documents/{id}/", {
-    params: { path: { id } },
-  });
-  if (data === undefined) {
-    throw new Error(`The document request failed with ${String(response.status)}.`);
   }
   return data;
 }

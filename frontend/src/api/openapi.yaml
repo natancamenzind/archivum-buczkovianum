@@ -151,6 +151,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/HomePage'
           description: ''
+  /api/notes/{id}/:
+    get:
+      operationId: notes_retrieve
+      description: The note page (US-RA-11). A draft note is not found (R-06).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notes
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotePage'
+          description: ''
   /api/search/:
     get:
       operationId: search_retrieve
@@ -793,6 +815,53 @@ components:
       - publication
       - title
       - url
+    MediaContent:
+      type: object
+      description: |-
+        The content of a note or contextual material (US-RA-11 AC3): only the field of its kind
+        is filled.
+      properties:
+        kind:
+          $ref: '#/components/schemas/MediaContentKindEnum'
+        image:
+          type: string
+          readOnly: true
+          description: Empty unless the kind is `image`.
+        image_alt:
+          type: string
+        file:
+          type: string
+          readOnly: true
+          description: Empty unless the kind is `document`.
+        external_url:
+          type: string
+          description: An audio or video link; empty unless `external_media`.
+        document:
+          type: integer
+          nullable: true
+          description: The text for the reader, /api/documents/<id>/; null unless
+            a text kind.
+      required:
+      - document
+      - external_url
+      - file
+      - image
+      - image_alt
+      - kind
+    MediaContentKindEnum:
+      enum:
+      - image
+      - document
+      - external_media
+      - ocr_text
+      - plain_text
+      type: string
+      description: |-
+        * `image` - Image
+        * `document` - Document file
+        * `external_media` - External audio or video link
+        * `ocr_text` - OCR text (scan + OCR file)
+        * `plain_text` - Plain text
     NoteCard:
       type: object
       description: |-
@@ -835,6 +904,46 @@ components:
       - tags
       - title
       - url
+    NotePage:
+      type: object
+      description: 'US-RA-11. `description` is rich text: HTML, sanitized when an
+        editor saves it.'
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          description: HTML.
+        shelfmark:
+          type: string
+          description: E.g. "ML, sygn. 1678"; may be empty.
+        content:
+          $ref: '#/components/schemas/MediaContent'
+        works:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkSummary'
+          description: Related works, by first edition (R-03).
+        fragments:
+          allOf:
+          - $ref: '#/components/schemas/FragmentCardPreview'
+          description: Typescript fragments sharing a tag with the note or its fragments.
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagChip'
+          description: Tags on the note and its fragments, by name.
+      required:
+      - content
+      - description
+      - fragments
+      - id
+      - shelfmark
+      - tags
+      - title
+      - works
     PatchedEditorFragment:
       type: object
       properties:
