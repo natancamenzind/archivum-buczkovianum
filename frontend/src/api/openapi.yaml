@@ -151,6 +151,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/HomePage'
           description: ''
+  /api/materials/{id}/:
+    get:
+      operationId: materials_retrieve
+      description: The contextual material page (US-RA-12). A draft material is not
+        found (R-06).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - materials
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialPage'
+          description: ''
   /api/notes/{id}/:
     get:
       operationId: notes_retrieve
@@ -857,6 +880,49 @@ components:
       - snippet
       - title
       - url
+    MaterialPage:
+      type: object
+      description: |-
+        US-RA-12. `description` is rich text: HTML, sanitized when an editor saves it. The type
+        line's kind is `content.kind`.
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          description: HTML.
+        shelfmark:
+          type: string
+          description: E.g. "ML, sygn. 1700"; may be empty.
+        content:
+          $ref: '#/components/schemas/MediaContent'
+        works:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkSummary'
+          description: Related works, by first edition (R-03).
+        fragments:
+          allOf:
+          - $ref: '#/components/schemas/FragmentCardPreview'
+          description: Typescript fragments sharing a tag with the material or its
+            fragments.
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagChip'
+          description: Tags on the material, its fragments and its work links, by
+            name.
+      required:
+      - content
+      - description
+      - fragments
+      - id
+      - shelfmark
+      - tags
+      - title
+      - works
     MaterialText:
       type: object
       description: |-
