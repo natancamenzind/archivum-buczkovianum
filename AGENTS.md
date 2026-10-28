@@ -76,7 +76,7 @@ All code is tested. There are no exceptions for small changes.
 
 ## Code rules
 
-- Code, comments, docstrings and commit messages are in English. Polish UI copy lives in `frontend/src/copy/pl.ts`, never inline in components.
+- Code, comments, docstrings and commit messages are in English. Polish UI copy lives in `frontend/src/copy/pl.ts`, never inline in components. The one exception is each page's `<title>` and meta description, which Django serves before React runs: they live in `backend/site_shell/meta.py` and follow the page headings in `pl.ts`.
 - The editor panel is in Polish. Backend strings an editor sees (`verbose_name` on every model and field, `help_text`, choice labels, validation messages, admin templates) are written in English and marked with `gettext_lazy` / `{% translate %}`, and use `ngettext` for counts. Run `make messages`, translate the new entries in `backend/locale/pl/LC_MESSAGES/django.po` with the terms from the glossary in `docs/user-stories.pl.md`, run it again and commit the `.po` and `.mo`. The OpenAPI schema stays in English (`make api-client` passes `--lang en`).
 - No Django signals. Side effects go in the model's `save()` and `delete()`.
 - No bulk QuerySet operations (`update`, `bulk_create`, `bulk_update`, `delete`) on `Publishable` models, `Document` or `Fragment`, except in migrations and management commands (architecture §6).
