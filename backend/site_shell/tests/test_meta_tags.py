@@ -5,6 +5,7 @@ from html.parser import HTMLParser
 import pytest
 from django.contrib.auth.models import User
 from django.test import Client
+from factory.django import DjangoModelFactory
 from pytest_django import DjangoAssertNumQueries
 
 from archive.models import Publishable, Status
@@ -21,6 +22,14 @@ from site_shell.meta import DESCRIPTION, DESCRIPTION_LENGTH
 pytestmark = pytest.mark.usefixtures("frontend_dist")
 
 PUBLISHED = Status.PUBLISHED
+ENTITY_FACTORIES = [
+    WorkFactory,
+    TagFactory,
+    TypescriptFactory,
+    NoteFactory,
+    SecondaryTextFactory,
+    ContextualMaterialFactory,
+]
 
 
 class _Head(HTMLParser):
@@ -110,54 +119,49 @@ def test_seo_every_list_page_has_its_title_and_description(
 
 
 @pytest.mark.parametrize(
-    ("url", "title"),
+    ("url", "name"),
     [
-        ("/search?q=dezerter", "Wyniki dla „dezerter” — Archivum Buczkovianum"),
-        ("/search?q=+czarny+potok+&tab=works", "Wyniki dla „czarny potok” — Archivum Buczkovianum"),
-        ("/search?tab=all", "Wszystkie wyniki — Archivum Buczkovianum"),
-        ("/search?q=+&tab=fragments&work=3", "Wszystkie wyniki — Archivum Buczkovianum"),
-        ("/search?work=3", "Wszystkie wyniki — Archivum Buczkovianum"),
-        ("/search?decade=1950&decade=x", "Wszystkie wyniki — Archivum Buczkovianum"),
-        ("/search?has_scan=1", "Wszystkie wyniki — Archivum Buczkovianum"),
-        ("/search?has_text=1", "Wszystkie wyniki — Archivum Buczkovianum"),
-        ("/search?q=", "Wyszukiwanie — Archivum Buczkovianum"),
-        ("/search?q=abc&q=", "Wyniki dla „abc” — Archivum Buczkovianum"),
-        ("/search?q=&q=abc", "Wyszukiwanie — Archivum Buczkovianum"),
-        ("/search?has_scan=1&has_scan=0", "Wszystkie wyniki — Archivum Buczkovianum"),
-        ("/search?has_text=0&has_text=1", "Wyszukiwanie — Archivum Buczkovianum"),
-        ("/search?work=2147483648&decade=32770", "Wyszukiwanie — Archivum Buczkovianum"),
-        (f"/search?work={'1' * 5000}&decade={'1' * 5000}", "Wyszukiwanie — Archivum Buczkovianum"),
+        ("/search?q=dezerter", "Wyniki dla „dezerter”"),
+        ("/search?q=+czarny+potok+&tab=works", "Wyniki dla „czarny potok”"),
+        ("/search?tab=all", "Wszystkie wyniki"),
+        ("/search?q=+&tab=fragments&work=3", "Wszystkie wyniki"),
+        ("/search?work=3", "Wszystkie wyniki"),
+        ("/search?decade=1950&decade=x", "Wszystkie wyniki"),
+        ("/search?has_scan=1", "Wszystkie wyniki"),
+        ("/search?has_text=1", "Wszystkie wyniki"),
+        ("/search?q=", "Wyszukiwanie"),
+        ("/search?q=abc&q=", "Wyniki dla „abc”"),
+        ("/search?q=&q=abc", "Wyszukiwanie"),
+        ("/search?has_scan=1&has_scan=0", "Wszystkie wyniki"),
+        ("/search?has_text=0&has_text=1", "Wyszukiwanie"),
+        ("/search?work=2147483648&decade=32770", "Wyszukiwanie"),
+        (f"/search?work={'1' * 5000}&decade={'1' * 5000}", "Wyszukiwanie"),
         (
             "/search?work=abc&work=0&decade=1955&decade=1950&has_scan=true&sort=title",
-            "Wyszukiwanie — Archivum Buczkovianum",
+            "Wyszukiwanie",
         ),
     ],
 )
-def test_seo_the_search_page_title_follows_its_state(client: Client, url: str, title: str) -> None:
-    assert head(client, url)[0] == title
+def test_seo_the_search_page_title_follows_its_state(client: Client, url: str, name: str) -> None:
+    assert head(client, url)[0] == f"{name} — Archivum Buczkovianum"
 
 
 @pytest.mark.django_db
 class TestEntityPages:
-    def test_seo_every_entity_page_has_its_title_and_description(self, client: Client) -> None:
-        published = {
-            "status": PUBLISHED,
-            "description": "<p>Powieść o <em>Wertepach</em>.</p><p>Drugi akapit.</p>",
-        }
-        entities: list[Publishable] = [
-            WorkFactory.create(title="Wertepy", slug="wertepy", **published),
-            TagFactory.create(title="Dezerter", slug="dezerter", **published),
-            TypescriptFactory.create(title="Pierwsza wersja", **published),
-            NoteFactory.create(title="Notes 18", **published),
-            SecondaryTextFactory.create(title="List nr 32", **published),
-            ContextualMaterialFactory.create(title="Portret", **published),
-        ]
+    @pytest.mark.parametrize("factory", ENTITY_FACTORIES)
+    def test_seo_every_entity_page_has_its_title_and_description(
+        self, client: Client, factory: type[DjangoModelFactory[Publishable]]
+    ) -> None:
+        entity = factory.create(
+            title="Wertepy",
+            status=PUBLISHED,
+            description="<p>Powieść o <em>Wertepach</em>.</p><p>Drugi akapit.</p>",
+        )
 
-        for entity in entities:
-            assert head(client, entity.get_absolute_url()) == (
-                f"{entity.title} — Archivum Buczkovianum",
-                "Powieść o Wertepach. Drugi akapit.",
-            )
+        assert head(client, entity.get_absolute_url()) == (
+            "Wertepy — Archivum Buczkovianum",
+            "Powieść o Wertepach. Drugi akapit.",
+        )
 
     @pytest.mark.parametrize("url", ["/works/wertepy/", "/works/wertepy//", "/Works/wertepy"])
     def test_seo_an_entity_url_matches_as_react_router_matches_it(
@@ -198,34 +202,24 @@ class TestEntityPages:
             '"/><script>',
         )
 
-    def test_r_06_a_draft_is_404_for_an_anonymous_reader(self, client: Client) -> None:
-        drafts: list[Publishable] = [
-            WorkFactory.create(title="Szkic utworu"),
-            TagFactory.create(title="Brulion"),
-            TypescriptFactory.create(),
-            NoteFactory.create(),
-            SecondaryTextFactory.create(),
-            ContextualMaterialFactory.create(),
-        ]
+    @pytest.mark.parametrize("factory", ENTITY_FACTORIES)
+    def test_r_06_a_draft_is_404_for_an_anonymous_reader(
+        self, client: Client, factory: type[DjangoModelFactory[Publishable]]
+    ) -> None:
+        draft = factory.create()
 
-        for draft in drafts:
-            title, _ = head(client, draft.get_absolute_url(), status=404)
-            assert title == "Nie znaleziono strony — Archivum Buczkovianum"
+        title, _ = head(client, draft.get_absolute_url(), status=404)
 
-    def test_r_06_a_draft_is_shown_to_staff(self, client: Client) -> None:
-        drafts: list[Publishable] = [
-            WorkFactory.create(title="Szkic utworu"),
-            TagFactory.create(title="Brulion"),
-            TypescriptFactory.create(title="Szkic maszynopisu"),
-            NoteFactory.create(title="Szkic zapisku"),
-            SecondaryTextFactory.create(title="Szkic listu"),
-            ContextualMaterialFactory.create(title="Szkic materiału"),
-        ]
+        assert title == "Nie znaleziono strony — Archivum Buczkovianum"
+
+    @pytest.mark.parametrize("factory", ENTITY_FACTORIES)
+    def test_r_06_a_draft_is_shown_to_staff(
+        self, client: Client, factory: type[DjangoModelFactory[Publishable]]
+    ) -> None:
+        draft = factory.create(title="Szkic")
         client.force_login(User.objects.create_user(username="editor", is_staff=True))
 
-        for draft in drafts:
-            title = head(client, draft.get_absolute_url())[0]
-            assert title == f"{draft.title} — Archivum Buczkovianum"
+        assert head(client, draft.get_absolute_url())[0] == "Szkic — Archivum Buczkovianum"
 
     def test_r_06_a_draft_is_404_for_a_user_who_is_not_staff(self, client: Client) -> None:
         work = WorkFactory.create()
@@ -272,10 +266,3 @@ def test_seo_an_unknown_url_is_404_with_the_frontend_not_found_page(
 @pytest.mark.parametrize("url", ["/.env", "/.git/config", "/.well-known/x", "/works/.env/"])
 def test_seo_a_path_with_a_dot_segment_is_404(client: Client, url: str) -> None:
     assert client.get(url).status_code == 404
-
-
-def test_seo_the_404_page_keeps_the_frontend_and_its_caching(client: Client) -> None:
-    response = client.get("/unknown")
-
-    assert '<div id="root"></div>' in response.text
-    assert "no-cache" in response["Cache-Control"]

@@ -2,13 +2,14 @@ import re
 from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.core.management import call_command
 from django.http import StreamingHttpResponse
 from django.test import Client
 from pytest_django.fixtures import Settings
 
 from site_shell.tests.conftest import SCRIPT
-from site_shell.views import MISSING_BUILD_MESSAGE
+from site_shell.views import MISSING_BUILD_MESSAGE, TITLE
 
 
 @pytest.mark.parametrize("url", ["/", "/works", "/tags/", "/search?q=dezerter"])
@@ -30,6 +31,7 @@ def test_paths_that_only_start_like_django_prefixes_get_the_frontend_index(
 
     assert response.status_code == 404
     assert '<div id="root"></div>' in response.text
+    assert "no-cache" in response["Cache-Control"]
 
 
 def test_api_urls_are_not_served_the_index(client: Client, frontend_dist: Path) -> None:
@@ -140,3 +142,10 @@ def test_only_content_hashed_static_files_are_immutable(
     settings: Settings, url: str, immutable: bool
 ) -> None:
     assert bool(re.search(settings.WHITENOISE_IMMUTABLE_FILE_TEST, url)) is immutable
+
+
+def test_the_frontend_index_has_the_title_that_meta_tags_replace() -> None:
+    """The tests serve a stand-in index.html; the real one must keep a `<title>` to replace."""
+    html = (settings.BASE_DIR.parent / "frontend" / "index.html").read_text(encoding="utf-8")
+
+    assert len(TITLE.findall(html)) == 1
