@@ -20,7 +20,7 @@ export interface SearchState {
   sort: Sort;
 }
 
-export const NO_SEARCH: SearchState = {
+const NO_SEARCH: SearchState = {
   query: "",
   tab: "all",
   works: [],
