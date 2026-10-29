@@ -1,0 +1,11 @@
+# Railway config for the backup cron service (US-OPS-01 AC8). In the service's settings, set
+# "Config-as-code" to /deploy/railway.backup.toml. Paths are relative to the repo root.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "deploy/backup.Dockerfile"
+
+[deploy]
+# Daily at 03:00 UTC. The container runs deploy/backup.sh once and exits.
+cronSchedule = "0 3 * * *"
+restartPolicyType = "NEVER"

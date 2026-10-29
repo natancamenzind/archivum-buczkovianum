@@ -155,3 +155,34 @@ def test_us_ops_01_ac5_media_urls_are_presigned(settings: Settings) -> None:
     assert url.startswith("https://archive.s3.")
     assert "X-Amz-Signature=" in url
     assert "X-Amz-Expires=" in url
+
+
+@pytest.mark.parametrize(("value", "expected"), [("true", True), ("TRUE", True), ("false", False)])
+def test_us_ops_01_ac3_ac4_guards_come_from_env(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType, value: str, expected: bool
+) -> None:
+    monkeypatch.setenv("BASIC_AUTH_USER", "editor")
+    monkeypatch.setenv("BASIC_AUTH_PASSWORD", "s3cret")
+    monkeypatch.setenv("ROBOTS_NOINDEX", value)
+
+    settings = importlib.reload(reload_settings)
+
+    assert (settings.BASIC_AUTH_USER, settings.BASIC_AUTH_PASSWORD) == ("editor", "s3cret")
+    assert settings.ROBOTS_NOINDEX is expected
+    assert settings.MIDDLEWARE[:2] == [
+        "config.middleware.NoindexMiddleware",
+        "config.middleware.BasicAuthMiddleware",
+    ]
+
+
+def test_us_ops_01_ac3_ac4_guards_are_off_without_env(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType
+) -> None:
+    for name in ("BASIC_AUTH_USER", "BASIC_AUTH_PASSWORD", "ROBOTS_NOINDEX"):
+        monkeypatch.delenv(name, raising=False)
+
+    settings = importlib.reload(reload_settings)
+
+    assert not settings.BASIC_AUTH_USER
+    assert not settings.BASIC_AUTH_PASSWORD
+    assert settings.ROBOTS_NOINDEX is False

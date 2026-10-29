@@ -40,7 +40,7 @@ ALLOWED_HOSTS = env_list("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
 if not DEBUG:
-    # Caddy terminates HTTPS and tells Django the original scheme in X-Forwarded-Proto.
+    # Railway's edge terminates HTTPS and tells Django the original scheme in X-Forwarded-Proto.
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -63,7 +63,15 @@ INSTALLED_APPS = [
     "site_shell",
 ]
 
+# The test environment's guards (US-OPS-01 AC3, AC4), off unless their variables are set.
+BASIC_AUTH_USER = os.environ.get("BASIC_AUTH_USER", "")
+BASIC_AUTH_PASSWORD = os.environ.get("BASIC_AUTH_PASSWORD", "")
+ROBOTS_NOINDEX = os.environ.get("ROBOTS_NOINDEX", "false").lower() == "true"
+
 MIDDLEWARE = [
+    # First, so even a 401 from basic auth carries X-Robots-Tag.
+    "config.middleware.NoindexMiddleware",
+    "config.middleware.BasicAuthMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -140,8 +148,10 @@ STORAGES = {
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    # Only sessions. The test environment sits behind HTTP basic auth (US-OPS-01), and DRF's
-    # BasicAuthentication would try the proxy's credentials as a Django user and reject the request.
+    # Sessions only, and it must stay that way. The test environment sits behind HTTP basic auth
+    # (BasicAuthMiddleware, US-OPS-01 AC3), so every request carries an Authorization: Basic
+    # header. DRF's BasicAuthentication would try those site credentials as a Django user and
+    # reject every API request that is not also a Django login with the same password.
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
     ],

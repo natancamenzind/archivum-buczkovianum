@@ -1,0 +1,13 @@
+# Railway config for the app service (US-OPS-01 AC1, AC7). In the service's settings, set
+# "Config-as-code" to /deploy/railway.app.toml. Paths are relative to the repo root.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "deploy/Dockerfile"
+
+[deploy]
+# Runs in a one-off container from the new image before it takes traffic; a failure stops the deploy.
+preDeployCommand = ["python backend/manage.py migrate --noinput"]
+# Exempt from basic auth. Railway calls it with Host: healthcheck.railway.app.
+healthcheckPath = "/healthz"
+restartPolicyType = "ON_FAILURE"
