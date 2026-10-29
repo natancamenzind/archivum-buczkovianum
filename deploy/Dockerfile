@@ -1,6 +1,5 @@
-# The app image for the test environment (US-OPS-01). Build from the repo root:
-#   docker build -f deploy/Dockerfile .
-# Every base image is multi-arch, so the build runs natively on linux/arm64.
+# The app image for the test environment (US-OPS-01 AC1). Railway builds it from the repo root
+# (deploy/railway.app.toml); by hand: docker build -f deploy/Dockerfile .
 
 # --- Frontend: the built SPA, served by Django through WhiteNoise -------------------------------
 FROM node:24-bookworm-slim AS frontend
@@ -43,12 +42,13 @@ USER app
 
 EXPOSE 8000
 
-# Migrations are not run here: the deploy script runs them (US-OPS-01 AC7).
+# Migrations are not run here: Railway runs them as the pre-deploy command (US-OPS-01 AC7).
+# Railway sets PORT; the shell form expands it, and exec makes gunicorn PID 1 so it gets SIGTERM.
 # A long timeout, because editors upload large PDF scans through the admin.
-CMD ["gunicorn", "config.wsgi:application", \
-     "--chdir", "backend", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "3", \
-     "--timeout", "120", \
-     "--access-logfile", "-", \
-     "--no-control-socket"]
+CMD exec gunicorn config.wsgi:application \
+    --chdir backend \
+    --bind "0.0.0.0:${PORT:-8000}" \
+    --workers 3 \
+    --timeout 120 \
+    --access-logfile - \
+    --no-control-socket

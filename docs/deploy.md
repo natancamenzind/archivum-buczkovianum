@@ -1,86 +1,101 @@
 # Test environment runbook
 
-The test environment (US-OPS-01) runs on one arm64 Linux host with `docker compose`: `postgres`, `app` (gunicorn) and `caddy` (HTTPS, basic auth, `X-Robots-Tag`). Everything is in `deploy/`. Run every command below on the server, from the repo root.
+The test environment (US-OPS-01) runs on Railway as one project with three services:
 
-All commands use this shorthand:
+| Service | Built from | Role |
+|---------|------------|------|
+| `app` | `deploy/Dockerfile`, config `deploy/railway.app.toml` | gunicorn on `$PORT`. Migrations run as the pre-deploy command. Basic auth and `X-Robots-Tag` come from Django middleware. |
+| `postgres` | image `postgres:19rc1` | The database, with a volume. Reachable only over the private network. |
+| `backup` | `deploy/backup.Dockerfile`, config `deploy/railway.backup.toml` | Cron at 03:00 UTC: runs `deploy/backup.sh` once and exits. |
 
-```bash
-compose() { docker compose -f deploy/compose.yml "$@"; }
-```
+Media and backups are in S3, outside Railway. Every variable is described in `deploy/.env.example`; on Railway they are service variables, never a file.
 
-## First deploy
+For the restore and upgrade steps you need, on your own machine, the PostgreSQL 19 client tools (`pg_dump`, `pg_restore`) and the `aws` CLI with credentials for `BACKUP_BUCKET`.
 
-1. Install Docker Engine with the compose plugin, git and curl. Open ports 80 and 443. Point the site's DNS record at the server.
-2. Clone the repo and check out `main`.
-3. Copy `deploy/.env.example` to `deploy/.env` and fill in every value. The comments say how to generate each secret. Keep the single quotes around `BASIC_AUTH_HASH`.
-4. Run `deploy/deploy.sh`. On the first run Caddy gets a certificate, which can take a minute.
-5. Create an editor account: `compose exec app python backend/manage.py createsuperuser`.
-6. Schedule the daily backup with `crontab -e`:
+## Setup
 
-   ```
-   0 3 * * * cd /path/to/repo && deploy/backup.sh >> /var/log/buczkovianum-backup.log 2>&1
-   ```
+1. Create a Railway project and connect the GitHub repo.
+2. **postgres.** Add a service from the Docker image `postgres:19rc1` and name it `postgres`.
+   - Variables: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` (see `deploy/.env.example`).
+   - Add a volume mounted at `/var/lib/postgresql`. PostgreSQL 18+ images keep the data in a version-specific directory under it.
+   - Do not generate a domain and do not enable a TCP proxy.
+3. **app.** Add a service from the GitHub repo, branch `main`, and name it `app`.
+   - Settings → Config-as-code: `/deploy/railway.app.toml`. Leave the root directory empty: the Dockerfile builds from the repo root.
+   - Variables: everything in the "app" section of `deploy/.env.example`. `DATABASE_URL` references the postgres service, so it follows any change there:
 
-   Run `deploy/backup.sh` once by hand to check that the bucket and credentials work.
+     ```
+     postgres://${{postgres.POSTGRES_USER}}:${{postgres.POSTGRES_PASSWORD}}@${{postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/${{postgres.POSTGRES_DB}}
+     ```
+
+   - Networking: generate a public domain (or add your own), then set `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` to it. `ALLOWED_HOSTS` must also contain `healthcheck.railway.app`, the host Railway's healthcheck sends; without it every deploy fails its healthcheck with 400.
+4. **backup.** Add another service from the same repo and branch and name it `backup`.
+   - Settings → Config-as-code: `/deploy/railway.backup.toml`.
+   - Variables: the "backup" section of `deploy/.env.example`, with the same `DATABASE_URL` reference as the app.
+   - No domain.
+5. Deploy. The first app deploy runs every migration in the pre-deploy step.
+6. Create an editor account. With the Railway CLI linked to the project: `railway ssh --service app`, then `python backend/manage.py createsuperuser`.
+7. Check the backup after its first run at 03:00 UTC: the backup service's log ends with `Uploaded s3://…/db/<timestamp>.dump`, and the object is in the bucket.
+8. Check the site: without credentials it answers 401, `/healthz` answers 200, and `curl -sI` shows `X-Robots-Tag: noindex, nofollow`.
 
 ## Routine deploy
 
-```bash
-deploy/deploy.sh
-```
+Merge to `main`. Railway builds the new image, runs `python backend/manage.py migrate --noinput` in a one-off container, starts the new version and switches traffic once `/healthz` returns 200.
 
-It pulls `main` (fast-forward only), builds the image, runs migrations, restarts the services and waits up to 60 s for `/healthz` to return 200 through Caddy. If it fails, `compose logs app` shows why.
+- If the build or migrations fail, the deploy stops and the old version keeps serving. The deploy's logs in the app service show why.
+- To redeploy the same commit, use "Redeploy" on the app's latest deployment.
+
+Watch out for migrations that the running version cannot live with (dropping or renaming a column it still reads): the old version keeps serving until the new one passes its healthcheck, against the already migrated database.
 
 ## Restore from backup
 
-Dumps are in `s3://$BACKUP_BUCKET/db/`, named by UTC time; the newest 14 are kept.
+Dumps are in `s3://$BACKUP_BUCKET/db/`, named by UTC time (`20261029T030000Z.dump`); the newest 14 are kept.
 
-```bash
-# Read the bucket, the credentials and the database names from deploy/.env.
-set -a; . <(grep -E '^(AWS_|BACKUP_BUCKET|POSTGRES_)' deploy/.env); set +a
-aws() {
-  docker run --rm -v "$PWD:/aws" -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
-    -e AWS_DEFAULT_REGION="$AWS_S3_REGION_NAME" \
-    ${AWS_S3_ENDPOINT_URL:+-e AWS_ENDPOINT_URL="$AWS_S3_ENDPOINT_URL"} amazon/aws-cli:2.31.0 "$@"
-}
+1. **Stop writes.** In the app service, open the active deployment's menu and choose "Remove". The site is down until step 5.
+2. **Open the database temporarily.** In the postgres service, Settings → Networking → enable TCP Proxy on port 5432. Railway shows a public host and port.
+3. **Fetch the dump and restore.**
 
-aws s3 ls "s3://$BACKUP_BUCKET/db/"                     # pick a dump
-aws s3 cp "s3://$BACKUP_BUCKET/db/<name>.dump" restore.dump
+   ```bash
+   aws s3 ls "s3://$BACKUP_BUCKET/db/"                  # pick a dump
+   aws s3 cp "s3://$BACKUP_BUCKET/db/<name>.dump" restore.dump
 
-compose stop app
-compose exec -T postgres dropdb -U "$POSTGRES_USER" "$POSTGRES_DB"
-compose exec -T postgres createdb -U "$POSTGRES_USER" "$POSTGRES_DB"
-compose exec -T postgres pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner < restore.dump
-compose start app
-rm restore.dump
-```
+   # The postgres service's credentials, with the TCP proxy's host and port.
+   DB="postgres://<user>:<password>@<proxy-host>:<proxy-port>/<db>"
+   pg_restore --clean --if-exists --no-owner --exit-on-error --dbname "$DB" restore.dump
+   ```
 
-Media is in its own S3 bucket and is not part of the dump.
+4. **Close the database.** Remove the TCP proxy.
+5. **Start the app.** Use "Redeploy" on the app's latest deployment.
+
+Check the site, then delete `restore.dump`. Media is in its own S3 bucket and is not part of the dump.
 
 ## Upgrading PostgreSQL 19rc1 to 19 GA
 
-The data directory of a release candidate is not guaranteed to work with the final release, so dump and restore instead of reusing the volume. Plan a few minutes of downtime.
+The data directory of a release candidate is not guaranteed to work with the final release, so dump and restore into a new service instead of reusing the volume. The old service stays untouched until the end, so you can switch back. Plan for downtime of a few minutes.
 
-```bash
-set -a; . <(grep -E '^POSTGRES_' deploy/.env); set +a
+1. **Stop writes.** In the app service, remove the active deployment, as in a restore.
+2. **Dump the old database.** Enable a TCP proxy on `postgres`, then:
 
-# 1. Stop writes and take a dump. Also run deploy/backup.sh, so there is a copy in S3.
-compose stop app
-compose exec -T postgres pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom > upgrade.dump
+   ```bash
+   OLD="postgres://<user>:<password>@<old-proxy-host>:<old-proxy-port>/<db>"
+   pg_dump --format=custom --dbname "$OLD" --file upgrade.dump
+   ```
 
-# 2. Change the tag: in deploy/compose.yml, postgres:19rc1 -> postgres:19. Commit it to main
-#    through a PR and `git pull --ff-only` here.
+3. **Create the new service.** Add a service from the image `postgres:19`, named `postgres-19`, with the same `POSTGRES_*` variables and a new volume at `/var/lib/postgresql`. Enable a TCP proxy on it too.
+4. **Restore.**
 
-# 3. Recreate the volume. Only the postgres volume: caddy_data holds the certificates.
-compose down
-docker volume rm deploy_postgres
+   ```bash
+   NEW="postgres://<user>:<password>@<new-proxy-host>:<new-proxy-port>/<db>"
+   pg_restore --no-owner --exit-on-error --dbname "$NEW" upgrade.dump
+   ```
 
-# 4. Start the new server on the empty volume and restore.
-compose up -d --wait postgres
-compose exec -T postgres pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner < upgrade.dump
+5. **Switch `DATABASE_URL`.** In the app and backup services, replace `postgres` with `postgres-19` in the reference:
 
-# 5. Start everything.
-deploy/deploy.sh
-```
+   ```
+   postgres://${{postgres-19.POSTGRES_USER}}:${{postgres-19.POSTGRES_PASSWORD}}@${{postgres-19.RAILWAY_PRIVATE_DOMAIN}}:5432/${{postgres-19.POSTGRES_DB}}
+   ```
 
-Check the site, then delete `upgrade.dump`.
+6. **Start the app.** Redeploy it, and check the site.
+7. **Update the backup image.** In a PR, change `FROM postgres:19rc1` to `FROM postgres:19` in `deploy/backup.Dockerfile`, and `postgres:19rc1` to `postgres:19` in US-OPS-01 AC2 and in this runbook. Once merged, check the next backup's log.
+8. **Clean up.** Remove both TCP proxies. After a few days without problems, delete the old `postgres` service and its volume, and `upgrade.dump`.
+
+To switch back before step 8, point `DATABASE_URL` at `postgres` again and redeploy. Anything written to the new database in between is lost.
