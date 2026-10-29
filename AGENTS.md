@@ -82,7 +82,8 @@ All code is tested. There are no exceptions for small changes.
 - No bulk QuerySet operations (`update`, `bulk_create`, `bulk_update`, `delete`) on `Publishable` models, `Document` or `Fragment`, except in migrations and management commands (architecture §6).
 - No new dependencies without approval. Name and justify any new dependency in the PR.
 - No Replit services in code (database, auth, object storage). Configuration comes only from environment variables.
-- No Celery, Redis, Elasticsearch or Docker.
+- No Celery, Redis or Elasticsearch.
+- Docker only for deployment, in `deploy/`. Application code, local development and tests never depend on Docker.
 - Never edit `frontend/src/api/` by hand. Run `make api-client` instead.
 - UI is built from shadcn/ui components, following the Figma designs. Use Tailwind theme tokens; no hardcoded colours or sizes.
   The Tailwind theme holds only the tokens from `design/tokens/tokens.css` (mapping in `frontend/src/index.css`), and typography uses the `.text-*` classes from that file.
