@@ -47,6 +47,7 @@ Hosting for production is not decided yet. The constraints above keep every opti
 │   ├── search/            # search index and query               ← core
 │   ├── api/               # DRF serializers, viewsets, schema
 │   └── site_shell/        # serves the SPA index.html with meta tags
+├── deploy/                # Docker image and compose for the test environment (US-OPS-01)
 └── frontend/
     └── src/
         ├── api/           # generated client (never edited by hand)

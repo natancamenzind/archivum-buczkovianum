@@ -14,6 +14,7 @@ dependencies = [
     "dj-database-url>=2.3",
     "django-stubs-ext>=5.2",
     "pypdf>=6.21.2",
+    "gunicorn>=23",
 ]
 
 [dependency-groups]
