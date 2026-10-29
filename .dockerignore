@@ -14,12 +14,9 @@ frontend/coverage
 frontend/dist
 backend/staticfiles
 backend/media
-media
 
 # Secrets never enter the image.
-.env
 **/.env
-deploy/.env
 
 # Local tooling.
 .ai

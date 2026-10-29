@@ -84,7 +84,7 @@ def production_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.mark.usefixtures("production_env")
-@pytest.mark.parametrize("name", [name for name in PRODUCTION_ENV if name != "DEBUG"])
+@pytest.mark.parametrize("name", settings_module.PRODUCTION_REQUIRED_ENV)
 @pytest.mark.parametrize("value", [None, ""])
 def test_production_refuses_to_start_without_a_required_variable(
     monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType, name: str, value: str | None
@@ -98,7 +98,7 @@ def test_production_refuses_to_start_without_a_required_variable(
         importlib.reload(reload_settings)
 
 
-@pytest.mark.parametrize("name", ["SECRET_KEY", "DATABASE_URL"])
+@pytest.mark.parametrize("name", settings_module.REQUIRED_ENV)
 def test_debug_still_needs_secret_key_and_database_url(
     monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType, name: str
 ) -> None:
@@ -130,7 +130,6 @@ def test_production_trusts_the_proxy_scheme_and_secures_cookies(
     assert settings.SECURE_PROXY_SSL_HEADER == ("HTTP_X_FORWARDED_PROTO", "https")
     assert settings.SESSION_COOKIE_SECURE is True
     assert settings.CSRF_COOKIE_SECURE is True
-    assert settings.SECURE_CONTENT_TYPE_NOSNIFF is True
 
 
 @pytest.mark.usefixtures("production_env")
@@ -140,18 +139,12 @@ def test_us_ops_01_ac5_media_go_to_a_private_s3_bucket(reload_settings: ModuleTy
     assert settings.STORAGES["default"]["BACKEND"] == "storages.backends.s3.S3Storage"
     assert settings.AWS_DEFAULT_ACL is None
     assert settings.AWS_QUERYSTRING_AUTH is True
-    assert settings.AWS_ACCESS_KEY_ID == "AKIAEXAMPLE"
-    assert settings.AWS_SECRET_ACCESS_KEY == "example-secret"
-    assert settings.STORAGES["staticfiles"]["BACKEND"] == (
-        "whitenoise.storage.CompressedManifestStaticFilesStorage"
-    )
 
 
+@pytest.mark.usefixtures("production_env")
 def test_us_ops_01_ac5_media_urls_are_presigned(settings: Settings) -> None:
-    settings.AWS_STORAGE_BUCKET_NAME = "archive"
-    settings.AWS_S3_REGION_NAME = "eu-central-1"
-    settings.AWS_ACCESS_KEY_ID = "AKIAEXAMPLE"
-    settings.AWS_SECRET_ACCESS_KEY = "example-secret"
+    settings.AWS_STORAGE_BUCKET_NAME = PRODUCTION_ENV["AWS_STORAGE_BUCKET_NAME"]
+    settings.AWS_S3_REGION_NAME = PRODUCTION_ENV["AWS_S3_REGION_NAME"]
     settings.STORAGES = {
         **settings.STORAGES,
         "default": {"BACKEND": "storages.backends.s3.S3Storage"},

@@ -20,11 +20,10 @@ def env_list(name: str) -> list[str]:
 
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
-# Production (DEBUG=False) refuses to start without these. With DEBUG=True only SECRET_KEY and
-# DATABASE_URL are needed, and media falls back to the local filesystem.
+# With DEBUG=True media falls back to the local filesystem, so only these are needed.
+REQUIRED_ENV = ("SECRET_KEY", "DATABASE_URL")
 PRODUCTION_REQUIRED_ENV = (
-    "SECRET_KEY",
-    "DATABASE_URL",
+    *REQUIRED_ENV,
     "ALLOWED_HOSTS",
     "CSRF_TRUSTED_ORIGINS",
     "AWS_STORAGE_BUCKET_NAME",
@@ -32,7 +31,7 @@ PRODUCTION_REQUIRED_ENV = (
     "AWS_ACCESS_KEY_ID",
     "AWS_SECRET_ACCESS_KEY",
 )
-for name in ("SECRET_KEY", "DATABASE_URL") if DEBUG else PRODUCTION_REQUIRED_ENV:
+for name in REQUIRED_ENV if DEBUG else PRODUCTION_REQUIRED_ENV:
     if not os.environ.get(name):
         raise ImproperlyConfigured(f"Missing required environment variable: {name}")
 
@@ -45,7 +44,6 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -124,11 +122,10 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Media goes to S3 when a bucket is configured, otherwise to the local filesystem.
+# django-storages reads credentials from the environment itself, but these only from settings.
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
 AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME") or None
 AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL") or None
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID") or None
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY") or None
 # The bucket is private: uploads get no public ACL and every media URL is presigned.
 AWS_DEFAULT_ACL = None
 AWS_QUERYSTRING_AUTH = True

@@ -28,6 +28,9 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      ALLOWED_HOSTS: ${SITE_DOMAIN}
+      CSRF_TRUSTED_ORIGINS: https://${SITE_DOMAIN}
+      DEBUG: "false"
     depends_on:
       postgres:
         condition: service_healthy

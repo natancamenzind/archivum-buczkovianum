@@ -13,9 +13,6 @@ COPY design/tokens/tokens.css /app/design/tokens/tokens.css
 COPY frontend/ ./
 RUN npm run build
 
-# --- uv binary, pinned ---------------------------------------------------------------------------
-FROM ghcr.io/astral-sh/uv:0.13.5 AS uv
-
 # --- App -----------------------------------------------------------------------------------------
 FROM python:3.12-slim-bookworm
 
@@ -29,7 +26,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Dependencies first, so a code change does not reinstall them.
-COPY --from=uv /uv /usr/local/bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.13.5 /uv /usr/local/bin/uv
 COPY pyproject.toml uv.lock .python-version ./
 RUN uv sync --locked --no-dev --no-install-project
 

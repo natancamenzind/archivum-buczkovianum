@@ -40,7 +40,8 @@ Dumps are in `s3://$BACKUP_BUCKET/db/`, named by UTC time; the newest 14 are kep
 set -a; . <(grep -E '^(AWS_|BACKUP_BUCKET|POSTGRES_)' deploy/.env); set +a
 aws() {
   docker run --rm -v "$PWD:/aws" -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY \
-    -e AWS_DEFAULT_REGION="$AWS_S3_REGION_NAME" amazon/aws-cli:2.31.0 "$@"
+    -e AWS_DEFAULT_REGION="$AWS_S3_REGION_NAME" \
+    ${AWS_S3_ENDPOINT_URL:+-e AWS_ENDPOINT_URL="$AWS_S3_ENDPOINT_URL"} amazon/aws-cli:2.31.0 "$@"
 }
 
 aws s3 ls "s3://$BACKUP_BUCKET/db/"                     # pick a dump
