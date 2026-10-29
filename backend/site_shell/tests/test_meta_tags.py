@@ -1,4 +1,4 @@
-"""Every public URL gets its own `<title>` and meta description (user stories §4, SEO)."""
+"""Every public URL gets its own `<title>` and meta description (user stories §5, SEO)."""
 
 from html.parser import HTMLParser
 
