@@ -349,15 +349,15 @@ Uruchomienie serwisu. Te story nie mają własnej publicznej strony.
 
 ### US-OPS-01 — Środowisko testowe
 
-1. Aplikacja działa na jednym serwerze Linux arm64 przez `docker compose` z katalogu `deploy/`.
-2. Usługi: `postgres` (oficjalny obraz, tag `postgres:19rc1`), `app` (gunicorn), `caddy` (automatyczny HTTPS).
-3. Cały serwis, łącznie z `/admin` i `/api`, jest za HTTP basic auth wymuszanym przez Caddy.
-4. Każda odpowiedź ma nagłówek `X-Robots-Tag: noindex, nofollow`.
+1. Aplikacja działa na Railway jako usługa budowana z `deploy/Dockerfile`; gunicorn nasłuchuje na porcie, który Railway podaje w `$PORT`.
+2. PostgreSQL to osobna usługa Railway z oficjalnego obrazu `postgres:19rc1`, z wolumenem na dane. Aplikacja łączy się z nią przez `DATABASE_URL` w prywatnej sieci Railway; baza nie ma publicznego adresu poza odtwarzaniem i aktualizacją (`docs/deploy.md`).
+3. Cały serwis, łącznie z `/admin` i `/api`, jest za HTTP basic auth wymuszanym przez middleware Django, aktywnym, gdy ustawione są `BASIC_AUTH_USER` i `BASIC_AUTH_PASSWORD`. Bez danych logowania lub z błędnymi odpowiedź to 401 z nagłówkiem `WWW-Authenticate`.
+4. Przy `ROBOTS_NOINDEX=true` każda odpowiedź ma nagłówek `X-Robots-Tag: noindex, nofollow`.
 5. Media są w prywatnym buckecie S3 i serwowane przez presigned URL.
 6. `GET /healthz` zwraca 200, gdy baza danych jest osiągalna, w przeciwnym razie 503, i jest jedyną ścieżką wyłączoną z basic auth.
-7. Jeden skrypt wdraża nową wersję: pull, build, migracje, restart.
-8. Codzienny zrzut bazy danych trafia do S3; przechowujemy 14 ostatnich zrzutów.
-9. Wszystkie sekrety pochodzą z `deploy/.env`, który jest w `.gitignore`; `deploy/.env.example` opisuje każdą zmienną.
+7. Push do `main` wdraża nową wersję. Migracje uruchamia pre-deploy command Railway; jeśli się nie powiodą, dalej działa poprzednia wersja.
+8. Osobna usługa cron na Railway codziennie wysyła zrzut bazy danych do S3; przechowujemy 14 ostatnich zrzutów.
+9. Cała konfiguracja pochodzi ze zmiennych usług Railway; `deploy/.env.example` opisuje każdą zmienną.
 
 ---
 
