@@ -6,7 +6,7 @@ Sources: `docs/PROJECT_BRIEF.md` and the Figma file "archiwum-buczkowski-model",
 
 - A story is done when all its acceptance criteria (AC) pass. One story per branch and PR; both carry its ID.
 - **RA (Relacyjny archiwista)** is the public reader: anonymous, never logs in. **WR (Wnikliwa Redaktorka)** is an editor working in admin panel; all editors have the same rights.
-- Every story is in v1 and required, unless marked **(Should)**: build it if it fits. Section 4 lists what is out of scope.
+- Every story is in v1 and required, unless marked **(Should)**: build it if it fits. Section 5 lists what is out of scope.
 - Rules R-01 to R-12 apply to every public page. Stories refer to them instead of repeating them.
 - Quoted Polish text is exact UI copy. The UI uses only the Polish terms from the glossary.
 
@@ -339,7 +339,25 @@ Everything happens in Django admin. Every image field requires a text alternativ
 
 ---
 
-## 4. Out of scope for v1
+## 4. Operations (OPS)
+
+Running the service. These stories have no public page of their own.
+
+### US-OPS-01 — Test environment
+
+1. The app runs on a single arm64 Linux host via `docker compose` from `deploy/`.
+2. Services: `postgres` (official image, tag `postgres:19rc1`), `app` (gunicorn), `caddy` (automatic HTTPS).
+3. The whole site, including `/admin` and `/api`, is behind HTTP basic auth enforced by Caddy.
+4. Every response carries `X-Robots-Tag: noindex, nofollow`.
+5. Media are stored in a private S3 bucket and served via presigned URLs.
+6. `GET /healthz` returns 200 when the database is reachable, 503 otherwise, and is the only path excluded from basic auth.
+7. One script deploys a new version: pull, build, migrate, restart.
+8. A daily database dump is uploaded to S3; the last 14 dumps are kept.
+9. All secrets come from `deploy/.env`, which is gitignored; `deploy/.env.example` documents every variable.
+
+---
+
+## 5. Out of scope for v1
 
 Later:
 
@@ -359,7 +377,7 @@ Rejected:
 
 ---
 
-## 5. Open questions
+## 6. Open questions
 
 The project owner answered questions 1, 2, 3 and 5 on 2026-10-27 (`docs/plan.md`, D31). Only question 4 is still open.
 

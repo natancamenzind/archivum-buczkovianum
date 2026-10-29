@@ -8,7 +8,7 @@ Tłumaczenie `docs/user-stories.md`. W razie rozbieżności obowiązuje wersja a
 
 - Story jest gotowe, gdy spełnione są wszystkie jego kryteria akceptacji (AC). Jedno story to jedna gałąź i jeden PR; obie mają w nazwie jego ID.
 - **RA (Relacyjny archiwista)** to czytelnik serwisu: anonimowy, nigdy się nie loguje. **WR (Wnikliwa Redaktorka)** pracuje w panelu administracyjnym; wszystkie redaktorki mają te same uprawnienia.
-- Każde story należy do v1 i jest obowiązkowe, chyba że ma oznaczenie **(Opcjonalne)**: robimy je, jeśli starczy czasu. Rozdział 4 wymienia to, czego nie robimy w v1.
+- Każde story należy do v1 i jest obowiązkowe, chyba że ma oznaczenie **(Opcjonalne)**: robimy je, jeśli starczy czasu. Rozdział 5 wymienia to, czego nie robimy w v1.
 - Zasady R-01 do R-12 obowiązują na każdej publicznej stronie. Story odwołują się do nich zamiast je powtarzać.
 - Tekst w cudzysłowie to dokładne brzmienie w interfejsie. Interfejs używa wyłącznie polskich terminów ze słownika.
 
@@ -343,7 +343,25 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 
 ---
 
-## 4. Poza zakresem v1
+## 4. Utrzymanie (OPS)
+
+Uruchomienie serwisu. Te story nie mają własnej publicznej strony.
+
+### US-OPS-01 — Środowisko testowe
+
+1. Aplikacja działa na jednym serwerze Linux arm64 przez `docker compose` z katalogu `deploy/`.
+2. Usługi: `postgres` (oficjalny obraz, tag `postgres:19rc1`), `app` (gunicorn), `caddy` (automatyczny HTTPS).
+3. Cały serwis, łącznie z `/admin` i `/api`, jest za HTTP basic auth wymuszanym przez Caddy.
+4. Każda odpowiedź ma nagłówek `X-Robots-Tag: noindex, nofollow`.
+5. Media są w prywatnym buckecie S3 i serwowane przez presigned URL.
+6. `GET /healthz` zwraca 200, gdy baza danych jest osiągalna, w przeciwnym razie 503, i jest jedyną ścieżką wyłączoną z basic auth.
+7. Jeden skrypt wdraża nową wersję: pull, build, migracje, restart.
+8. Codzienny zrzut bazy danych trafia do S3; przechowujemy 14 ostatnich zrzutów.
+9. Wszystkie sekrety pochodzą z `deploy/.env`, który jest w `.gitignore`; `deploy/.env.example` opisuje każdą zmienną.
+
+---
+
+## 5. Poza zakresem v1
 
 Na później:
 
@@ -363,7 +381,7 @@ Odrzucone:
 
 ---
 
-## 5. Otwarte pytania
+## 6. Otwarte pytania
 
 Właściciel projektu rozstrzygnął pytania 1, 2, 3 i 5 dnia 27.10.2026 (`docs/plan.md`, D31). Otwarte pozostaje tylko pytanie 4.
 

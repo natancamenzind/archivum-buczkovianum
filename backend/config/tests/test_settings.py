@@ -4,6 +4,9 @@ from pathlib import Path
 from types import ModuleType
 
 import pytest
+from django.core.exceptions import ImproperlyConfigured
+from django.core.files.storage import storages
+from pytest_django.fixtures import Settings
 
 from config import settings as settings_module
 
@@ -59,3 +62,96 @@ def test_search_config_is_polish_unless_the_env_says_otherwise(
 
     monkeypatch.setenv("SEARCH_TS_CONFIG", "simple")
     assert importlib.reload(reload_settings).SEARCH_TS_CONFIG == "simple"
+
+
+PRODUCTION_ENV = {
+    "DEBUG": "false",
+    "SECRET_KEY": "production-secret",
+    "DATABASE_URL": "postgres://db:5432/buczkovianum",
+    "ALLOWED_HOSTS": "test.example.com",
+    "CSRF_TRUSTED_ORIGINS": "https://test.example.com",
+    "AWS_STORAGE_BUCKET_NAME": "archive",
+    "AWS_S3_REGION_NAME": "eu-central-1",
+    "AWS_ACCESS_KEY_ID": "AKIAEXAMPLE",
+    "AWS_SECRET_ACCESS_KEY": "example-secret",
+}
+
+
+@pytest.fixture
+def production_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name, value in PRODUCTION_ENV.items():
+        monkeypatch.setenv(name, value)
+
+
+@pytest.mark.usefixtures("production_env")
+@pytest.mark.parametrize("name", settings_module.PRODUCTION_REQUIRED_ENV)
+@pytest.mark.parametrize("value", [None, ""])
+def test_production_refuses_to_start_without_a_required_variable(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType, name: str, value: str | None
+) -> None:
+    if value is None:
+        monkeypatch.delenv(name)
+    else:
+        monkeypatch.setenv(name, value)
+
+    with pytest.raises(ImproperlyConfigured, match=f"environment variable: {name}$"):
+        importlib.reload(reload_settings)
+
+
+@pytest.mark.parametrize("name", settings_module.REQUIRED_ENV)
+def test_debug_still_needs_secret_key_and_database_url(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType, name: str
+) -> None:
+    monkeypatch.setenv("DEBUG", "true")
+    monkeypatch.delenv(name)
+
+    with pytest.raises(ImproperlyConfigured, match=f"environment variable: {name}$"):
+        importlib.reload(reload_settings)
+
+
+def test_debug_runs_without_production_variables(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType
+) -> None:
+    monkeypatch.setenv("DEBUG", "true")
+    for name in ("ALLOWED_HOSTS", "CSRF_TRUSTED_ORIGINS", "AWS_STORAGE_BUCKET_NAME"):
+        monkeypatch.delenv(name, raising=False)
+
+    settings = importlib.reload(reload_settings)
+
+    assert settings.STORAGES["default"]["BACKEND"] == "django.core.files.storage.FileSystemStorage"
+
+
+@pytest.mark.usefixtures("production_env")
+def test_production_trusts_the_proxy_scheme_and_secures_cookies(
+    reload_settings: ModuleType,
+) -> None:
+    settings = importlib.reload(reload_settings)
+
+    assert settings.SECURE_PROXY_SSL_HEADER == ("HTTP_X_FORWARDED_PROTO", "https")
+    assert settings.SESSION_COOKIE_SECURE is True
+    assert settings.CSRF_COOKIE_SECURE is True
+
+
+@pytest.mark.usefixtures("production_env")
+def test_us_ops_01_ac5_media_go_to_a_private_s3_bucket(reload_settings: ModuleType) -> None:
+    settings = importlib.reload(reload_settings)
+
+    assert settings.STORAGES["default"]["BACKEND"] == "storages.backends.s3.S3Storage"
+    assert settings.AWS_DEFAULT_ACL is None
+    assert settings.AWS_QUERYSTRING_AUTH is True
+
+
+@pytest.mark.usefixtures("production_env")
+def test_us_ops_01_ac5_media_urls_are_presigned(settings: Settings) -> None:
+    settings.AWS_STORAGE_BUCKET_NAME = PRODUCTION_ENV["AWS_STORAGE_BUCKET_NAME"]
+    settings.AWS_S3_REGION_NAME = PRODUCTION_ENV["AWS_S3_REGION_NAME"]
+    settings.STORAGES = {
+        **settings.STORAGES,
+        "default": {"BACKEND": "storages.backends.s3.S3Storage"},
+    }
+
+    url = storages["default"].url("scans/czarny-potok.pdf")
+
+    assert url.startswith("https://archive.s3.")
+    assert "X-Amz-Signature=" in url
+    assert "X-Amz-Expires=" in url

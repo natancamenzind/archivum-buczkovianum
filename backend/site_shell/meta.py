@@ -1,4 +1,4 @@
-"""The `<title>` and meta description of every public page (user stories §4, SEO).
+"""The `<title>` and meta description of every public page (user stories §5, SEO).
 
 The URLs are React Router's (`frontend/src/routes.tsx`). Matching them here lets a crawler read a
 page's title without running JavaScript, and lets a URL with no page answer 404. The Polish copy

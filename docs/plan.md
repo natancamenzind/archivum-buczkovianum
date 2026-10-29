@@ -100,7 +100,7 @@ Answered by the project owner on 2026-10-27, for questions raised by merged PRs:
 | D28 | Two editor-panel labels with no glossary term: slug is "Końcówka adresu", site settings are "Treści serwisu". Keep them? (#39) | **Keep them.** | — |
 | D29 | Genre is shown as stored ("powieść"); Figma shows "Powieść". The typescripts hero has no count ("Pięć jednostek…" in Figma). Capitalise the genre on display or in the data? Add a live count to the hero? (#35) | **Shown as stored, no count.** Steps 17, 21 and 23 show the genre the same way as steps 15 and 18. | 17, 21, 23 |
 | D30 | Storage provider (architecture §10). | **Amazon S3.** The code still depends only on the S3 API. | 35 |
-| D31 | Open questions 1–3 and 5 of `user-stories.md` §5. | **The defaults hold**, except question 5: the stories win and Figma is not updated. Question 4 (an example of a tagged relation) stays with the editors. | — |
+| D31 | Open questions 1–3 and 5 of `user-stories.md` §6. | **The defaults hold**, except question 5: the stories win and Figma is not updated. Question 4 (an example of a tagged relation) stays with the editors. | — |
 
 ## 4. Order and dependencies
 
@@ -269,7 +269,7 @@ These steps do not depend on each other, but they edit the same files. Run them 
 
 | ✓ | # | PR | Branch | Needs | Scope |
 |---|---|----|--------|-------|-------|
-| [x] | 34 | CORE: per-URL meta tags | `core/meta-tags` | 31 | `site_shell` sets `<title>` and the meta description for every route (user stories §4: SEO). An unknown URL or a draft for an anonymous reader returns status 404, not a 200 with the React 404 page. Paths starting with a dot (`/.env`) return 404 (#11 review). From step 31: `/search` keeps its state in `q`, `tab`, `work` (repeated), `decade`, `has_scan=1`, `has_text=1` and `sort=title`; bare `/search` is the search entry, and a blank `q` with a `tab` (even `tab=all`) lists everything. |
+| [x] | 34 | CORE: per-URL meta tags | `core/meta-tags` | 31 | `site_shell` sets `<title>` and the meta description for every route (user stories §5: SEO). An unknown URL or a draft for an anonymous reader returns status 404, not a 200 with the React 404 page. Paths starting with a dot (`/.env`) return 404 (#11 review). From step 31: `/search` keeps its state in `q`, `tab`, `work` (repeated), `decade`, `has_scan=1`, `has_text=1` and `sort=title`; bare `/search` is the search entry, and a blank `q` with a `tab` (even `tab=all`) lists everything. |
 | [ ] | 35 | Production setup | `ops/production` | D9 (open) | Production settings and deployment notes for the chosen host. The deploy runs `npm run build` (`make build-frontend`, step 36) before `collectstatic` and before Django starts (#11). Uploads: set `AWS_STORAGE_BUCKET_NAME`. Without it Django serves `/media/` from `MEDIA_ROOT` (#36), which is for local development only. The committed `.mo` catalogue is used as is (#39), so the server needs no gettext. |
 
 ## 6. Story coverage

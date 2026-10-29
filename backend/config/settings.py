@@ -5,6 +5,7 @@ from pathlib import Path
 
 import dj_database_url
 import django_stubs_ext
+from django.core.exceptions import ImproperlyConfigured
 
 # Makes Django generics such as `ModelAdmin[Work]` subscriptable at runtime, for mypy.
 django_stubs_ext.monkeypatch()
@@ -17,10 +18,32 @@ def env_list(name: str) -> list[str]:
     return [item for item in os.environ.get(name, "").split(",") if item]
 
 
-SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
+
+# With DEBUG=True media falls back to the local filesystem, so only these are needed.
+REQUIRED_ENV = ("SECRET_KEY", "DATABASE_URL")
+PRODUCTION_REQUIRED_ENV = (
+    *REQUIRED_ENV,
+    "ALLOWED_HOSTS",
+    "CSRF_TRUSTED_ORIGINS",
+    "AWS_STORAGE_BUCKET_NAME",
+    "AWS_S3_REGION_NAME",
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+)
+for name in REQUIRED_ENV if DEBUG else PRODUCTION_REQUIRED_ENV:
+    if not os.environ.get(name):
+        raise ImproperlyConfigured(f"Missing required environment variable: {name}")
+
+SECRET_KEY = os.environ["SECRET_KEY"]
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
+
+if not DEBUG:
+    # Caddy terminates HTTPS and tells Django the original scheme in X-Forwarded-Proto.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -103,6 +126,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
 AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME") or None
 AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL") or None
+# The bucket is private: uploads get no public ACL and every media URL is presigned.
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = True
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3.S3Storage"
@@ -114,6 +140,8 @@ STORAGES = {
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Only sessions. The test environment sits behind HTTP basic auth (US-OPS-01), and DRF's
+    # BasicAuthentication would try the proxy's credentials as a Django user and reject the request.
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.SessionAuthentication",
     ],
