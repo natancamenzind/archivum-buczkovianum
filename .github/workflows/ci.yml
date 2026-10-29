@@ -14,6 +14,8 @@ permissions:
 
 env:
   SECRET_KEY: ci-only-not-secret
+  # Not production: DEBUG=False requires the production variables (hosts, S3).
+  DEBUG: "true"
   DATABASE_URL: postgres://postgres:postgres@localhost:5432/buczkovianum
 
 jobs:
