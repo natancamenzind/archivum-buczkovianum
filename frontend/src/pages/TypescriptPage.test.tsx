@@ -15,6 +15,7 @@ const DOCUMENT_URL = "*/api/documents/10/";
 
 const TYPESCRIPT: TypescriptData = {
   id: 1,
+  is_draft: false,
   title: "Maszynopis „Wertepów”",
   description: "<p>Pierwsza wersja maszynopisu powieści.</p>",
   shelfmark: "ML, sygn. 1618",
@@ -63,6 +64,7 @@ const TEXT = "Pierwsza strona tekstu. Druga strona tekstu.";
 
 const DOCUMENT: Document = {
   id: 10,
+  is_draft: false,
   kind: "ocr",
   text: TEXT,
   page_offsets: [0, 24],
@@ -199,6 +201,23 @@ describe("TypescriptPage", () => {
       "page",
     );
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-WR-13 AC2: a draft that staff preview shows the draft banner", async () => {
+    mockPage({ is_draft: true });
+
+    const { container } = await renderPage();
+
+    expect(screen.getByText("Szkic — niewidoczny publicznie")).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-WR-13 AC2: a published page has no draft banner", async () => {
+    mockPage();
+
+    await renderPage();
+
+    expect(screen.queryByText("Szkic — niewidoczny publicznie")).not.toBeInTheDocument();
   });
 
   it("US-RA-08 AC1: a missing shelfmark, year and description are left out (R-02)", async () => {

@@ -175,6 +175,7 @@ export function TypescriptPage() {
 
   return (
     <EntityLayout
+      isDraft={typescript.is_draft}
       header={
         <PageHeader
           label={label}

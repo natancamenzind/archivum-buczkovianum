@@ -249,6 +249,7 @@ class TestSecondaryTextPageSchema:
         assert sorted(schemas["SecondaryTextPage"]["required"]) == sorted(
             (
                 "id",
+                "is_draft",
                 "title",
                 "description",
                 "kind",

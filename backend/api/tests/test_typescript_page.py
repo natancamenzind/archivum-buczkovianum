@@ -333,6 +333,7 @@ class TestTypescriptPageSchema:
         assert sorted(schemas["TypescriptPage"]["required"]) == sorted(
             (
                 "id",
+                "is_draft",
                 "title",
                 "description",
                 "shelfmark",

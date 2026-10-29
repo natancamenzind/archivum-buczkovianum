@@ -27,7 +27,8 @@ paths:
       operationId: documents_retrieve
       description: |-
         The text of a published item for the reader (R-11), with its fragments and their
-        published tags. The text of a draft, or of no item, is not found (R-06).
+        published tags. The text of a draft is shown only to staff; of no item, it is not found
+        (R-06).
       parameters:
       - in: path
         name: id
@@ -154,8 +155,8 @@ paths:
   /api/materials/{id}/:
     get:
       operationId: materials_retrieve
-      description: The contextual material page (US-RA-12). A draft material is not
-        found (R-06).
+      description: The contextual material page (US-RA-12). A draft material is shown
+        only to staff (R-06).
       parameters:
       - in: path
         name: id
@@ -177,7 +178,7 @@ paths:
   /api/notes/{id}/:
     get:
       operationId: notes_retrieve
-      description: The note page (US-RA-11). A draft note is not found (R-06).
+      description: The note page (US-RA-11). A draft note is shown only to staff (R-06).
       parameters:
       - in: path
         name: id
@@ -310,8 +311,8 @@ paths:
   /api/secondary-texts/{id}/:
     get:
       operationId: secondary_texts_retrieve
-      description: The secondary text page (US-RA-10). A draft secondary text is not
-        found (R-06).
+      description: The secondary text page (US-RA-10). A draft secondary text is shown
+        only to staff (R-06).
       parameters:
       - in: path
         name: id
@@ -353,7 +354,7 @@ paths:
   /api/tags/{slug}/:
     get:
       operationId: tags_retrieve
-      description: The tag page (US-RA-07). A draft tag is not found (R-06).
+      description: The tag page (US-RA-07). A draft tag is shown only to staff (R-06).
       parameters:
       - in: path
         name: slug
@@ -396,8 +397,8 @@ paths:
     get:
       operationId: typescripts_retrieve
       description: |-
-        The typescript page (US-RA-08). A draft typescript is not found (R-06); a draft work
-        leaves out the work, its contextual materials and nothing else.
+        The typescript page (US-RA-08). A draft typescript is shown only to staff (R-06); a draft
+        work leaves out the work, its contextual materials and nothing else.
       parameters:
       - in: path
         name: id
@@ -438,7 +439,7 @@ paths:
   /api/works/{slug}/:
     get:
       operationId: works_retrieve
-      description: The work page (US-RA-04). A draft work is not found (R-06).
+      description: The work page (US-RA-04). A draft work is shown only to staff (R-06).
       parameters:
       - in: path
         name: slug
@@ -532,6 +533,10 @@ components:
           type: string
           readOnly: true
           description: PDF URL; empty for a plain text.
+        is_draft:
+          type: boolean
+          readOnly: true
+          description: True only for staff previewing a draft (US-WR-13).
         fragments:
           type: array
           items:
@@ -541,6 +546,7 @@ components:
       required:
       - fragments
       - id
+      - is_draft
       - kind
       - page_offsets
       - scan
@@ -910,6 +916,9 @@ components:
       properties:
         id:
           type: integer
+        is_draft:
+          type: boolean
+          description: True only for staff previewing a draft (US-WR-13).
         title:
           type: string
         description:
@@ -941,6 +950,7 @@ components:
       - description
       - fragments
       - id
+      - is_draft
       - shelfmark
       - tags
       - title
@@ -1063,6 +1073,9 @@ components:
       properties:
         id:
           type: integer
+        is_draft:
+          type: boolean
+          description: True only for staff previewing a draft (US-WR-13).
         title:
           type: string
         description:
@@ -1092,6 +1105,7 @@ components:
       - description
       - fragments
       - id
+      - is_draft
       - shelfmark
       - tags
       - title
@@ -1226,6 +1240,9 @@ components:
       properties:
         id:
           type: integer
+        is_draft:
+          type: boolean
+          description: True only for staff previewing a draft (US-WR-13).
         title:
           type: string
         description:
@@ -1263,6 +1280,7 @@ components:
       - document
       - fragments
       - id
+      - is_draft
       - kind
       - letter_date
       - sender
@@ -1377,6 +1395,9 @@ components:
       properties:
         slug:
           type: string
+        is_draft:
+          type: boolean
+          description: True only for staff previewing a draft (US-WR-13).
         title:
           type: string
         description:
@@ -1414,6 +1435,7 @@ components:
       required:
       - description
       - fragments
+      - is_draft
       - materials
       - notes
       - occurrences
@@ -1513,6 +1535,9 @@ components:
       properties:
         id:
           type: integer
+        is_draft:
+          type: boolean
+          description: True only for staff previewing a draft (US-WR-13).
         title:
           type: string
         description:
@@ -1552,6 +1577,7 @@ components:
       - document
       - fragments
       - id
+      - is_draft
       - materials
       - page_count
       - shelfmark
@@ -1669,6 +1695,9 @@ components:
       properties:
         slug:
           type: string
+        is_draft:
+          type: boolean
+          description: True only for staff previewing a draft (US-WR-13).
         title:
           type: string
         description:
@@ -1715,6 +1744,7 @@ components:
       - description
       - editions
       - fragments
+      - is_draft
       - main_typescript
       - materials
       - notes

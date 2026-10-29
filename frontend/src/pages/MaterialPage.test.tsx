@@ -40,6 +40,7 @@ const NO_CONTENT: Content = {
 
 const MATERIAL: MaterialData = {
   id: 4,
+  is_draft: false,
   title: "Buczkowski w Konstancinie",
   description: "<p>Fotografia z lat sześćdziesiątych.</p>",
   shelfmark: "ML, sygn. 1700",
@@ -64,6 +65,7 @@ const MATERIAL: MaterialData = {
 
 const DOCUMENT: Document = {
   id: 21,
+  is_draft: false,
   kind: "plain",
   text: "Dezerter idzie przez las.",
   page_offsets: [],
@@ -172,6 +174,23 @@ describe("MaterialPage", () => {
       expect(hero().querySelectorAll("p")).toHaveLength(1);
     },
   );
+
+  it("US-WR-13 AC2: a draft that staff preview shows the draft banner", async () => {
+    mockPage({ is_draft: true });
+
+    const { container } = await renderPage();
+
+    expect(screen.getByText("Szkic — niewidoczny publicznie")).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-WR-13 AC2: a published page has no draft banner", async () => {
+    mockPage();
+
+    await renderPage();
+
+    expect(screen.queryByText("Szkic — niewidoczny publicznie")).not.toBeInTheDocument();
+  });
 
   it("US-RA-12 AC2: 'Powiązane utwory' lists the related works with year, each linking to it", async () => {
     mockPage();

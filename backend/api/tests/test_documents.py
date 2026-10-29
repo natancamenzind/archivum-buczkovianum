@@ -176,7 +176,7 @@ class TestDocumentSchema:
 
         # Assert
         assert sorted(schemas["Document"]["required"]) == sorted(
-            ("id", "kind", "text", "page_offsets", "scan", "fragments")
+            ("id", "kind", "text", "page_offsets", "scan", "is_draft", "fragments")
         )
         assert sorted(schemas["DocumentFragment"]["required"]) == sorted(
             ("id", "start", "end", "number", "start_page", "location", "shelfmark", "tags")
