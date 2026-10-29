@@ -83,6 +83,7 @@ export function TagPage() {
 
   return (
     <EntityLayout
+      isDraft={tag.is_draft}
       header={
         <PageHeader
           label={copy.tag.label(tag.occurrences, tag.works.length)}

@@ -384,6 +384,7 @@ class TestTagPageSchema:
         assert sorted(schemas["TagPage"]["required"]) == sorted(
             (
                 "slug",
+                "is_draft",
                 "title",
                 "description",
                 "occurrences",

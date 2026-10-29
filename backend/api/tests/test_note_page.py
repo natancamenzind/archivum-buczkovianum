@@ -326,7 +326,17 @@ class TestNotePageSchema:
 
         # Assert
         assert sorted(schemas["NotePage"]["required"]) == sorted(
-            ("id", "title", "description", "shelfmark", "content", "works", "fragments", "tags")
+            (
+                "id",
+                "is_draft",
+                "title",
+                "description",
+                "shelfmark",
+                "content",
+                "works",
+                "fragments",
+                "tags",
+            )
         )
         assert sorted(schemas["MediaContent"]["required"]) == sorted(
             ("kind", "image", "image_alt", "file", "external_url", "document")

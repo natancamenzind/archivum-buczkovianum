@@ -312,5 +312,15 @@ class TestMaterialPageSchema:
 
         # Assert
         assert sorted(schemas["MaterialPage"]["required"]) == sorted(
-            ("id", "title", "description", "shelfmark", "content", "works", "fragments", "tags")
+            (
+                "id",
+                "is_draft",
+                "title",
+                "description",
+                "shelfmark",
+                "content",
+                "works",
+                "fragments",
+                "tags",
+            )
         )

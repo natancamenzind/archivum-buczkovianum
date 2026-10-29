@@ -60,6 +60,7 @@ export function MaterialPage() {
 
   return (
     <EntityLayout
+      isDraft={material.is_draft}
       header={
         <PageHeader
           label={[copy.material.kinds[material.content.kind], material.shelfmark]

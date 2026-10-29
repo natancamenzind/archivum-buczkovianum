@@ -114,6 +114,7 @@ export function WorkPage() {
 
   return (
     <EntityLayout
+      isDraft={work.is_draft}
       header={
         <PageHeader
           label={label}

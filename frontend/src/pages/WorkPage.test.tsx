@@ -1,8 +1,10 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import { delay, http, HttpResponse } from "msw";
+import { matchRoutes } from "react-router";
 import { describe, expect, it } from "vitest";
 
 import type { components } from "@/api/schema";
+import { routes } from "@/routes";
 import { axeViolations, renderRoute } from "@/test/render";
 import { server } from "@/test/server";
 
@@ -29,6 +31,7 @@ const FRAGMENT: Fragment = {
 
 const WORK: WorkData = {
   slug: "wertepy",
+  is_draft: false,
   title: "Wertepy",
   description: "<p>Pierwsza powieść Leopolda Buczkowskiego.</p>",
   year: 1947,
@@ -166,6 +169,23 @@ describe("WorkPage", () => {
       "page",
     );
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-WR-13 AC2: a draft that staff preview shows the draft banner", async () => {
+    mockPage({ is_draft: true });
+
+    const { container } = await renderPage();
+
+    expect(screen.getByText("Szkic — niewidoczny publicznie")).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-WR-13 AC2: a published page has no draft banner", async () => {
+    mockPage();
+
+    await renderPage();
+
+    expect(screen.queryByText("Szkic — niewidoczny publicznie")).not.toBeInTheDocument();
   });
 
   it("US-RA-04 AC1: a work without editions or description shows neither (R-02)", async () => {
@@ -379,6 +399,42 @@ describe("WorkPage", () => {
     const visual = screen.getByRole("link", { name: /Autor w Dolinie, ML, sygn\. 1700/ });
     expect(visual).toHaveAttribute("href", "/materials/9");
     expect(within(visual).getByRole("img", { name: "Buczkowski przy biurku" })).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-06 AC1: every item in the main column, tag column and contextual materials links to a page", async () => {
+    mockPage();
+
+    const { container } = await renderPage();
+
+    const hrefs = within(screen.getByRole("main"))
+      .getAllByRole("link")
+      .map((link) => link.getAttribute("href") ?? "");
+    // The note description's own link is the only one out of the archive.
+    expect([...hrefs].sort()).toEqual(
+      [
+        "/typescripts/1?fragment=5",
+        "/tags/epidemia",
+        "/typescripts/1?fragment=7",
+        "/typescripts/1?fragments=all",
+        "/typescripts/1",
+        "/typescripts/2",
+        "/notes/3",
+        "https://example.com/notes",
+        "/tags/dezerter",
+        "/notes/4",
+        "/tags/dezerter",
+        "/tags/epidemia",
+        "/secondary-texts/4",
+        "/materials/9",
+      ].sort(),
+    );
+    for (const href of hrefs.filter((link) => link.startsWith("/"))) {
+      expect(
+        matchRoutes(routes, href)?.map((match) => match.route.path),
+        href,
+      ).not.toContain("*");
+    }
     expect(await axeViolations(container)).toEqual([]);
   });
 

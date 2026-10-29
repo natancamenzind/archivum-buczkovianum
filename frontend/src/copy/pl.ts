@@ -75,6 +75,8 @@ export const copy = {
   },
   /** The archive covers one author, so every work card names him (plan D22). */
   author: "Leopold Buczkowski",
+  /** Above an entity page that staff preview as a draft (US-WR-13 AC2). */
+  draftBanner: "Szkic — niewidoczny publicznie",
   /** The work card (US-RA-01 AC3), on the works list and the home page. */
   workCard: {
     /** The placeholder board for a work without a cover (plan D25, design/rules.md). */

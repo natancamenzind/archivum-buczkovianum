@@ -77,6 +77,7 @@ export function SecondaryTextPage() {
 
   return (
     <EntityLayout
+      isDraft={secondaryText.is_draft}
       header={
         <PageHeader
           label={typeLine(secondaryText)}
