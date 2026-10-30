@@ -347,7 +347,7 @@ Running the service. These stories have no public page of their own.
 
 1. The app runs on Render as a Docker web service built from `deploy/Dockerfile`; gunicorn binds the port Render sets in `$PORT`. The services and the database are declared in `render.yaml`, a Render Blueprint.
 2. PostgreSQL 18 is a Render Postgres database. The app reaches it via `DATABASE_URL` over Render's private network; the database accepts no external connections. Search runs with `SEARCH_TS_CONFIG=simple`, without Polish inflection (architecture section 6).
-3. The whole site, including `/admin` and `/api`, is behind HTTP basic auth enforced by Django middleware, active when `BASIC_AUTH_USER` and `BASIC_AUTH_PASSWORD` are set. Without credentials, or with wrong ones, the response is 401 with `WWW-Authenticate`.
+3. The public site and `/api` are open; only the editor panel at `/admin` requires a login. Django middleware can put the whole site behind HTTP basic auth when `BASIC_AUTH_USER` and `BASIC_AUTH_PASSWORD` are set; the test environment does not set them. With basic auth on, a request without credentials, or with wrong ones, gets 401 with `WWW-Authenticate`.
 4. With `ROBOTS_NOINDEX=true`, every response carries `X-Robots-Tag: noindex, nofollow`.
 5. Media are stored in a private S3 bucket and served via presigned URLs.
 6. `GET /healthz` returns 200 when the database is reachable, 503 otherwise, whatever the `Host` header, and is the only path excluded from basic auth.

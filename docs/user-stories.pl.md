@@ -351,7 +351,7 @@ Uruchomienie serwisu. Te story nie mają własnej publicznej strony.
 
 1. Aplikacja działa na Render jako usługa web z obrazu Dockera budowanego z `deploy/Dockerfile`; gunicorn nasłuchuje na porcie, który Render podaje w `$PORT`. Usługi i baza danych są opisane w `render.yaml`, czyli Blueprincie Render.
 2. PostgreSQL 18 to baza Render Postgres. Aplikacja łączy się z nią przez `DATABASE_URL` w prywatnej sieci Render; baza nie przyjmuje połączeń z zewnątrz. Wyszukiwanie działa z `SEARCH_TS_CONFIG=simple`, bez polskiej odmiany (architecture, sekcja 6).
-3. Cały serwis, łącznie z `/admin` i `/api`, jest za HTTP basic auth wymuszanym przez middleware Django, aktywnym, gdy ustawione są `BASIC_AUTH_USER` i `BASIC_AUTH_PASSWORD`. Bez danych logowania lub z błędnymi odpowiedź to 401 z nagłówkiem `WWW-Authenticate`.
+3. Publiczny serwis i `/api` są otwarte; logowania wymaga tylko panel redakcyjny pod `/admin`. Middleware Django może objąć cały serwis HTTP basic auth, gdy ustawione są `BASIC_AUTH_USER` i `BASIC_AUTH_PASSWORD`; środowisko testowe ich nie ustawia. Przy włączonym basic auth żądanie bez danych logowania lub z błędnymi dostaje 401 z nagłówkiem `WWW-Authenticate`.
 4. Przy `ROBOTS_NOINDEX=true` każda odpowiedź ma nagłówek `X-Robots-Tag: noindex, nofollow`.
 5. Media są w prywatnym buckecie S3 i serwowane przez presigned URL.
 6. `GET /healthz` zwraca 200, gdy baza danych jest osiągalna, w przeciwnym razie 503, niezależnie od nagłówka `Host`, i jest jedyną ścieżką wyłączoną z basic auth.
