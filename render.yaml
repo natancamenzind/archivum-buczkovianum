@@ -29,10 +29,6 @@ services:
         value: "true"
       - key: AWS_S3_REGION_NAME
         value: eu-north-1
-      - key: BASIC_AUTH_USER
-        sync: false
-      - key: BASIC_AUTH_PASSWORD
-        sync: false
       - key: DJANGO_SUPERUSER_USERNAME
         sync: false
       - key: DJANGO_SUPERUSER_EMAIL
