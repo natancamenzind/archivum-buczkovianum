@@ -1,4 +1,4 @@
-"""Liveness check for the deployment (US-OPS-01 AC6). A plain Django view, not part of the API."""
+"""Liveness check for the deployment (US-OPS-01 AC6). Served by HealthzMiddleware, not by a URL."""
 
 from django.db import DatabaseError, connection
 from django.http import HttpRequest, HttpResponse

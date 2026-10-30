@@ -98,6 +98,37 @@ def test_production_refuses_to_start_without_a_required_variable(
         importlib.reload(reload_settings)
 
 
+@pytest.mark.usefixtures("production_env")
+def test_csrf_trusted_origins_come_from_env_when_set(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType
+) -> None:
+    monkeypatch.setenv("CSRF_TRUSTED_ORIGINS", "https://archive.example.org")
+
+    settings = importlib.reload(reload_settings)
+
+    assert settings.CSRF_TRUSTED_ORIGINS == ["https://archive.example.org"]
+
+
+@pytest.mark.usefixtures("production_env")
+@pytest.mark.parametrize("value", [None, ""])
+def test_csrf_trusted_origins_default_to_https_of_every_allowed_host(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType, value: str | None
+) -> None:
+    if value is None:
+        monkeypatch.delenv("CSRF_TRUSTED_ORIGINS")
+    else:
+        monkeypatch.setenv("CSRF_TRUSTED_ORIGINS", value)
+    monkeypatch.setenv("ALLOWED_HOSTS", "test.example.com,app.onrender.com,.example.org,*")
+
+    settings = importlib.reload(reload_settings)
+
+    assert settings.CSRF_TRUSTED_ORIGINS == [
+        "https://test.example.com",
+        "https://app.onrender.com",
+        "https://*.example.org",
+    ]
+
+
 @pytest.mark.parametrize("name", settings_module.REQUIRED_ENV)
 def test_debug_still_needs_secret_key_and_database_url(
     monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType, name: str
@@ -169,7 +200,8 @@ def test_us_ops_01_ac3_ac4_guards_come_from_env(
 
     assert (settings.BASIC_AUTH_USER, settings.BASIC_AUTH_PASSWORD) == ("editor", "s3cret")
     assert settings.ROBOTS_NOINDEX is expected
-    assert settings.MIDDLEWARE[:2] == [
+    assert settings.MIDDLEWARE[:3] == [
+        "config.middleware.HealthzMiddleware",
         "config.middleware.NoindexMiddleware",
         "config.middleware.BasicAuthMiddleware",
     ]

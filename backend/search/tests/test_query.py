@@ -4,6 +4,7 @@ from collections.abc import Callable
 
 import pytest
 from django.conf import settings
+from pytest_django.fixtures import Settings
 
 from archive.models import ContentKind, Status, Typescript, Work
 from archive.tests.factories import (
@@ -485,3 +486,47 @@ class TestTabsAndFilters:
 
         # Assert
         assert titles(results) == [("fragment", "dezerter"), ("typescript", "Pierwsza wersja")]
+
+
+@pytest.mark.django_db
+class TestTextSearchConfig:
+    """Architecture section 6: indexing, queries and snippets all read SEARCH_TS_CONFIG. Both
+    configurations here ship with every PostgreSQL, and they disagree with each other and with
+    `polish`, so a hardcoded name fails one of the cases."""
+
+    @pytest.mark.parametrize(
+        ("config", "snippets"),
+        [("english", ["<mark>Running</mark> water."]), ("simple", [])],
+    )
+    def test_stemming_follows_the_setting(
+        self, settings: Settings, config: str, snippets: list[str]
+    ) -> None:
+        # Arrange
+        settings.SEARCH_TS_CONFIG = config
+        TypescriptFactory.create(
+            status=PUBLISHED, work__status=PUBLISHED, document__text="Running water."
+        )
+
+        # Act
+        results = search("runs")
+
+        # Assert
+        assert [hit.snippet for group in results.groups for hit in group.hits] == snippets
+
+    # A query of stopwords alone is an empty query, which lists everything: here the work and its
+    # typescript. Where "the" is a word, only the typescript matches.
+    @pytest.mark.parametrize(("config", "total"), [("english", 2), ("simple", 1)])
+    def test_stopwords_follow_the_setting(
+        self, settings: Settings, config: str, total: int
+    ) -> None:
+        # Arrange
+        settings.SEARCH_TS_CONFIG = config
+        TypescriptFactory.create(
+            status=PUBLISHED, work__status=PUBLISHED, document__text="Over the water."
+        )
+
+        # Act
+        results = search("the")
+
+        # Assert
+        assert results.total == total

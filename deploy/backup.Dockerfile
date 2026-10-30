@@ -1,7 +1,7 @@
-# The daily database backup (US-OPS-01 AC8). A Railway cron service builds it from the repo root
-# (deploy/railway.backup.toml), runs deploy/backup.sh once and the container exits.
-# Same image as the database, so pg_dump always matches the server's major version.
-FROM postgres:19rc1
+# The daily database backup (US-OPS-01 AC8). A Render cron job (render.yaml) builds it from the
+# repo root, runs deploy/backup.sh once and the container exits.
+# pg_dump must match the server's major version: keep this tag on the database's PostgreSQL major.
+FROM postgres:18
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends awscli ca-certificates \

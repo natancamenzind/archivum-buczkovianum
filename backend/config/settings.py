@@ -18,6 +18,16 @@ def env_list(name: str) -> list[str]:
     return [item for item in os.environ.get(name, "").split(",") if item]
 
 
+def https_origins(hosts: list[str]) -> list[str]:
+    """The HTTPS origin of every allowed host. A subdomain pattern (".example.org") becomes a
+    wildcard origin; "*" is skipped, as trusting every origin would switch CSRF checks off."""
+    return [
+        f"https://*{host}" if host.startswith(".") else f"https://{host}"
+        for host in hosts
+        if host != "*"
+    ]
+
+
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 # With DEBUG=True media falls back to the local filesystem, so only these are needed.
@@ -25,7 +35,6 @@ REQUIRED_ENV = ("SECRET_KEY", "DATABASE_URL")
 PRODUCTION_REQUIRED_ENV = (
     *REQUIRED_ENV,
     "ALLOWED_HOSTS",
-    "CSRF_TRUSTED_ORIGINS",
     "AWS_STORAGE_BUCKET_NAME",
     "AWS_S3_REGION_NAME",
     "AWS_ACCESS_KEY_ID",
@@ -37,10 +46,11 @@ for name in REQUIRED_ENV if DEBUG else PRODUCTION_REQUIRED_ENV:
 
 SECRET_KEY = os.environ["SECRET_KEY"]
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS")
-CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
+# Optional: without it, the HTTPS origin of every allowed host.
+CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS") or https_origins(ALLOWED_HOSTS)
 
 if not DEBUG:
-    # Railway's edge terminates HTTPS and tells Django the original scheme in X-Forwarded-Proto.
+    # Render's edge terminates HTTPS and tells Django the original scheme in X-Forwarded-Proto.
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -69,7 +79,10 @@ BASIC_AUTH_PASSWORD = os.environ.get("BASIC_AUTH_PASSWORD", "")
 ROBOTS_NOINDEX = os.environ.get("ROBOTS_NOINDEX", "false").lower() == "true"
 
 MIDDLEWARE = [
-    # First, so even a 401 from basic auth carries X-Robots-Tag.
+    # First, so /healthz answers before anything reads the Host header: platform health checks
+    # may not send the public host, and host validation would answer them 400 (US-OPS-01 AC6).
+    "config.middleware.HealthzMiddleware",
+    # Next, so even a 401 from basic auth carries X-Robots-Tag.
     "config.middleware.NoindexMiddleware",
     "config.middleware.BasicAuthMiddleware",
     "django.middleware.security.SecurityMiddleware",
