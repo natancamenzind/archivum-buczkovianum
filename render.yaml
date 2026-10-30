@@ -28,7 +28,7 @@ services:
       - key: ROBOTS_NOINDEX
         value: "true"
       - key: AWS_S3_REGION_NAME
-        value: eu-central-1
+        value: eu-north-1
       - key: BASIC_AUTH_USER
         sync: false
       - key: BASIC_AUTH_PASSWORD
