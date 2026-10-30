@@ -6,6 +6,7 @@ from io import StringIO
 from pathlib import Path
 
 import pytest
+from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db import transaction
@@ -15,13 +16,27 @@ from pytest_django.fixtures import Settings
 
 from archive.management.commands import load_demo_data
 from archive.management.commands.load_demo_data import spread_sentences
-from archive.models import Document, Fragment, Status, Tag, Typescript, Work
+from archive.models import (
+    Document,
+    Fragment,
+    Institution,
+    Status,
+    Tag,
+    TeamMember,
+    Typescript,
+    Work,
+)
 from archive.tests.factories import (
+    EditionFactory,
+    FragmentFactory,
     InstitutionFactory,
+    MaterialWorkLinkFactory,
+    NoteFactory,
+    SecondaryTextWorkLinkFactory,
     SiteSettingsFactory,
     TagFactory,
     TeamMemberFactory,
-    WorkFactory,
+    TypescriptFactory,
 )
 from search.models import SearchEntry
 
@@ -148,20 +163,28 @@ class TestLoadedDemoData:
 
 @pytest.mark.django_db
 class TestDemoData:
-    @pytest.mark.parametrize(
-        "factory",
-        [WorkFactory, TagFactory, InstitutionFactory, TeamMemberFactory, SiteSettingsFactory],
-    )
-    def test_refuses_an_archive_that_is_not_empty(self, factory: type[WorkFactory]) -> None:
+    def test_replaces_the_content_and_keeps_the_users(self, admin_user: User) -> None:
         # Arrange
-        factory.create()
+        MaterialWorkLinkFactory.create()
+        SecondaryTextWorkLinkFactory.create()
+        note = NoteFactory.create(institution=InstitutionFactory.create(abbreviation="BN"))
+        note.tags.add(TagFactory.create(status=Status.PUBLISHED))
+        typescript = TypescriptFactory.create(status=Status.PUBLISHED)
+        EditionFactory.create(work=typescript.work)
+        FragmentFactory.create(document=typescript.document)
+        TeamMemberFactory.create()
+        SiteSettingsFactory.create()
 
         # Act
-        with pytest.raises(CommandError, match="not empty"):
-            call_command("load_demo_data", stdout=StringIO())
+        output = StringIO()
+        call_command("load_demo_data", stdout=output)
 
         # Assert
-        assert not Typescript.objects.exists()
+        assert output.getvalue() == "Loaded 4 works, 62 fragments and 12 tags.\n"
+        assert Institution.objects.get().abbreviation == "ML"
+        assert TeamMember.objects.count() == len(TeamMember.Group)
+        assert not SearchEntry.objects.filter(title__in=(note.title, typescript.title)).exists()
+        assert User.objects.get() == admin_user
 
     def test_needs_the_design_images(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         # Arrange
