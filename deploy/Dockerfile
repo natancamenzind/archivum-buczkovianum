@@ -30,6 +30,8 @@ COPY pyproject.toml uv.lock .python-version ./
 RUN uv sync --locked --no-dev --no-install-project
 
 COPY backend/ backend/
+# `manage.py load_demo_data` takes its covers and portraits from the design export.
+COPY design/assets/images/ design/assets/images/
 COPY --from=frontend /app/frontend/dist/ frontend/dist/
 
 # collectstatic needs settings to load, not a working database or real secrets. These values
