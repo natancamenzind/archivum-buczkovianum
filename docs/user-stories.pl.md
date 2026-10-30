@@ -350,14 +350,13 @@ Uruchomienie serwisu. Te story nie mają własnej publicznej strony.
 ### US-OPS-01 — Środowisko testowe
 
 1. Aplikacja działa na Render jako usługa web z obrazu Dockera budowanego z `deploy/Dockerfile`; gunicorn nasłuchuje na porcie, który Render podaje w `$PORT`. Usługi i baza danych są opisane w `render.yaml`, czyli Blueprincie Render.
-2. PostgreSQL 18 to baza Render Postgres. Aplikacja łączy się z nią przez `DATABASE_URL` w prywatnej sieci Render; baza nie przyjmuje połączeń z zewnątrz poza odtwarzaniem (`docs/deploy.md`). Wyszukiwanie działa z `SEARCH_TS_CONFIG=simple`, bez polskiej odmiany (architecture, sekcja 6).
+2. PostgreSQL 18 to baza Render Postgres. Aplikacja łączy się z nią przez `DATABASE_URL` w prywatnej sieci Render; baza nie przyjmuje połączeń z zewnątrz. Wyszukiwanie działa z `SEARCH_TS_CONFIG=simple`, bez polskiej odmiany (architecture, sekcja 6).
 3. Cały serwis, łącznie z `/admin` i `/api`, jest za HTTP basic auth wymuszanym przez middleware Django, aktywnym, gdy ustawione są `BASIC_AUTH_USER` i `BASIC_AUTH_PASSWORD`. Bez danych logowania lub z błędnymi odpowiedź to 401 z nagłówkiem `WWW-Authenticate`.
 4. Przy `ROBOTS_NOINDEX=true` każda odpowiedź ma nagłówek `X-Robots-Tag: noindex, nofollow`.
 5. Media są w prywatnym buckecie S3 i serwowane przez presigned URL.
 6. `GET /healthz` zwraca 200, gdy baza danych jest osiągalna, w przeciwnym razie 503, niezależnie od nagłówka `Host`, i jest jedyną ścieżką wyłączoną z basic auth.
 7. Push do `main` wdraża nową wersję. Migracje uruchamia pre-deploy command Render; jeśli się nie powiodą, dalej działa poprzednia wersja.
-8. Cron job na Render codziennie wysyła zrzut bazy danych do S3; przechowujemy 14 ostatnich zrzutów.
-9. Cała konfiguracja pochodzi z `render.yaml` i zmiennych środowiskowych Render. Sekretów nie ma w repozytorium: Render prosi o nie przy pierwszej synchronizacji Blueprintu. `deploy/.env.example` opisuje każdą zmienną.
+8. Cała konfiguracja pochodzi z `render.yaml` i zmiennych środowiskowych Render. Sekretów nie ma w repozytorium: Render prosi o nie przy pierwszej synchronizacji Blueprintu. `deploy/.env.example` opisuje każdą zmienną.
 
 ---
 
