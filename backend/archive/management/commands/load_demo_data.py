@@ -1,5 +1,6 @@
 """Load the sample archive of design/rules.md ("Dane przykładowe"), to try the site by hand.
 
+It first deletes the archive's content and search index, whatever is there; users and groups stay.
 Everything goes through `full_clean()` and `save()`, so the search index is filled as it would be
 by an editor. The scans and OCR texts in archive/demo/ are placeholders, not Buczkowski's texts.
 """
@@ -34,6 +35,7 @@ from archive.models import (
     Typescript,
     Work,
 )
+from search.models import SearchEntry
 
 DEMO_DIR = Path(__file__).resolve().parents[2] / "demo"
 IMAGES_DIR = settings.BASE_DIR.parent / "design" / "assets" / "images"
@@ -42,6 +44,22 @@ PORTRAIT = "naglowek-strony-glownej-642bf583.jpg"
 NOTE_SCAN = "obraz-skanu-6a63c23e.png"
 PUBLISHED = Status.PUBLISHED
 SENTENCE = re.compile(r"[^.!?\s][^.!?]*[.!?]")
+
+# Deleted in this order: an item protects its document, a work its typescripts, an institution
+# its items. Editions, work links and fragments go with what they belong to.
+CONTENT: tuple[type[models.Model], ...] = (
+    Typescript,
+    Note,
+    SecondaryText,
+    ContextualMaterial,
+    Document,
+    Work,
+    Tag,
+    Institution,
+    TeamMember,
+    SiteSettings,
+    SearchEntry,
+)
 
 # Tags and their occurrences, as in design/screens/lista-tagi.md.
 TAGS = {
@@ -167,16 +185,16 @@ def ocr_document(name: str) -> Document:
 
 
 class Command(BaseCommand):
-    help = "Load the sample archive from design/rules.md into an empty database."
+    help = "Replace the archive's content with the sample archive from design/rules.md."
 
     def handle(self, *args: Any, **options: Any) -> None:
-        if any(
-            model.objects.exists() for model in (Work, Tag, Institution, TeamMember, SiteSettings)
-        ):
-            raise CommandError("The archive is not empty. Load the demo into an empty database.")
         if not IMAGES_DIR.is_dir():
             raise CommandError(f"The demo images come from the design export: {IMAGES_DIR}.")
         with transaction.atomic():
+            for model in CONTENT:
+                # A management command may delete in bulk (architecture section 6); the search
+                # index goes with the rest, so nothing has to be unindexed one by one.
+                model._default_manager.all().delete()
             self.load()
         self.stdout.write(
             f"Loaded {Work.objects.count()} works, {Fragment.objects.visible().count()} fragments "
