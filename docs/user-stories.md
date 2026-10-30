@@ -345,15 +345,15 @@ Running the service. These stories have no public page of their own.
 
 ### US-OPS-01 — Test environment
 
-1. The app runs on Railway as a service built from `deploy/Dockerfile`; gunicorn binds the port Railway sets in `$PORT`.
-2. PostgreSQL is a separate Railway service from the official image `postgres:19rc1`, with a volume for its data. The app reaches it via `DATABASE_URL` over Railway's private network; the database has no public endpoint outside a restore or upgrade (`docs/deploy.md`).
+1. The app runs on Render as a Docker web service built from `deploy/Dockerfile`; gunicorn binds the port Render sets in `$PORT`. The services and the database are declared in `render.yaml`, a Render Blueprint.
+2. PostgreSQL 18 is a Render Postgres database. The app reaches it via `DATABASE_URL` over Render's private network; the database accepts no external connections outside a restore (`docs/deploy.md`). Search runs with `SEARCH_TS_CONFIG=simple`, without Polish inflection (architecture section 6).
 3. The whole site, including `/admin` and `/api`, is behind HTTP basic auth enforced by Django middleware, active when `BASIC_AUTH_USER` and `BASIC_AUTH_PASSWORD` are set. Without credentials, or with wrong ones, the response is 401 with `WWW-Authenticate`.
 4. With `ROBOTS_NOINDEX=true`, every response carries `X-Robots-Tag: noindex, nofollow`.
 5. Media are stored in a private S3 bucket and served via presigned URLs.
-6. `GET /healthz` returns 200 when the database is reachable, 503 otherwise, and is the only path excluded from basic auth.
-7. A push to `main` deploys a new version. Migrations run as Railway's pre-deploy command; if they fail, the old version keeps serving.
-8. A separate Railway cron service uploads a daily database dump to S3; the last 14 dumps are kept.
-9. All configuration comes from Railway service variables; `deploy/.env.example` documents every variable.
+6. `GET /healthz` returns 200 when the database is reachable, 503 otherwise, whatever the `Host` header, and is the only path excluded from basic auth.
+7. A push to `main` deploys a new version. Migrations run as Render's pre-deploy command; if they fail, the old version keeps serving.
+8. A Render cron job uploads a daily database dump to S3; the last 14 dumps are kept.
+9. All configuration comes from `render.yaml` and Render environment variables. Secrets are not in the repo: Render asks for them when the Blueprint is first synced. `deploy/.env.example` documents every variable.
 
 ---
 

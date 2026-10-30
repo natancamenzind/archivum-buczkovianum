@@ -1,5 +1,5 @@
-# The app image for the test environment (US-OPS-01 AC1). Railway builds it from the repo root
-# (deploy/railway.app.toml); by hand: docker build -f deploy/Dockerfile .
+# The app image for the test environment (US-OPS-01 AC1). Render builds it from the repo root
+# (render.yaml); by hand: docker build -f deploy/Dockerfile .
 
 # --- Frontend: the built SPA, served by Django through WhiteNoise -------------------------------
 FROM node:24-bookworm-slim AS frontend
@@ -37,16 +37,18 @@ COPY --from=frontend /app/frontend/dist/ frontend/dist/
 RUN SECRET_KEY=collectstatic-only DATABASE_URL=postgres://collectstatic-only/none DEBUG=true \
     python backend/manage.py collectstatic --noinput
 
+# Next to manage.py, so render.yaml's pre-deploy command and deploy hook run `python manage.py …`.
+WORKDIR /app/backend
+
 RUN useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin app
 USER app
 
 EXPOSE 8000
 
-# Migrations are not run here: Railway runs them as the pre-deploy command (US-OPS-01 AC7).
-# Railway sets PORT; the shell form expands it, and exec makes gunicorn PID 1 so it gets SIGTERM.
+# Migrations are not run here: Render runs them as the pre-deploy command (US-OPS-01 AC7).
+# Render sets PORT; the shell form expands it, and exec makes gunicorn PID 1 so it gets SIGTERM.
 # A long timeout, because editors upload large PDF scans through the admin.
 CMD exec gunicorn config.wsgi:application \
-    --chdir backend \
     --bind "0.0.0.0:${PORT:-8000}" \
     --workers 3 \
     --timeout 120 \

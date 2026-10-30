@@ -1,4 +1,5 @@
-"""Test-environment guards (US-OPS-01 AC3, AC4): basic auth and noindex, both off by default."""
+"""Deployment middleware: the health check (US-OPS-01 AC6) and the test-environment guards
+(AC3, AC4), basic auth and noindex, both off by default."""
 
 import base64
 import binascii
@@ -8,8 +9,34 @@ from collections.abc import Callable
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
-# The one path Railway's healthcheck calls without credentials (US-OPS-01 AC6).
-EXEMPT_PATHS = frozenset({"/healthz"})
+from config.healthz import healthz
+
+HEALTHZ_PATH = "/healthz"
+# The one path the platform's health check calls without credentials (US-OPS-01 AC6).
+EXEMPT_PATHS = frozenset({HEALTHZ_PATH})
+
+
+def add_noindex(response: HttpResponse) -> HttpResponse:
+    """Add X-Robots-Tag when ROBOTS_NOINDEX is on (US-OPS-01 AC4)."""
+    if settings.ROBOTS_NOINDEX:
+        response["X-Robots-Tag"] = "noindex, nofollow"
+    return response
+
+
+class HealthzMiddleware:
+    """Answer /healthz itself, first in MIDDLEWARE, before anything validates the Host header.
+
+    Platform health checks may call the container by its internal address rather than the
+    public host, which is not in ALLOWED_HOSTS. Nothing here reads the host.
+    """
+
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
+        self.get_response = get_response
+
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        if request.path_info != HEALTHZ_PATH:
+            return self.get_response(request)
+        return add_noindex(healthz(request))
 
 
 class BasicAuthMiddleware:
@@ -51,7 +78,4 @@ class NoindexMiddleware:
         self.get_response = get_response
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
-        response = self.get_response(request)
-        if settings.ROBOTS_NOINDEX:
-            response["X-Robots-Tag"] = "noindex, nofollow"
-        return response
+        return add_noindex(self.get_response(request))

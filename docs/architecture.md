@@ -230,6 +230,7 @@ Bulk QuerySet operations (`update()`, `bulk_create()`, `bulk_update()`, `delete(
 - Development runs on the current 19 release candidate. Production waits for 19 GA.
 - Before writing search code, verify on the dev database that `\dF polish` lists the configuration.
 - The configuration name is a single setting, `SEARCH_TS_CONFIG`, read from the environment and `polish` by default. CI and production use `polish`; a development database older than 19 may set `simple` and lose only inflection. Search code always reads the setting; it never hardcodes a configuration name.
+- The test environment (US-OPS-01) runs PostgreSQL 18 with `SEARCH_TS_CONFIG=simple`. Polish inflection (US-RA-15 AC7) is a known limitation there until the database moves to 19; after the move, set `polish` and run `rebuild_search_index`, as stored vectors keep the configuration they were built with.
 
 **Deep links.** A search result URL carries `?q=`, and the page highlights and scrolls to the first match. A fragment link carries `?fragment=<id>`.
 
