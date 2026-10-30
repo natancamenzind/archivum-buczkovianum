@@ -1,0 +1,11 @@
+{
+  "CORSRules": [
+    {
+      "AllowedOrigins": ["https://archivum-test.onrender.com"],
+      "AllowedMethods": ["GET", "HEAD"],
+      "AllowedHeaders": ["Range"],
+      "ExposeHeaders": ["Accept-Ranges", "Content-Range", "Content-Length", "Content-Encoding", "ETag"],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}
