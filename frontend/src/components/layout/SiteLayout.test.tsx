@@ -176,6 +176,15 @@ describe("SiteLayout", () => {
     expect(screen.getByRole("contentinfo")).toHaveClass("pb-64", "md:pb-0");
   });
 
+  it("ARC-5: a navigation label that wraps on mobile stays centred", () => {
+    renderRoute("/about");
+
+    // "Strona główna" breaks onto two lines on a narrow bar; the lines centre like the other labels.
+    for (const [name] of NAV_ITEMS) {
+      expect(within(mainNav()).getByRole("link", { name })).toHaveClass("text-center");
+    }
+  });
+
   it("R-12: every header control and navigation link shows a focus outline, the active item too", () => {
     renderRoute("/works");
 
