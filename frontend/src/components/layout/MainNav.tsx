@@ -40,7 +40,7 @@ export function MainNav() {
           end={to === "/"}
           className={({ isActive }) =>
             cn(
-              "group flex h-64 flex-1 flex-col items-center justify-center gap-4 border-t-2 border-transparent px-4 py-8",
+              "group flex h-64 flex-1 flex-col items-center justify-center gap-4 border-t-2 text-center border-transparent px-4 py-8",
               "text-cousine-metadane-male text-muted-foreground transition-colors duration-150 ease-out motion-reduce:transition-none",
               "hover:text-accent-foreground focus-visible:text-accent-foreground",
               "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
