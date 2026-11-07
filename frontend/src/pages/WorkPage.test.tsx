@@ -202,7 +202,7 @@ describe("WorkPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("US-RA-04 AC2: editions by year with publisher and place; the earliest is the first edition", async () => {
+  it("US-RA-04 AC2, ARC-28: editions by year with publisher and place, with no first-edition label", async () => {
     mockPage();
 
     const { container } = await renderPage();
@@ -213,10 +213,7 @@ describe("WorkPage", () => {
       within(editions)
         .getAllByRole("listitem")
         .map((item) => item.textContent),
-    ).toEqual([
-      "1947Gebethner i WolffWarszawa · pierwsze wydanie",
-      "1957Państwowy Instytut WydawniczyWarszawa",
-    ]);
+    ).toEqual(["1947Gebethner i WolffWarszawa", "1957Państwowy Instytut WydawniczyWarszawa"]);
     // An edition has no page of its own.
     expect(within(editions).queryByRole("link")).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);

@@ -159,7 +159,6 @@ export const copy = {
   work: {
     type: "Utwór",
     editions: "Wydania",
-    firstEdition: "pierwsze wydanie",
     fragments: "Fragmenty maszynopisu",
     fragmentsDescription: "Wybór redakcji, w kolejności tekstu",
     typescripts: "Maszynopisy",

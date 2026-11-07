@@ -119,7 +119,7 @@ A plain-text document is shown as text, with fragments highlighted as in point 2
 Shows what we know about a work, key information first.
 
 1. Hero: "Utwór · Leopold Buczkowski · <year of first edition>", title, description.
-2. Context column: editions by year, each with year, publisher and place. The earliest is labelled "pierwsze wydanie". Below them, the bibliography preview (US-RA-21).
+2. Context column: editions by year, each with year, publisher and place. Below them, the bibliography preview (US-RA-21).
 3. Main column, in order:
    1. "Fragmenty maszynopisu": a preview (R-09) of the main typescript's fragments, as fragment cards (R-10);
    2. "Maszynopisy": a numbered list of the work's typescripts, each linking to its page;
