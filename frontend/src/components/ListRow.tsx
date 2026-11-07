@@ -6,6 +6,8 @@ interface ListRowProps {
   /** "Nr": the 1-based position, shown with two digits ("01"). */
   number: number;
   title: string;
+  /** An annotation under the title, set off in the accent colour. */
+  note?: string;
   to: string;
 }
 
@@ -13,7 +15,7 @@ interface ListRowProps {
  * "Wiersz listy" in design/components/: a numbered row over a subtle rule that links to a page.
  * The number is decorative, since the row sits in an ordered list; the title names the link.
  */
-export function ListRow({ number, title, to }: ListRowProps) {
+export function ListRow({ number, title, note, to }: ListRowProps) {
   return (
     <Link
       to={to}
@@ -23,7 +25,12 @@ export function ListRow({ number, title, to }: ListRowProps) {
         <span aria-hidden="true" className="text-cousine-metadane-male text-muted-foreground">
           {String(number).padStart(2, "0")}
         </span>
-        <span className="text-lora-tekst-maly text-foreground">{title}</span>
+        <span className="flex flex-col gap-4">
+          <span className="text-lora-tekst-maly text-foreground">{title}</span>
+          {note !== undefined && (
+            <span className="text-cousine-metadane-male text-accent-foreground">{note}</span>
+          )}
+        </span>
       </span>
       <ArrowRightIcon className="size-16 shrink-0 text-accent-icon" />
     </Link>

@@ -163,6 +163,7 @@ export const copy = {
     fragments: "Fragmenty maszynopisu",
     fragmentsDescription: "Wybór redakcji, w kolejności tekstu",
     typescripts: "Maszynopisy",
+    mainTypescript: "maszynopis, który służy za podstawę prezentowanych fragmentów",
     notes: "Zapiski",
     notesDescription: "Zapiski autora związane z utworem",
     bibliography: "Bibliografia",
