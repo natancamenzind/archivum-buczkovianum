@@ -276,7 +276,7 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 ### US-WR-03 — Dodawanie utworu
 
 1. Pola: tytuł (wymagany); gatunek (np. „powieść”); opis (tekst z bogatym formatowaniem); okładka/grafika do kart utworów.
-2. Wydania dodajemy w tym samym formularzu: wydawnictwo, miejsce, rok, opcjonalna okładka.
+2. Wydania dodajemy w tym samym formularzu: wydawnictwo, miejsce, rok.
 
 ### US-WR-04 — Dodawanie maszynopisu
 

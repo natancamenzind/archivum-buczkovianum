@@ -82,7 +82,7 @@ Every image field has a companion `<field>_alt` text field. `clean()` rejects an
 |-------|-----------|-----------|
 | `Institution` | `abbreviation` (unique), `name` | — |
 | `Work` | `slug`, `genre`, `cover_image` | — |
-| `Edition` | `publisher`, `place`, `year`, `cover_image` | → Work (inline in admin) |
+| `Edition` | `publisher`, `place`, `year` | → Work (inline in admin) |
 | `Typescript` | `is_main` (one per work); `Archival` | → Work, → Document |
 | `Note` | `content_kind`, `image`, `file`, `external_url`; `Archival` | `works`: many-to-many to Work; → Document (optional) |
 | `SecondaryText` | `kind`, `author`, `source`, `letter_date`, `sender`, `recipient`; `Archival` | ↔ Works via `SecondaryTextWorkLink`; → Document |
