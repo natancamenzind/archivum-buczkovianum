@@ -258,7 +258,8 @@ describe("TagPage", () => {
       "/zapiski/3",
     );
     expect(within(note).getByText("ML, sygn. 1678.0104")).toBeVisible();
-    expect(within(note).getByText("Notatka o postaci dezertera.")).toBeVisible();
+    // ARC-35: the card leaves the description to the note's page.
+    expect(within(note).queryByText("Notatka o postaci dezertera.")).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });
 

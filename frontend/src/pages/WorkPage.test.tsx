@@ -449,11 +449,9 @@ describe("WorkPage", () => {
       "/media/content/note.jpg",
     );
     expect(within(note).getByText("ML, sygn. 1678.0104")).toBeVisible();
-    expect(within(note).getByText(/Notatka o postaci dezertera\./)).toBeVisible();
-    // A link in the description stays its own link, above the card's.
-    const source = within(note).getByRole("link", { name: "Źródło" });
-    expect(source).toHaveAttribute("href", "https://example.com/notes");
-    expect(source.closest("[data-slot=card-description]")).not.toBeNull();
+    // ARC-35: the card leaves the description to the note's page.
+    expect(within(note).queryByText(/Notatka o postaci dezertera/)).not.toBeInTheDocument();
+    expect(within(note).queryByRole("link", { name: "Źródło" })).not.toBeInTheDocument();
     expect(within(note).getByRole("link", { name: "Dezerter" })).toHaveAttribute(
       "href",
       "/tagi/dezerter",
@@ -518,7 +516,6 @@ describe("WorkPage", () => {
     const hrefs = within(screen.getByRole("main"))
       .getAllByRole("link")
       .map((link) => link.getAttribute("href") ?? "");
-    // The note description's own link is the only one out of the archive.
     expect([...hrefs].sort()).toEqual(
       [
         "/maszynopisy/1?fragment=5",
@@ -528,7 +525,6 @@ describe("WorkPage", () => {
         "/maszynopisy/1",
         "/maszynopisy/2",
         "/zapiski/3",
-        "https://example.com/notes",
         "/tagi/dezerter",
         "/zapiski/4",
         "/tagi/dezerter",

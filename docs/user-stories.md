@@ -123,7 +123,7 @@ Shows what we know about a work, key information first.
 3. Main column, in order:
    1. "Maszynopisy": a numbered list of the work's typescripts, each linking to its page. The main typescript is annotated "maszynopis, który służy za podstawę prezentowanych fragmentów";
    2. "Fragmenty maszynopisu": a preview (R-09) of the main typescript's fragments, as fragment cards (R-10);
-   3. "Zapiski": the notes linked to the work, as note cards: location line, type chip, image (or a placeholder), shelfmark, description, tags.
+   3. "Zapiski": the notes linked to the work, as note cards: location line, type chip, image (or a placeholder), shelfmark, tags.
 4. Tag column: every published tag that refers to the work (definition in US-RA-07 AC5), including relation tags (US-RA-05).
 5. Contextual materials (R-08): the secondary texts and contextual materials linked to the work.
 
