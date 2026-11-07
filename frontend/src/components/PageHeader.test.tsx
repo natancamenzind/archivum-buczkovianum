@@ -27,4 +27,25 @@ describe("PageHeader", () => {
     expect(container.querySelector("img")).toBeNull();
     expect(await axeViolations(container)).toEqual([]);
   });
+
+  it("ARC-32: draws the hypocycloid behind the title when there is no header image", async () => {
+    const { container } = render(<PageHeader label="Utwór" title="Wertepy" />);
+
+    const curve = container.querySelector('[data-slot="hypocycloid"]');
+    expect(curve).toHaveAttribute("aria-hidden", "true");
+    expect(curve).toHaveClass("stroke-inverse-border");
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("ARC-32: a header image replaces the hypocycloid", () => {
+    const { container } = render(
+      <PageHeader
+        label="Utwór"
+        title="Wertepy"
+        image={{ src: "/media/headers/wertepy.webp", alt: "Pejzaż podolski" }}
+      />,
+    );
+
+    expect(container.querySelector('[data-slot="hypocycloid"]')).toBeNull();
+  });
 });
