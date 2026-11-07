@@ -111,5 +111,5 @@ class TestEditorPanelLanguage:
 
         # Assert
         content = response.content.decode()
-        for text in ("Tytuł", "Gatunek", "Okładka", "Szkic", "Opublikowany", "Wydania", "Zapisz"):
+        for text in ("Tytuł", "Okładka", "Szkic", "Opublikowany", "Wydania", "Zapisz"):
             assert text in content

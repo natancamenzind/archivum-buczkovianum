@@ -13,7 +13,6 @@ function work(slug: string, title: string, year: number | null, fragments: numbe
   return {
     slug,
     title,
-    genre: "powieść",
     year,
     cover_image: "",
     cover_image_alt: "",

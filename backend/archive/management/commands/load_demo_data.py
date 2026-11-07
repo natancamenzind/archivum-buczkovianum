@@ -294,7 +294,6 @@ class Command(BaseCommand):
             Work(
                 slug=data.slug,
                 title=data.title,
-                genre="powieść",
                 description=data.description,
                 cover_image=image(COVER),
                 cover_image_alt=f"Okładka utworu „{data.title}” (zastępcza).",

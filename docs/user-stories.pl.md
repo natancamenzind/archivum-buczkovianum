@@ -104,7 +104,7 @@ Dokument z tekstem litym wyświetlamy jako tekst, z fragmentami wyróżnionymi j
 
 1. Kolejno: nagłówek, hiro, utwory, wyróżniony fragment (US-RA-02), chmura tagów, stopka (R-07).
 2. Hiro: tytuł „Archivum Buczkovianum” i wstępniak na portrecie Buczkowskiego, oraz liczby opublikowanych utworów, widocznych fragmentów i opublikowanych tagów („4 utwory · 62 fragmenty · 12 tagów”).
-3. Utwory: jedna karta na każdy opublikowany utwór, w kolejności pierwszych wydań: okładka, rok, tytuł, autor, liczba fragmentów (bez gatunku). Liczba fragmentów to liczba widocznych fragmentów głównego maszynopisu utworu; gdy wynosi 0 (brak głównego maszynopisu, maszynopis w wersji roboczej albo brak widocznych fragmentów), karta jej nie pokazuje (R-02). Kliknięcie otwiera stronę utworu.
+3. Utwory: jedna karta na każdy opublikowany utwór, w kolejności pierwszych wydań: okładka, rok, tytuł, autor, liczba fragmentów. Liczba fragmentów to liczba widocznych fragmentów głównego maszynopisu utworu; gdy wynosi 0 (brak głównego maszynopisu, maszynopis w wersji roboczej albo brak widocznych fragmentów), karta jej nie pokazuje (R-02). Kliknięcie otwiera stronę utworu.
 4. Chmura tagów: każdy opublikowany tag z co najmniej jednym wystąpieniem. Pięć rozmiarów według liczby wystąpień: 1–3, 4–7, 8–15, 16–25, 26+; dwa największe w kolorze akcentu. Układ jest deterministyczny: te same dane zawsze dają tę samą chmurę. Kliknięcie tagu otwiera jego stronę.
 5. Wstępniak i portret są edytowalne (US-WR-11).
 
@@ -207,7 +207,7 @@ Nie ma jej w Figmie; używa układu strony tekstu sekundarnego.
 ### US-RA-19 — Lista maszynopisów
 
 1. Otwierana z pozycji „Maszynopisy” w menu głównym (R-07).
-2. Każdy opublikowany maszynopis, pogrupowany według utworu (utwory w kolejności pierwszych wydań), na komputerze dwie karty w rzędzie. Nagłówek grupy: tytuł utworu, gatunek, rok, liczba. Karta: numer, tytuł, sygnatura; otwiera stronę maszynopisu.
+2. Każdy opublikowany maszynopis, pogrupowany według utworu (utwory w kolejności pierwszych wydań), na komputerze dwie karty w rzędzie. Nagłówek grupy: tytuł utworu, rok, liczba. Karta: numer, tytuł, sygnatura; otwiera stronę maszynopisu.
 
 ### US-RA-20 — Lista tagów
 
@@ -236,7 +236,7 @@ Jako RA znajduję utwory, tagi, fragmenty i zapiski, wpisując frazę.
 2. Nagłówek pokazuje zapytanie i łączną liczbę wyników („7 wyników we wszystkich kategoriach”).
 3. Zakładka „Wszystko” grupuje wyniki według typu, każda grupa z licznikiem, w tej kolejności: Utwory, Tagi, Fragmenty, Zapiski, Maszynopisy, Teksty sekundarne, Materiały kontekstowe.
 4. W grupie wyniki są sortowane według trafności (więcej wzmianek = wyżej) albo, jeśli czytelnik wybierze, według tytułu.
-5. Każdy wynik pokazuje swój typ (R-04) i jest klikalny. Wynik-fragment to karta fragmentu (R-10). Wynik-utwór pokazuje autora, gatunek, rok i liczbę pasujących fragmentów.
+5. Każdy wynik pokazuje swój typ (R-04) i jest klikalny. Wynik-fragment to karta fragmentu (R-10). Wynik-utwór pokazuje autora, rok i liczbę pasujących fragmentów.
 6. Trafienie wewnątrz tekstu pokazuje urywek z wyróżnionymi wyszukiwanymi słowami; kliknięcie otwiera obiekt przewinięty do trafienia. Wyniki-utwory nie mają urywka.
 7. Wyszukiwarka radzi sobie z polską odmianą: „potoku” znajduje „potok”.
 8. Gdy nie ma wyników, strona to mówi, podpowiada sprawdzenie pisowni lub skrócenie frazy i pokazuje „Śladami motywów”: trzy tagi z największą liczbą wystąpień.
@@ -275,7 +275,7 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 
 ### US-WR-03 — Dodawanie utworu
 
-1. Pola: tytuł (wymagany); gatunek (np. „powieść”); opis (tekst z bogatym formatowaniem); okładka/grafika do kart utworów.
+1. Pola: tytuł (wymagany); opis (tekst z bogatym formatowaniem); okładka/grafika do kart utworów.
 2. Wydania dodajemy w tym samym formularzu: wydawnictwo, miejsce, rok, opcjonalna okładka.
 
 ### US-WR-04 — Dodawanie maszynopisu

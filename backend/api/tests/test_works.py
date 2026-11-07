@@ -50,7 +50,7 @@ class TestWorksEndpoint:
 
     def test_us_ra_18_ac2_a_card_has_what_the_work_card_shows(self, client: Client) -> None:
         # Arrange
-        work = published_work(slug="wertepy", title="Wertepy", genre="powieść")
+        work = published_work(slug="wertepy", title="Wertepy")
         EditionFactory.create(work=work, year=1947)
         add_fragments(work, 3)
 
@@ -62,7 +62,6 @@ class TestWorksEndpoint:
             {
                 "slug": "wertepy",
                 "title": "Wertepy",
-                "genre": "powieść",
                 "year": 1947,
                 "cover_image": "",
                 "cover_image_alt": "",
@@ -242,7 +241,6 @@ class TestWorksSchema:
             "cover_image",
             "cover_image_alt",
             "fragment_count",
-            "genre",
             "slug",
             "title",
             "year",

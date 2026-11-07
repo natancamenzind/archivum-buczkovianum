@@ -1507,8 +1507,6 @@ components:
           type: string
         title:
           type: string
-        genre:
-          type: string
         year:
           type: integer
           nullable: true
@@ -1519,7 +1517,6 @@ components:
             $ref: '#/components/schemas/TypescriptRow'
           description: By shelfmark, as numbers.
       required:
-      - genre
       - slug
       - title
       - typescripts
@@ -1641,10 +1638,6 @@ components:
         title:
           type: string
           readOnly: true
-        genre:
-          type: string
-          readOnly: true
-          description: E.g. powieść.
         year:
           type: integer
           readOnly: true
@@ -1666,7 +1659,6 @@ components:
       - cover_image
       - cover_image_alt
       - fragment_count
-      - genre
       - slug
       - title
       - year
@@ -1758,8 +1750,6 @@ components:
           type: string
         title:
           type: string
-        genre:
-          type: string
         year:
           type: integer
           nullable: true
@@ -1770,7 +1760,6 @@ components:
           description: The work's fragments that match the query.
       required:
       - fragments
-      - genre
       - title
       - url
       - year

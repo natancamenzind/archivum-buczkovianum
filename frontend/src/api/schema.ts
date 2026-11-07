@@ -747,7 +747,6 @@ export interface components {
         TypescriptGroup: {
             slug: string;
             title: string;
-            genre: string;
             /** @description The year of the first edition; null without editions. */
             year: number | null;
             /** @description By shelfmark, as numbers. */
@@ -801,8 +800,6 @@ export interface components {
             /** @description Part of the page address. */
             readonly slug: string;
             readonly title: string;
-            /** @description E.g. powieść. */
-            readonly genre: string;
             /** @description The year of the first edition; null without editions. */
             readonly year: number | null;
             /** @description Empty when the work has no cover. */
@@ -849,7 +846,6 @@ export interface components {
         WorkResult: {
             url: string;
             title: string;
-            genre: string;
             /** @description The year of the first edition; null without editions. */
             year: number | null;
             /** @description The work's fragments that match the query. */

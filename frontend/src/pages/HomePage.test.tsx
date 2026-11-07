@@ -38,7 +38,6 @@ const HOME: Home = {
     {
       slug: "wertepy",
       title: "Wertepy",
-      genre: "powieść",
       year: 1947,
       cover_image: "",
       cover_image_alt: "",
@@ -47,7 +46,6 @@ const HOME: Home = {
     {
       slug: "czarny-potok",
       title: "Czarny potok",
-      genre: "powieść",
       year: 1954,
       cover_image: "",
       cover_image_alt: "",
@@ -153,7 +151,6 @@ describe("HomePage", () => {
       "/works/czarny-potok",
     ]);
     expect(cards[0]).toHaveTextContent("1947");
-    expect(cards[0]).not.toHaveTextContent("powieść");
     expect(cards[0]).toHaveTextContent("Leopold Buczkowski");
     expect(cards[0]).toHaveTextContent("24 fragmenty");
     expect(cards[1]).not.toHaveTextContent(/fragment/);

@@ -212,12 +212,6 @@ msgstr "tag"
 msgid "The tag is in use: %s"
 msgstr "Tag jest używany: %s"
 
-msgid "genre"
-msgstr "gatunek"
-
-msgid "E.g. powieść."
-msgstr "Np. powieść."
-
 msgid "cover image"
 msgstr "okładka"
 

@@ -57,7 +57,7 @@ export function WorkCard({ work }: { work: Work }) {
         )}
       >
         <Cover work={work} />
-        {/* Only the year, no genre (ARC-15); without a year there is no type line (R-02). */}
+        {/* Without a year there is no type line (R-02). */}
         {work.year !== null && (
           <p className="text-cousine-etykieta text-accent-foreground">{work.year}</p>
         )}

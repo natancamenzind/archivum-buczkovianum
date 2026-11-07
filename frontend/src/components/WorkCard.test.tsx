@@ -8,7 +8,6 @@ import { axeViolations } from "@/test/render";
 const WERTEPY: Work = {
   slug: "wertepy",
   title: "Wertepy",
-  genre: "powieść",
   year: 1947,
   cover_image: "/media/works/wertepy.png",
   cover_image_alt: "Okładka: koń na tle drzew",
@@ -36,7 +35,6 @@ describe("WorkCard", () => {
       "/media/works/wertepy.png",
     );
     expect(screen.getByText("1947")).toBeVisible();
-    expect(screen.queryByText(/powieść/)).toBeNull();
     expect(screen.getByRole("heading", { level: 3, name: "Wertepy" })).toBeVisible();
     expect(screen.getByText("Leopold Buczkowski")).toBeVisible();
     expect(screen.getByText("24 fragmenty")).toBeVisible();
@@ -81,7 +79,7 @@ describe("WorkCard", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("R-02: without a year there is no type line, even with a genre", () => {
+  it("R-02: without a year there is no type line", () => {
     const { container } = renderCard({ year: null });
 
     expect(container.querySelector(".text-cousine-etykieta")).toBeNull();

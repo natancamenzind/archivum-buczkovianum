@@ -100,7 +100,7 @@ A plain-text document is shown as text, with fragments highlighted as in point 2
 
 1. In order: header, hero, works, featured fragment (US-RA-02), tag cloud, footer (R-07).
 2. Hero: the title "Archivum Buczkovianum" and the introduction over Buczkowski's portrait, plus counts of published works, visible fragments and published tags ("4 utwory · 62 fragmenty · 12 tagów").
-3. Works: one card per published work, ordered by first edition: cover, year, title, author, fragment count (no genre). The fragment count is the number of visible fragments of the work's main typescript; when it is 0 (no main typescript, a draft one, or no visible fragments), the card does not show it (R-02). Clicking opens the work page.
+3. Works: one card per published work, ordered by first edition: cover, year, title, author, fragment count. The fragment count is the number of visible fragments of the work's main typescript; when it is 0 (no main typescript, a draft one, or no visible fragments), the card does not show it (R-02). Clicking opens the work page.
 4. Tag cloud: every published tag with at least one occurrence. Five sizes by occurrence count: 1–3, 4–7, 8–15, 16–25, 26+; the two largest use the accent colour. The layout is deterministic: the same data always gives the same cloud. Clicking a tag opens its page.
 5. The introduction and portrait are editable (US-WR-11).
 
@@ -203,7 +203,7 @@ Not in Figma; uses the secondary text page layout.
 ### US-RA-19 — Typescripts list
 
 1. Opened from "Maszynopisy" in the main navigation (R-07).
-2. Every published typescript, grouped by work (works by first edition), two cards per row on desktop. Group header: work title, genre, year, count. Card: number, title, shelfmark; opens the typescript page.
+2. Every published typescript, grouped by work (works by first edition), two cards per row on desktop. Group header: work title, year, count. Card: number, title, shelfmark; opens the typescript page.
 
 ### US-RA-20 — Tags list
 
@@ -232,7 +232,7 @@ Finds works, tags, fragments and notes by phrase.
 2. The header shows the query and the total ("7 wyników we wszystkich kategoriach").
 3. The "Wszystko" tab groups results by type, each group with a count, in this order: Utwory, Tagi, Fragmenty, Zapiski, Maszynopisy, Teksty sekundarne, Materiały kontekstowe.
 4. Within a group, results are sorted by relevance (more occurrences rank higher), or by title if the reader chooses.
-5. Each result shows its type (R-04) and is clickable. A fragment result is a fragment card (R-10). A work result shows author, genre, year and how many of its fragments match.
+5. Each result shows its type (R-04) and is clickable. A fragment result is a fragment card (R-10). A work result shows author, year and how many of its fragments match.
 6. A match inside a text shows a snippet with the search terms highlighted; clicking opens the object scrolled to the match. Work results show no snippet.
 7. Polish inflection is handled: "potoku" finds "potok".
 8. With no results, the page says so, suggests checking the spelling or shortening the phrase, and shows "Śladami motywów": the three tags with the most occurrences.
@@ -271,7 +271,7 @@ Everything happens in Django admin. Every image field requires a text alternativ
 
 ### US-WR-03 — Add a work
 
-1. Fields: title (required); genre (e.g. "powieść"); description (rich text); cover image for work cards.
+1. Fields: title (required); description (rich text); cover image for work cards.
 2. Editions are added inline: publisher, place, year, optional cover image.
 
 ### US-WR-04 — Add a typescript

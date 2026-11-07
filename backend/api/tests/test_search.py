@@ -114,7 +114,7 @@ class TestSearchEndpoint:
         assert titles(by_relevance, "works") == ["Zielony las", "Wertepy"]
         assert titles(by_title, "works") == ["Wertepy", "Zielony las"]
 
-    def test_us_ra_15_ac5_a_work_shows_genre_year_and_its_matching_fragments(
+    def test_us_ra_15_ac5_a_work_shows_year_and_its_matching_fragments(
         self, client: Client, archive: Work
     ) -> None:
         # Act
@@ -125,7 +125,6 @@ class TestSearchEndpoint:
             {
                 "url": "/works/wertepy",
                 "title": "Wertepy",
-                "genre": "powieść",
                 "year": 1947,
                 "fragments": 2,
             }
