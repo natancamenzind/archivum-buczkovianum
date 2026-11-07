@@ -6,7 +6,6 @@ import { axeViolations, renderRoute } from "@/test/render";
 import { server } from "@/test/server";
 
 const NAV_ITEMS = [
-  ["Strona główna", "/"],
   ["Utwory", "/utwory"],
   ["Maszynopisy", "/maszynopisy"],
   ["Tagi", "/tagi"],
@@ -123,7 +122,7 @@ describe("SiteLayout", () => {
     expect(within(header).getByRole("link", { name: "O archiwum" })).not.toHaveClass("hidden");
   });
 
-  it("US-RA-03 AC1: the main navigation lists Strona główna, Utwory, Maszynopisy, Tagi", async () => {
+  it("ARC-22: the main navigation lists Utwory, Maszynopisy, Tagi, with no home item", async () => {
     const { container } = renderRoute("/o-archiwum");
 
     const links = within(mainNav()).getAllByRole("link");
@@ -132,7 +131,6 @@ describe("SiteLayout", () => {
   });
 
   it.each([
-    ["/", "Strona główna"],
     ["/utwory", "Utwory"],
     ["/utwory/wertepy", "Utwory"],
     ["/maszynopisy", "Maszynopisy"],
@@ -147,7 +145,7 @@ describe("SiteLayout", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it.each(["/o-archiwum", "/szukaj", "/zapiski/1", "/teksty-sekundarne/1", "/materialy/1"])(
+  it.each(["/", "/o-archiwum", "/szukaj", "/zapiski/1", "/teksty-sekundarne/1", "/materialy/1"])(
     "US-RA-03 AC1: on %s no navigation item is active",
     (url) => {
       renderRoute(url);
@@ -156,30 +154,45 @@ describe("SiteLayout", () => {
     },
   );
 
-  it("US-RA-03 AC1: the footer shows the service name, subtitle, navigation and funding note", async () => {
+  it("US-RA-03 AC1: the footer shows the service name, subtitle and funding note", async () => {
     const { container } = renderRoute("/o-archiwum");
 
     const footer = screen.getByRole("contentinfo");
     expect(within(footer).getByText("Archivum Buczkovianum")).toBeVisible();
     expect(within(footer).getByText("Archiwum literackie Leopolda Buczkowskiego")).toBeVisible();
-    expect(within(footer).getByRole("navigation", { name: "Menu główne" })).toBe(mainNav());
     expect(within(footer).getByText(/finansowani/i)).toBeVisible();
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("US-RA-03 AC1: the navigation is a bottom bar on mobile and sits in the footer on desktop", () => {
+  it("ARC-22: the navigation is in the header, not the footer", () => {
     renderRoute("/o-archiwum");
 
-    // Mobile first: fixed to the bottom of the viewport; from `md` up, part of the footer row.
-    expect(mainNav()).toHaveClass("fixed", "bottom-0", "md:static");
-    // The page leaves room for the bar on mobile, so it never covers the footer.
-    expect(screen.getByRole("contentinfo")).toHaveClass("pb-64", "md:pb-0");
+    expect(within(screen.getByRole("banner")).getByRole("navigation")).toBe(mainNav());
+    expect(within(screen.getByRole("contentinfo")).queryByRole("navigation")).toBeNull();
+  });
+
+  it("ARC-22: the navigation is a bottom bar below `lg` and part of the sticky header from `lg` up", () => {
+    renderRoute("/o-archiwum");
+
+    // Mobile and tablet: fixed to the bottom of the viewport. The header row fits the
+    // navigation, "O archiwum" and the search field only from `lg` up.
+    expect(mainNav()).toHaveClass("fixed", "bottom-0", "lg:static");
+    expect(screen.getByRole("banner")).toHaveClass("lg:sticky", "lg:top-0");
+    // The page leaves room for the bar, so it never covers the footer.
+    expect(screen.getByRole("contentinfo").parentElement).toHaveClass("pb-64", "lg:pb-0");
+  });
+
+  it("ARC-22: in the header the active item is underlined; in the bottom bar, overlined", () => {
+    renderRoute("/utwory");
+
+    // The header already has an accent strip along its top edge.
+    expect(currentNavItem()).toHaveClass("border-t-2", "lg:border-t-0", "lg:border-b-2");
   });
 
   it("ARC-5: a navigation label that wraps on mobile stays centred", () => {
     renderRoute("/o-archiwum");
 
-    // "Strona główna" breaks onto two lines on a narrow bar; the lines centre like the other labels.
+    // A long label breaks onto two lines on a narrow bar; the lines centre like the others.
     for (const [name] of NAV_ITEMS) {
       expect(within(mainNav()).getByRole("link", { name })).toHaveClass("text-center");
     }
@@ -194,17 +207,17 @@ describe("SiteLayout", () => {
     );
   });
 
-  it("ARC-27: the funding note never overlaps the navigation", () => {
+  it("ARC-22: between `lg` and `xl` the header drops the subtitle and the navigation icons", () => {
     renderRoute("/o-archiwum");
 
-    // A link that can't shrink spills past a shrunk bar, under the note. So the links shrink with
-    // the bar (labels wrap) on narrow desktops, and from `lg` the bar keeps their full width.
-    expect(mainNav()).toHaveClass("lg:shrink-0");
-    for (const [name] of NAV_ITEMS) {
-      expect(within(mainNav()).getByRole("link", { name })).toHaveClass(
-        "md:flex-initial",
-        "lg:flex-none",
-      );
+    // At 1024 px the full row (about 1060 px) is wider than the 896 px of content.
+    const header = screen.getByRole("banner");
+    expect(within(header).getByText("Archiwum literackie")).toHaveClass(
+      "hidden",
+      "lg:max-xl:hidden",
+    );
+    for (const icon of mainNav().querySelectorAll("svg")) {
+      expect(icon).toHaveClass("lg:max-xl:hidden");
     }
   });
 

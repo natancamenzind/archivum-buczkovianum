@@ -59,11 +59,11 @@ Na telefonie kolejność to: kolumna główna, kontekst, tagi, materiały kontek
 
 **R-07 Nagłówek, menu, stopka.**
 
-- Nagłówek: nazwa serwisu i podtytuł (link do strony głównej), link „O archiwum”, pasek wyszukiwania.
-- Menu główne: Strona główna, Utwory, Maszynopisy, Tagi. Na komputerze jest w stopce. Na telefonie jest dolnym paskiem, a wyszukiwarka zamienia się w ikonę lupy w nagłówku.
-- Stopka: nazwa serwisu i podtytuł, menu główne (na komputerze), informacja o finansowaniu.
+- Nagłówek: nazwa serwisu i podtytuł (link do strony głównej), menu główne (na komputerze), link „O archiwum”, pasek wyszukiwania. Na komputerze nagłówek zostaje u góry ekranu podczas przewijania.
+- Menu główne: Utwory, Maszynopisy, Tagi. Nie ma pozycji strony głównej: prowadzi do niej nazwa serwisu. Na komputerze jest w nagłówku. Na telefonie jest dolnym paskiem przypiętym do dołu ekranu, a wyszukiwarka zamienia się w ikonę lupy w nagłówku.
+- Stopka: nazwa serwisu i podtytuł, informacja o finansowaniu.
 
-Aktywna pozycja menu: strona główna → Strona główna; lista utworów i utwór → Utwory; lista maszynopisów i maszynopis → Maszynopisy; lista tagów i tag → Tagi. Pozostałe strony nie mają aktywnej pozycji.
+Aktywna pozycja menu: lista utworów i utwór → Utwory; lista maszynopisów i maszynopis → Maszynopisy; lista tagów i tag → Tagi. Pozostałe strony nie mają aktywnej pozycji.
 
 **R-08 Blok materiałów kontekstowych.** Blok „Materiały kontekstowe” ma dwie części:
 

@@ -2,6 +2,7 @@ import { type SubmitEvent, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { BookIcon, SearchIcon } from "@/components/icons";
+import { MainNav } from "@/components/layout/MainNav";
 import { SearchCombobox } from "@/components/SearchCombobox";
 import { copy } from "@/copy/pl";
 import { searchUrl } from "@/lib/search";
@@ -12,8 +13,10 @@ const FOCUS_CLASSES =
 const LINK_CLASSES = `transition-colors duration-150 ease-out motion-reduce:transition-none hover:text-accent-foreground focus-visible:text-accent-foreground ${FOCUS_CLASSES}`;
 
 /**
- * "Nagłówek serwisu" in design/components/: service name and subtitle, "O archiwum" and the
- * search field (R-07). On mobile the field becomes an icon linking to the search page.
+ * "Nagłówek serwisu" in design/components/: service name and subtitle (the way home), main
+ * navigation (see MainNav for its breakpoints), "O archiwum" and the search field (R-07). From
+ * `lg` up the header sticks to the top of the viewport. On mobile the field becomes an icon
+ * linking to the search page.
  */
 export function SiteHeader() {
   const [value, setValue] = useState("");
@@ -27,20 +30,25 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="flex h-64 items-center justify-between border-t-3 border-b border-t-primary border-b-border bg-background px-page-mobile md:h-auto md:px-page md:py-32">
-      <Link to="/" className={`flex items-center gap-12 ${LINK_CLASSES}`}>
+    // From `lg` the logo's padding sets the row's height, and the navigation stretches to fill it,
+    // so the active item's underline meets the bottom border.
+    <header className="z-10 flex h-64 items-center justify-between border-t-3 border-b border-t-primary border-b-border bg-background px-page-mobile md:h-auto md:px-page md:py-32 lg:sticky lg:top-0 lg:items-stretch lg:py-0">
+      <Link to="/" className={`flex items-center gap-12 lg:py-32 ${LINK_CLASSES}`}>
         <BookIcon className="size-24 text-accent-icon" />
         <span className="text-lora-tekst text-foreground md:text-lora-tytul-elementu">
           {copy.siteName}
         </span>{" "}
         {/* Figma's mobile header drops the subtitle, so below `md` the link's accessible name is
             only "Archivum Buczkovianum". From `md` up, the space keeps the two parts apart:
-            "Archivum Buczkovianum Archiwum literackie". */}
-        <span className="hidden text-cousine-metadane-male text-muted-foreground md:inline">
+            "Archivum Buczkovianum Archiwum literackie". Between `lg` and `xl` the navigation
+            takes its room. */}
+        <span className="hidden text-cousine-metadane-male text-muted-foreground md:inline lg:max-xl:hidden">
           {copy.layout.headerSubtitle}
         </span>
       </Link>
-      <div className="flex items-center md:gap-32">
+      <div className="flex items-center md:gap-32 lg:self-stretch">
+        <MainNav />
+        <span aria-hidden="true" className="hidden h-24 w-px bg-border lg:block" />
         <Link to="/o-archiwum" className={`text-cousine-nawigacja text-foreground ${LINK_CLASSES}`}>
           {copy.layout.about}
         </Link>

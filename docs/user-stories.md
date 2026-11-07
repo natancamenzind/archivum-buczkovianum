@@ -55,11 +55,11 @@ On mobile the order is: main, context, tags, contextual materials.
 
 **R-07 Header, navigation, footer.**
 
-- Header: service name and subtitle (links to home), "O archiwum" link, search field.
-- Main navigation: Strona główna, Utwory, Maszynopisy, Tagi. On desktop it is in the footer. On mobile it is a bottom bar, and search becomes an icon in the header.
-- Footer: service name and subtitle, main navigation (desktop), funding note.
+- Header: service name and subtitle (links to home), main navigation (desktop), "O archiwum" link, search field. On desktop the header sticks to the top of the screen while scrolling.
+- Main navigation: Utwory, Maszynopisy, Tagi. There is no home item: the service name leads home. On desktop it is in the header. On mobile it is a bottom bar fixed to the bottom of the screen, and search becomes an icon in the header.
+- Footer: service name and subtitle, funding note.
 
-Active navigation item: home → Strona główna; works list and work → Utwory; typescripts list and typescript → Maszynopisy; tags list and tag → Tagi. Other pages have none.
+Active navigation item: works list and work → Utwory; typescripts list and typescript → Maszynopisy; tags list and tag → Tagi. Other pages have none.
 
 **R-08 Contextual materials block.** Titled "Materiały kontekstowe", in two parts:
 

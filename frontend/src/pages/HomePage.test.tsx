@@ -104,11 +104,6 @@ describe("HomePage", () => {
     order.slice(1).forEach((element, index) => {
       expect(precedes(order[index] as Element, element)).toBe(true);
     });
-    const nav = screen.getByRole("navigation", { name: "Menu główne" });
-    expect(within(nav).getByRole("link", { name: "Strona główna" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
     expect(await axeViolations(container)).toEqual([]);
   });
 
