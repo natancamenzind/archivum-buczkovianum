@@ -18,12 +18,14 @@ function valueAt(animation: Element | null | undefined, time: number): number {
   return v0 + ((v1 - v0) * (time - t0)) / (t1 - t0);
 }
 
-/** The point `length` px along the path through `pts`. */
-function pointAlong(pts: [number, number][], length: number): [number, number] {
-  let left = length;
-  for (let i = 1; i < pts.length; i++) {
-    const [[x0, y0], [x1, y1]] = [pts[i - 1] ?? [NaN, NaN], pts[i] ?? [NaN, NaN]];
-    const step = Math.hypot(x1 - x0, y1 - y0);
+/** The point `fraction` of the way along the path through `pts`. */
+function pointAlong(pts: [number, number][], fraction: number): [number, number] {
+  const segments = pts.slice(1).map(([x1, y1], i) => {
+    const [x0, y0] = pts[i] ?? [NaN, NaN];
+    return { x0, y0, x1, y1, step: Math.hypot(x1 - x0, y1 - y0) };
+  });
+  let left = fraction * segments.reduce((sum, { step }) => sum + step, 0);
+  for (const { x0, y0, x1, y1, step } of segments) {
     if (left <= step) return [x0 + ((x1 - x0) * left) / step, y0 + ((y1 - y0) * left) / step];
     left -= step;
   }
@@ -61,10 +63,6 @@ describe("Hypocycloid", () => {
     for (const figure of figures) {
       const line = figure.querySelector("[data-slot=hypocycloid-line]");
       const pts = points(line?.getAttribute("d") ?? "");
-      const total = pts.slice(1).reduce((sum, [x, y], i) => {
-        const [px, py] = pts[i] ?? [NaN, NaN];
-        return sum + Math.hypot(x - px, y - py);
-      }, 0);
       const draw = line?.querySelector("animate[attributeName=stroke-dashoffset]");
       const [orbit, spin] = [...figure.querySelectorAll("animateTransform")];
       const centre = Number(
@@ -75,12 +73,25 @@ describe("Hypocycloid", () => {
       const turn = (el: Element | undefined) => Number.parseFloat(el?.getAttribute("to") ?? "");
 
       for (const time of [0.07, 0.13, 0.5, 0.77, 0.95]) {
-        const drawn = pointAlong(pts, (1 - valueAt(draw, time)) * total);
+        const drawn = pointAlong(pts, 1 - valueAt(draw, time));
         const orbitAngle = turn(orbit) * time;
         const [cx, cy] = rotate([centre, 0], orbitAngle);
         const [ax, ay] = rotate([arm, 0], orbitAngle + turn(spin) * time);
         expect(Math.hypot(drawn[0] - (cx + ax), drawn[1] - (cy + ay))).toBeLessThan(2);
       }
+    }
+  });
+
+  it("ARC-32: with reduced motion the finished curve shows at once, without the roller", () => {
+    const { container } = render(<Hypocycloid tone="inverse" placement="hero" />);
+
+    for (const figure of container.querySelectorAll("[data-slot=hypocycloid-figure]")) {
+      expect(figure.querySelector("[data-slot=hypocycloid-line]")).toHaveClass(
+        "motion-reduce:[stroke-dasharray:none]",
+      );
+      expect(
+        figure.querySelector("[data-slot=hypocycloid-pen]")?.closest(".motion-reduce\\:hidden"),
+      ).not.toBeNull();
     }
   });
 });

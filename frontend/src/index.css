@@ -100,18 +100,3 @@
     color: var(--color-text-primary);
   }
 }
-
-/*
- * ARC-32: the hypocycloid draws itself once (SVG animations in Hypocycloid.tsx). With reduced
- * motion the finished curve shows at once, without the rolling circle.
- */
-@layer components {
-  @media (prefers-reduced-motion: reduce) {
-    .hypocycloid-line {
-      stroke-dasharray: none;
-    }
-    .hypocycloid-roller {
-      display: none;
-    }
-  }
-}
