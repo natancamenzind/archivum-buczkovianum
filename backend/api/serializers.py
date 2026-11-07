@@ -349,7 +349,6 @@ class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
             "scan",
             "start_page",
             "shelfmark",
-            "description",
             "tags",
         )
         # Output only, so the schema marks every field as present, the blank ones too.

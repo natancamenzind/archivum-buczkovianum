@@ -717,7 +717,7 @@ class TestFragment:
         fragment.document.text = "short"
         fragment.document.save()
         fragment.refresh_from_db()
-        fragment.description = "Sprawdzić."
+        fragment.location = "rozdział I"
 
         # Act
         fragment.full_clean()

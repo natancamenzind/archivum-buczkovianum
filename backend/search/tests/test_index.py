@@ -168,14 +168,12 @@ class TestWrites:
         )
 
         # Act
-        fragment = FragmentFactory.create(
-            document=typescript.document, start=7, end=12, description="Motyw wody."
-        )
+        fragment = FragmentFactory.create(document=typescript.document, start=7, end=12)
 
         # Assert
         indexed = stored(EntityType.FRAGMENT, fragment.pk)
         assert indexed.url == f"/typescripts/{typescript.pk}?fragment={fragment.pk}"
-        assert indexed.body == "potok\n\nMotyw wody."
+        assert indexed.body == "potok"
         assert indexed.work_ids == [typescript.work_id]
 
     def test_d4_fragments_follow_their_owner_in_and_out_of_the_index(self) -> None:

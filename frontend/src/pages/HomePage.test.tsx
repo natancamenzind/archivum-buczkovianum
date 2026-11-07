@@ -23,7 +23,6 @@ const FEATURED: Featured = {
     scan: "",
     start_page: null,
     shelfmark: "ML, sygn. 1618.0009",
-    description: "Grzybniak leczy chorych podczas epidemii tyfusu.",
     tags: [{ slug: "epidemia", title: "Epidemia" }],
   },
   work: { id: 7, title: "Wertepy", count: 24 },

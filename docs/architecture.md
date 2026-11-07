@@ -170,7 +170,7 @@ TEI is not a storage format. A TEI export can be generated from `Document` and `
   - The view shows the text in a plain `<div>`, with existing fragments highlighted.
   - The editor selects text. Vanilla JavaScript computes the offsets and the tag picker POSTs `{start, end, quote, tag_ids}` to a staff-only endpoint.
   - No build step and no framework.
-  - The view lists every fragment, with a link to its admin form, where the editor sets `location`, `shelfmark`, `description` and `is_featured` (US-WR-09 AC6). Fragments with `needs_review` are listed first, so the editor can fix or delete them.
+  - The view lists every fragment, with a link to its admin form, where the editor sets `location`, `shelfmark` and `is_featured` (US-WR-09 AC6). Fragments with `needs_review` are listed first, so the editor can fix or delete them.
 - The tagger is offered only where US-WR-09 allows it: main typescripts, and notes, secondary texts and contextual materials with a `Document`.
 - The tag admin list can be filtered by `kind`.
 - **Draft preview** (US-WR-13): every `Publishable` model defines `get_absolute_url()`, so admin shows "View on site" for drafts too.
@@ -189,7 +189,7 @@ One row per published entity and one per visible fragment:
 - `decades`: integer array of the decades of those works' years (e.g. `1940`), for the period filter,
 - `has_scan`, `has_text`: booleans, for the availability filter.
 
-A fragment's `body` is its quote and description. Its `url` points to its source document with `?fragment=<id>`.
+A fragment's `body` is its quote. Its `url` points to its source document with `?fragment=<id>`.
 
 The names of the published tags a work, an item or a fragment carries go into its own `vector` (D18), so a tag name finds what carries it. They are not in `body`: snippets show the entity's own text.
 
