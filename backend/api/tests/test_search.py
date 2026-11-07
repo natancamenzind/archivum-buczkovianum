@@ -123,7 +123,7 @@ class TestSearchEndpoint:
         # Assert
         assert page["works"] == [
             {
-                "url": "/works/wertepy",
+                "url": "/utwory/wertepy",
                 "title": "Wertepy",
                 "genre": "powieść",
                 "year": 1947,
@@ -142,7 +142,7 @@ class TestSearchEndpoint:
         assert card["number"] == 1
         assert card["source_type"] == "typescript"
         assert card["work"] == "Wertepy"
-        assert card["url"].startswith("/typescripts/")
+        assert card["url"].startswith("/maszynopisy/")
         assert "?fragment=" in card["url"]
 
     def test_us_ra_15_ac5_a_fragment_card_names_its_published_works_by_first_edition(
@@ -178,11 +178,11 @@ class TestSearchEndpoint:
         typescript = page["typescripts"][0]
         assert typescript["title"] == "Maszynopis Wertepów"
         assert typescript["shelfmark"] == "ML, sygn. 1618"
-        assert typescript["url"].startswith("/typescripts/")
-        assert page["notes"][0]["url"].startswith("/notes/")
-        assert page["secondary_texts"][0]["url"].startswith("/secondary-texts/")
-        assert page["materials"][0]["url"].startswith("/materials/")
-        assert page["tags"][0]["url"] == "/tags/dezerter"
+        assert typescript["url"].startswith("/maszynopisy/")
+        assert page["notes"][0]["url"].startswith("/zapiski/")
+        assert page["secondary_texts"][0]["url"].startswith("/teksty-sekundarne/")
+        assert page["materials"][0]["url"].startswith("/materialy/")
+        assert page["tags"][0]["url"] == "/tagi/dezerter"
         assert page["tags"][0]["occurrences"] == 0
 
     def test_us_ra_15_ac6_a_text_match_has_a_snippet_and_opens_at_the_match(

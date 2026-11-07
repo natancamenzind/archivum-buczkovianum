@@ -39,9 +39,9 @@ const TYPESCRIPT: TypescriptData = {
   ],
   materials: {
     texts: [
-      { url: "/materials/8", author: "", title: "Film dokumentalny", publication: "" },
+      { url: "/materialy/8", author: "", title: "Film dokumentalny", publication: "" },
       {
-        url: "/secondary-texts/4",
+        url: "/teksty-sekundarne/4",
         author: "Jan Kowalski",
         title: "Recenzja „Wertepów”",
         publication: "Czytelnik, Warszawa 1948, s. 3",
@@ -49,13 +49,13 @@ const TYPESCRIPT: TypescriptData = {
     ],
     visuals: [
       {
-        url: "/materials/9",
+        url: "/materialy/9",
         title: "Autor w Dolinie",
         shelfmark: "ML, sygn. 1700",
         image: "/media/photo.jpg",
         image_alt: "Buczkowski przy biurku",
       },
-      { url: "/materials/11", title: "Plakat", shelfmark: "", image: "", image_alt: "" },
+      { url: "/materialy/11", title: "Plakat", shelfmark: "", image: "", image_alt: "" },
     ],
   },
 };
@@ -137,7 +137,7 @@ function mockLongTypescript() {
   );
 }
 
-async function renderPage(url = "/typescripts/1") {
+async function renderPage(url = "/maszynopisy/1") {
   const result = renderRoute(url);
   await screen.findByRole("heading", { level: 1, name: TYPESCRIPT.title });
   return result;
@@ -236,7 +236,7 @@ describe("TypescriptPage", () => {
 
     const work = column("Utwór");
     const link = within(work).getByRole("link", { name: /Wertepy/ });
-    expect(link).toHaveAttribute("href", "/works/wertepy");
+    expect(link).toHaveAttribute("href", "/utwory/wertepy");
     expect(link).toHaveTextContent(/^1947Wertepy24 fragmenty$/);
     expect(within(work).getByText("1")).toBeVisible();
     expect(await axeViolations(container)).toEqual([]);
@@ -263,7 +263,7 @@ describe("TypescriptPage", () => {
     ]);
     expect(links[0]).toHaveAttribute("aria-current", "page");
     expect(links[1]).not.toHaveAttribute("aria-current");
-    expect(links[1]).toHaveAttribute("href", "/typescripts/2");
+    expect(links[1]).toHaveAttribute("href", "/maszynopisy/2");
     expect(within(typescripts).getByText("2")).toBeVisible();
   });
 
@@ -324,7 +324,7 @@ describe("TypescriptPage", () => {
   it("US-RA-09 AC1: a link to a fragment late in a long typescript scrolls to it", async () => {
     mockLongTypescript();
 
-    await renderPage("/typescripts/1?fragment=9");
+    await renderPage("/maszynopisy/1?fragment=9");
 
     const fragment = await screen.findByRole("button", { name: "Fragment 04: Strona" });
     expect(fragment).toHaveAttribute("aria-pressed", "true");
@@ -359,7 +359,7 @@ describe("TypescriptPage", () => {
     expect(details).toBeVisible();
     expect(details.closest("[aria-live=polite]")).not.toBeNull();
     const scan = card("Skan maszynopisu");
-    expect(within(scan).getByRole("link", { name: "Wieś" })).toHaveAttribute("href", "/tags/wies");
+    expect(within(scan).getByRole("link", { name: "Wieś" })).toHaveAttribute("href", "/tagi/wies");
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -409,7 +409,7 @@ describe("TypescriptPage", () => {
   it("R-11 AC3: opened with ?fragment=, the reader shows the text, scrolls to the fragment and selects it", async () => {
     mockPage();
 
-    await renderPage("/typescripts/1?fragment=7");
+    await renderPage("/maszynopisy/1?fragment=7");
 
     const fragment = await screen.findByRole("button", { name: "Fragment 03: Druga" });
     expect(fragment).toHaveAttribute("aria-pressed", "true");
@@ -424,7 +424,7 @@ describe("TypescriptPage", () => {
   it("R-11 AC3: opened from a search result with ?q=, the reader shows the text, highlights the first match and scrolls to it", async () => {
     mockPage();
 
-    const { container } = await renderPage("/typescripts/1?q=Tekstu");
+    const { container } = await renderPage("/maszynopisy/1?q=Tekstu");
 
     const match = await screen.findByText("tekstu", { selector: "mark" });
     expect(container.querySelectorAll("mark[data-search-match]")).toHaveLength(1);
@@ -441,7 +441,7 @@ describe("TypescriptPage", () => {
   it("R-11 AC3: a match inside a fragment is highlighted within it", async () => {
     mockPage();
 
-    await renderPage("/typescripts/1?q=pierwsza");
+    await renderPage("/maszynopisy/1?q=pierwsza");
 
     const fragment = await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
     expect(within(fragment).getByText("Pierwsza", { selector: "mark" })).toHaveAttribute(
@@ -452,7 +452,7 @@ describe("TypescriptPage", () => {
   it("R-11 AC3: a ?q= the text lacks scrolls nowhere", async () => {
     mockPage();
 
-    await renderPage("/typescripts/1?q=potok");
+    await renderPage("/maszynopisy/1?q=potok");
 
     await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
     expect(scrollIntoView).not.toHaveBeenCalled();
@@ -461,7 +461,7 @@ describe("TypescriptPage", () => {
   it("R-11 AC3: ?q= matches whole words only, not the start of a longer one", async () => {
     mockPage();
 
-    const { container } = await renderPage("/typescripts/1?q=tekst");
+    const { container } = await renderPage("/maszynopisy/1?q=tekst");
 
     await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
     expect(container.querySelector("mark[data-search-match]")).toBeNull();
@@ -471,7 +471,7 @@ describe("TypescriptPage", () => {
   it("R-11 AC3: a ?q= of regular expression characters is matched literally", async () => {
     mockPage();
 
-    const { container } = await renderPage(`/typescripts/1?q=${encodeURIComponent(".*")}`);
+    const { container } = await renderPage(`/maszynopisy/1?q=${encodeURIComponent(".*")}`);
 
     await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
     expect(container.querySelector("mark[data-search-match]")).toBeNull();
@@ -490,7 +490,7 @@ describe("TypescriptPage", () => {
       "01Fragment 01 · rozdział I · ML, sygn. 1618.0009",
       "Wszystkie fragmenty (3)",
     ]);
-    expect(links[0]).toHaveAttribute("href", "/typescripts/1?fragment=7");
+    expect(links[0]).toHaveAttribute("href", "/maszynopisy/1?fragment=7");
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -528,7 +528,7 @@ describe("TypescriptPage", () => {
     ]);
     expect(links[0]).toHaveFocus();
     // Opening a fragment keeps the list expanded.
-    expect(links[1]).toHaveAttribute("href", "/typescripts/1?fragments=all&fragment=6");
+    expect(links[1]).toHaveAttribute("href", "/maszynopisy/1?fragments=all&fragment=6");
   });
 
   it("D20: while the whole list loads, the preview stays, without the link", async () => {
@@ -540,7 +540,7 @@ describe("TypescriptPage", () => {
       }),
     );
 
-    await renderPage("/typescripts/1?fragments=all");
+    await renderPage("/maszynopisy/1?fragments=all");
 
     const fragments = card("Fragmenty z maszynopisu");
     expect(within(fragments).getByText("2 z 3")).toBeVisible();
@@ -550,7 +550,7 @@ describe("TypescriptPage", () => {
   it("D20: ?fragments=all, the work page's link, opens the page with the list expanded", async () => {
     mockPage();
 
-    await renderPage("/typescripts/1?fragments=all");
+    await renderPage("/maszynopisy/1?fragments=all");
 
     const fragments = card("Fragmenty z maszynopisu");
     expect(await within(fragments).findByText("Fragment 02")).toBeVisible();
@@ -574,10 +574,10 @@ describe("TypescriptPage", () => {
 
     const tags = column("Tagi");
     expect(within(tags).getByText("2")).toBeVisible();
-    expect(within(tags).getByRole("link", { name: "Wieś" })).toHaveAttribute("href", "/tags/wies");
+    expect(within(tags).getByRole("link", { name: "Wieś" })).toHaveAttribute("href", "/tagi/wies");
     expect(within(tags).getByRole("link", { name: "Wojna" })).toHaveAttribute(
       "href",
-      "/tags/wojna",
+      "/tagi/wojna",
     );
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -597,10 +597,10 @@ describe("TypescriptPage", () => {
       "01Film dokumentalny",
       "02Jan Kowalski, Recenzja „Wertepów”Czytelnik, Warszawa 1948, s. 3",
     ]);
-    expect(within(texts).getAllByRole("link")[1]).toHaveAttribute("href", "/secondary-texts/4");
+    expect(within(texts).getAllByRole("link")[1]).toHaveAttribute("href", "/teksty-sekundarne/4");
     const visuals = column("Materiały wizualne");
     const photo = within(visuals).getByRole("link", { name: /Autor w Dolinie/ });
-    expect(photo).toHaveAttribute("href", "/materials/9");
+    expect(photo).toHaveAttribute("href", "/materialy/9");
     expect(photo).toHaveTextContent("Autor w Dolinie, ML, sygn. 1700");
     expect(within(photo).getByRole("img", { name: "Buczkowski przy biurku" })).toBeVisible();
     const poster = within(visuals).getByRole("link", { name: "Plakat" });
@@ -645,7 +645,7 @@ describe("TypescriptPage", () => {
       http.get("*/media/scans/missing.pdf", () => new HttpResponse(null, { status: 404 })),
     );
 
-    await renderPage("/typescripts/1?fragment=7");
+    await renderPage("/maszynopisy/1?fragment=7");
 
     expect(await screen.findByText("Nie udało się wczytać skanu.")).toBeVisible();
     // The text, now at full width, is scrolled to the fragment again.
@@ -659,7 +659,7 @@ describe("TypescriptPage", () => {
   it("R-06: a typescript the API does not find shows the not-found page", async () => {
     server.use(http.get(TYPESCRIPT_URL, () => new HttpResponse(null, { status: 404 })));
 
-    renderRoute("/typescripts/1");
+    renderRoute("/maszynopisy/1");
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Nie znaleziono strony" }),
@@ -667,7 +667,7 @@ describe("TypescriptPage", () => {
   });
 
   it("an address that is not a typescript number shows the not-found page", () => {
-    renderRoute("/typescripts/wertepy");
+    renderRoute("/maszynopisy/wertepy");
 
     expect(screen.getByRole("heading", { level: 1, name: "Nie znaleziono strony" })).toBeVisible();
   });
@@ -675,7 +675,7 @@ describe("TypescriptPage", () => {
   it("shows the loading state, then an error when the page cannot be loaded", async () => {
     server.use(http.get(TYPESCRIPT_URL, () => new HttpResponse(null, { status: 500 })));
 
-    renderRoute("/typescripts/1");
+    renderRoute("/maszynopisy/1");
 
     expect(screen.getByRole("status")).toHaveTextContent("Wczytuję maszynopis…");
     expect(

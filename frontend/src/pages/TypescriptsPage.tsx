@@ -35,7 +35,7 @@ function Group({ group }: { group: TypescriptGroup }) {
             <ListRow
               number={index + 1}
               title={[typescript.title, typescript.shelfmark].filter(Boolean).join(", ")}
-              to={`/typescripts/${String(typescript.id)}`}
+              to={`/maszynopisy/${String(typescript.id)}`}
             />
           </li>
         ))}

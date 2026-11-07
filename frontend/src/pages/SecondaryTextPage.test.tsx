@@ -15,7 +15,7 @@ const DOCUMENT_URL = "*/api/documents/20/";
 
 const FRAGMENT: Fragment = {
   id: 5,
-  url: "/typescripts/1?fragment=5",
+  url: "/maszynopisy/1?fragment=5",
   source_type: "typescript",
   work: "Wertepy",
   number: 1,
@@ -43,7 +43,7 @@ const LETTER: SecondaryTextData = {
   fragments: {
     items: [
       FRAGMENT,
-      { ...FRAGMENT, id: 6, url: "/typescripts/2?fragment=6", work: "Czarny potok", number: 2 },
+      { ...FRAGMENT, id: 6, url: "/maszynopisy/2?fragment=6", work: "Czarny potok", number: 2 },
     ],
     total: 5,
   },
@@ -82,7 +82,7 @@ function mockPage(page: Partial<SecondaryTextData> = {}, document: Partial<Docum
   );
 }
 
-async function renderPage(url = "/secondary-texts/4") {
+async function renderPage(url = "/teksty-sekundarne/4") {
   const result = renderRoute(url);
   await screen.findByRole("heading", { level: 1 });
   return result;
@@ -200,8 +200,8 @@ describe("SecondaryTextPage", () => {
     expect(within(works).getByText("2")).toBeVisible();
     const links = within(works).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual(["1947Wertepy", "Czarny potok"]);
-    expect(links[0]).toHaveAttribute("href", "/works/wertepy");
-    expect(links[1]).toHaveAttribute("href", "/works/czarny-potok");
+    expect(links[0]).toHaveAttribute("href", "/utwory/wertepy");
+    expect(links[1]).toHaveAttribute("href", "/utwory/czarny-potok");
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -216,7 +216,7 @@ describe("SecondaryTextPage", () => {
     fireEvent.click(fragment);
     expect(within(text).getByRole("link", { name: "Wojna" })).toHaveAttribute(
       "href",
-      "/tags/wojna",
+      "/tagi/wojna",
     );
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -235,7 +235,7 @@ describe("SecondaryTextPage", () => {
   it("US-RA-10 AC3: opened with ?fragment=, the reader scrolls to the fragment", async () => {
     mockPage();
 
-    const { container } = await renderPage("/secondary-texts/4?fragment=30");
+    const { container } = await renderPage("/teksty-sekundarne/4?fragment=30");
 
     const fragment = await screen.findByRole("button", { name: "Fragment 01: piszę" });
     expect(fragment).toHaveAttribute("aria-pressed", "true");
@@ -254,10 +254,10 @@ describe("SecondaryTextPage", () => {
     expect(cards).toHaveLength(2);
     expect(
       within(fragments).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
-    ).toHaveAttribute("href", "/typescripts/1?fragment=5");
+    ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(
       within(fragments).getByRole("link", { name: "Czarny potok · Fragment 02 · rozdział I" }),
-    ).toHaveAttribute("href", "/typescripts/2?fragment=6");
+    ).toHaveAttribute("href", "/maszynopisy/2?fragment=6");
     expect(within(fragments).queryByText(/Wszystkie/)).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -276,7 +276,7 @@ describe("SecondaryTextPage", () => {
     ).toEqual(["Pamięć", "Pisanie", "Wojna"]);
     expect(within(tags).getByRole("link", { name: "Pisanie" })).toHaveAttribute(
       "href",
-      "/tags/pisanie",
+      "/tagi/pisanie",
     );
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -295,7 +295,7 @@ describe("SecondaryTextPage", () => {
   it("R-06: a secondary text the API does not find shows the not-found page", async () => {
     server.use(http.get(PAGE_URL, () => new HttpResponse(null, { status: 404 })));
 
-    renderRoute("/secondary-texts/4");
+    renderRoute("/teksty-sekundarne/4");
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Nie znaleziono strony" }),
@@ -303,7 +303,7 @@ describe("SecondaryTextPage", () => {
   });
 
   it("an address that is not a secondary text number shows the not-found page", () => {
-    renderRoute("/secondary-texts/list");
+    renderRoute("/teksty-sekundarne/list");
 
     expect(screen.getByRole("heading", { level: 1, name: "Nie znaleziono strony" })).toBeVisible();
   });
@@ -311,7 +311,7 @@ describe("SecondaryTextPage", () => {
   it("shows the loading state, then an error when the page cannot be loaded", async () => {
     server.use(http.get(PAGE_URL, () => new HttpResponse(null, { status: 500 })));
 
-    renderRoute("/secondary-texts/4");
+    renderRoute("/teksty-sekundarne/4");
 
     expect(screen.getByRole("status")).toHaveTextContent("Wczytuję tekst sekundarny…");
     expect(

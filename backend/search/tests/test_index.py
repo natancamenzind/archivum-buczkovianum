@@ -79,7 +79,7 @@ class TestWrites:
         # Assert
         indexed = stored(EntityType.TYPESCRIPT, typescript.pk)
         assert str(indexed) == "typescript: Pierwsza wersja"
-        assert indexed.url == f"/typescripts/{typescript.pk}"
+        assert indexed.url == f"/maszynopisy/{typescript.pk}"
         assert indexed.body == "Maszynopis z poprawkami.\n\nCzarny potok płynie."
         assert indexed.work_ids == [typescript.work_id]
         assert (indexed.has_scan, indexed.has_text) == (True, True)
@@ -137,11 +137,11 @@ class TestWrites:
     @pytest.mark.parametrize(
         ("factory", "entity_type", "url"),
         [
-            (WorkFactory, EntityType.WORK, "/works/{slug}"),
-            (TagFactory, EntityType.TAG, "/tags/{slug}"),
-            (NoteFactory, EntityType.NOTE, "/notes/{pk}"),
-            (SecondaryTextFactory, EntityType.SECONDARY_TEXT, "/secondary-texts/{pk}"),
-            (ContextualMaterialFactory, EntityType.MATERIAL, "/materials/{pk}"),
+            (WorkFactory, EntityType.WORK, "/utwory/{slug}"),
+            (TagFactory, EntityType.TAG, "/tagi/{slug}"),
+            (NoteFactory, EntityType.NOTE, "/zapiski/{pk}"),
+            (SecondaryTextFactory, EntityType.SECONDARY_TEXT, "/teksty-sekundarne/{pk}"),
+            (ContextualMaterialFactory, EntityType.MATERIAL, "/materialy/{pk}"),
         ],
     )
     def test_us_ra_15_ac1_every_published_entity_is_indexed(
@@ -172,7 +172,7 @@ class TestWrites:
 
         # Assert
         indexed = stored(EntityType.FRAGMENT, fragment.pk)
-        assert indexed.url == f"/typescripts/{typescript.pk}?fragment={fragment.pk}"
+        assert indexed.url == f"/maszynopisy/{typescript.pk}?fragment={fragment.pk}"
         assert indexed.body == "potok"
         assert indexed.work_ids == [typescript.work_id]
 

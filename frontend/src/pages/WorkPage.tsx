@@ -78,7 +78,7 @@ function Fragments({ work }: { work: WorkData }) {
       {items.length < total && work.main_typescript !== null && (
         <ArrowLink
           label={copy.typescript.allFragments(total)}
-          to={`/typescripts/${String(work.main_typescript)}?fragments=all`}
+          to={`/maszynopisy/${String(work.main_typescript)}?fragments=all`}
         />
       )}
     </Card>
@@ -142,7 +142,7 @@ export function WorkPage() {
                     <ListRow
                       number={index + 1}
                       title={[typescript.title, typescript.shelfmark].filter(Boolean).join(", ")}
-                      to={`/typescripts/${String(typescript.id)}`}
+                      to={`/maszynopisy/${String(typescript.id)}`}
                     />
                   </li>
                 ))}

@@ -47,7 +47,7 @@ function Works({ works, level }: { works: TagData["works"]; level: 2 | 3 }) {
               description={
                 work.fragment_count > 0 ? copy.tag.workFragments(work.fragment_count) : undefined
               }
-              to={`/works/${work.slug}`}
+              to={`/utwory/${work.slug}`}
             />
           </li>
         ))}

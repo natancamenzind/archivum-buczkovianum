@@ -167,7 +167,7 @@ class TestTagPageEndpoint:
         ]
         assert result["fragments"][0] == {
             "id": first.pk,
-            "url": f"/typescripts/{early_main.pk}?fragment={first.pk}",
+            "url": f"/maszynopisy/{early_main.pk}?fragment={first.pk}",
             "source_type": "typescript",
             "work": "Wertepy",
             "number": 1,
@@ -178,7 +178,7 @@ class TestTagPageEndpoint:
             "shelfmark": "ML, sygn. 1618.0009",
             "tags": [{"slug": "dezerter", "title": "Dezerter"}],
         }
-        assert result["fragments"][2]["url"] == f"/notes/{note.pk}?fragment={in_note.pk}"
+        assert result["fragments"][2]["url"] == f"/zapiski/{note.pk}?fragment={in_note.pk}"
         assert result["fragments"][2]["source_type"] == "note"
         assert result["fragments"][2]["work"] == "Wertepy, Czarny potok"
         assert result["fragments"][2]["scan"] == ""

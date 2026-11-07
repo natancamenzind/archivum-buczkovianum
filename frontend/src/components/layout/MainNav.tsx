@@ -12,14 +12,14 @@ interface NavItem {
 }
 
 /**
- * The items of R-07. A link is active on its list and on every page under it (/works and
- * /works/:slug → Utwory); the home link only on `/`. Other pages have no active item.
+ * The items of R-07. A link is active on its list and on every page under it (/utwory and
+ * /utwory/:slug → Utwory); the home link only on `/`. Other pages have no active item.
  */
 const NAV_ITEMS: NavItem[] = [
   { to: "/", label: copy.layout.nav.home, Icon: HomeIcon },
-  { to: "/works", label: copy.layout.nav.works, Icon: LibraryIcon },
-  { to: "/typescripts", label: copy.layout.nav.typescripts, Icon: TypescriptIcon },
-  { to: "/tags", label: copy.layout.nav.tags, Icon: TagIcon },
+  { to: "/utwory", label: copy.layout.nav.works, Icon: LibraryIcon },
+  { to: "/maszynopisy", label: copy.layout.nav.typescripts, Icon: TypescriptIcon },
+  { to: "/tagi", label: copy.layout.nav.tags, Icon: TagIcon },
 ];
 
 /**

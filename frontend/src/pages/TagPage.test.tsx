@@ -14,7 +14,7 @@ const SCAN_URL = "*/media/scans/wertepy.pdf";
 
 const FRAGMENT: Fragment = {
   id: 5,
-  url: "/typescripts/1?fragment=5",
+  url: "/maszynopisy/1?fragment=5",
   source_type: "typescript",
   work: "Wertepy",
   number: 1,
@@ -42,7 +42,7 @@ const TAG: TagData = {
     {
       ...FRAGMENT,
       id: 9,
-      url: "/notes/3?fragment=9",
+      url: "/zapiski/3?fragment=9",
       source_type: "note",
       work: "Czarny potok",
       number: 2,
@@ -56,7 +56,7 @@ const TAG: TagData = {
   ],
   notes: [
     {
-      url: "/notes/3",
+      url: "/zapiski/3",
       title: "Notes 18 · karta 4",
       shelfmark: "ML, sygn. 1678.0104",
       description: "<p>Notatka o postaci dezertera.</p>",
@@ -72,7 +72,7 @@ const TAG: TagData = {
   materials: {
     texts: [
       {
-        url: "/secondary-texts/4",
+        url: "/teksty-sekundarne/4",
         author: "Jan Kowalski",
         title: "O dezerterach",
         publication: "Czytelnik, Warszawa 1948, s. 3",
@@ -94,7 +94,7 @@ function mockPage(tag: Partial<TagData> = {}) {
 }
 
 async function renderPage() {
-  const result = renderRoute("/tags/dezerter");
+  const result = renderRoute("/tagi/dezerter");
   await screen.findByRole("heading", { level: 1, name: "Dezerter" });
   return result;
 }
@@ -204,9 +204,9 @@ describe("TagPage", () => {
       "Pierwsza świętość",
     ]);
     expect(links.map((link) => link.getAttribute("href"))).toEqual([
-      "/works/wertepy",
-      "/works/czarny-potok",
-      "/works/pierwsza-swietosc",
+      "/utwory/wertepy",
+      "/utwory/czarny-potok",
+      "/utwory/pierwsza-swietosc",
     ]);
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -225,13 +225,13 @@ describe("TagPage", () => {
     }
     expect(
       within(first).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
-    ).toHaveAttribute("href", "/typescripts/1?fragment=5");
+    ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(within(first).getByText("Maszynopis")).toBeVisible();
     expect(within(first).getByRole("img", { name: "Skan · strona 3" })).toBeVisible();
     expect(within(first).getByText("ML, sygn. 1618.0009")).toBeVisible();
     expect(
       within(second).getByRole("link", { name: "Czarny potok · Fragment 02" }),
-    ).toHaveAttribute("href", "/notes/3?fragment=9");
+    ).toHaveAttribute("href", "/zapiski/3?fragment=9");
     expect(within(second).getByText("Zapisek")).toBeVisible();
     // Every fragment, not a preview (R-09): no "all" link.
     expect(
@@ -253,7 +253,7 @@ describe("TagPage", () => {
     }
     expect(within(note).getByRole("link", { name: "Notes 18 · karta 4" })).toHaveAttribute(
       "href",
-      "/notes/3",
+      "/zapiski/3",
     );
     expect(within(note).getByText("ML, sygn. 1678.0104")).toBeVisible();
     expect(within(note).getByText("Notatka o postaci dezertera.")).toBeVisible();
@@ -271,7 +271,7 @@ describe("TagPage", () => {
       within(related)
         .getAllByRole("link")
         .map((link) => link.getAttribute("href")),
-    ).toEqual(["/tags/las", "/tags/wojna"]);
+    ).toEqual(["/tagi/las", "/tagi/wojna"]);
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -284,7 +284,7 @@ describe("TagPage", () => {
     expect(screen.getByText("Opracowania i materiały wizualne z tym tagiem")).toBeVisible();
     expect(screen.getByRole("link", { name: /Jan Kowalski, O dezerterach/ })).toHaveAttribute(
       "href",
-      "/secondary-texts/4",
+      "/teksty-sekundarne/4",
     );
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -319,7 +319,7 @@ describe("TagPage", () => {
   it("R-06: a tag the API does not find shows the not-found page", async () => {
     server.use(http.get(TAG_URL, () => new HttpResponse(null, { status: 404 })));
 
-    renderRoute("/tags/dezerter");
+    renderRoute("/tagi/dezerter");
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Nie znaleziono strony" }),
@@ -329,7 +329,7 @@ describe("TagPage", () => {
   it("shows the loading state, then an error when the page cannot be loaded", async () => {
     server.use(http.get(TAG_URL, () => new HttpResponse(null, { status: 500 })));
 
-    renderRoute("/tags/dezerter");
+    renderRoute("/tagi/dezerter");
 
     expect(screen.getByRole("status")).toHaveTextContent("Wczytuję tag…");
     expect(

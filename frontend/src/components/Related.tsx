@@ -22,7 +22,7 @@ export function RelatedWorks({ label, works }: { label: string; works: WorkSumma
             <SideListItem
               meta={work.year === null ? undefined : String(work.year)}
               title={work.title}
-              to={`/works/${work.slug}`}
+              to={`/utwory/${work.slug}`}
             />
           </li>
         ))}

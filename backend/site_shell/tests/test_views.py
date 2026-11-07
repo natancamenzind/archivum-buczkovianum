@@ -12,7 +12,7 @@ from site_shell.tests.conftest import SCRIPT
 from site_shell.views import MISSING_BUILD_MESSAGE, TITLE
 
 
-@pytest.mark.parametrize("url", ["/", "/works", "/tags/", "/search?q=dezerter"])
+@pytest.mark.parametrize("url", ["/", "/utwory", "/tagi/", "/szukaj?q=dezerter"])
 def test_public_urls_get_the_frontend_index(client: Client, frontend_dist: Path, url: str) -> None:
     response = client.get(url)
 
@@ -86,14 +86,14 @@ def test_local_media_files_are_served(
 
 
 def test_pages_accept_head_but_not_post(client: Client, frontend_dist: Path) -> None:
-    assert client.head("/works").status_code == 200
-    assert client.post("/works").status_code == 405
+    assert client.head("/utwory").status_code == 200
+    assert client.post("/utwory").status_code == 405
 
 
 def test_missing_build_is_a_clear_503(client: Client, settings: Settings, tmp_path: Path) -> None:
     settings.FRONTEND_DIST_DIR = tmp_path / "not-built"
 
-    response = client.get("/works")
+    response = client.get("/utwory")
 
     assert response.status_code == 503
     assert response.content.decode() == MISSING_BUILD_MESSAGE

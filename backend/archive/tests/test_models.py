@@ -89,12 +89,12 @@ class TestPublishable:
 
         # Assert
         assert urls == [
-            "/works/wertepy",
-            "/tags/potok",
-            f"/typescripts/{typescript.pk}",
-            f"/notes/{note.pk}",
-            f"/secondary-texts/{text.pk}",
-            f"/materials/{material.pk}",
+            "/utwory/wertepy",
+            "/tagi/potok",
+            f"/maszynopisy/{typescript.pk}",
+            f"/zapiski/{note.pk}",
+            f"/teksty-sekundarne/{text.pk}",
+            f"/materialy/{material.pk}",
         ]
 
 

@@ -16,7 +16,7 @@ const SCAN_URL = "*/media/scans/wertepy.pdf";
 
 const FRAGMENT: Fragment = {
   id: 5,
-  url: "/typescripts/1?fragment=5",
+  url: "/maszynopisy/1?fragment=5",
   source_type: "typescript",
   work: "Wertepy",
   number: 1,
@@ -45,7 +45,7 @@ const WORK: WorkData = {
       {
         ...FRAGMENT,
         id: 7,
-        url: "/typescripts/1?fragment=7",
+        url: "/maszynopisy/1?fragment=7",
         number: 3,
         location: "",
         quote: "Dezerter stał w stodole.",
@@ -63,7 +63,7 @@ const WORK: WorkData = {
   ],
   notes: [
     {
-      url: "/notes/3",
+      url: "/zapiski/3",
       title: "Notes 18 · karta 4",
       shelfmark: "ML, sygn. 1678.0104",
       description:
@@ -73,7 +73,7 @@ const WORK: WorkData = {
       tags: [{ slug: "dezerter", title: "Dezerter" }],
     },
     {
-      url: "/notes/4",
+      url: "/zapiski/4",
       title: "Nagranie",
       shelfmark: "",
       description: "",
@@ -89,7 +89,7 @@ const WORK: WorkData = {
   materials: {
     texts: [
       {
-        url: "/secondary-texts/4",
+        url: "/teksty-sekundarne/4",
         author: "Jan Kowalski",
         title: "Recenzja „Wertepów”",
         publication: "Czytelnik, Warszawa 1948, s. 3",
@@ -97,7 +97,7 @@ const WORK: WorkData = {
     ],
     visuals: [
       {
-        url: "/materials/9",
+        url: "/materialy/9",
         title: "Autor w Dolinie",
         shelfmark: "ML, sygn. 1700",
         image: "/media/photo.jpg",
@@ -119,7 +119,7 @@ function mockPage(work: Partial<WorkData> = {}) {
 }
 
 async function renderPage() {
-  const result = renderRoute("/works/wertepy");
+  const result = renderRoute("/utwory/wertepy");
   await screen.findByRole("heading", { level: 1, name: "Wertepy" });
   return result;
 }
@@ -232,14 +232,14 @@ describe("WorkPage", () => {
     // R-10: location line with the source type, quote, scan page, shelfmark, tags.
     expect(
       within(first).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
-    ).toHaveAttribute("href", "/typescripts/1?fragment=5");
+    ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(within(first).getByText("Maszynopis")).toBeVisible();
     expect(within(first).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
     expect(within(first).getByRole("img", { name: "Skan · strona 3" })).toBeVisible();
     expect(within(first).getByText("ML, sygn. 1618.0009")).toBeVisible();
     expect(within(first).getByRole("link", { name: "Epidemia" })).toHaveAttribute(
       "href",
-      "/tags/epidemia",
+      "/tagi/epidemia",
     );
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -284,7 +284,7 @@ describe("WorkPage", () => {
       within(card("Fragmenty maszynopisu")).getByRole("link", {
         name: "Wszystkie fragmenty (24)",
       }),
-    ).toHaveAttribute("href", "/typescripts/1?fragments=all");
+    ).toHaveAttribute("href", "/maszynopisy/1?fragments=all");
   });
 
   it("R-09: a preview showing every fragment has a plain count and no link", async () => {
@@ -311,7 +311,7 @@ describe("WorkPage", () => {
       "01Pierwsza wersja, ML, sygn. 1618",
       "02Druga wersja",
     ]);
-    expect(links[1]).toHaveAttribute("href", "/typescripts/2");
+    expect(links[1]).toHaveAttribute("href", "/maszynopisy/2");
   });
 
   it("US-RA-04 AC3: 'Zapiski' shows the notes as note cards", async () => {
@@ -328,7 +328,7 @@ describe("WorkPage", () => {
     }
     expect(within(note).getByRole("link", { name: "Notes 18 · karta 4" })).toHaveAttribute(
       "href",
-      "/notes/3",
+      "/zapiski/3",
     );
     expect(within(note).getByText("Zapisek")).toBeVisible();
     expect(within(note).getByRole("img", { name: "Karta notesu z rysunkiem" })).toHaveAttribute(
@@ -343,7 +343,7 @@ describe("WorkPage", () => {
     expect(source.closest("[data-slot=card-description]")).not.toBeNull();
     expect(within(note).getByRole("link", { name: "Dezerter" })).toHaveAttribute(
       "href",
-      "/tags/dezerter",
+      "/tagi/dezerter",
     );
     // Without an image, the placeholder board (design/rules.md), hidden from screen readers.
     expect(within(recording).getByText("[Skan zapisku]")).toBeInTheDocument();
@@ -363,7 +363,7 @@ describe("WorkPage", () => {
       within(tags)
         .getAllByRole("link")
         .map((link) => link.getAttribute("href")),
-    ).toEqual(["/tags/dezerter", "/tags/epidemia"]);
+    ).toEqual(["/tagi/dezerter", "/tagi/epidemia"]);
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -376,7 +376,7 @@ describe("WorkPage", () => {
     expect(within(tags).getByText("3")).toBeVisible();
     expect(within(tags).getByRole("link", { name: "Recepcja" })).toHaveAttribute(
       "href",
-      "/tags/recepcja",
+      "/tagi/recepcja",
     );
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -389,10 +389,10 @@ describe("WorkPage", () => {
     expect(screen.getByRole("heading", { level: 2, name: "Materiały kontekstowe" })).toBeVisible();
     expect(screen.getByRole("link", { name: /Jan Kowalski, Recenzja „Wertepów”/ })).toHaveAttribute(
       "href",
-      "/secondary-texts/4",
+      "/teksty-sekundarne/4",
     );
     const visual = screen.getByRole("link", { name: /Autor w Dolinie, ML, sygn\. 1700/ });
-    expect(visual).toHaveAttribute("href", "/materials/9");
+    expect(visual).toHaveAttribute("href", "/materialy/9");
     expect(within(visual).getByRole("img", { name: "Buczkowski przy biurku" })).toBeVisible();
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -408,20 +408,20 @@ describe("WorkPage", () => {
     // The note description's own link is the only one out of the archive.
     expect([...hrefs].sort()).toEqual(
       [
-        "/typescripts/1?fragment=5",
-        "/tags/epidemia",
-        "/typescripts/1?fragment=7",
-        "/typescripts/1?fragments=all",
-        "/typescripts/1",
-        "/typescripts/2",
-        "/notes/3",
+        "/maszynopisy/1?fragment=5",
+        "/tagi/epidemia",
+        "/maszynopisy/1?fragment=7",
+        "/maszynopisy/1?fragments=all",
+        "/maszynopisy/1",
+        "/maszynopisy/2",
+        "/zapiski/3",
         "https://example.com/notes",
-        "/tags/dezerter",
-        "/notes/4",
-        "/tags/dezerter",
-        "/tags/epidemia",
-        "/secondary-texts/4",
-        "/materials/9",
+        "/tagi/dezerter",
+        "/zapiski/4",
+        "/tagi/dezerter",
+        "/tagi/epidemia",
+        "/teksty-sekundarne/4",
+        "/materialy/9",
       ].sort(),
     );
     for (const href of hrefs.filter((link) => link.startsWith("/"))) {
@@ -472,7 +472,7 @@ describe("WorkPage", () => {
   it("R-06: a work the API does not find shows the not-found page", async () => {
     server.use(http.get(WORK_URL, () => new HttpResponse(null, { status: 404 })));
 
-    renderRoute("/works/wertepy");
+    renderRoute("/utwory/wertepy");
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Nie znaleziono strony" }),
@@ -482,7 +482,7 @@ describe("WorkPage", () => {
   it("shows the loading state, then an error when the page cannot be loaded", async () => {
     server.use(http.get(WORK_URL, () => new HttpResponse(null, { status: 500 })));
 
-    renderRoute("/works/wertepy");
+    renderRoute("/utwory/wertepy");
 
     expect(screen.getByRole("status")).toHaveTextContent("Wczytuję utwór…");
     expect(

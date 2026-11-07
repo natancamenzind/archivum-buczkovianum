@@ -91,7 +91,7 @@ export function TagCloud({ tags }: { tags: TagCount[] }) {
               className={OFFSET_CLASSES[(index + 2 * rowIndex) % OFFSET_CLASSES.length]}
             >
               <Link
-                to={`/tags/${tag.slug}`}
+                to={`/tagi/${tag.slug}`}
                 className={cn(
                   SIZE_CLASSES[size(tag.occurrences)],
                   "transition-colors hover:text-accent-foreground-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",

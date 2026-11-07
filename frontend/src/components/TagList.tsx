@@ -14,7 +14,7 @@ export function TagList({ tags }: { tags: Tag[] }) {
       {tags.map((tag) => (
         <li key={tag.slug}>
           <Link
-            to={`/tags/${tag.slug}`}
+            to={`/tagi/${tag.slug}`}
             className="block rounded-full border border-border bg-card px-12 py-4 text-cousine-metadane text-foreground transition-colors duration-150 ease-out hover:border-accent-border hover:bg-accent hover:text-accent-foreground focus-visible:border-accent-border focus-visible:bg-accent focus-visible:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none"
           >
             {tag.title}

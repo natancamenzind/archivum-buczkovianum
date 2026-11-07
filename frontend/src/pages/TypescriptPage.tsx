@@ -62,7 +62,7 @@ function Context({ typescript }: { typescript: TypescriptData }) {
             description={
               work.fragment_count > 0 ? formatCount(work.fragment_count, nouns.fragment) : undefined
             }
-            to={`/works/${work.slug}`}
+            to={`/utwory/${work.slug}`}
           />
         </div>
       )}
@@ -74,7 +74,7 @@ function Context({ typescript }: { typescript: TypescriptData }) {
               <SideListItem
                 meta={item.shelfmark === "" ? undefined : item.shelfmark}
                 title={item.title}
-                to={`/typescripts/${String(item.id)}`}
+                to={`/maszynopisy/${String(item.id)}`}
                 current={item.id === typescript.id}
               />
             </li>
@@ -116,7 +116,7 @@ function Fragments({ typescript, document }: { typescript: TypescriptData; docum
             <ListRow
               number={fragment.number}
               title={fragmentTitle(fragment)}
-              to={`/typescripts/${String(typescript.id)}?${expanded ? `fragments=${ALL_FRAGMENTS}&` : ""}fragment=${String(fragment.id)}`}
+              to={`/maszynopisy/${String(typescript.id)}?${expanded ? `fragments=${ALL_FRAGMENTS}&` : ""}fragment=${String(fragment.id)}`}
             />
           </li>
         ))}

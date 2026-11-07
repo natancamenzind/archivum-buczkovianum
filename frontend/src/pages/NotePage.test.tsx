@@ -17,7 +17,7 @@ const PDF_URL = "*/media/content/notes.pdf";
 
 const FRAGMENT: Fragment = {
   id: 5,
-  url: "/typescripts/1?fragment=5",
+  url: "/maszynopisy/1?fragment=5",
   source_type: "typescript",
   work: "Wertepy",
   number: 1,
@@ -50,7 +50,7 @@ const NOTE: NoteData = {
     { slug: "czarny-potok", title: "Czarny potok", year: null, fragment_count: 0 },
   ],
   fragments: {
-    items: [FRAGMENT, { ...FRAGMENT, id: 6, url: "/typescripts/2?fragment=6", number: 2 }],
+    items: [FRAGMENT, { ...FRAGMENT, id: 6, url: "/maszynopisy/2?fragment=6", number: 2 }],
     total: 5,
   },
   tags: [
@@ -91,7 +91,7 @@ function mockContent(content: Partial<Content>) {
   mockPage({ content: { ...NO_CONTENT, ...content } });
 }
 
-async function renderPage(url = "/notes/3") {
+async function renderPage(url = "/zapiski/3") {
   const result = renderRoute(url);
   await screen.findByRole("heading", { level: 1 });
   return result;
@@ -191,8 +191,8 @@ describe("NotePage", () => {
     expect(within(works).getByText("2")).toBeVisible();
     const links = within(works).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual(["1947Wertepy", "Czarny potok"]);
-    expect(links[0]).toHaveAttribute("href", "/works/wertepy");
-    expect(links[1]).toHaveAttribute("href", "/works/czarny-potok");
+    expect(links[0]).toHaveAttribute("href", "/utwory/wertepy");
+    expect(links[1]).toHaveAttribute("href", "/utwory/czarny-potok");
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -294,7 +294,7 @@ describe("NotePage", () => {
     fireEvent.click(fragment);
     expect(within(text).getByRole("link", { name: "Dezerter" })).toHaveAttribute(
       "href",
-      "/tags/dezerter",
+      "/tagi/dezerter",
     );
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -302,7 +302,7 @@ describe("NotePage", () => {
   it("US-RA-11 AC3: opened with ?fragment=, the reader scrolls to the fragment", async () => {
     mockContent({ kind: "plain_text", document: 20 });
 
-    const { container } = await renderPage("/notes/3?fragment=30");
+    const { container } = await renderPage("/zapiski/3?fragment=30");
 
     const fragment = await screen.findByRole("button", { name: "Fragment 01: Dezerter" });
     expect(fragment).toHaveAttribute("aria-pressed", "true");
@@ -313,7 +313,7 @@ describe("NotePage", () => {
   it("US-RA-11 AC3: opened from a search result, the reader highlights and scrolls to the match", async () => {
     mockContent({ kind: "ocr_text", document: 20 });
 
-    await renderPage("/notes/3?q=las");
+    await renderPage("/zapiski/3?q=las");
 
     const match = await screen.findByText("las", { selector: "mark" });
     expect(scrollIntoView.mock.contexts[0]).toBe(match);
@@ -341,7 +341,7 @@ describe("NotePage", () => {
     expect(within(fragments).getAllByRole("article")).toHaveLength(2);
     expect(
       within(fragments).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
-    ).toHaveAttribute("href", "/typescripts/1?fragment=5");
+    ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(within(fragments).queryByText(/Wszystkie/)).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -360,7 +360,7 @@ describe("NotePage", () => {
     ).toEqual(["Dezerter", "Pamięć"]);
     expect(within(tags).getByRole("link", { name: "Pamięć" })).toHaveAttribute(
       "href",
-      "/tags/pamiec",
+      "/tagi/pamiec",
     );
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -378,7 +378,7 @@ describe("NotePage", () => {
   it("R-06: a note the API does not find shows the not-found page", async () => {
     server.use(http.get(PAGE_URL, () => new HttpResponse(null, { status: 404 })));
 
-    renderRoute("/notes/3");
+    renderRoute("/zapiski/3");
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Nie znaleziono strony" }),
@@ -386,7 +386,7 @@ describe("NotePage", () => {
   });
 
   it("an address that is not a note number shows the not-found page", () => {
-    renderRoute("/notes/list");
+    renderRoute("/zapiski/list");
 
     expect(screen.getByRole("heading", { level: 1, name: "Nie znaleziono strony" })).toBeVisible();
   });
@@ -399,7 +399,7 @@ describe("NotePage", () => {
       }),
     );
 
-    renderRoute("/notes/3");
+    renderRoute("/zapiski/3");
 
     expect(screen.getByRole("status")).toHaveTextContent("Wczytuję zapisek…");
     expect(

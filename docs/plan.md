@@ -108,6 +108,12 @@ Answered by the project owner on 2026-11-07, in ARC-19:
 |---|----------|----------|------|
 | D32 | How does an editor upload a scan with its OCR text? US-WR-04 asked for a PDF plus a Tesseract `.txt` with the same page count. | **One searchable PDF**, with the OCR text under the page images, wherever a scan has OCR text: typescripts, notes, secondary texts, contextual materials. The text is read from the PDF; the separate OCR file and the page-count check are gone. Architecture §4.4 and US-WR-04 to US-WR-06 are updated. | ARC-19 |
 
+Answered by the project owner on 2026-11-07, in ARC-14:
+
+| # | Question | Decision | Step |
+|---|----------|----------|------|
+| D33 | Page URLs had English segments (`/works`, `/tags`). Which Polish ones, and what happens to the old ones? | **Glossary terms in ASCII:** `/utwory`, `/maszynopisy`, `/tagi`, `/zapiski`, `/teksty-sekundarne`, `/materialy`, `/o-archiwum`, `/szukaj`. Query string parameters (`q`, `tab`, `work`, `fragment`, …) and `/api/` paths stay English. The old English paths are 404s, with no redirects. Architecture §8 is updated. | ARC-14 |
+
 ## 4. Order and dependencies
 
 A step can start when every step in its "Needs" (section 5) is merged into `main`. Nothing else orders the work. The phases group steps by topic, not by time.
