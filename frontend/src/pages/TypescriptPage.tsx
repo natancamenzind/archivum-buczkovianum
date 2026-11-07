@@ -41,7 +41,7 @@ async function fetchTypescript(id: number): Promise<TypescriptData> {
   return data;
 }
 
-/** "Fragment 01 · skan 9 · ML, sygn. 1618.0009", leaving out what is missing (R-02). */
+/** "Fragment 01 · skan 9 · ML, sygn. 1618.9", leaving out what is missing (R-02). */
 function fragmentTitle(fragment: FragmentRow): string {
   return [fragmentLabel(fragment.number), scanLabel(fragment.scan_number), fragment.shelfmark]
     .filter(Boolean)

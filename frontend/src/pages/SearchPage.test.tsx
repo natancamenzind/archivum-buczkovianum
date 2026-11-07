@@ -64,7 +64,7 @@ const RESULTS: Results = {
       quote: "Szedł dezerter przez las.",
       scan: "",
       start_page: null,
-      shelfmark: "ML, sygn. 1618.0009",
+      shelfmark: "ML, sygn. 1618.9",
       tags: [{ slug: "dezerter", title: "Dezerter" }],
     },
   ],

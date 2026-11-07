@@ -170,8 +170,6 @@ class TestHomeEndpoint:
             start=6,
             end=12,
             is_featured=True,
-            unit_number="1618",
-            scan_number="0009",
         )
         FragmentFactory.create(document=draft.document, is_featured=True)
 
@@ -184,7 +182,7 @@ class TestHomeEndpoint:
         assert card["url"] == f"/maszynopisy/{main.pk}?fragment={featured.pk}"
         assert card["work"] == "Wertepy"
         assert card["number"] == 2
-        assert card["scan_number"] == "9"
+        assert card["scan_number"] == "1"
 
     def test_us_ra_02_ac1_picks_at_random_among_the_featured_fragments(
         self, client: Client

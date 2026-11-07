@@ -165,7 +165,7 @@ SHOWN_FRAGMENTS: dict[tuple[str, int], dict[str, Any]] = {
         "tags": ["Dezerter", "Epidemia"],
     },
     ("1618", 3): {"is_featured": True, "tags": ["Dezerter"]},
-    ("1609", 2): {"scan_number": "0012", "tags": ["Dezerter"]},
+    ("1609", 2): {"tags": ["Dezerter"]},
 }
 
 
@@ -333,11 +333,7 @@ class Command(BaseCommand):
             )
             sentences = spread_sentences(document.text, typescript_data.fragments)
             for number, sentence in enumerate(sentences, start=1):
-                shown = {
-                    "unit_number": typescript_data.shelfmark,
-                    "scan_number": f"{number * 5 + 4:04d}",
-                    **SHOWN_FRAGMENTS.get((typescript_data.shelfmark, number), {}),
-                }
+                shown = dict(SHOWN_FRAGMENTS.get((typescript_data.shelfmark, number), {}))
                 fragment_tags = shown.pop("tags", [])
                 fragment = saved(
                     Fragment(document=document, start=sentence.start(), end=sentence.end(), **shown)

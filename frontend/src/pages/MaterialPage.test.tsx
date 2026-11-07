@@ -24,7 +24,7 @@ const FRAGMENT: Fragment = {
   quote: "Grzybniak chodził od chałupy do chałupy.",
   scan: "",
   start_page: null,
-  shelfmark: "ML, sygn. 1618.0009",
+  shelfmark: "ML, sygn. 1618.9",
   tags: [{ slug: "pamiec", title: "Pamięć" }],
 };
 

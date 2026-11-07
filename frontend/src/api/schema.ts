@@ -385,7 +385,7 @@ export interface components {
         /**
          * @description A fragment for the reader (R-11), from a queryset with `with_number()`.
          *
-         *     The context holds the fragments' `document` and the `institution` of its owner.
+         *     The context's `owner` is the item whose text holds the fragments.
          */
         DocumentFragment: {
             readonly id: number;
@@ -395,9 +395,9 @@ export interface components {
             readonly number: number;
             /** @description 1-based scan page the fragment starts on; null for a plain text. */
             readonly start_page: number | null;
-            /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
+            /** @description The scan page the fragment starts on, e.g. "19"; empty for a plain text. */
             readonly scan_number: string;
-            /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
+            /** @description E.g. "ML, sygn. 1618.19"; may be empty. */
             readonly shelfmark: string;
             /** @description Published tags, by name. */
             readonly tags: components["schemas"]["TagChip"][];
@@ -451,7 +451,7 @@ export interface components {
             readonly work: string;
             /** @description 1-based, by position in the text. */
             readonly number: number;
-            /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
+            /** @description The scan page the fragment starts on, e.g. "19"; empty for a plain text. */
             readonly scan_number: string;
             /** @description The selected text. */
             readonly quote: string;
@@ -459,7 +459,7 @@ export interface components {
             readonly scan: string;
             /** @description 1-based scan page the fragment starts on; null for a plain text. */
             readonly start_page: number | null;
-            /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
+            /** @description E.g. "ML, sygn. 1618.19"; may be empty. */
             readonly shelfmark: string;
             /** @description Published tags, by name. */
             readonly tags: components["schemas"]["TagChip"][];
@@ -479,15 +479,15 @@ export interface components {
         /**
          * @description A row of "Fragmenty z maszynopisu" (US-RA-08 AC3), from a queryset with `with_number()`.
          *
-         *     The context's `institution` is the one of the fragments' document owner.
+         *     The context's `owner` is the item whose text holds the fragments.
          */
         FragmentRow: {
             readonly id: number;
             /** @description 1-based, by position in the text. */
             readonly number: number;
-            /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
+            /** @description The scan page the fragment starts on, e.g. "19"; empty for a plain text. */
             readonly scan_number: string;
-            /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
+            /** @description E.g. "ML, sygn. 1618.19"; may be empty. */
             readonly shelfmark: string;
         };
         /**

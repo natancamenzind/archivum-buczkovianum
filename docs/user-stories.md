@@ -25,9 +25,9 @@ Sources: `docs/PROJECT_BRIEF.md` and the Figma file "archiwum-buczkowski-model",
 | Bibliography (bibliografia) | A work's ordered list of entries. An entry is one line of free text, e.g. "Autor, Tytuł, Wydawnictwo, miejsce rok, s. strony". |
 | Work link | The relation between a work and a secondary text or contextual material. Can be tagged. |
 | Tag | A motif linking fragments and notes: a Buczkowski keyword or an editorial interpretation. |
-| Fragment | A tagged character range in a text (OCR or plain), with optional shelfmark (archival unit and scan number). |
+| Fragment | A tagged character range in a text (OCR or plain), with a shelfmark derived from its document and scan page. |
 | Occurrence (wystąpienie) | One published item carrying a tag: a fragment, a whole entity, or a work link. |
-| Shelfmark (sygnatura) | Institution + number, shown as "ML, sygn. 1618". A fragment has its own number ("ML, sygn. 1618.0009") and takes the institution from its document. |
+| Shelfmark (sygnatura) | Institution + number, shown as "ML, sygn. 1618". A fragment has its own number: its document's, a dot and the scan page it starts on ("ML, sygn. 1618.19"). |
 
 ---
 
@@ -77,7 +77,7 @@ Each page defines which items it includes.
 
 **R-10 Fragment card.** Every fragment is shown as this card:
 
-1. location line: work, number in its document ("fragment 01"), optional scan number from the shelfmark, without leading zeros ("skan 9" for 1618.0009); a chip with the source type ("Maszynopis", "Zapisek");
+1. location line: work, number in its document ("fragment 01"), optional scan number from the shelfmark ("skan 19" for 1618.19); a chip with the source type ("Maszynopis", "Zapisek");
 2. quote (the first seven words of the fragment text, then "(…)"; a shorter text whole); for an OCR source, a thumbnail of the scan page where the fragment starts;
 3. shelfmark, tags.
 
@@ -320,7 +320,7 @@ Everything happens in Django admin. Every image field requires a text alternativ
 3. Fragments may overlap, and the same text can carry several tags.
 4. A fragment stores its selected text. If the underlying text changes so that it no longer matches, the fragment is flagged for review, never silently moved or deleted.
 5. The editor never writes markup (TEI or otherwise).
-6. The fragment's own form has: the shelfmark as two fields, archival unit number (e.g. "1618") and scan number (e.g. "0009"; requires the unit number; the institution comes from the document), and a "featured" checkbox. Featured fragments come first in previews (R-09) and can appear on the home page (US-RA-02).
+6. The fragment's own form has: the shelfmark, read-only, built from the document's owner and the scan page the fragment starts on (e.g. "ML, sygn. 1618.19"), and a "featured" checkbox. Featured fragments come first in previews (R-09) and can appear on the home page (US-RA-02).
 
 ### US-WR-10 — Tag whole entities and work links
 

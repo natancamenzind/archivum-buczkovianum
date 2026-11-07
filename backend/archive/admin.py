@@ -294,19 +294,18 @@ class FragmentAdmin(SearchIndexedAdmin[Fragment]):
         "__str__",
         "document",
         "works",
-        "unit_number",
-        "scan_number",
+        "shelfmark",
         "is_featured",
         "needs_review",
     )
     list_filter = ("needs_review", "is_featured")
     list_select_related = (
-        *(f"document__{owner}" for owner in Document.owner_accessors()),
+        *(f"document__{owner}__institution" for owner in Document.owner_accessors()),
         "document__typescript__work",
     )
     search_fields = ("quote",)
     ordering = ("-needs_review", "document", "start")
-    readonly_fields = ("document", "works", "quote")
+    readonly_fields = ("document", "works", "shelfmark", "quote")
     autocomplete_fields = ("tags",)
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Fragment]:
@@ -323,6 +322,11 @@ class FragmentAdmin(SearchIndexedAdmin[Fragment]):
     def has_add_permission(self, request: HttpRequest) -> bool:
         """Fragments are created by selecting text in the tagger."""
         return False
+
+    @admin.display(description=_("shelfmark"))
+    def shelfmark(self, obj: Fragment) -> str:
+        """From the document's owner and the scan page the fragment starts on (ARC-11)."""
+        return obj.shelfmark_display
 
     @admin.display(description=_("works"))
     def works(self, obj: Fragment) -> str | None:

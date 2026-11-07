@@ -24,7 +24,7 @@ const FRAGMENT: Fragment = {
   quote: "Grzybniak chodził od chałupy do chałupy.",
   scan: "/media/scans/wertepy.pdf",
   start_page: 3,
-  shelfmark: "ML, sygn. 1618.0009",
+  shelfmark: "ML, sygn. 1618.9",
   tags: [{ slug: "epidemia", title: "Epidemia" }],
 };
 
@@ -249,7 +249,7 @@ describe("WorkPage", () => {
     expect(within(first).getByText("Maszynopis")).toBeVisible();
     expect(within(first).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
     expect(within(first).getByRole("img", { name: "Skan · strona 3" })).toBeVisible();
-    expect(within(first).getByText("ML, sygn. 1618.0009")).toBeVisible();
+    expect(within(first).getByText("ML, sygn. 1618.9")).toBeVisible();
     expect(within(first).getByRole("link", { name: "Epidemia" })).toHaveAttribute(
       "href",
       "/tagi/epidemia",

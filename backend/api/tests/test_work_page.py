@@ -137,8 +137,6 @@ class TestWorkPageEndpoint:
             document=document,
             start=0,
             end=8,
-            unit_number="1618",
-            scan_number="0009",
         )
         first.tags.add(epidemia, TagFactory.create(status=Status.DRAFT))
         FragmentFactory.create(document=document, start=9, end=15)
@@ -159,11 +157,11 @@ class TestWorkPageEndpoint:
             "source_type": "typescript",
             "work": "Wertepy",
             "number": 1,
-            "scan_number": "9",
+            "scan_number": "1",
             "quote": "Pierwsza",
             "scan": document.scan.url,
             "start_page": 1,
-            "shelfmark": "ML, sygn. 1618.0009",
+            "shelfmark": "ML, sygn. 1618.1",
             "tags": [{"slug": "epidemia", "title": "Epidemia"}],
         }
         assert result["fragments"]["items"][0]["start_page"] == 2

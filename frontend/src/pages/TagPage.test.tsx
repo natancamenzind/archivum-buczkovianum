@@ -22,7 +22,7 @@ const FRAGMENT: Fragment = {
   quote: "Dezerter stał w stodole.",
   scan: "/media/scans/wertepy.pdf",
   start_page: 3,
-  shelfmark: "ML, sygn. 1618.0009",
+  shelfmark: "ML, sygn. 1618.9",
   tags: [{ slug: "dezerter", title: "Dezerter" }],
 };
 
@@ -229,7 +229,7 @@ describe("TagPage", () => {
     ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(within(first).getByText("Maszynopis")).toBeVisible();
     expect(within(first).getByRole("img", { name: "Skan · strona 3" })).toBeVisible();
-    expect(within(first).getByText("ML, sygn. 1618.0009")).toBeVisible();
+    expect(within(first).getByText("ML, sygn. 1618.9")).toBeVisible();
     expect(
       within(second).getByRole("link", { name: "Czarny potok · Fragment 02" }),
     ).toHaveAttribute("href", "/zapiski/3?fragment=9");

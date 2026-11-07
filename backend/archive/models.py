@@ -59,6 +59,12 @@ def rich_text_field(**kwargs: Any) -> "models.TextField[str, str]":
     return cast("models.TextField[str, str]", field)
 
 
+def fragment_shelfmark(unit: str, page: int | None) -> str:
+    """The number part of a fragment's shelfmark, e.g. "1618.19" (ARC-11): its owner's, a dot and
+    the scan page; no page for a plain text, and nothing without the owner's."""
+    return f"{unit}.{page}" if unit and page else unit
+
+
 def format_shelfmark(institution: "Institution | None", number: str) -> str:
     """Display form of a shelfmark, e.g. "ML, sygn. 1618" (US-WR-14 AC2)."""
     if not number:
@@ -1197,18 +1203,6 @@ class Fragment(BaseModel, Taggable):
     start = models.PositiveIntegerField(_("start"), editable=False)
     end = models.PositiveIntegerField(_("end"), editable=False)
     quote = models.TextField(_("quote"), editable=False, help_text=_("The selected text."))
-    unit_number = models.CharField(
-        _("archival unit number"),
-        max_length=50,
-        blank=True,
-        help_text=_("The shelfmark before the dot, e.g. 1618; institution from the document."),
-    )
-    scan_number = models.CharField(
-        _("scan number"),
-        max_length=50,
-        blank=True,
-        help_text=_("The shelfmark after the dot, e.g. 0009: the scan in the archival unit."),
-    )
     is_featured = models.BooleanField(
         _("featured"),
         default=False,
@@ -1280,8 +1274,9 @@ class Fragment(BaseModel, Taggable):
 
     @property
     def shelfmark(self) -> str:
-        """The number part of the shelfmark, e.g. "1618.0009"."""
-        return ".".join(part for part in (self.unit_number, self.scan_number) if part)
+        """The number part of the shelfmark, e.g. "1618.19"."""
+        owner = self.document.owner
+        return fragment_shelfmark(owner.shelfmark if owner else "", self.start_page)
 
     @property
     def shelfmark_display(self) -> str:
@@ -1290,15 +1285,11 @@ class Fragment(BaseModel, Taggable):
 
     @property
     def scan_display(self) -> str:
-        """The scan number without leading zeros, e.g. "9" for "0009"; "" when not set."""
-        return self.scan_number.lstrip("0") or self.scan_number[-1:]
+        """The scan page the fragment starts on, e.g. "19"; "" for a plain text."""
+        return str(self.start_page or "")
 
     def clean(self) -> None:
         super().clean()
-        if self.scan_number and not self.unit_number:
-            raise ValidationError(
-                {"unit_number": _("A scan number needs an archival unit number.")}
-            )
         # Offsets are set once, by the tagger. Later only re-anchoring moves them.
         if self._state.adding and self.end > len(self.document.text):
             raise ValidationError(_("The fragment goes past the end of the text."))

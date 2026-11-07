@@ -13,7 +13,6 @@ from archive.models import (
     Document,
     Edition,
     Fragment,
-    Institution,
     Note,
     Preview,
     Publishable,
@@ -24,6 +23,7 @@ from archive.models import (
     Typescript,
     Work,
     format_shelfmark,
+    fragment_shelfmark,
 )
 from search.models import EntityType, SearchEntry
 from search.query import Hit, Sort, Tab
@@ -220,17 +220,15 @@ class ContextualMaterialsSerializer(serializers.Serializer[ContextualMaterials])
 class FragmentRowSerializer(serializers.ModelSerializer[Fragment]):
     """A row of "Fragmenty z maszynopisu" (US-RA-08 AC3), from a queryset with `with_number()`.
 
-    The context's `institution` is the one of the fragments' document owner.
+    The context's `owner` is the item whose text holds the fragments.
     """
 
     number = serializers.IntegerField(read_only=True, help_text="1-based, by position in the text.")
-    scan_number = serializers.CharField(
-        source="scan_display",
-        read_only=True,
-        help_text='The shelfmark after the dot without leading zeros, e.g. "9"; may be empty.',
+    scan_number = serializers.SerializerMethodField(
+        help_text='The scan page the fragment starts on, e.g. "19"; empty for a plain text.'
     )
     shelfmark = serializers.SerializerMethodField(
-        help_text='E.g. "ML, sygn. 1618.0009"; may be empty.'
+        help_text='E.g. "ML, sygn. 1618.19"; may be empty.'
     )
 
     class Meta:
@@ -239,9 +237,17 @@ class FragmentRowSerializer(serializers.ModelSerializer[Fragment]):
         # Output only, so the schema marks every field as present, the blank ones too.
         read_only_fields = fields
 
+    def page(self, fragment: Fragment) -> int | None:
+        owner: Archival = self.context["owner"]
+        return owner.document.page_number(fragment.start) if owner.document else None
+
+    def get_scan_number(self, fragment: Fragment) -> str:
+        return str(self.page(fragment) or "")
+
     def get_shelfmark(self, fragment: Fragment) -> str:
-        institution: Institution | None = self.context["institution"]
-        return format_shelfmark(institution, fragment.shelfmark)
+        owner: Archival = self.context["owner"]
+        number = fragment_shelfmark(owner.shelfmark, self.page(fragment))
+        return format_shelfmark(owner.institution, number)
 
 
 class FragmentPreviewSerializer(serializers.Serializer[Preview[Fragment]]):
@@ -352,7 +358,7 @@ class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
     scan_number = serializers.CharField(
         source="scan_display",
         read_only=True,
-        help_text='The shelfmark after the dot without leading zeros, e.g. "9"; may be empty.',
+        help_text='The scan page the fragment starts on, e.g. "19"; empty for a plain text.',
     )
     scan = serializers.SerializerMethodField(help_text="PDF URL; empty for a plain text.")
     start_page = serializers.IntegerField(
@@ -363,7 +369,7 @@ class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
     shelfmark = serializers.CharField(
         source="shelfmark_display",
         read_only=True,
-        help_text='E.g. "ML, sygn. 1618.0009"; may be empty.',
+        help_text='E.g. "ML, sygn. 1618.19"; may be empty.',
     )
     tags = TagChipSerializer(many=True, read_only=True, help_text="Published tags, by name.")
 
@@ -707,7 +713,7 @@ class TagPageSerializer(serializers.Serializer[TagPage]):
 class DocumentFragmentSerializer(FragmentRowSerializer):
     """A fragment for the reader (R-11), from a queryset with `with_number()`.
 
-    The context holds the fragments' `document` and the `institution` of its owner.
+    The context's `owner` is the item whose text holds the fragments.
     """
 
     start_page = serializers.SerializerMethodField(
@@ -722,8 +728,7 @@ class DocumentFragmentSerializer(FragmentRowSerializer):
         read_only_fields = fields
 
     def get_start_page(self, fragment: Fragment) -> int | None:
-        document: Document = self.context["document"]
-        return document.page_number(fragment.start)
+        return self.page(fragment)
 
 
 class DocumentSerializer(serializers.ModelSerializer[Document]):
