@@ -83,6 +83,18 @@ function Thumbnail({ scan, page }: { scan: string; page: number }) {
   );
 }
 
+/** A card quotes this many words of a fragment (R-10). */
+const QUOTE_WORDS = 7;
+
+/** The quote's first words, then "(…)"; a shorter quote whole. */
+function excerpt(quote: string): string {
+  const words = quote.trim().split(/\s+/);
+  if (words.length <= QUOTE_WORDS) {
+    return quote;
+  }
+  return `${words.slice(0, QUOTE_WORDS).join(" ")} ${copy.card.quoteCut}`;
+}
+
 /**
  * The fragment card (R-10): location line with the source type, the quote, the scan page it
  * starts on for an OCR source, then shelfmark and tags. It opens the source, scrolled to the
@@ -100,9 +112,7 @@ export function FragmentCard({ fragment }: { fragment: Fragment }) {
       shelfmark={fragment.shelfmark}
       tags={fragment.tags}
     >
-      <blockquote className="line-clamp-4 text-lora-tekst text-foreground">
-        {fragment.quote}
-      </blockquote>
+      <blockquote className="text-lora-tekst text-foreground">{excerpt(fragment.quote)}</blockquote>
       {fragment.scan !== "" && fragment.start_page !== null && (
         <Thumbnail scan={fragment.scan} page={fragment.start_page} />
       )}

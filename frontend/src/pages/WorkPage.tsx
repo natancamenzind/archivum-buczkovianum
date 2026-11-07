@@ -97,6 +97,7 @@ function Fragments({ work }: { work: WorkData }) {
         <ArrowLink
           label={copy.typescript.allFragments(total)}
           to={`/maszynopisy/${String(work.main_typescript)}?fragments=all`}
+          prominent
         />
       )}
     </Card>

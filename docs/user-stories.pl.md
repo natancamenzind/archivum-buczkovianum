@@ -76,13 +76,13 @@ Każda strona określa, które elementy pokazuje.
 
 - Nagłówek sekcji pokazuje licznik: „3” albo „2 z 24”, gdy sekcja jest podglądem.
 - Podgląd pokazuje pierwsze `PREVIEW_LIMIT` elementów (jedno ustawienie, domyślnie 2): najpierw wyróżnione fragmenty, potem reszta w kolejności tekstu. Kończy się linkiem z celem i liczbą, np. „Wszystkie fragmenty (24)”.
-- Link „wszystkie” w podglądach fragmentów nie otwiera nowej strony. Na stronie maszynopisu rozwija listę w miejscu, w kolejności stron. Na stronie utworu otwiera stronę głównego maszynopisu z rozwiniętą listą.
+- Link „wszystkie” w podglądach fragmentów nie otwiera nowej strony. Na stronie maszynopisu rozwija listę w miejscu, w kolejności stron. Na stronie utworu otwiera stronę głównego maszynopisu z rozwiniętą listą. Ten link ma krój tytułu sekcji, podkreślenie i strzałkę na wysokości podkreślenia.
 - Liczby mają poprawne polskie formy: 1 fragment, 2–4 fragmenty, 5+ fragmentów.
 
 **R-10 Karta fragmentu.** Każdy fragment wyświetlamy jako taką kartę:
 
 1. linia lokalizacji: utwór, numer w dokumencie („fragment 01”), opcjonalny numer skanu z sygnatury, bez zer wiodących („skan 9” dla 1618.0009); etykieta z typem źródła („Maszynopis”, „Zapisek”);
-2. cytat (tekst fragmentu skrócony do kilku linii); dla źródła OCR miniatura strony skanu, na której fragment się zaczyna;
+2. cytat (pierwsze siedem słów tekstu fragmentu, a po nich „(…)”; krótszy tekst w całości); dla źródła OCR miniatura strony skanu, na której fragment się zaczyna;
 3. sygnatura, tagi.
 
 Kliknięcie karty otwiera dokument źródłowy przewinięty do fragmentu.

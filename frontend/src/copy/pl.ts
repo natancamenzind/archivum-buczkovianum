@@ -256,6 +256,8 @@ export const copy = {
       material: "Materiał kontekstowy",
     },
     scan: (page: number) => `Skan · strona ${String(page)}`,
+    /** Ends a quote cut to its first words (ARC-31). */
+    quoteCut: "(…)",
     /** The placeholder board for a note without an image (design/rules.md). */
     notePlaceholder: "[Skan zapisku]",
   },

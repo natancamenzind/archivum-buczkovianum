@@ -303,6 +303,64 @@ describe("WorkPage", () => {
     ).toHaveAttribute("href", "/maszynopisy/1?fragments=all");
   });
 
+  it("ARC-31: a fragment card quotes the first seven words, then '(…)'", async () => {
+    mockPage({
+      fragments: {
+        ...WORK.fragments,
+        items: [
+          {
+            ...FRAGMENT,
+            quote:
+              "Zimą przyszła do Dolinoszczęsnej epidemia tyfusu i Grzybniak chodził od chaty do chaty z torbą ziół.",
+          },
+        ],
+      },
+    });
+
+    await renderPage();
+
+    const first = within(card("Fragmenty maszynopisu")).getAllByRole("article")[0];
+    if (first === undefined) {
+      throw new Error("Expected a fragment card.");
+    }
+    expect(
+      within(first).getByText("Zimą przyszła do Dolinoszczęsnej epidemia tyfusu i (…)"),
+    ).toBeVisible();
+    expect(within(first).queryByText(/Grzybniak/)).not.toBeInTheDocument();
+  });
+
+  it("ARC-31: a quote of seven words or fewer is shown whole, without '(…)'", async () => {
+    mockPage({
+      fragments: {
+        ...WORK.fragments,
+        items: [{ ...FRAGMENT, quote: "Za stodołą ukrywał się dezerter, który milczał." }],
+      },
+    });
+
+    await renderPage();
+
+    const first = within(card("Fragmenty maszynopisu")).getAllByRole("article")[0];
+    if (first === undefined) {
+      throw new Error("Expected a fragment card.");
+    }
+    expect(
+      within(first).getByText("Za stodołą ukrywał się dezerter, który milczał."),
+    ).toBeVisible();
+  });
+
+  it("ARC-31: 'Wszystkie fragmenty (24)' is set as a section title, unlike other arrow links", async () => {
+    mockPage({ bibliography: { items: BIBLIOGRAPHY, total: 12 } });
+
+    await renderPage();
+
+    expect(
+      within(card("Fragmenty maszynopisu")).getByRole("link", { name: "Wszystkie fragmenty (24)" }),
+    ).toHaveClass("text-lora-tytul-sekcji", "text-foreground");
+    expect(screen.getByRole("link", { name: /Cała bibliografia/ })).not.toHaveClass(
+      "text-lora-tytul-sekcji",
+    );
+  });
+
   it("R-09: a preview showing every fragment has a plain count and no link", async () => {
     mockPage({ fragments: { ...WORK.fragments, total: 2 } });
 
