@@ -2,7 +2,7 @@
 
 It first deletes the archive's content and search index, whatever is there; users and groups stay.
 Everything goes through `full_clean()` and `save()`, so the search index is filled as it would be
-by an editor. The scans and OCR texts in archive/demo/ are placeholders, not Buczkowski's texts.
+by an editor. The searchable PDF scans in archive/demo/ are placeholders, not Buczkowski's texts.
 """
 
 import re
@@ -35,6 +35,7 @@ from archive.models import (
     Typescript,
     Work,
 )
+from archive.uploads import load_ocr_upload
 from search.models import SearchEntry
 
 DEMO_DIR = Path(__file__).resolve().parents[2] / "demo"
@@ -171,10 +172,9 @@ def saved[M: models.Model](obj: M) -> M:
 
 
 def ocr_document(name: str) -> Document:
-    document = Document(kind=Document.Kind.OCR)
-    document.scan.save(f"{name}.pdf", ContentFile((DEMO_DIR / f"{name}.pdf").read_bytes()), False)
-    document.set_ocr_text((DEMO_DIR / f"{name}.txt").read_text(encoding="utf-8"))
-    return saved(document)
+    """A searchable PDF scan from archive/demo/, loaded as the editor panel loads an upload."""
+    scan = ContentFile((DEMO_DIR / f"{name}.pdf").read_bytes(), name=f"{name}.pdf")
+    return saved(load_ocr_upload(None, scan))
 
 
 class Command(BaseCommand):

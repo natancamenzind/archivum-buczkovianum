@@ -1,6 +1,5 @@
 """`manage.py load_demo_data`: the sample archive of design/rules.md (docs/plan.md, step 5)."""
 
-import re
 from collections.abc import Iterator
 from io import StringIO
 from pathlib import Path
@@ -38,6 +37,7 @@ from archive.tests.factories import (
     TeamMemberFactory,
     TypescriptFactory,
 )
+from archive.uploads import read_scan_pages
 from search.models import SearchEntry
 
 
@@ -132,7 +132,7 @@ class TestLoadedDemoData:
         assert result.items[0].scan_display == "9"
         assert tags == {"1618.0009": {"Dezerter", "Epidemia"}, "1618.0019": {"Dezerter"}}
 
-    def test_every_scan_has_as_many_pages_as_its_ocr_text(self, demo: str) -> None:
+    def test_every_ocr_text_is_its_scans_text_layer(self, demo: str) -> None:
         # Arrange
         documents = Document.objects.filter(kind=Document.Kind.OCR)
 
@@ -140,14 +140,14 @@ class TestLoadedDemoData:
         pages = {}
         for document in documents:
             with document.scan.open("rb") as scan:
-                pages[document.scan.name] = (
-                    len(re.findall(rb"/Type /Page\b", scan.read())),
-                    document.page_count,
-                )
+                pages[document.scan.name] = (read_scan_pages(scan), document)
 
         # Assert
         assert len(pages) == 6
-        assert all(scan == text and scan > 1 for scan, text in pages.values())
+        for scan_pages, document in pages.values():
+            assert len(scan_pages) == document.page_count > 1
+            assert all(scan_pages)
+            assert "".join(scan_pages) == document.text
 
     def test_the_search_index_is_filled_as_by_saving(self, demo: str) -> None:
         # Arrange

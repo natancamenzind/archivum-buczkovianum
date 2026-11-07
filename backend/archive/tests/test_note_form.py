@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 from archive.models import ContentKind, Document, Fragment, Note, Status, Work
 from archive.tests.factories import DocumentFactory, FragmentFactory, NoteFactory, WorkFactory
-from archive.tests.files import ocr_file, scan_file
+from archive.tests.files import SCAN_WITHOUT_TEXT, scan_file
 from search.models import EntityType
 from search.query import search
 
@@ -100,7 +100,8 @@ class TestNoteForm:
         assert fields["title"].required
         assert not fields["description"].required
         assert not fields["shelfmark"].required
-        assert {"content_kind", "image", "file", "external_url", "scan", "ocr_file"} <= set(fields)
+        assert {"content_kind", "image", "file", "external_url", "scan"} <= set(fields)
+        assert "ocr_file" not in fields
         assert "plain_text" in fields
         assert "document" not in fields
 
@@ -156,8 +157,7 @@ class TestNoteForm:
         data = form_data(
             work,
             content_kind=ContentKind.OCR_TEXT,
-            scan=scan_file(2),
-            ocr_file=ocr_file("Notes 18. ", "Karta 4."),
+            scan=scan_file("Notes 18.", "Karta 4."),
         )
 
         # Act
@@ -169,31 +169,24 @@ class TestNoteForm:
         assert document is not None
         assert (document.kind, document.text, document.page_count) == (
             Document.Kind.OCR,
-            "Notes 18. Karta 4.",
+            "Notes 18.\nKarta 4.\n",
             2,
         )
 
-    def test_us_wr_05_ac2_ocr_text_rejects_page_count_mismatch_with_both_counts(
-        self, admin_client: Client
-    ) -> None:
+    def test_us_wr_05_ac2_ocr_text_rejects_a_scan_without_text(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
-        data = form_data(
-            work,
-            content_kind=ContentKind.OCR_TEXT,
-            scan=scan_file(3),
-            ocr_file=ocr_file("Jedna.", "Dwie."),
-        )
+        data = form_data(work, content_kind=ContentKind.OCR_TEXT, scan=scan_file("", "", ""))
 
         # Act
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        assert form_errors(response) == {"ocr_file": ["Skan ma 3 strony, plik OCR ma 2."]}
+        assert form_errors(response) == {"scan": [SCAN_WITHOUT_TEXT]}
         assert not Note.objects.exists()
         assert not Document.objects.exists()
 
-    def test_us_wr_05_ac2_ocr_text_requires_scan_and_ocr_file(self, admin_client: Client) -> None:
+    def test_us_wr_05_ac2_ocr_text_requires_a_scan(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
 
@@ -201,7 +194,7 @@ class TestNoteForm:
         response = admin_client.post(ADD_URL, form_data(work, content_kind=ContentKind.OCR_TEXT))
 
         # Assert
-        assert form_errors(response) == {"scan": REQUIRED, "ocr_file": REQUIRED}
+        assert form_errors(response) == {"scan": REQUIRED}
 
     def test_us_wr_05_ac2_adds_a_note_with_plain_text(self, admin_client: Client) -> None:
         # Arrange: a browser sends a textarea's line breaks as CRLF
@@ -324,16 +317,14 @@ class TestNoteForm:
         data = note_data(note, content_kind=ContentKind.OCR_TEXT)
 
         # Act
-        without_files = admin_client.post(change_url(note), data)
-        with_files = admin_client.post(
-            change_url(note), {**data, "scan": scan_file(1), "ocr_file": ocr_file("Skan.")}
-        )
+        without_scan = admin_client.post(change_url(note), data)
+        with_scan = admin_client.post(change_url(note), {**data, "scan": scan_file("Skan.")})
 
         # Assert
-        assert form_errors(without_files) == {"scan": REQUIRED, "ocr_file": REQUIRED}
-        assert with_files.status_code == 302
+        assert form_errors(without_scan) == {"scan": REQUIRED}
+        assert with_scan.status_code == 302
         stored = Document.objects.get(pk=document.pk)
-        assert (stored.kind, stored.text) == (Document.Kind.OCR, "Skan.")
+        assert (stored.kind, stored.text) == (Document.Kind.OCR, "Skan.\n")
 
     def test_us_wr_05_ac2_text_becomes_a_link_and_the_text_is_deleted(
         self,
@@ -390,8 +381,7 @@ class TestNoteForm:
             content_kind=content_kind,
             plain_text="Tekst.",
             external_url="https://a.pl" if content_kind == ContentKind.EXTERNAL_MEDIA else "",
-            scan=scan_file(1),
-            ocr_file=ocr_file("Tekst."),
+            scan=scan_file("Tekst."),
         )
 
         # Act
@@ -399,7 +389,7 @@ class TestNoteForm:
 
         # Assert
         empty = ["Przy tym rodzaju treści zostaw to pole puste."]
-        expected = {"scan": empty, "ocr_file": empty}
+        expected = {"scan": empty}
         if content_kind == ContentKind.EXTERNAL_MEDIA:
             expected["plain_text"] = empty
         assert form_errors(response) == expected

@@ -22,7 +22,7 @@ from archive.tests.factories import (
     TagFactory,
     WorkFactory,
 )
-from archive.tests.files import ocr_file, scan_file
+from archive.tests.files import SCAN_WITHOUT_TEXT, scan_file
 from search.models import EntityType
 from search.query import search
 
@@ -165,7 +165,7 @@ class TestContextualMaterialForm:
     def test_us_wr_07_ac2_document_file(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
-        data = form_data(work, content_kind=ContentKind.DOCUMENT, file=scan_file(1))
+        data = form_data(work, content_kind=ContentKind.DOCUMENT, file=scan_file("Wycinek."))
 
         # Act
         response = admin_client.post(ADD_URL, data)
@@ -189,15 +189,10 @@ class TestContextualMaterialForm:
         assert response.status_code == 302
         assert ContextualMaterial.objects.get().external_url == "https://youtube.com/watch?v=1"
 
-    def test_us_wr_07_ac2_ocr_text_from_scan_and_ocr_file(self, admin_client: Client) -> None:
+    def test_us_wr_07_ac2_ocr_text_from_a_searchable_scan(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
-        data = form_data(
-            work,
-            content_kind=ContentKind.OCR_TEXT,
-            scan=scan_file(2),
-            ocr_file=ocr_file("Wieś. ", "Pole."),
-        )
+        data = form_data(work, content_kind=ContentKind.OCR_TEXT, scan=scan_file("Wieś.", "Pole."))
 
         # Act
         response = admin_client.post(ADD_URL, data)
@@ -208,11 +203,11 @@ class TestContextualMaterialForm:
         assert document is not None
         assert (document.kind, document.text, document.page_count) == (
             Document.Kind.OCR,
-            "Wieś. Pole.",
+            "Wieś.\nPole.\n",
             2,
         )
 
-    def test_us_wr_07_ac2_ocr_text_requires_both_files(self, admin_client: Client) -> None:
+    def test_us_wr_07_ac2_ocr_text_requires_a_scan(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
         data = form_data(work, content_kind=ContentKind.OCR_TEXT)
@@ -221,27 +216,19 @@ class TestContextualMaterialForm:
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        assert form_errors(response) == {
-            "scan": ["To pole jest wymagane."],
-            "ocr_file": ["To pole jest wymagane."],
-        }
+        assert form_errors(response) == {"scan": ["To pole jest wymagane."]}
         assert not Document.objects.exists()
 
-    def test_us_wr_07_ac2_ocr_text_checks_page_counts(self, admin_client: Client) -> None:
+    def test_us_wr_07_ac2_ocr_text_rejects_a_scan_without_text(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
-        data = form_data(
-            work,
-            content_kind=ContentKind.OCR_TEXT,
-            scan=scan_file(3),
-            ocr_file=ocr_file("Jedna strona."),
-        )
+        data = form_data(work, content_kind=ContentKind.OCR_TEXT, scan=scan_file("", ""))
 
         # Act
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        assert form_errors(response) == {"ocr_file": ["Skan ma 3 strony, plik OCR ma 1."]}
+        assert form_errors(response) == {"scan": [SCAN_WITHOUT_TEXT]}
         assert not ContextualMaterial.objects.exists()
 
     def test_us_wr_07_ac2_plain_text_entered_on_the_form(self, admin_client: Client) -> None:
@@ -288,8 +275,7 @@ class TestContextualMaterialForm:
             content_kind=ContentKind.EXTERNAL_MEDIA,
             external_url="https://example.com/film",
             plain_text="Tekst.",
-            scan=scan_file(1),
-            ocr_file=ocr_file("Tekst."),
+            scan=scan_file("Tekst."),
         )
 
         # Act
@@ -300,7 +286,6 @@ class TestContextualMaterialForm:
         assert form_errors(response) == {
             "plain_text": leave_empty,
             "scan": leave_empty,
-            "ocr_file": leave_empty,
         }
         assert not Document.objects.exists()
 
@@ -390,8 +375,7 @@ class TestContextualMaterialForm:
             material,
             content_kind=ContentKind.OCR_TEXT,
             plain_text="",
-            scan=scan_file(1),
-            ocr_file=ocr_file("Nowy tekst."),
+            scan=scan_file("Nowy tekst."),
         )
 
         # Act
@@ -400,9 +384,9 @@ class TestContextualMaterialForm:
         # Assert
         assert response.status_code == 302
         stored = Document.objects.get(pk=document.pk)
-        assert (stored.kind, stored.text) == (Document.Kind.OCR, "Nowy tekst.")
+        assert (stored.kind, stored.text) == (Document.Kind.OCR, "Nowy tekst.\n")
 
-    def test_us_wr_07_ac2_switching_plain_text_to_ocr_text_requires_files(
+    def test_us_wr_07_ac2_switching_plain_text_to_ocr_text_requires_a_scan(
         self, admin_client: Client
     ) -> None:
         # Arrange
@@ -416,7 +400,7 @@ class TestContextualMaterialForm:
         response = admin_client.post(change_url(material), data)
 
         # Assert
-        assert set(form_errors(response)) == {"scan", "ocr_file"}
+        assert set(form_errors(response)) == {"scan"}
 
     def test_us_wr_07_ac2_text_becomes_a_link_and_the_text_is_deleted(
         self, admin_client: Client

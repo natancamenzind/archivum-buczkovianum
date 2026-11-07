@@ -1025,7 +1025,7 @@ components:
         * `image` - Image
         * `document` - Document file
         * `external_media` - External audio or video link
-        * `ocr_text` - OCR text (scan + OCR file)
+        * `ocr_text` - OCR text (searchable PDF scan)
         * `plain_text` - Plain text
     NoteCard:
       type: object

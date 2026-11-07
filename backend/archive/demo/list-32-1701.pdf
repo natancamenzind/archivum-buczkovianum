@@ -1,65 +1,163 @@
-%PDF-1.4
+%PDF-1.3
+%‚„œ”
 1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
+<<
+/Producer (pypdf)
+>>
 endobj
 2 0 obj
-<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R] /Count 4 >>
+<<
+/Type /Pages
+/Count 4
+/Kids [ 4 0 R 6 0 R 8 0 R 10 0 R ]
+>>
 endobj
 3 0 obj
-<< /Length 65 >>
-stream
-BT /F1 18 Tf 72 720 Td (List nr 32, ML 1701 - strona 1 z 4) Tj ET
-endstream
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
 endobj
 4 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 3 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 5 0 R
+>>
 endobj
 5 0 obj
-<< /Length 65 >>
+<<
+/Length 250
+>>
 stream
-BT /F1 18 Tf 72 720 Td (List nr 32, ML 1701 - strona 2 z 4) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Drogi Przyjacielu, pisz do Ciebie pierwszego padziernika, w deszczowy dzie.) Tj T* (Rkopis jest prawie skoczony, cho wci poprawiam rozdzia o dezerterze. Listy) Tj T* (przychodziy rzadko i zawsze otwarte.) Tj ET
 endstream
 endobj
 6 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 5 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 7 0 R
+>>
 endobj
 7 0 obj
-<< /Length 65 >>
+<<
+/Length 176
+>>
 stream
-BT /F1 18 Tf 72 720 Td (List nr 32, ML 1701 - strona 3 z 4) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Kiedy pisa, nie podnosi gowy znad papieru. Na strychu znaleziono stary) Tj T* (karabin owinity w pÛtno. MrÛz ci kaue w jedn noc.) Tj ET
 endstream
 endobj
 8 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 7 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 9 0 R
+>>
 endobj
 9 0 obj
-<< /Length 65 >>
+<<
+/Length 254
+>>
 stream
-BT /F1 18 Tf 72 720 Td (List nr 32, ML 1701 - strona 4 z 4) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Chopcy biegali po zamarznitym stawie, nie bojc si niczego. W karczmie) Tj T* (mÛwiono szeptem o tym, co stao si w ssiedniej wsi. Wojna przesza przez wie) Tj T* (trzy razy i za kadym razem zabraa co innego.) Tj ET
 endstream
 endobj
 10 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 9 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 11 0 R
+>>
 endobj
 11 0 obj
-<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+<<
+/Length 220
+>>
+stream
+BT /F1 11 Tf 14 TL 56 780 Td (Pod lasem staa sama jedna chata z zapadnitym dachem. Kady, kto wraca z) Tj T* (frontu, by kim innym ni ten, kto odchodzi. Nad potokiem unosia si mga a) Tj T* (do poudnia.) Tj ET
+endstream
 endobj
 xref
 0 12
 0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000134 00000 n 
-0000000249 00000 n 
-0000000376 00000 n 
-0000000491 00000 n 
-0000000618 00000 n 
-0000000733 00000 n 
-0000000860 00000 n 
-0000000975 00000 n 
-0000001103 00000 n 
+0000000015 00000 n 
+0000000054 00000 n 
+0000000132 00000 n 
+0000000181 00000 n 
+0000000584 00000 n 
+0000000885 00000 n 
+0000001288 00000 n 
+0000001515 00000 n 
+0000001918 00000 n 
+0000002223 00000 n 
+0000002628 00000 n 
 trailer
-<< /Size 12 /Root 1 0 R >>
+<<
+/Size 12
+/Root 3 0 R
+/Info 1 0 R
+>>
 startxref
-1174
+2900
 %%EOF

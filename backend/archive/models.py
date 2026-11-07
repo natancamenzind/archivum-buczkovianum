@@ -5,7 +5,7 @@ in field definitions, database constraints, `clean()` and `save()`. There are no
 """
 
 from bisect import bisect_right
-from collections.abc import Callable, Collection
+from collections.abc import Callable, Collection, Sequence
 from dataclasses import dataclass
 from typing import Any, ClassVar, Self, cast
 
@@ -375,7 +375,7 @@ class ContentKind(models.TextChoices):
     IMAGE = "image", _("Image")
     DOCUMENT = "document", _("Document file")
     EXTERNAL_MEDIA = "external_media", _("External audio or video link")
-    OCR_TEXT = "ocr_text", _("OCR text (scan + OCR file)")
+    OCR_TEXT = "ocr_text", _("OCR text (searchable PDF scan)")
     PLAIN_TEXT = "plain_text", _("Plain text")
 
 
@@ -1010,9 +1010,11 @@ class Document(BaseModel):
             return owner.is_main
         return isinstance(owner, (Note, SecondaryText, ContextualMaterial))
 
-    def set_ocr_text(self, raw: str) -> None:
-        """Load Tesseract plain-text output: pages separated by a form feed (`\\f`)."""
-        pages = raw.removesuffix("\f").split("\f")
+    def set_ocr_pages(self, pages: Sequence[str]) -> None:
+        """Load the text of each scan page, read from the scan's text layer (`archive.uploads`).
+
+        A page without text still gets its offset, so there is one offset per scan page.
+        """
         offsets, position = [], 0
         for page in pages:
             offsets.append(position)
@@ -1042,7 +1044,7 @@ class Document(BaseModel):
             and self._saved_page_offsets == self.page_offsets
         ):
             raise ValidationError(
-                {"text": _("Upload a new OCR file to change an OCR text, so pages stay aligned.")}
+                {"text": _("Upload a new scan to change an OCR text, so pages stay aligned.")}
             )
 
 

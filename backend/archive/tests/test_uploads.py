@@ -1,4 +1,4 @@
-"""Uploading a typescript's text: a scan and its OCR file (US-WR-04)."""
+"""Uploading a typescript's text: a searchable PDF scan, which carries its OCR text (US-WR-04)."""
 
 import random
 from typing import TYPE_CHECKING, Any
@@ -21,7 +21,7 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
-from archive.tests.files import ocr_file, scan_file
+from archive.tests.files import SCAN_WITHOUT_TEXT, scan_file
 from archive.uploads import load_ocr_upload
 from search.models import EntityType
 from search.query import search
@@ -133,65 +133,66 @@ def novel(words: int, seed: int = 16) -> list[str]:
 
 @pytest.mark.django_db
 class TestLoadOcrUpload:
-    def test_us_wr_04_ac1_loads_scan_and_pages_into_a_new_document(self) -> None:
+    def test_us_wr_04_ac1_loads_scan_and_page_texts_into_a_new_document(self) -> None:
         # Arrange
-        scan, ocr = scan_file(2), ocr_file("Czarny potok. ", "Las.")
+        scan = scan_file("Czarny potok.", "Las.")
 
         # Act
-        document = load_ocr_upload(None, scan, ocr)
+        document = load_ocr_upload(None, scan)
 
         # Assert
         assert document.pk is None
-        assert (document.kind, document.text) == (Document.Kind.OCR, "Czarny potok. Las.")
+        assert (document.kind, document.text) == (Document.Kind.OCR, "Czarny potok.\nLas.\n")
         assert document.page_offsets == [0, 14]
         assert document.scan.name == "scan.pdf"
 
-    def test_us_wr_04_ac2_rejects_page_count_mismatch_with_both_counts(self) -> None:
-        # Arrange
-        scan, ocr = scan_file(12), ocr_file(*["Strona."] * 11)
+    def test_us_wr_04_ac2_rejects_a_scan_without_text(self) -> None:
+        # Arrange: a PDF of page images only, never run through OCR
+        scan = scan_file("", "")
 
         # Act
         with pytest.raises(ValidationError) as raised:
-            load_ocr_upload(None, scan, ocr)
+            load_ocr_upload(None, scan)
 
         # Assert
-        assert raised.value.message_dict == {"ocr_file": ["Skan ma 12 stron, plik OCR ma 11."]}
+        assert raised.value.messages == [SCAN_WITHOUT_TEXT]
 
-    @pytest.mark.parametrize(
-        ("scan_pages", "expected"),
-        [
-            (1, "Skan ma 1 stronę, plik OCR ma 2."),
-            (22, "Skan ma 22 strony, plik OCR ma 23."),
-            (5, "Skan ma 5 stron, plik OCR ma 6."),
-        ],
-    )
-    def test_us_wr_04_ac2_page_count_mismatch_uses_polish_plural_forms(
-        self, scan_pages: int, expected: str
-    ) -> None:
-        # Arrange
-        scan, ocr = scan_file(scan_pages), ocr_file(*["Strona."] * (scan_pages + 1))
+    def test_us_wr_04_ac2_a_page_without_text_keeps_its_place(self) -> None:
+        # Arrange: a blank page between two pages of text
+        scan = scan_file("Jeden.", "", "Trzy.")
 
         # Act
-        with pytest.raises(ValidationError) as raised:
-            load_ocr_upload(None, scan, ocr)
+        document = load_ocr_upload(None, scan)
 
         # Assert
-        assert raised.value.message_dict == {"ocr_file": [expected]}
+        assert document.text == "Jeden.\nTrzy.\n"
+        assert document.page_offsets == [0, 7, 7]
+        assert [document.page_number(0), document.page_number(7)] == [1, 3]
 
-    def test_us_wr_04_ac2_loads_a_new_text_into_the_same_document(self) -> None:
+    def test_us_wr_04_ac2_joins_words_split_at_a_line_end(self) -> None:
+        # Arrange: OCR programs mark a word split at a line end with a soft hyphen
+        scan = scan_file("Zoba\xad\nczyli ją   \npotem. Prze\xad\nświad\xad\nczony był.")
+
+        # Act
+        document = load_ocr_upload(None, scan)
+
+        # Assert
+        assert document.text == "Zobaczyli\nją\npotem. Przeświadczony\nbył.\n"
+
+    def test_us_wr_04_ac1_loads_a_new_text_into_the_same_document(self) -> None:
         # Arrange
         typescript = TypescriptFactory.create()
         document = typescript.document
         assert document is not None
 
         # Act
-        loaded = load_ocr_upload(document, scan_file(1), ocr_file("Nowy tekst."))
+        loaded = load_ocr_upload(document, scan_file("Nowy tekst."))
 
         # Assert
         assert loaded is document
-        assert document.text == "Nowy tekst."
+        assert document.text == "Nowy tekst.\n"
 
-    def test_us_wr_04_ac2_rejected_files_leave_the_document_unchanged(self) -> None:
+    def test_us_wr_04_ac2_rejected_scan_leaves_the_document_unchanged(self) -> None:
         # Arrange
         typescript = TypescriptFactory.create()
         document = typescript.document
@@ -200,36 +201,32 @@ class TestLoadOcrUpload:
 
         # Act
         with pytest.raises(ValidationError) as raised:
-            load_ocr_upload(document, scan_file(1), ocr_file("Jeden.", "Dwa."))
+            load_ocr_upload(document, scan_file(""))
 
         # Assert
-        assert "ocr_file" in raised.value.message_dict
+        assert raised.value.messages == [SCAN_WITHOUT_TEXT]
         assert (document.scan.name, document.text, document.page_offsets) == before
 
-    def test_us_wr_04_unreadable_pdf_and_non_utf8_text_are_errors(self) -> None:
+    def test_us_wr_04_unreadable_pdf_is_an_error(self) -> None:
         # Arrange
         scan = SimpleUploadedFile("scan.pdf", b"not a pdf")
-        ocr = ocr_file("Zażółć gęślą jaźń.", encoding="cp1250")
 
         # Act
         with pytest.raises(ValidationError) as raised:
-            load_ocr_upload(None, scan, ocr)
+            load_ocr_upload(None, scan)
 
         # Assert
-        assert raised.value.message_dict == {
-            "scan": ["Skan nie jest czytelnym plikiem PDF."],
-            "ocr_file": ["Plik OCR nie jest tekstem w UTF-8. Zapisz go w UTF-8 i wgraj ponownie."],
-        }
+        assert raised.value.messages == ["Skan nie jest czytelnym plikiem PDF."]
 
 
 @pytest.mark.django_db
 class TestTypescriptForm:
-    def test_us_wr_04_ac1_adds_a_typescript_with_scan_and_ocr_file(
+    def test_us_wr_04_ac1_adds_a_typescript_with_a_searchable_scan(
         self, admin_client: Client
     ) -> None:
         # Arrange
         work = WorkFactory.create()
-        data = form_data(work, scan=scan_file(2), ocr_file=ocr_file("Czarny potok. ", "Las."))
+        data = form_data(work, scan=scan_file("Czarny potok.", "Las."))
 
         # Act
         response = admin_client.post(ADD_URL, data)
@@ -239,12 +236,12 @@ class TestTypescriptForm:
         typescript = Typescript.objects.get(work=work)
         assert typescript.document is not None
         assert typescript.document.kind == Document.Kind.OCR
-        assert typescript.document.text == "Czarny potok. Las."
+        assert typescript.document.text == "Czarny potok.\nLas.\n"
         assert typescript.document.page_count == 2
         scan_name = typescript.document.scan.name
         assert scan_name is not None and scan_name.endswith(".pdf")
 
-    def test_us_wr_04_ac1_requires_scan_and_ocr_file_on_create(self, admin_client: Client) -> None:
+    def test_us_wr_04_ac1_requires_a_scan_on_create(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
 
@@ -252,25 +249,11 @@ class TestTypescriptForm:
         response = admin_client.post(ADD_URL, form_data(work))
 
         # Assert
-        errors = form_errors(response)
-        assert errors["scan"] == ["To pole jest wymagane."]
-        assert errors["ocr_file"] == ["To pole jest wymagane."]
-        assert "__all__" not in errors
+        assert form_errors(response) == {"scan": ["To pole jest wymagane."]}
         assert not Typescript.objects.exists()
         assert not Document.objects.exists()
 
-    def test_us_wr_04_ac1_requires_both_files_on_create(self, admin_client: Client) -> None:
-        # Arrange
-        work = WorkFactory.create()
-
-        # Act
-        response = admin_client.post(ADD_URL, form_data(work, scan=scan_file(1)))
-
-        # Assert
-        assert list(form_errors(response)) == ["ocr_file"]
-        assert not Document.objects.exists()
-
-    def test_us_wr_04_ac1_change_without_files_keeps_text(self, admin_client: Client) -> None:
+    def test_us_wr_04_ac1_change_without_a_scan_keeps_text(self, admin_client: Client) -> None:
         # Arrange
         typescript = TypescriptFactory.create()
         document = typescript.document
@@ -287,43 +270,35 @@ class TestTypescriptForm:
         assert typescript.document == document
         assert typescript.document.text == document.text
 
-    @pytest.mark.parametrize("uploaded", ["scan", "ocr_file"])
-    def test_us_wr_04_ac2_change_with_one_file_asks_for_the_other(
-        self, admin_client: Client, uploaded: str
-    ) -> None:
-        # Arrange
-        typescript = TypescriptFactory.create()
-        files = {"scan": scan_file(1), "ocr_file": ocr_file("Nowy tekst.")}
-        data = typescript_data(typescript, **{uploaded: files[uploaded]})
-
-        # Act
-        response = admin_client.post(change_url(typescript), data)
-
-        # Assert
-        missing = "ocr_file" if uploaded == "scan" else "scan"
-        assert form_errors(response) == {
-            missing: ["Wgraj skan i plik OCR razem, żeby dało się porównać ich strony."]
-        }
-        typescript.refresh_from_db()
-        assert typescript.document is not None
-        assert typescript.document.text == "Czarny potok płynie przez las."
-
-    def test_us_wr_04_ac2_rejects_page_count_mismatch_with_both_counts(
-        self, admin_client: Client
-    ) -> None:
+    def test_us_wr_04_ac2_rejects_a_scan_without_text(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
-        data = form_data(work, scan=scan_file(12), ocr_file=ocr_file(*["Strona."] * 11))
+        data = form_data(work, scan=scan_file("", "", ""))
 
         # Act
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        assert form_errors(response) == {"ocr_file": ["Skan ma 12 stron, plik OCR ma 11."]}
+        assert form_errors(response) == {"scan": [SCAN_WITHOUT_TEXT]}
         assert not Typescript.objects.exists()
         assert not Document.objects.exists()
 
-    def test_us_wr_04_ac2_replacing_text_reanchors_fragments(self, admin_client: Client) -> None:
+    def test_us_wr_04_ac2_scan_is_read_only_when_the_rest_of_the_form_is_valid(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange: reading a long scan takes seconds, and a rejected form loses its file anyway
+        work = WorkFactory.create()
+        data = form_data(work, title="", scan=scan_file("", ""))
+
+        # Act
+        response = admin_client.post(ADD_URL, data)
+
+        # Assert
+        assert list(form_errors(response)) == ["title"]
+
+    def test_us_wr_04_ac1_replacing_the_scan_reanchors_fragments(
+        self, admin_client: Client
+    ) -> None:
         # Arrange: "Czarny potok płynie przez las."
         typescript = TypescriptFactory.create()
         document = typescript.document
@@ -331,8 +306,8 @@ class TestTypescriptForm:
         in_place = FragmentFactory.create(document=document, start=0, end=12)
         moved = FragmentFactory.create(document=document, start=13, end=19)
         lost = FragmentFactory.create(document=document, start=26, end=30)
-        new_text = ocr_file("Czarny potok. Nad lasem płynie.", "Koniec.")
-        data = typescript_data(typescript, scan=scan_file(2), ocr_file=new_text)
+        scan = scan_file("Czarny potok. Nad lasem płynie.", "Koniec.")
+        data = typescript_data(typescript, scan=scan)
 
         # Act
         response = admin_client.post(change_url(typescript), data)
@@ -348,9 +323,9 @@ class TestTypescriptForm:
         assert (moved.quote, moved.start, moved.needs_review) == ("płynie", 24, True)
         assert (lost.quote, lost.start, lost.needs_review) == ("las.", 26, True)
         assert typescript.document is not None
-        assert typescript.document.page_offsets == [0, 31]
+        assert typescript.document.page_offsets == [0, 32]
 
-    def test_us_wr_04_ac2_replacing_text_deletes_the_old_scan(
+    def test_us_wr_04_ac1_replacing_the_scan_deletes_the_old_one(
         self,
         admin_client: Client,
         django_capture_on_commit_callbacks: DjangoCaptureOnCommitCallbacks,
@@ -361,7 +336,7 @@ class TestTypescriptForm:
         storage = typescript.document.scan.storage
         old_name = typescript.document.scan.name
         assert old_name and storage.exists(old_name)
-        data = typescript_data(typescript, scan=scan_file(1), ocr_file=ocr_file("Nowy tekst."))
+        data = typescript_data(typescript, scan=scan_file("Nowy tekst."))
 
         # Act
         with django_capture_on_commit_callbacks(execute=True):
@@ -374,21 +349,19 @@ class TestTypescriptForm:
         assert storage.exists(new_name)
         assert not storage.exists(old_name)
 
-    def test_us_wr_04_ac2_rejected_upload_keeps_old_document(self, admin_client: Client) -> None:
+    def test_us_wr_04_ac2_rejected_scan_keeps_old_document(self, admin_client: Client) -> None:
         # Arrange
         typescript = TypescriptFactory.create()
         document = typescript.document
         assert document is not None
         fragment = FragmentFactory.create(document=document, start=0, end=12)
-        data = typescript_data(
-            typescript, scan=scan_file(3), ocr_file=ocr_file("Inny tekst.", "Druga strona.")
-        )
+        data = typescript_data(typescript, scan=scan_file("", ""))
 
         # Act
         response = admin_client.post(change_url(typescript), data)
 
         # Assert
-        assert form_errors(response) == {"ocr_file": ["Skan ma 3 strony, plik OCR ma 2."]}
+        assert form_errors(response) == {"scan": [SCAN_WITHOUT_TEXT]}
         stored = Document.objects.get(pk=document.pk)
         assert (stored.scan.name, stored.text, stored.page_offsets) == (
             document.scan.name,
@@ -414,49 +387,28 @@ class TestTypescriptForm:
         # Arrange
         work = WorkFactory.create()
         scan = SimpleUploadedFile("scan.pdf", b"%PDF-1.4 not really")
-        data = form_data(work, scan=scan, ocr_file=ocr_file("Tekst."))
 
         # Act
-        response = admin_client.post(ADD_URL, data)
+        response = admin_client.post(ADD_URL, form_data(work, scan=scan))
 
         # Assert
         assert form_errors(response) == {"scan": ["Skan nie jest czytelnym plikiem PDF."]}
 
-    def test_us_wr_04_non_utf8_ocr_file_is_a_form_error(self, admin_client: Client) -> None:
+    def test_us_wr_04_wrong_file_extension_is_a_form_error(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
-        ocr = ocr_file("Zażółć gęślą jaźń.", encoding="cp1250")
-        data = form_data(work, scan=scan_file(1), ocr_file=ocr)
+        data = form_data(work, scan=scan_file("Tekst.", name="scan.png"))
 
         # Act
         response = admin_client.post(ADD_URL, data)
 
         # Assert
-        assert form_errors(response) == {
-            "ocr_file": ["Plik OCR nie jest tekstem w UTF-8. Zapisz go w UTF-8 i wgraj ponownie."]
-        }
-
-    def test_us_wr_04_wrong_file_extensions_are_form_errors(self, admin_client: Client) -> None:
-        # Arrange
-        work = WorkFactory.create()
-        data = form_data(
-            work,
-            scan=scan_file(1, name="scan.png"),
-            ocr_file=ocr_file("Tekst.", name="scan.docx"),
-        )
-
-        # Act
-        response = admin_client.post(ADD_URL, data)
-
-        # Assert
-        assert set(form_errors(response)) == {"scan", "ocr_file"}
+        assert set(form_errors(response)) == {"scan"}
 
     def test_us_wr_04_ac3_marking_main_unmarks_previous(self, admin_client: Client) -> None:
         # Arrange
         previous = TypescriptFactory.create(is_main=True)
-        data = form_data(
-            previous.work, is_main="on", scan=scan_file(1), ocr_file=ocr_file("Tekst.")
-        )
+        data = form_data(previous.work, is_main="on", scan=scan_file("Tekst."))
 
         # Act
         response = admin_client.post(ADD_URL, data)
@@ -470,9 +422,7 @@ class TestTypescriptForm:
     def test_us_wr_04_ac4_save_updates_search_index(self, admin_client: Client) -> None:
         # Arrange
         typescript = TypescriptFactory.create(status=Status.PUBLISHED, title="Maszynopis")
-        data = typescript_data(
-            typescript, scan=scan_file(1), ocr_file=ocr_file("Wertepy prowadzą przez bagna.")
-        )
+        data = typescript_data(typescript, scan=scan_file("Wertepy prowadzą przez bagna."))
         assert found("potok") == [(EntityType.TYPESCRIPT, "Maszynopis")]
 
         # Act
@@ -482,6 +432,20 @@ class TestTypescriptForm:
         assert response.status_code == 302
         assert found("bagna") == [(EntityType.TYPESCRIPT, "Maszynopis")]
         assert found("potok") == []
+
+    def test_us_wr_04_ac4_search_finds_a_word_split_at_a_line_end(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        typescript = TypescriptFactory.create(status=Status.PUBLISHED, title="Maszynopis")
+        data = typescript_data(typescript, scan=scan_file("Przez wer\xad\ntepy."))
+
+        # Act
+        response = admin_client.post(change_url(typescript), data)
+
+        # Assert
+        assert response.status_code == 302
+        assert found("wertepy") == [(EntityType.TYPESCRIPT, "Maszynopis")]
 
     def test_us_wr_04_change_form_shows_the_current_scan_and_page_count(
         self, admin_client: Client
@@ -498,7 +462,7 @@ class TestTypescriptForm:
         assert f'href="{typescript.document.scan.url}"' in content
         assert 'name="document"' not in content
         assert 'name="scan"' in content
-        assert 'name="ocr_file"' in content
+        assert 'name="ocr_file"' not in content
         assert 'name="plain_text"' not in content
         assert '<div class="readonly">1</div>' in content
 
@@ -520,11 +484,7 @@ class TestTypescriptForm:
         assert len("".join(pages).encode()) > 1_000_000
         work = WorkFactory.create()
         data = form_data(
-            work,
-            title="Cała powieść",
-            status=Status.PUBLISHED,
-            scan=scan_file(len(pages)),
-            ocr_file=ocr_file(*pages),
+            work, title="Cała powieść", status=Status.PUBLISHED, scan=scan_file(*pages)
         )
 
         # Act
