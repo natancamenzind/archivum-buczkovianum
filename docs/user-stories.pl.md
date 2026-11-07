@@ -180,7 +180,7 @@ Jako RA widzę wszystko, co jest powiązane z tagiem.
 1. Hiro: linia typu z rodzajem tekstu, a dla listu z nadawcą i datą („List · Leopold Buczkowski · 1.10.1947”); tytuł; opis. Bez grafiki w nagłówku.
 2. Kolumna kontekstu: „Powiązane utwory” (R-03).
 3. Kolumna główna, kolejno:
-   1. „Transkrypcja”: pełny tekst w czytniku (R-11) albo jako tekst lity;
+   1. pełny tekst w czytniku (R-11) albo jako tekst lity, bez nagłówka;
    2. „Powiązane fragmenty”: podgląd (R-09) fragmentów maszynopisu, które mają co najmniej jeden wspólny tag z tym tekstem lub jego fragmentami, jako karty fragmentów (R-10). Bez linku „wszystkie”.
 4. Kolumna tagów: „Powiązane tagi”, czyli tagi na tekście, jego fragmentach i jego powiązaniach z utworami.
 
