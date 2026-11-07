@@ -280,7 +280,7 @@ class TestEditorPanel:
 @pytest.mark.django_db
 class TestRichTextInThePanel:
     @pytest.mark.parametrize(
-        "model", ["work", "tag", "typescript", "note", "secondarytext", "contextualmaterial"]
+        "model", ["work", "tag", "typescript", "secondarytext", "contextualmaterial"]
     )
     def test_us_wr_03_ac1_descriptions_use_the_rich_text_editor(
         self, admin_client: Client, model: str

@@ -51,13 +51,10 @@ def page(client: Client, note: Note) -> dict[str, Any]:
 
 @pytest.mark.django_db
 class TestNotePageEndpoint:
-    def test_us_ra_11_ac1_the_hero_has_shelfmark_title_and_description(
-        self, client: Client
-    ) -> None:
+    def test_us_ra_11_ac1_the_hero_has_shelfmark_and_title(self, client: Client) -> None:
         # Arrange
         note = published_note(
             title="Notes 18 · karta 4",
-            description="<p>Notatka o dezerterze.</p>",
             institution=InstitutionFactory.create(abbreviation="ML"),
             shelfmark="1678.0104",
         )
@@ -68,8 +65,9 @@ class TestNotePageEndpoint:
         # Assert
         assert result["id"] == note.pk
         assert result["title"] == "Notes 18 · karta 4"
-        assert result["description"] == "<p>Notatka o dezerterze.</p>"
         assert result["shelfmark"] == "ML, sygn. 1678.0104"
+        # ARC-35: a note has no description.
+        assert "description" not in result
 
     def test_us_ra_11_ac1_a_note_without_a_shelfmark_has_none(self, client: Client) -> None:
         # Arrange
@@ -79,7 +77,7 @@ class TestNotePageEndpoint:
         result = page(client, note)
 
         # Assert
-        assert (result["shelfmark"], result["description"]) == ("", "")
+        assert result["shelfmark"] == ""
 
     def test_us_ra_11_ac2_related_works_by_first_edition(self, client: Client) -> None:
         # Arrange
@@ -334,7 +332,6 @@ class TestNotePageSchema:
                 "id",
                 "is_draft",
                 "title",
-                "description",
                 "header_image",
                 "header_image_alt",
                 "shelfmark",

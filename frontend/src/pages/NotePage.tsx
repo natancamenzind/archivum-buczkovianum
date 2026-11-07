@@ -6,7 +6,6 @@ import { EntityLayout } from "@/components/EntityLayout";
 import { MediaContent } from "@/components/MediaContent";
 import { PageHeader } from "@/components/PageHeader";
 import { RelatedFragments, RelatedTags, RelatedWorks } from "@/components/Related";
-import { RichText } from "@/components/RichText";
 import { copy } from "@/copy/pl";
 import { api } from "@/lib/api";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -64,7 +63,6 @@ export function NotePage() {
         <PageHeader
           label={[copy.note.label, note.shelfmark].filter(Boolean).join(" · ")}
           title={note.title}
-          description={note.description === "" ? undefined : <RichText html={note.description} />}
           image={
             note.header_image === ""
               ? undefined

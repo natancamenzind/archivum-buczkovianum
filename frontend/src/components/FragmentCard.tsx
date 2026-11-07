@@ -3,7 +3,6 @@ import { Link } from "react-router";
 
 import type { components } from "@/api/schema";
 import { NoteIcon } from "@/components/icons";
-import { RichText } from "@/components/RichText";
 import { ScanPage } from "@/components/ScanPage";
 import { TagList } from "@/components/TagList";
 import { copy, fragmentLabel, scanLabel } from "@/copy/pl";
@@ -21,16 +20,14 @@ interface EntryCardProps {
   /** The quote, the scan thumbnail or the image, between the location and the shelfmark. */
   children: ReactNode;
   shelfmark: string;
-  description?: ReactNode;
   tags: Tag[];
 }
 
 /**
  * The layout of "Fragment / Maszynopis" and "Fragment / Zapisek" in design/components/. The
- * location line's link covers the whole card; links in the description and the tags sit above
- * it and keep their own targets.
+ * location line's link covers the whole card; the tags sit above it and keep their own targets.
  */
-function EntryCard({ location, type, to, children, shelfmark, description, tags }: EntryCardProps) {
+function EntryCard({ location, type, to, children, shelfmark, tags }: EntryCardProps) {
   return (
     <article className="relative flex flex-col gap-12 border-b border-border pb-24">
       <div className="flex items-center justify-between gap-12">
@@ -44,11 +41,6 @@ function EntryCard({ location, type, to, children, shelfmark, description, tags 
       </div>
       {children}
       {shelfmark !== "" && <p className="text-lora-tytul-elementu text-foreground">{shelfmark}</p>}
-      {description !== undefined && (
-        <div data-slot="card-description" className="[&_a]:relative">
-          {description}
-        </div>
-      )}
       {tags.length > 0 && (
         <div className="relative">
           <TagList tags={tags} />
@@ -122,7 +114,7 @@ export function FragmentCard({ fragment }: { fragment: Fragment }) {
 
 /**
  * The note card (US-RA-04 AC3): title and type, the image or the placeholder board, then
- * shelfmark, description and tags. It opens the note's page.
+ * shelfmark and tags. It opens the note's page, which carries the description (ARC-35).
  */
 export function NoteCard({ note }: { note: Note }) {
   return (
@@ -131,11 +123,6 @@ export function NoteCard({ note }: { note: Note }) {
       type={copy.card.types.note}
       to={note.url}
       shelfmark={note.shelfmark}
-      description={
-        note.description === "" ? undefined : (
-          <RichText html={note.description} className="text-lora-glosa text-muted-foreground" />
-        )
-      }
       tags={note.tags}
     >
       <MediaFrame>

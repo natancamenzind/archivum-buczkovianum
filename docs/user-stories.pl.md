@@ -127,7 +127,7 @@ Jako RA widzę korpus informacji o utworze; na pierwszy rzut oka tylko kluczowe 
 3. Kolumna główna, kolejno:
    1. „Maszynopisy”: numerowana lista maszynopisów utworu, każdy linkuje do swojej strony. Główny maszynopis ma adnotację „maszynopis, który służy za podstawę prezentowanych fragmentów”;
    2. „Fragmenty maszynopisu”: podgląd (R-09) fragmentów głównego maszynopisu jako karty fragmentów (R-10);
-   3. „Zapiski”: zapiski powiązane z utworem, jako karty zapisków: linia lokalizacji, etykieta typu, obraz (lub zaślepka), sygnatura, opis, tagi.
+   3. „Zapiski”: zapiski powiązane z utworem, jako karty zapisków: linia lokalizacji, etykieta typu, obraz (lub zaślepka), sygnatura, tagi.
 4. Kolumna tagów: każdy opublikowany tag, który odnosi się do utworu (definicja w US-RA-07 AC5), w tym tagi relacji (US-RA-05).
 5. Materiały kontekstowe (R-08): teksty sekundarne i materiały kontekstowe powiązane z utworem.
 
@@ -188,7 +188,7 @@ Jako RA widzę wszystko, co jest powiązane z tagiem.
 
 Nie ma jej w Figmie; używa układu strony tekstu sekundarnego.
 
-1. Hiro: „Zapisek · <sygnatura>”, tytuł, opcjonalny opis.
+1. Hiro: „Zapisek · <sygnatura>”, tytuł. Zapisek nie ma opisu.
 2. Kolumna kontekstu: powiązane utwory (R-03).
 3. Kolumna główna, kolejno:
    1. treść, zależnie od typu:
@@ -296,7 +296,7 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 
 ### US-WR-05 — Dodawanie zapisku
 
-1. Pola: tytuł (wymagany, np. „Notes 18 · karta 4”); opcjonalny opis; sygnatura; treść.
+1. Pola: tytuł (wymagany, np. „Notes 18 · karta 4”); sygnatura; treść. Zapisek nie ma opisu.
 2. Treść to jedno z: obrazek; dokument; zewnętrzny link audio/wideo; tekst OCR (skan w przeszukiwalnym PDF, sprawdzany jak w US-WR-04 AC2); tekst lity (np. transkrypcja listu).
 3. Może być w relacji z jednym lub wieloma utworami.
 

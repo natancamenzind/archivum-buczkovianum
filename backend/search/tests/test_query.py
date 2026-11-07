@@ -114,7 +114,7 @@ class TestResults:
 
     def test_us_ra_15_ac6_snippet_text_is_escaped(self) -> None:
         # Arrange
-        NoteFactory.create(status=PUBLISHED, description='Las & "potok"')
+        ContextualMaterialFactory.create(status=PUBLISHED, description='Las & "potok"')
 
         # Act
         results = search("las")
@@ -135,14 +135,16 @@ class TestResults:
 
     def test_us_ra_15_ac4_more_occurrences_rank_higher(self) -> None:
         # Arrange
-        NoteFactory.create(status=PUBLISHED, title="Notes 1", description="Las.")
-        NoteFactory.create(status=PUBLISHED, title="Notes 2", description="Las, las i las.")
+        ContextualMaterialFactory.create(status=PUBLISHED, title="Zdjęcie 1", description="Las.")
+        ContextualMaterialFactory.create(
+            status=PUBLISHED, title="Zdjęcie 2", description="Las, las i las."
+        )
 
         # Act
         results = search("las")
 
         # Assert
-        assert titles(results) == [("note", "Notes 2"), ("note", "Notes 1")]
+        assert titles(results) == [("material", "Zdjęcie 2"), ("material", "Zdjęcie 1")]
 
     def test_us_ra_15_minus_excludes_a_word_and_or_joins_alternatives(self) -> None:
         # Arrange

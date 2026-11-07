@@ -31,7 +31,6 @@ def form_data(*works: Work, **fields: Any) -> dict[str, Any]:
     return {
         "title": "Notes 18 · karta 4",
         "status": Status.DRAFT,
-        "description": "",
         "shelfmark": "",
         "works": [work.pk for work in works],
         **fields,
@@ -89,16 +88,14 @@ def found(text: str) -> list[tuple[str, str]]:
 
 @pytest.mark.django_db
 class TestNoteForm:
-    def test_us_wr_05_ac1_form_has_title_description_shelfmark_and_content(
-        self, admin_client: Client
-    ) -> None:
+    def test_us_wr_05_ac1_form_has_title_shelfmark_and_content(self, admin_client: Client) -> None:
         # Arrange & Act
         response = admin_client.get(ADD_URL)
 
         # Assert
         fields = response.context["adminform"].form.fields
         assert fields["title"].required
-        assert not fields["description"].required
+        assert "description" not in fields
         assert not fields["shelfmark"].required
         assert {"content_kind", "image", "file", "external_url", "scan"} <= set(fields)
         assert "ocr_file" not in fields

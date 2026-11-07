@@ -590,17 +590,12 @@ export interface components {
          * @enum {string}
          */
         MediaContentKindEnum: "image" | "document" | "external_media" | "ocr_text" | "plain_text";
-        /**
-         * @description The note card (US-RA-04 AC3). `description` is rich text: HTML, sanitized when an editor
-         *     saves it.
-         */
+        /** @description The note card (US-RA-04 AC3). */
         NoteCard: {
             readonly url: string;
             readonly title: string;
             /** @description E.g. "ML, sygn. 1678"; may be empty. */
             readonly shelfmark: string;
-            /** @description HTML. */
-            readonly description: string;
             /** @description Empty when the note is not an image. */
             readonly image: string;
             /** Image text alternative */
@@ -608,14 +603,12 @@ export interface components {
             /** @description Published tags, by name. */
             readonly tags: components["schemas"]["TagChip"][];
         };
-        /** @description US-RA-11. `description` is rich text: HTML, sanitized when an editor saves it. */
+        /** @description US-RA-11. */
         NotePage: {
             id: number;
             /** @description True only for staff previewing a draft (US-WR-13). */
             is_draft: boolean;
             title: string;
-            /** @description HTML. */
-            description: string;
             /** @description Shown behind the title; empty when there is none. */
             header_image: string;
             header_image_alt: string;

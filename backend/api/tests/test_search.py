@@ -201,20 +201,22 @@ class TestSearchEndpoint:
     ) -> None:
         # Arrange
         tag = TagFactory.create(status=PUBLISHED, title="Dezerter")
-        note = NoteFactory.create(status=PUBLISHED, title="Notes 18", description="Opis zapisku.")
-        note.tags.add(tag)
-        note.save()
+        material = ContextualMaterialFactory.create(
+            status=PUBLISHED, title="Zdjęcie", description="Opis materiału."
+        )
+        material.tags.add(tag)
+        material.save()
 
         # Act
         page = results(client, "dezerter")
 
         # Assert
-        assert page["notes"] == [
+        assert page["materials"] == [
             {
-                "url": note.get_absolute_url(),
-                "title": "Notes 18",
+                "url": material.get_absolute_url(),
+                "title": "Zdjęcie",
                 "shelfmark": "",
-                "snippet": "Opis zapisku.",
+                "snippet": "Opis materiału.",
             }
         ]
 

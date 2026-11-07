@@ -235,7 +235,6 @@ class Command(BaseCommand):
         note = saved(
             Note(
                 title="Notes 18 · karta 4",
-                description="<p>Notatka z notesu 18 o postaci dezertera.</p>",
                 institution=institution,
                 shelfmark="1678.0104",
                 content_kind=ContentKind.IMAGE,

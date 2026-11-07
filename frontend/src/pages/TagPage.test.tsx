@@ -61,7 +61,6 @@ const TAG: TagData = {
       url: "/zapiski/3",
       title: "Notes 18 · karta 4",
       shelfmark: "ML, sygn. 1678.0104",
-      description: "<p>Notatka o postaci dezertera.</p>",
       image: "",
       image_alt: "",
       tags: [{ slug: "dezerter", title: "Dezerter" }],
@@ -258,7 +257,6 @@ describe("TagPage", () => {
       "/zapiski/3",
     );
     expect(within(note).getByText("ML, sygn. 1678.0104")).toBeVisible();
-    expect(within(note).getByText("Notatka o postaci dezertera.")).toBeVisible();
     expect(await axeViolations(container)).toEqual([]);
   });
 

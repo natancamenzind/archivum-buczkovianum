@@ -42,7 +42,6 @@ const NOTE: NoteData = {
   id: 3,
   is_draft: false,
   title: "Notes 18 · karta 4",
-  description: "<p>Notatka o postaci dezertera.</p>",
   header_image: "",
   header_image_alt: "",
   shelfmark: "ML, sygn. 1678.0104",
@@ -141,7 +140,7 @@ describe("NotePage", () => {
     Reflect.deleteProperty(Element.prototype, "scrollIntoView");
   });
 
-  it("US-RA-11 AC1: the hero shows 'Zapisek · <shelfmark>', the title and the description", async () => {
+  it("US-RA-11 AC1: the hero shows 'Zapisek · <shelfmark>' and the title", async () => {
     mockPage();
 
     const { container } = await renderPage();
@@ -150,7 +149,6 @@ describe("NotePage", () => {
       within(hero()).getByRole("heading", { level: 1, name: "Notes 18 · karta 4" }),
     ).toBeVisible();
     expect(within(hero()).getByText("Zapisek · ML, sygn. 1678.0104")).toBeVisible();
-    expect(within(hero()).getByText("Notatka o postaci dezertera.")).toBeVisible();
     // No navigation item is active on a note page (R-07).
     const nav = screen.getByRole("navigation", { name: "Menu główne" });
     expect(within(nav).queryByRole("link", { current: "page" })).not.toBeInTheDocument();
@@ -174,8 +172,8 @@ describe("NotePage", () => {
     expect(screen.queryByText("Szkic — niewidoczny publicznie")).not.toBeInTheDocument();
   });
 
-  it("US-RA-11 AC1: a note without shelfmark or description shows 'Zapisek' and the title (R-02)", async () => {
-    mockPage({ shelfmark: "", description: "" });
+  it("US-RA-11 AC1: a note without a shelfmark shows 'Zapisek' and the title (R-02)", async () => {
+    mockPage({ shelfmark: "" });
 
     const { container } = await renderPage();
 
