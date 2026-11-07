@@ -212,9 +212,12 @@ describe("SiteLayout", () => {
 
     // At 1024 px the full row (about 1060 px) is wider than the 896 px of content.
     const header = screen.getByRole("banner");
-    expect(within(header).getByText("Archiwum literackie")).toHaveClass("hidden", "xl:inline");
+    expect(within(header).getByText("Archiwum literackie")).toHaveClass(
+      "hidden",
+      "lg:max-xl:hidden",
+    );
     for (const icon of mainNav().querySelectorAll("svg")) {
-      expect(icon).toHaveClass("lg:hidden", "xl:block");
+      expect(icon).toHaveClass("lg:max-xl:hidden");
     }
   });
 

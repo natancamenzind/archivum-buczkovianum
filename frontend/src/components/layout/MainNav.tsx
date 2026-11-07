@@ -32,7 +32,7 @@ export function MainNav() {
   return (
     <nav
       aria-label={copy.layout.navLabel}
-      className="fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-background lg:static lg:border-t-0 lg:bg-transparent"
+      className="fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-background lg:static lg:self-stretch lg:border-t-0 lg:bg-transparent"
     >
       {NAV_ITEMS.map(({ to, label, Icon }) => (
         <NavLink
@@ -49,7 +49,7 @@ export function MainNav() {
             )
           }
         >
-          <Icon className="size-16 text-icon group-aria-[current=page]:text-accent-icon lg:hidden xl:block" />
+          <Icon className="size-16 text-icon group-aria-[current=page]:text-accent-icon lg:max-xl:hidden" />
           {label}
         </NavLink>
       ))}

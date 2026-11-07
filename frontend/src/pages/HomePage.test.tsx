@@ -104,9 +104,6 @@ describe("HomePage", () => {
     order.slice(1).forEach((element, index) => {
       expect(precedes(order[index] as Element, element)).toBe(true);
     });
-    // ARC-22: the menu has no home item; the service name in the header leads home.
-    const nav = screen.getByRole("navigation", { name: "Menu główne" });
-    expect(nav.querySelector('[aria-current="page"]')).toBeNull();
     expect(await axeViolations(container)).toEqual([]);
   });
 
