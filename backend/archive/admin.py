@@ -293,7 +293,7 @@ class FragmentAdmin(SearchIndexedAdmin[Fragment]):
     )
     list_filter = ("needs_review", "is_featured")
     list_select_related = tuple(f"document__{owner}" for owner in Document.owner_accessors())
-    search_fields = ("quote", "description")
+    search_fields = ("quote",)
     ordering = ("-needs_review", "document", "start")
     readonly_fields = ("document", "quote")
     autocomplete_fields = ("tags",)

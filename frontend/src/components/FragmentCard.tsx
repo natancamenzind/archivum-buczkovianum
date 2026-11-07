@@ -85,8 +85,8 @@ function Thumbnail({ scan, page }: { scan: string; page: number }) {
 
 /**
  * The fragment card (R-10): location line with the source type, the quote, the scan page it
- * starts on for an OCR source, then shelfmark, description and tags. It opens the source,
- * scrolled to the fragment.
+ * starts on for an OCR source, then shelfmark and tags. It opens the source, scrolled to the
+ * fragment.
  */
 export function FragmentCard({ fragment }: { fragment: Fragment }) {
   const location = [fragment.work, fragmentLabel(fragment.number), scanLabel(fragment.scan_number)]
@@ -98,11 +98,6 @@ export function FragmentCard({ fragment }: { fragment: Fragment }) {
       type={copy.card.types[fragment.source_type]}
       to={fragment.url}
       shelfmark={fragment.shelfmark}
-      description={
-        fragment.description === "" ? undefined : (
-          <p className="text-lora-glosa text-muted-foreground">{fragment.description}</p>
-        )
-      }
       tags={fragment.tags}
     >
       <blockquote className="line-clamp-4 text-lora-tekst text-foreground">

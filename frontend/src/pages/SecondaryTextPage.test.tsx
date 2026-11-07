@@ -24,7 +24,6 @@ const FRAGMENT: Fragment = {
   scan: "",
   start_page: null,
   shelfmark: "ML, sygn. 1618.0009",
-  description: "Grzybniak leczy chorych podczas epidemii tyfusu.",
   tags: [{ slug: "pamiec", title: "Pamięć" }],
 };
 

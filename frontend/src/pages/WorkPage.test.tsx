@@ -25,7 +25,6 @@ const FRAGMENT: Fragment = {
   scan: "/media/scans/wertepy.pdf",
   start_page: 3,
   shelfmark: "ML, sygn. 1618.0009",
-  description: "Grzybniak leczy chorych podczas epidemii tyfusu.",
   tags: [{ slug: "epidemia", title: "Epidemia" }],
 };
 
@@ -53,7 +52,6 @@ const WORK: WorkData = {
         scan: "",
         start_page: null,
         shelfmark: "",
-        description: "",
         tags: [],
       },
     ],
@@ -231,7 +229,7 @@ describe("WorkPage", () => {
     if (first === undefined || second === undefined) {
       throw new Error("Expected two fragment cards.");
     }
-    // R-10: location line with the source type, quote, scan page, shelfmark, description, tags.
+    // R-10: location line with the source type, quote, scan page, shelfmark, tags.
     expect(
       within(first).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
     ).toHaveAttribute("href", "/typescripts/1?fragment=5");
@@ -239,9 +237,6 @@ describe("WorkPage", () => {
     expect(within(first).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
     expect(within(first).getByRole("img", { name: "Skan · strona 3" })).toBeVisible();
     expect(within(first).getByText("ML, sygn. 1618.0009")).toBeVisible();
-    expect(
-      within(first).getByText("Grzybniak leczy chorych podczas epidemii tyfusu."),
-    ).toBeVisible();
     expect(within(first).getByRole("link", { name: "Epidemia" })).toHaveAttribute(
       "href",
       "/tags/epidemia",
@@ -249,7 +244,7 @@ describe("WorkPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("R-10, ARC-7: a fragment without scan, scan number, shelfmark, description or tags shows none of them", async () => {
+  it("R-10, ARC-7: a fragment without scan, scan number, shelfmark or tags shows none of them", async () => {
     mockPage();
 
     const { container } = await renderPage();

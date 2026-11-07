@@ -113,7 +113,6 @@ class TestWorkPageEndpoint:
             end=8,
             unit_number="1618",
             scan_number="0009",
-            description="Grzybniak leczy chorych.",
         )
         first.tags.add(epidemia, TagFactory.create(status=Status.DRAFT))
         FragmentFactory.create(document=document, start=9, end=15)
@@ -139,7 +138,6 @@ class TestWorkPageEndpoint:
             "scan": document.scan.url,
             "start_page": 1,
             "shelfmark": "ML, sygn. 1618.0009",
-            "description": "Grzybniak leczy chorych.",
             "tags": [{"slug": "epidemia", "title": "Epidemia"}],
         }
         assert result["fragments"]["items"][0]["start_page"] == 2
@@ -448,7 +446,6 @@ class TestWorkPageSchema:
                     "scan",
                     "start_page",
                     "shelfmark",
-                    "description",
                     "tags",
                 ),
             ),

@@ -745,9 +745,6 @@ components:
           type: string
           readOnly: true
           description: E.g. "ML, sygn. 1618.0009"; may be empty.
-        description:
-          type: string
-          readOnly: true
         tags:
           type: array
           items:
@@ -755,7 +752,6 @@ components:
           readOnly: true
           description: Published tags, by name.
       required:
-      - description
       - id
       - number
       - quote

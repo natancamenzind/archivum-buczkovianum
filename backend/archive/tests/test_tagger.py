@@ -146,8 +146,9 @@ class TestTaggerAdmin:
         fields = model_admin.get_fields(request)
 
         # Assert
-        for name in ("unit_number", "scan_number", "description", "is_featured"):
+        for name in ("unit_number", "scan_number", "is_featured"):
             assert name in fields
+        assert "description" not in fields
 
 
 @pytest.mark.django_db

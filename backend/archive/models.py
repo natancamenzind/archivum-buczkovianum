@@ -1128,7 +1128,6 @@ class Fragment(BaseModel, Taggable):
         blank=True,
         help_text=_("The shelfmark after the dot, e.g. 0009: the scan in the archival unit."),
     )
-    description = models.TextField(_("description"), blank=True)
     is_featured = models.BooleanField(
         _("featured"),
         default=False,
@@ -1185,7 +1184,7 @@ class Fragment(BaseModel, Taggable):
             IndexedContent(
                 title=str(self),
                 url=f"{owner.url}?fragment={self.pk}",
-                texts=[(self.quote, Weight.QUOTE), (self.description, Weight.DESCRIPTION)],
+                texts=[(self.quote, Weight.QUOTE)],
                 tags=self.published_tag_names(),
                 work_ids=owner.work_ids,
                 decades=owner.decades,

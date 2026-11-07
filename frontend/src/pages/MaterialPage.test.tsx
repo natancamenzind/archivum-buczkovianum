@@ -25,7 +25,6 @@ const FRAGMENT: Fragment = {
   scan: "",
   start_page: null,
   shelfmark: "ML, sygn. 1618.0009",
-  description: "",
   tags: [{ slug: "pamiec", title: "Pamięć" }],
 };
 

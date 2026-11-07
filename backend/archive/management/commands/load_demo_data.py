@@ -139,7 +139,6 @@ WORKS = [
 # Fragments the design shows: (typescript shelfmark, number in the text) -> fields and tags.
 SHOWN_FRAGMENTS: dict[tuple[str, int], dict[str, Any]] = {
     ("1618", 1): {
-        "description": "Grzybniak leczy chorych podczas zimowej epidemii tyfusu w Dolinoszczęsnej.",
         "is_featured": True,
         "tags": ["Dezerter", "Epidemia"],
     },

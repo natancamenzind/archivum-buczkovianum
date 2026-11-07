@@ -2,8 +2,8 @@ import pytest
 from django.db import connection
 from django.db.migrations.executor import MigrationExecutor
 
-BEFORE = ("archive", "0006_ocr_text_searchable_pdf")
-AFTER = ("archive", "0007_fragment_unit_and_scan_number")
+BEFORE = ("archive", "0007_remove_fragment_description")
+AFTER = ("archive", "0008_fragment_unit_and_scan_number")
 
 
 @pytest.mark.django_db(transaction=True)

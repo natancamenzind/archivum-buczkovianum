@@ -23,7 +23,6 @@ const FRAGMENT: Fragment = {
   scan: "/media/scans/wertepy.pdf",
   start_page: 3,
   shelfmark: "ML, sygn. 1618.0009",
-  description: "Fragment oznaczony tagiem „Dezerter”.",
   tags: [{ slug: "dezerter", title: "Dezerter" }],
 };
 
@@ -52,7 +51,6 @@ const TAG: TagData = {
       scan: "",
       start_page: null,
       shelfmark: "",
-      description: "",
       tags: [],
     },
   ],

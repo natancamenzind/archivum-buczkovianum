@@ -759,7 +759,7 @@ class TestFragment:
         fragment.document.text = "short"
         fragment.document.save()
         fragment.refresh_from_db()
-        fragment.description = "Sprawdzić."
+        fragment.unit_number = "1618"
 
         # Act
         fragment.full_clean()
