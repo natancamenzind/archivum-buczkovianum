@@ -33,6 +33,15 @@ Run everything from the repo root.
 - Keep the diff to the story. Do not refactor, rename or reformat code outside it.
 - If the story is ambiguous or conflicts with the docs, stop and ask. Do not guess.
 
+### Linear issues
+
+Fixes and changes outside the stories are Linear issues (`ARC-25`). For each one:
+
+1. Read the issue, its comments and its screenshots. Move it to **In Progress**.
+2. Branch from `origin/main`, named after the issue: `arc-25-select-chevron-padding`.
+3. When `make check` passes, commit, push and open a PR. Its title starts with the issue ID (`ARC-25: …`) and its description opens with `Fixes [ARC-25](<issue URL>).`
+4. Move the issue to **In Review** and attach the PR link to it.
+
 ## Ownership
 
 The core is `backend/archive/`, `backend/search/`, `backend/api/` and all migrations. Core changes require the core owner's review, enforced by CODEOWNERS.
