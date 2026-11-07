@@ -5,7 +5,7 @@ import { useSearchParams } from "react-router";
 import type { components } from "@/api/schema";
 import { ScanPage } from "@/components/ScanPage";
 import { TagList } from "@/components/TagList";
-import { copy, fragmentLabel } from "@/copy/pl";
+import { copy, fragmentLabel, scanLabel } from "@/copy/pl";
 import { fetchDocument } from "@/lib/api";
 import { type PDFDocumentProxy, usePdf } from "@/lib/pdf";
 import { type Segment, segments } from "@/lib/segments";
@@ -33,12 +33,14 @@ function findTerm(text: string, term: string): { start: number; end: number } | 
   return match === null ? null : { start: match.index, end: match.index + match[0].length };
 }
 
-/** What the reader shows of a clicked fragment: its number, location and tags (R-11 AC2). */
+/** What the reader shows of a clicked fragment: its number, scan and tags (R-11 AC2). */
 function FragmentDetails({ fragment }: { fragment: Fragment }) {
   return (
     <div className="mt-16 flex flex-col gap-8 rounded-sm border border-border bg-card p-16">
       <p className="text-cousine-metadane text-foreground">
-        {[fragmentLabel(fragment.number), fragment.location].filter(Boolean).join(" · ")}
+        {[fragmentLabel(fragment.number), scanLabel(fragment.scan_number)]
+          .filter(Boolean)
+          .join(" · ")}
       </p>
       {fragment.tags.length > 0 && <TagList tags={fragment.tags} />}
     </div>

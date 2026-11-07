@@ -26,7 +26,7 @@ Tłumaczenie `docs/user-stories.md`. W razie rozbieżności obowiązuje wersja a
 | Materiał wizualny | Materiał kontekstowy, który jest obrazem: zdjęcie lub skan ilustracyjny. |
 | Powiązanie z utworem | Relacja między utworem a tekstem sekundarnym lub materiałem kontekstowym. Można je otagować. |
 | Tag | Nazwa dla relacji, łącząca fragmenty i zapiski: słowo klucz z Buczkowskiego (np. „dezerter”) albo nasza interpretacja (np. „wielokulturowość”). |
-| Fragment | Otagowany zakres tekstu (OCR lub tekstu litego), z opcjonalną sygnaturą i lokalizacją. |
+| Fragment | Otagowany zakres tekstu (OCR lub tekstu litego), z opcjonalną sygnaturą (jednostka archiwalna i numer skanu). |
 | Wystąpienie | Jeden opublikowany element z danym tagiem: fragment, cały byt albo powiązanie z utworem. |
 | Sygnatura | Instytucja + numer, wyświetlane jako „ML, sygn. 1618”. Fragment ma własny numer („ML, sygn. 1618.0009”), a instytucję dziedziczy po dokumencie. |
 | Byt | Każdy obiekt archiwum, który ma własną stronę: utwór, maszynopis, tag, zapisek, tekst sekundarny, materiał kontekstowy. |
@@ -80,7 +80,7 @@ Każda strona określa, które elementy pokazuje.
 
 **R-10 Karta fragmentu.** Każdy fragment wyświetlamy jako taką kartę:
 
-1. linia lokalizacji: utwór, numer w dokumencie („fragment 01”), opcjonalna lokalizacja („rozdział I”); etykieta z typem źródła („Maszynopis”, „Zapisek”);
+1. linia lokalizacji: utwór, numer w dokumencie („fragment 01”), opcjonalny numer skanu z sygnatury, bez zer wiodących („skan 9” dla 1618.0009); etykieta z typem źródła („Maszynopis”, „Zapisek”);
 2. cytat (tekst fragmentu skrócony do kilku linii); dla źródła OCR miniatura strony skanu, na której fragment się zaczyna;
 3. sygnatura, tagi.
 
@@ -158,7 +158,7 @@ Jako RA widzę wszystko, co jest powiązane z tagiem.
 2. Kolumna kontekstu: utwór (R-03) z rokiem i liczbą fragmentów; „Maszynopisy utworu”, wszystkie maszynopisy tego samego utworu z sygnaturą i tytułem, z zaznaczonym bieżącym.
 3. Kolumna główna, kolejno:
    1. „Skan maszynopisu”: czytnik (R-11); licznik pokazuje liczbę stron;
-   2. „Fragmenty z maszynopisu”: podgląd (R-09) jego fragmentów jako numerowana lista (numer fragmentu, lokalizacja, sygnatura), w kolejności stron.
+   2. „Fragmenty z maszynopisu”: podgląd (R-09) jego fragmentów jako numerowana lista (numer fragmentu, numer skanu, sygnatura), w kolejności stron.
 4. Kolumna tagów: tagi na maszynopisie i na jego fragmentach.
 5. Materiały kontekstowe (R-08): te powiązane z jego utworem.
 
@@ -315,7 +315,7 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 3. Fragmenty mogą na siebie zachodzić, a ten sam tekst może mieć kilka tagów.
 4. Fragment przechowuje zaznaczony tekst. Jeśli tekst źródłowy się zmieni i fragment przestanie pasować, fragment jest oznaczany do sprawdzenia, a nigdy po cichu przesuwany ani usuwany.
 5. Redaktorka nigdy nie wpisuje znaczników ręcznie (TEI ani żadnych innych).
-6. Własny formularz fragmentu ma: lokalizację (np. „rozdział I”), numer sygnatury (np. „1618.0009”; instytucja pochodzi z dokumentu) i pole wyboru „wyróżniony”. Wyróżnione fragmenty są pierwsze w podglądach (R-09) i mogą trafić na stronę główną (US-RA-02).
+6. Własny formularz fragmentu ma: sygnaturę w dwóch polach, numer jednostki archiwalnej (np. „1618”) i numer skanu (np. „0009”; wymaga numeru jednostki; instytucja pochodzi z dokumentu) oraz pole wyboru „wyróżniony”. Wyróżnione fragmenty są pierwsze w podglądach (R-09) i mogą trafić na stronę główną (US-RA-02).
 
 ### US-WR-10 — Tagowanie całych bytów i powiązań z utworem
 

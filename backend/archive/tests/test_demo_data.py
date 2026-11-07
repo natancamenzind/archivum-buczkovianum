@@ -129,7 +129,7 @@ class TestLoadedDemoData:
             "ML, sygn. 1618.0009",
             "ML, sygn. 1618.0019",
         ]
-        assert result.items[0].location == "rozdział I"
+        assert result.items[0].scan_display == "9"
         assert tags == {"1618.0009": {"Dezerter", "Epidemia"}, "1618.0019": {"Dezerter"}}
 
     def test_every_ocr_text_is_its_scans_text_layer(self, demo: str) -> None:

@@ -20,7 +20,7 @@ const FRAGMENT: Fragment = {
   source_type: "typescript",
   work: "Wertepy",
   number: 1,
-  location: "rozdział I",
+  scan_number: "9",
   quote: "Grzybniak chodził od chałupy do chałupy.",
   scan: "/media/scans/wertepy.pdf",
   start_page: 3,
@@ -47,7 +47,7 @@ const WORK: WorkData = {
         id: 7,
         url: "/typescripts/1?fragment=7",
         number: 3,
-        location: "",
+        scan_number: "",
         quote: "Dezerter stał w stodole.",
         scan: "",
         start_page: null,
@@ -231,7 +231,7 @@ describe("WorkPage", () => {
     }
     // R-10: location line with the source type, quote, scan page, shelfmark, tags.
     expect(
-      within(first).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
+      within(first).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
     ).toHaveAttribute("href", "/typescripts/1?fragment=5");
     expect(within(first).getByText("Maszynopis")).toBeVisible();
     expect(within(first).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
@@ -244,7 +244,7 @@ describe("WorkPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("R-10: a fragment without scan, location, shelfmark or tags shows none of them", async () => {
+  it("R-10, ARC-7: a fragment without scan, scan number, shelfmark or tags shows none of them", async () => {
     mockPage();
 
     const { container } = await renderPage();

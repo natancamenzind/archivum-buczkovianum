@@ -6,7 +6,7 @@ import { NoteIcon } from "@/components/icons";
 import { RichText } from "@/components/RichText";
 import { ScanPage } from "@/components/ScanPage";
 import { TagList } from "@/components/TagList";
-import { copy, fragmentLabel } from "@/copy/pl";
+import { copy, fragmentLabel, scanLabel } from "@/copy/pl";
 import { usePdf } from "@/lib/pdf";
 
 type Fragment = components["schemas"]["FragmentCard"];
@@ -89,7 +89,7 @@ function Thumbnail({ scan, page }: { scan: string; page: number }) {
  * fragment.
  */
 export function FragmentCard({ fragment }: { fragment: Fragment }) {
-  const location = [fragment.work, fragmentLabel(fragment.number), fragment.location]
+  const location = [fragment.work, fragmentLabel(fragment.number), scanLabel(fragment.scan_number)]
     .filter(Boolean)
     .join(" · ");
   return (

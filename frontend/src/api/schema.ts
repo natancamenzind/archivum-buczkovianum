@@ -350,8 +350,8 @@ export interface components {
             readonly number: number;
             /** @description 1-based scan page the fragment starts on; null for a plain text. */
             readonly start_page: number | null;
-            /** @description E.g. rozdział I. */
-            readonly location: string;
+            /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
+            readonly scan_number: string;
             /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
             readonly shelfmark: string;
             /** @description Published tags, by name. */
@@ -406,8 +406,8 @@ export interface components {
             readonly work: string;
             /** @description 1-based, by position in the text. */
             readonly number: number;
-            /** @description E.g. rozdział I. */
-            readonly location: string;
+            /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
+            readonly scan_number: string;
             /** @description The selected text. */
             readonly quote: string;
             /** @description PDF URL; empty for a plain text. */
@@ -440,8 +440,8 @@ export interface components {
             readonly id: number;
             /** @description 1-based, by position in the text. */
             readonly number: number;
-            /** @description E.g. rozdział I. */
-            readonly location: string;
+            /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
+            readonly scan_number: string;
             /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
             readonly shelfmark: string;
         };

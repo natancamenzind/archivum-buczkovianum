@@ -21,7 +21,7 @@ const FRAGMENT: Fragment = {
   source_type: "typescript",
   work: "Wertepy",
   number: 1,
-  location: "rozdział I",
+  scan_number: "9",
   quote: "Grzybniak chodził od chałupy do chałupy.",
   scan: "",
   start_page: null,
@@ -73,7 +73,7 @@ const DOCUMENT: Document = {
       end: 8,
       number: 1,
       start_page: null,
-      location: "",
+      scan_number: "",
       shelfmark: "",
       tags: [{ slug: "dezerter", title: "Dezerter" }],
     },
@@ -340,7 +340,7 @@ describe("NotePage", () => {
     expect(within(fragments).getByText("2 z 5")).toBeVisible();
     expect(within(fragments).getAllByRole("article")).toHaveLength(2);
     expect(
-      within(fragments).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
+      within(fragments).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
     ).toHaveAttribute("href", "/typescripts/1?fragment=5");
     expect(within(fragments).queryByText(/Wszystkie/)).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
