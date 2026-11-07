@@ -107,9 +107,9 @@ function Fragments({ work }: { work: WorkData }) {
 
 /**
  * The work page (US-RA-04) in the entity layout (R-05): the editions and the bibliography
- * preview (US-RA-21) in the context column; the main typescript's fragments, the typescripts and
- * the notes in the main column; the tags that refer to the work; its contextual materials. Empty
- * blocks are not rendered (R-02).
+ * preview (US-RA-21) in the context column; the typescripts, with the main one marked, the main
+ * typescript's fragments and the notes in the main column; the tags that refer to the work; its
+ * contextual materials. Empty blocks are not rendered (R-02).
  */
 export function WorkPage() {
   const slug = useParams().slug ?? "";
@@ -153,7 +153,6 @@ export function WorkPage() {
       }
       main={
         <>
-          {work.fragments.total > 0 && <Fragments work={work} />}
           {work.typescripts.length > 0 && (
             <Card>
               <SectionHeader
@@ -166,6 +165,11 @@ export function WorkPage() {
                     <ListRow
                       number={index + 1}
                       title={[typescript.title, typescript.shelfmark].filter(Boolean).join(", ")}
+                      note={
+                        typescript.id === work.main_typescript
+                          ? copy.work.mainTypescript
+                          : undefined
+                      }
                       to={`/maszynopisy/${String(typescript.id)}`}
                     />
                   </li>
@@ -173,6 +177,7 @@ export function WorkPage() {
               </ol>
             </Card>
           )}
+          {work.fragments.total > 0 && <Fragments work={work} />}
           {work.notes.length > 0 && (
             <Card>
               <SectionHeader

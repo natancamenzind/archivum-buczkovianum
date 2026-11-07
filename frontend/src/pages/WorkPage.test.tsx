@@ -313,10 +313,49 @@ describe("WorkPage", () => {
     expect(within(typescripts).getByText("2")).toBeVisible();
     const links = within(typescripts).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual([
-      "01Pierwsza wersja, ML, sygn. 1618",
+      "01Pierwsza wersja, ML, sygn. 1618maszynopis, który służy za podstawę prezentowanych fragmentów",
       "02Druga wersja",
     ]);
     expect(links[1]).toHaveAttribute("href", "/maszynopisy/2");
+  });
+
+  it("ARC-17: 'Maszynopisy' comes before 'Fragmenty maszynopisu'", async () => {
+    mockPage();
+
+    await renderPage();
+
+    const main = ["Maszynopisy", "Fragmenty maszynopisu", "Zapiski"];
+    expect(
+      screen
+        .getAllByRole("heading", { level: 2 })
+        .map((heading) => heading.textContent)
+        .filter((name) => main.includes(name)),
+    ).toEqual(main);
+  });
+
+  it("ARC-17: the main typescript is marked as the basis of the presented fragments", async () => {
+    mockPage();
+
+    const { container } = await renderPage();
+
+    const typescripts = card("Maszynopisy");
+    const note = "maszynopis, który służy za podstawę prezentowanych fragmentów";
+    expect(within(typescripts).getByRole("link", { name: new RegExp(note) })).toHaveAttribute(
+      "href",
+      "/maszynopisy/1",
+    );
+    expect(within(typescripts).getAllByText(note)).toHaveLength(1);
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("ARC-17: without a main typescript no typescript is marked", async () => {
+    mockPage({ main_typescript: null });
+
+    await renderPage();
+
+    expect(
+      within(card("Maszynopisy")).queryByText(/podstawę prezentowanych fragmentów/),
+    ).not.toBeInTheDocument();
   });
 
   it("US-RA-04 AC3: 'Zapiski' shows the notes as note cards", async () => {

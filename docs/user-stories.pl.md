@@ -125,8 +125,8 @@ Jako RA widzę korpus informacji o utworze; na pierwszy rzut oka tylko kluczowe 
 1. Hiro: „Utwór · Leopold Buczkowski · <rok pierwszego wydania>”, tytuł, opis.
 2. Kolumna kontekstu: lista wydań według roku, każde z rokiem, wydawnictwem i miejscem. Najwcześniejsze ma etykietę „pierwsze wydanie”. Pod nimi podgląd bibliografii (US-RA-21).
 3. Kolumna główna, kolejno:
-   1. „Fragmenty maszynopisu”: podgląd (R-09) fragmentów głównego maszynopisu jako karty fragmentów (R-10);
-   2. „Maszynopisy”: numerowana lista maszynopisów utworu, każdy linkuje do swojej strony;
+   1. „Maszynopisy”: numerowana lista maszynopisów utworu, każdy linkuje do swojej strony. Główny maszynopis ma adnotację „maszynopis, który służy za podstawę prezentowanych fragmentów”;
+   2. „Fragmenty maszynopisu”: podgląd (R-09) fragmentów głównego maszynopisu jako karty fragmentów (R-10);
    3. „Zapiski”: zapiski powiązane z utworem, jako karty zapisków: linia lokalizacji, etykieta typu, obraz (lub zaślepka), sygnatura, opis, tagi.
 4. Kolumna tagów: każdy opublikowany tag, który odnosi się do utworu (definicja w US-RA-07 AC5), w tym tagi relacji (US-RA-05).
 5. Materiały kontekstowe (R-08): teksty sekundarne i materiały kontekstowe powiązane z utworem.
