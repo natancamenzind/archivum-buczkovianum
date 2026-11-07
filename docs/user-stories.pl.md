@@ -47,7 +47,7 @@ Tłumaczenie `docs/user-stories.md`. W razie rozbieżności obowiązuje wersja a
 
 **R-05 Układ strony bytu.** Strony utworu, maszynopisu, tagu, zapisku, tekstu sekundarnego i materiału kontekstowego mają jeden układ:
 
-1. hiro: ciemny pas z linią typu (np. „Utwór · Leopold Buczkowski · 1947”), tytułem i opisem;
+1. hiro: ciemny pas z linią typu (np. „Utwór · Leopold Buczkowski · 1947”), tytułem i opisem, na tle obrazu nagłówka, jeśli WR go dodał;
 2. kolumna kontekstu po lewej;
 3. kolumna główna;
 4. kolumna tagów po prawej;
@@ -177,7 +177,7 @@ Jako RA widzę wszystko, co jest powiązane z tagiem.
 
 ### US-RA-10 — Strona tekstu sekundarnego
 
-1. Hiro: linia typu z rodzajem tekstu, a dla listu z nadawcą i datą („List · Leopold Buczkowski · 1.10.1947”); tytuł; opis. Bez grafiki w nagłówku.
+1. Hiro: linia typu z rodzajem tekstu, a dla listu z nadawcą i datą („List · Leopold Buczkowski · 1.10.1947”); tytuł; opis.
 2. Kolumna kontekstu: „Powiązane utwory” (R-03).
 3. Kolumna główna, kolejno:
    1. pełny tekst w czytniku (R-11) albo jako tekst lity, bez nagłówka;
@@ -270,7 +270,7 @@ Jako RA znajduję utwory, tagi, fragmenty i zapiski, wpisując frazę.
 
 ## 3. Redaktorka (WR)
 
-Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obrazem wymaga tekstu alternatywnego (R-12). Każde pole „sygnatura” to instytucja wybrana z listy (US-WR-14) plus numer.
+Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obrazem wymaga tekstu alternatywnego (R-12). Każdy wgrany obraz jest zapisywany jako WebP. Każdy obiekt ma opcjonalny obraz nagłówka, wyświetlany w tle hiro (R-05). Każde pole „sygnatura” to instytucja wybrana z listy (US-WR-14) plus numer.
 
 ### US-WR-01 — Logowanie
 

@@ -15,6 +15,7 @@ dependencies = [
     "django-stubs-ext>=5.2",
     "pypdf>=6.21.2",
     "gunicorn>=23",
+    "pillow>=11",
 ]
 
 [dependency-groups]

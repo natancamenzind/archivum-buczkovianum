@@ -1,7 +1,6 @@
 from typing import Any
 
 import pytest
-from django.core.files.base import ContentFile
 from django.test import Client
 from django.urls import reverse
 from pytest_django import DjangoAssertNumQueries
@@ -22,6 +21,7 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
+from archive.tests.files import image_file
 
 PUBLISHED = Status.PUBLISHED
 TEXT = "Pierwsza strona maszynopisu. Druga strona maszynopisu. Trzecia strona."
@@ -197,7 +197,7 @@ class TestTagPageEndpoint:
             shelfmark="1678.0104",
             content_kind=ContentKind.IMAGE,
             external_url="",
-            image=ContentFile(b"image", name="note.jpg"),
+            image=image_file("note.jpg"),
             image_alt="Karta z notesu",
         )
         whole.works.add(work)
@@ -217,7 +217,7 @@ class TestTagPageEndpoint:
         card = result["notes"][1]
         assert card["url"] == whole.get_absolute_url()
         assert card["shelfmark"] == "ML, sygn. 1678.0104"
-        assert card["image"].endswith(".jpg")
+        assert card["image"].endswith(".webp")
         assert card["image_alt"] == "Karta z notesu"
         assert card["tags"] == [
             {"slug": "dezerter", "title": "Dezerter"},
@@ -290,7 +290,7 @@ class TestTagPageEndpoint:
             status=PUBLISHED,
             content_kind=ContentKind.IMAGE,
             external_url="",
-            image=ContentFile(b"image", name="photo.jpg"),
+            image=image_file("photo.jpg"),
             image_alt="Autor przy biurku",
         )
         MaterialWorkLinkFactory.create(material=photo, work=work).tags.add(tag)
@@ -385,6 +385,8 @@ class TestTagPageSchema:
                 "is_draft",
                 "title",
                 "description",
+                "header_image",
+                "header_image_alt",
                 "occurrences",
                 "works",
                 "fragments",

@@ -1010,6 +1010,11 @@ components:
         description:
           type: string
           description: HTML.
+        header_image:
+          type: string
+          description: Shown behind the title; empty when there is none.
+        header_image_alt:
+          type: string
         shelfmark:
           type: string
           description: E.g. "ML, sygn. 1700"; may be empty.
@@ -1035,6 +1040,8 @@ components:
       - content
       - description
       - fragments
+      - header_image
+      - header_image_alt
       - id
       - is_draft
       - shelfmark
@@ -1167,6 +1174,11 @@ components:
         description:
           type: string
           description: HTML.
+        header_image:
+          type: string
+          description: Shown behind the title; empty when there is none.
+        header_image_alt:
+          type: string
         shelfmark:
           type: string
           description: E.g. "ML, sygn. 1678"; may be empty.
@@ -1190,6 +1202,8 @@ components:
       - content
       - description
       - fragments
+      - header_image
+      - header_image_alt
       - id
       - is_draft
       - shelfmark
@@ -1334,6 +1348,11 @@ components:
         description:
           type: string
           description: HTML.
+        header_image:
+          type: string
+          description: Shown behind the title; empty when there is none.
+        header_image_alt:
+          type: string
         kind:
           $ref: '#/components/schemas/SecondaryTextPageKindEnum'
         sender:
@@ -1365,6 +1384,8 @@ components:
       - description
       - document
       - fragments
+      - header_image
+      - header_image_alt
       - id
       - is_draft
       - kind
@@ -1489,6 +1510,11 @@ components:
         description:
           type: string
           description: HTML.
+        header_image:
+          type: string
+          description: Shown behind the title; empty when there is none.
+        header_image_alt:
+          type: string
         occurrences:
           type: integer
         works:
@@ -1521,6 +1547,8 @@ components:
       required:
       - description
       - fragments
+      - header_image
+      - header_image_alt
       - is_draft
       - materials
       - notes
@@ -1626,6 +1654,11 @@ components:
         description:
           type: string
           description: HTML.
+        header_image:
+          type: string
+          description: Shown behind the title; empty when there is none.
+        header_image_alt:
+          type: string
         shelfmark:
           type: string
           description: E.g. "ML, sygn. 1618"; may be empty.
@@ -1659,6 +1692,8 @@ components:
       - description
       - document
       - fragments
+      - header_image
+      - header_image_alt
       - id
       - is_draft
       - materials
@@ -1781,6 +1816,11 @@ components:
         description:
           type: string
           description: HTML.
+        header_image:
+          type: string
+          description: Shown behind the title; empty when there is none.
+        header_image_alt:
+          type: string
         year:
           type: integer
           nullable: true
@@ -1827,6 +1867,8 @@ components:
       - description
       - editions
       - fragments
+      - header_image
+      - header_image_alt
       - is_draft
       - main_typescript
       - materials

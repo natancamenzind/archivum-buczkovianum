@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 from archive.models import ContentKind, Document, Fragment, Note, Status, Work
 from archive.tests.factories import DocumentFactory, FragmentFactory, NoteFactory, WorkFactory
-from archive.tests.files import SCAN_WITHOUT_TEXT, scan_file
+from archive.tests.files import SCAN_WITHOUT_TEXT, image_file, scan_file
 from search.models import EntityType
 from search.query import search
 
@@ -124,7 +124,7 @@ class TestNoteForm:
             (
                 ContentKind.IMAGE,
                 "image",
-                SimpleUploadedFile("karta.jpg", b"jpeg", content_type="image/jpeg"),
+                image_file("karta.jpg"),
             ),
             (
                 ContentKind.DOCUMENT,

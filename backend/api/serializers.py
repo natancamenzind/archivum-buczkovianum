@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from typing import Any, cast
 from urllib.parse import urlencode
 
+from django.db.models.fields.files import FieldFile
 from rest_framework import serializers
 
 from archive.models import (
@@ -25,6 +27,27 @@ from archive.models import (
 )
 from search.models import EntityType, SearchEntry
 from search.query import Hit, Sort, Tab
+
+
+class ImageUrlField(serializers.CharField):
+    """The URL of an image; empty without one."""
+
+    def get_attribute(self, instance: Any) -> str:
+        image = cast(FieldFile, super().get_attribute(instance))
+        return image.url if image else ""
+
+
+def header_image_fields(
+    entity: str,
+) -> tuple[ImageUrlField, serializers.CharField]:
+    """`header_image` and `header_image_alt` of the page's `entity` (ARC-29)."""
+    return (
+        ImageUrlField(
+            source=f"{entity}.header_image",
+            help_text="Shown behind the title; empty when there is none.",
+        ),
+        serializers.CharField(source=f"{entity}.header_image_alt", allow_blank=True),
+    )
 
 
 @dataclass(frozen=True)
@@ -280,6 +303,7 @@ class TypescriptPageSerializer(serializers.Serializer[TypescriptPage]):
     description = serializers.CharField(
         source="typescript.description", allow_blank=True, help_text="HTML."
     )
+    header_image, header_image_alt = header_image_fields("typescript")
     shelfmark = serializers.CharField(
         source="typescript.shelfmark_display", help_text='E.g. "ML, sygn. 1618"; may be empty.'
     )
@@ -444,6 +468,7 @@ class WorkPageSerializer(serializers.Serializer[WorkPage]):
     description = serializers.CharField(
         source="work.description", allow_blank=True, help_text="HTML."
     )
+    header_image, header_image_alt = header_image_fields("work")
     year = serializers.IntegerField(
         source="work.year",
         allow_null=True,
@@ -523,6 +548,7 @@ class SecondaryTextPageSerializer(serializers.Serializer[SecondaryTextPage]):
     description = serializers.CharField(
         source="secondary_text.description", allow_blank=True, help_text="HTML."
     )
+    header_image, header_image_alt = header_image_fields("secondary_text")
     kind = serializers.ChoiceField(source="secondary_text.kind", choices=SecondaryText.Kind.choices)
     sender = serializers.CharField(
         source="secondary_text.sender", allow_blank=True, help_text="For letters; may be empty."
@@ -586,6 +612,7 @@ class NotePageSerializer(serializers.Serializer[NotePage]):
     description = serializers.CharField(
         source="note.description", allow_blank=True, help_text="HTML."
     )
+    header_image, header_image_alt = header_image_fields("note")
     shelfmark = serializers.CharField(
         source="note.shelfmark_display", help_text='E.g. "ML, sygn. 1678"; may be empty.'
     )
@@ -617,6 +644,7 @@ class MaterialPageSerializer(serializers.Serializer[MaterialPage]):
     description = serializers.CharField(
         source="material.description", allow_blank=True, help_text="HTML."
     )
+    header_image, header_image_alt = header_image_fields("material")
     shelfmark = serializers.CharField(
         source="material.shelfmark_display", help_text='E.g. "ML, sygn. 1700"; may be empty.'
     )
@@ -652,6 +680,7 @@ class TagPageSerializer(serializers.Serializer[TagPage]):
     description = serializers.CharField(
         source="tag.description", allow_blank=True, help_text="HTML."
     )
+    header_image, header_image_alt = header_image_fields("tag")
     occurrences = serializers.IntegerField(source="tag.occurrences")
     works = WorkSummarySerializer(
         many=True,

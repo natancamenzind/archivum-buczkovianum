@@ -541,6 +541,9 @@ export interface components {
             title: string;
             /** @description HTML. */
             description: string;
+            /** @description Shown behind the title; empty when there is none. */
+            header_image: string;
+            header_image_alt: string;
             /** @description E.g. "ML, sygn. 1700"; may be empty. */
             shelfmark: string;
             content: components["schemas"]["MediaContent"];
@@ -613,6 +616,9 @@ export interface components {
             title: string;
             /** @description HTML. */
             description: string;
+            /** @description Shown behind the title; empty when there is none. */
+            header_image: string;
+            header_image_alt: string;
             /** @description E.g. "ML, sygn. 1678"; may be empty. */
             shelfmark: string;
             content: components["schemas"]["MediaContent"];
@@ -676,6 +682,9 @@ export interface components {
             title: string;
             /** @description HTML. */
             description: string;
+            /** @description Shown behind the title; empty when there is none. */
+            header_image: string;
+            header_image_alt: string;
             kind: components["schemas"]["SecondaryTextPageKindEnum"];
             /** @description For letters; may be empty. */
             sender: string;
@@ -748,6 +757,9 @@ export interface components {
             title: string;
             /** @description HTML. */
             description: string;
+            /** @description Shown behind the title; empty when there is none. */
+            header_image: string;
+            header_image_alt: string;
             occurrences: number;
             /** @description The works the tag refers to (US-RA-07 AC5), by first edition. `fragment_count` counts the main typescript's fragments that carry the tag (D19). */
             works: components["schemas"]["WorkSummary"][];
@@ -805,6 +817,9 @@ export interface components {
             title: string;
             /** @description HTML. */
             description: string;
+            /** @description Shown behind the title; empty when there is none. */
+            header_image: string;
+            header_image_alt: string;
             /** @description E.g. "ML, sygn. 1618"; may be empty. */
             shelfmark: string;
             /** @description The text for the reader: /api/documents/<id>/. */
@@ -870,6 +885,9 @@ export interface components {
             title: string;
             /** @description HTML. */
             description: string;
+            /** @description Shown behind the title; empty when there is none. */
+            header_image: string;
+            header_image_alt: string;
             /** @description The year of the first edition; null without editions. */
             year: number | null;
             /** @description By year. */

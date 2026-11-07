@@ -255,6 +255,8 @@ class TestSecondaryTextPageSchema:
                 "is_draft",
                 "title",
                 "description",
+                "header_image",
+                "header_image_alt",
                 "kind",
                 "sender",
                 "letter_date",

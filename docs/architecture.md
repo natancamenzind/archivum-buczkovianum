@@ -64,6 +64,7 @@ Every public entity inherits from an abstract `Publishable` with:
 - `status`: `draft` | `published`,
 - `title`,
 - `description` (rich text, optional),
+- `header_image` (optional), shown behind the page's hero,
 - `tags`: many-to-many to `Tag` (tags on the whole entity),
 - `created_at`, `updated_at`.
 
@@ -74,7 +75,7 @@ Archival entities also inherit the abstract `Archival` mixin:
 
 The display form `"<abbreviation>, sygn. <shelfmark>"` is a model property. It is never stored or entered as one text.
 
-Every image field has a companion `<field>_alt` text field. `clean()` rejects an image without its text alternative (R-12).
+Every image field has a companion `<field>_alt` text field. `clean()` rejects an image without its text alternative (R-12), and a new upload that is not a readable image. `BaseModel.save()` stores every new image as WebP (Pillow); a WebP upload is kept as it is.
 
 ### 4.2 Entities
 

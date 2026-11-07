@@ -86,6 +86,7 @@ export function SecondaryTextPage() {
               <RichText html={secondaryText.description} />
             )
           }
+          image={{ src: secondaryText.header_image, alt: secondaryText.header_image_alt }}
         />
       }
       context={

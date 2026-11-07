@@ -65,6 +65,7 @@ export function NotePage() {
           label={[copy.note.label, note.shelfmark].filter(Boolean).join(" · ")}
           title={note.title}
           description={note.description === "" ? undefined : <RichText html={note.description} />}
+          image={{ src: note.header_image, alt: note.header_image_alt }}
         />
       }
       context={

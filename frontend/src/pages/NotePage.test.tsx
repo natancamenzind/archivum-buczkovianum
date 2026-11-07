@@ -43,6 +43,8 @@ const NOTE: NoteData = {
   is_draft: false,
   title: "Notes 18 · karta 4",
   description: "<p>Notatka o postaci dezertera.</p>",
+  header_image: "",
+  header_image_alt: "",
   shelfmark: "ML, sygn. 1678.0104",
   content: { ...NO_CONTENT, image: "/media/content/card.jpg", image_alt: "Karta z notesu" },
   works: [

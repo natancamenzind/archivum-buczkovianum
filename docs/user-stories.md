@@ -43,7 +43,7 @@ Sources: `docs/PROJECT_BRIEF.md` and the Figma file "archiwum-buczkowski-model",
 
 **R-05 Entity page layout.** Work, typescript, tag, note, secondary text and contextual material pages share one layout:
 
-1. hero: a dark band with a type line (e.g. "Utwór · Leopold Buczkowski · 1947"), title and description;
+1. hero: a dark band with a type line (e.g. "Utwór · Leopold Buczkowski · 1947"), title and description, over the entity's header image when WR has added one;
 2. context column on the left;
 3. main column;
 4. tag column on the right;
@@ -173,7 +173,7 @@ Shows everything connected to a tag.
 
 ### US-RA-10 — Secondary text page
 
-1. Hero: a type line with the kind and, for a letter, sender and date ("List · Leopold Buczkowski · 1.10.1947"); title; description. No header image.
+1. Hero: a type line with the kind and, for a letter, sender and date ("List · Leopold Buczkowski · 1.10.1947"); title; description.
 2. Context column: "Powiązane utwory" (R-03).
 3. Main column, in order:
    1. the full text in the reader (R-11), or as plain text, with no heading;
@@ -266,7 +266,7 @@ Finds works, tags, fragments and notes by phrase.
 
 ## 3. Editor (WR)
 
-Everything happens in Django admin. Every image field requires a text alternative (R-12). Every "shelfmark" field is an institution chosen from a list (US-WR-14) plus a number.
+Everything happens in Django admin. Every image field requires a text alternative (R-12). Every uploaded image is stored as WebP. Every entity has an optional header image, shown behind its hero (R-05). Every "shelfmark" field is an institution chosen from a list (US-WR-14) plus a number.
 
 ### US-WR-01 — Log in
 

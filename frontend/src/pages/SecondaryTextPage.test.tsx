@@ -32,6 +32,8 @@ const LETTER: SecondaryTextData = {
   is_draft: false,
   title: "List nr 32",
   description: "<p>List do przyjaciela o pracy nad rękopisem.</p>",
+  header_image: "",
+  header_image_alt: "",
   kind: "letter",
   sender: "Leopold Buczkowski",
   letter_date: "1947-10-01",

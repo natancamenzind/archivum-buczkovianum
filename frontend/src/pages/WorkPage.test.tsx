@@ -33,6 +33,8 @@ const WORK: WorkData = {
   is_draft: false,
   title: "Wertepy",
   description: "<p>Pierwsza powieść Leopolda Buczkowskiego.</p>",
+  header_image: "",
+  header_image_alt: "",
   year: 1947,
   editions: [
     { year: 1947, publisher: "Gebethner i Wolff", place: "Warszawa" },
@@ -159,6 +161,18 @@ function column(name: string): HTMLElement {
 }
 
 describe("WorkPage", () => {
+  it("ARC-29: the hero shows the work's header image", async () => {
+    mockPage({ header_image: "/media/headers/wertepy.webp", header_image_alt: "Pejzaż podolski" });
+
+    const { container } = await renderPage();
+
+    expect(within(hero()).getByRole("img", { name: "Pejzaż podolski" })).toHaveAttribute(
+      "src",
+      "/media/headers/wertepy.webp",
+    );
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
   it("US-RA-04 AC1: the hero shows type line, title and description; Utwory is active", async () => {
     mockPage();
 

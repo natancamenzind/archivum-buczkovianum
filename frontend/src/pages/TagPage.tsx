@@ -89,6 +89,7 @@ export function TagPage() {
           label={copy.tag.label(tag.occurrences, tag.works.length)}
           title={tag.title}
           description={tag.description === "" ? undefined : <RichText html={tag.description} />}
+          image={{ src: tag.header_image, alt: tag.header_image_alt }}
         />
       }
       context={tag.works.length > 0 ? <Works works={tag.works} level={columnLevel} /> : undefined}
