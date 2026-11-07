@@ -15,6 +15,14 @@ describe("NotFoundPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("ARC-32: draws the hypocycloid in the accent colour", () => {
+    const { container } = renderRoute("/no-such-page");
+
+    const curve = container.querySelector('main [data-slot="hypocycloid"]');
+    expect(curve).toHaveAttribute("aria-hidden", "true");
+    expect(curve).toHaveClass("stroke-accent-border");
+  });
+
   it.each([
     "/works",
     "/works/wertepy",

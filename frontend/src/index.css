@@ -100,3 +100,61 @@
     color: var(--color-text-primary);
   }
 }
+
+/*
+ * ARC-32: the hypocycloid draws itself once, slowly, then stays. The rolling circle turns round the
+ * fixed one three times (1080°) while its pen arm turns back 10/3 as fast (−3600°), then fades.
+ * With reduced motion the finished curve shows at once, without the rolling circle.
+ */
+@layer components {
+  .hypocycloid-line {
+    stroke-dasharray: 1;
+    animation: hypocycloid-draw 40s linear both;
+  }
+  .hypocycloid-roller {
+    animation: hypocycloid-fade 0.6s ease-out 40s both;
+  }
+  .hypocycloid-orbit {
+    animation: hypocycloid-orbit 40s linear both;
+  }
+  .hypocycloid-spin {
+    animation: hypocycloid-spin 40s linear both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hypocycloid-line {
+      animation: none;
+      stroke-dasharray: none;
+    }
+    .hypocycloid-roller {
+      display: none;
+    }
+  }
+}
+
+@keyframes hypocycloid-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hypocycloid-fade {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes hypocycloid-orbit {
+  to {
+    rotate: 1080deg;
+  }
+}
+
+@keyframes hypocycloid-spin {
+  to {
+    rotate: -3600deg;
+  }
+}
