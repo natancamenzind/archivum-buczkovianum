@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 
 import type { components } from "@/api/schema";
 import { ArrowLink } from "@/components/ArrowLink";
+import { BibliographyList } from "@/components/BibliographyList";
 import { ColumnHeader } from "@/components/ColumnHeader";
 import { ContextualMaterials } from "@/components/ContextualMaterials";
 import { EntityLayout } from "@/components/EntityLayout";
@@ -58,6 +59,25 @@ function Editions({ editions, level }: { editions: WorkData["editions"]; level: 
   );
 }
 
+/** The first bibliography entries, with a link to all of them (US-RA-21 AC1). */
+function Bibliography({ work, level }: { work: WorkData; level: 2 | 3 }) {
+  const { items, total } = work.bibliography;
+  return (
+    <div className="flex flex-col gap-8">
+      <ColumnHeader
+        label={copy.work.bibliography}
+        count={previewCount(items.length, total)}
+        level={level}
+      />
+      <BibliographyList entries={items} />
+      <ArrowLink
+        label={copy.work.allBibliography(total)}
+        to={`/utwory/${work.slug}/bibliografia`}
+      />
+    </div>
+  );
+}
+
 /** The main typescript's fragments as cards (R-09, R-10). "All" opens them on its page (D20). */
 function Fragments({ work }: { work: WorkData }) {
   const { items, total } = work.fragments;
@@ -86,9 +106,10 @@ function Fragments({ work }: { work: WorkData }) {
 }
 
 /**
- * The work page (US-RA-04) in the entity layout (R-05): the editions in the context column; the
- * main typescript's fragments, the typescripts and the notes in the main column; the tags that
- * refer to the work; its contextual materials. Empty blocks are not rendered (R-02).
+ * The work page (US-RA-04) in the entity layout (R-05): the editions and the bibliography
+ * preview (US-RA-21) in the context column; the main typescript's fragments, the typescripts and
+ * the notes in the main column; the tags that refer to the work; its contextual materials. Empty
+ * blocks are not rendered (R-02).
  */
 export function WorkPage() {
   const slug = useParams().slug ?? "";
@@ -123,8 +144,11 @@ export function WorkPage() {
         />
       }
       context={
-        work.editions.length > 0 ? (
-          <Editions editions={work.editions} level={columnLevel} />
+        work.editions.length > 0 || work.bibliography.total > 0 ? (
+          <>
+            {work.editions.length > 0 && <Editions editions={work.editions} level={columnLevel} />}
+            {work.bibliography.total > 0 && <Bibliography work={work} level={columnLevel} />}
+          </>
         ) : undefined
       }
       main={

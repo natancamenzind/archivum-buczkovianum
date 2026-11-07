@@ -17,6 +17,7 @@ from django.utils.translation import gettext_lazy as _
 
 from archive.forms import MediaContentForm, SecondaryTextForm, TextUploadForm
 from archive.models import (
+    BibliographyEntry,
     ContextualMaterial,
     Document,
     Edition,
@@ -124,6 +125,12 @@ class EditionInline(admin.TabularInline[Edition, Work]):
     extra = 0
 
 
+class BibliographyEntryInline(admin.TabularInline[BibliographyEntry, Work]):
+    model = BibliographyEntry
+    extra = 0
+    fields = ("text", "order")
+
+
 @admin.register(Work)
 class WorkAdmin(SearchIndexedAdmin[Work]):
     list_display = ("title", "genre", "status", "updated_at")
@@ -131,7 +138,7 @@ class WorkAdmin(SearchIndexedAdmin[Work]):
     search_fields = ("title",)
     autocomplete_fields = ("tags",)
     prepopulated_fields: ClassVar[dict[str, Sequence[str]]] = {"slug": ("title",)}
-    inlines = (EditionInline,)
+    inlines = (EditionInline, BibliographyEntryInline)
 
 
 class TypescriptForm(TextUploadForm[Typescript]):
@@ -283,7 +290,14 @@ class DocumentAdmin(admin.ModelAdmin[Document]):
 
 @admin.register(Fragment)
 class FragmentAdmin(SearchIndexedAdmin[Fragment]):
-    list_display = ("__str__", "document", "location", "is_featured", "needs_review")
+    list_display = (
+        "__str__",
+        "document",
+        "unit_number",
+        "scan_number",
+        "is_featured",
+        "needs_review",
+    )
     list_filter = ("needs_review", "is_featured")
     list_select_related = tuple(f"document__{owner}" for owner in Document.owner_accessors())
     search_fields = ("quote",)

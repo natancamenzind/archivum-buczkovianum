@@ -20,7 +20,7 @@ const FRAGMENT: Fragment = {
   source_type: "typescript",
   work: "Wertepy",
   number: 1,
-  location: "rozdział I",
+  scan_number: "9",
   quote: "Grzybniak chodził od chałupy do chałupy.",
   scan: "/media/scans/wertepy.pdf",
   start_page: 3,
@@ -47,7 +47,7 @@ const WORK: WorkData = {
         id: 7,
         url: "/maszynopisy/1?fragment=7",
         number: 3,
-        location: "",
+        scan_number: "",
         quote: "Dezerter stał w stodole.",
         scan: "",
         start_page: null,
@@ -105,7 +105,12 @@ const WORK: WorkData = {
       },
     ],
   },
+  bibliography: { items: [], total: 0 },
 };
+
+const BIBLIOGRAPHY = ["Pierwsza", "Druga", "Trzecia", "Czwarta", "Piąta"].map(
+  (title) => `Jan Kowalski, ${title} recenzja, Czytelnik, Warszawa 1948, s. 3`,
+);
 
 function mockPage(work: Partial<WorkData> = {}) {
   server.use(
@@ -231,7 +236,7 @@ describe("WorkPage", () => {
     }
     // R-10: location line with the source type, quote, scan page, shelfmark, tags.
     expect(
-      within(first).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
+      within(first).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
     ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(within(first).getByText("Maszynopis")).toBeVisible();
     expect(within(first).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
@@ -244,7 +249,7 @@ describe("WorkPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("R-10: a fragment without scan, location, shelfmark or tags shows none of them", async () => {
+  it("R-10, ARC-7: a fragment without scan, scan number, shelfmark or tags shows none of them", async () => {
     mockPage();
 
     const { container } = await renderPage();
@@ -467,6 +472,53 @@ describe("WorkPage", () => {
 
     expect(screen.getByRole("heading", { level: 2, name: "Tagi" })).toBeVisible();
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-21 AC1: 'Bibliografia' shows the first entries, '5 z 12' and a link to all of them", async () => {
+    mockPage({ bibliography: { items: BIBLIOGRAPHY, total: 12 } });
+
+    const { container } = await renderPage();
+
+    const bibliography = column("Bibliografia");
+    expect(within(bibliography).getByText("5 z 12")).toBeVisible();
+    const entries = within(bibliography).getAllByRole("listitem");
+    expect(entries.map((entry) => entry.textContent)).toEqual(
+      BIBLIOGRAPHY.map((text, index) => `0${String(index + 1)}${text}`),
+    );
+    expect(
+      within(bibliography).getByRole("link", { name: "Cała bibliografia (12)" }),
+    ).toHaveAttribute("href", "/utwory/wertepy/bibliografia");
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-21 AC1: the bibliography follows the editions in the context column", async () => {
+    mockPage({ bibliography: { items: BIBLIOGRAPHY.slice(0, 2), total: 2 } });
+
+    await renderPage();
+
+    expect(
+      screen.getAllByRole("heading", { level: 3 }).map((heading) => heading.textContent),
+    ).toEqual(["Wydania", "Bibliografia", "Tagi", "Teksty sekundarne", "Materiały wizualne"]);
+    expect(within(column("Bibliografia")).getByText("2")).toBeVisible();
+  });
+
+  it("US-RA-21 AC1: a work without editions still shows its bibliography", async () => {
+    mockPage({ editions: [], bibliography: { items: BIBLIOGRAPHY.slice(0, 1), total: 1 } });
+
+    const { container } = await renderPage();
+
+    expect(screen.queryByRole("heading", { name: "Wydania" })).not.toBeInTheDocument();
+    expect(within(column("Bibliografia")).getAllByRole("listitem")).toHaveLength(1);
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-21 AC1: a work without a bibliography has no 'Bibliografia' section (R-02)", async () => {
+    mockPage();
+
+    await renderPage();
+
+    expect(screen.queryByRole("heading", { name: "Bibliografia" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Cała bibliografia/ })).not.toBeInTheDocument();
   });
 
   it("R-06: a work the API does not find shows the not-found page", async () => {

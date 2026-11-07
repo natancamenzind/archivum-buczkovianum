@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { copy } from "@/copy/pl";
+import { DraftBanner } from "@/components/DraftBanner";
 
 interface EntityLayoutProps {
   /** The API's `is_draft`: staff are previewing a draft, which gets the draft banner (US-WR-13). */
@@ -31,11 +31,7 @@ export function EntityLayout({
 }: EntityLayoutProps) {
   return (
     <main className="flex flex-col">
-      {isDraft && (
-        <p className="border-b border-accent-border bg-accent px-page-mobile py-8 text-cousine-etykieta text-accent-foreground lg:px-page">
-          {copy.draftBanner}
-        </p>
-      )}
+      {isDraft && <DraftBanner />}
       {header}
       <div className="flex flex-col gap-24 px-page-mobile pt-24 pb-32 lg:grid lg:grid-cols-[var(--container-3xs)_minmax(0,1fr)_var(--container-3xs)] lg:items-start lg:gap-32 lg:px-page lg:pt-32 lg:pb-48">
         <div className="flex flex-col gap-24 lg:col-start-2 lg:row-start-1">{main}</div>

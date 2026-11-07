@@ -185,3 +185,6 @@ SEARCH_TS_CONFIG = os.environ.get("SEARCH_TS_CONFIG", "polish")
 
 # How many items a section preview shows before its "all" link (R-09).
 PREVIEW_LIMIT = 2
+
+# How many entries the work page's bibliography preview shows (US-RA-21 AC1).
+BIBLIOGRAPHY_PREVIEW_LIMIT = 5

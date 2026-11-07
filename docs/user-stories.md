@@ -22,9 +22,10 @@ Sources: `docs/PROJECT_BRIEF.md` and the Figma file "archiwum-buczkowski-model",
 | Secondary text (tekst sekundarny) | A review, study, letter or recording about a work. Relates to one or more works. |
 | Contextual material (materiał kontekstowy) | Any medium plus a description. Relates to one or more works. |
 | Visual material (materiał wizualny) | A contextual material that is an image: a photo or an illustrative scan. |
+| Bibliography (bibliografia) | A work's ordered list of entries. An entry is one line of free text, e.g. "Autor, Tytuł, Wydawnictwo, miejsce rok, s. strony". |
 | Work link | The relation between a work and a secondary text or contextual material. Can be tagged. |
 | Tag | A motif linking fragments and notes: a Buczkowski keyword or an editorial interpretation. |
-| Fragment | A tagged character range in a text (OCR or plain), with optional shelfmark and location. |
+| Fragment | A tagged character range in a text (OCR or plain), with optional shelfmark (archival unit and scan number). |
 | Occurrence (wystąpienie) | One published item carrying a tag: a fragment, a whole entity, or a work link. |
 | Shelfmark (sygnatura) | Institution + number, shown as "ML, sygn. 1618". A fragment has its own number ("ML, sygn. 1618.0009") and takes the institution from its document. |
 
@@ -76,7 +77,7 @@ Each page defines which items it includes.
 
 **R-10 Fragment card.** Every fragment is shown as this card:
 
-1. location line: work, number in its document ("fragment 01"), optional location ("rozdział I"); a chip with the source type ("Maszynopis", "Zapisek");
+1. location line: work, number in its document ("fragment 01"), optional scan number from the shelfmark, without leading zeros ("skan 9" for 1618.0009); a chip with the source type ("Maszynopis", "Zapisek");
 2. quote (the fragment text, cut to a few lines); for an OCR source, a thumbnail of the scan page where the fragment starts;
 3. shelfmark, tags.
 
@@ -118,7 +119,7 @@ A plain-text document is shown as text, with fragments highlighted as in point 2
 Shows what we know about a work, key information first.
 
 1. Hero: "Utwór · Leopold Buczkowski · <year of first edition>", title, description.
-2. Context column: editions by year, each with year, publisher and place. The earliest is labelled "pierwsze wydanie".
+2. Context column: editions by year, each with year, publisher and place. The earliest is labelled "pierwsze wydanie". Below them, the bibliography preview (US-RA-21).
 3. Main column, in order:
    1. "Fragmenty maszynopisu": a preview (R-09) of the main typescript's fragments, as fragment cards (R-10);
    2. "Maszynopisy": a numbered list of the work's typescripts, each linking to its page;
@@ -134,6 +135,14 @@ Shows what we know about a work, key information first.
 ### US-RA-06 — Drill-down from a work
 
 1. Every item in the work page's main column, tag column and contextual materials block links to its own page, or, for a fragment, to its place in the source (R-01).
+
+### US-RA-21 — Work bibliography
+
+1. Work page: below the editions, the section "Bibliografia" with a count ("5 z 12"), the first 5 entries as a numbered list, and the link "Cała bibliografia (12)" to the work's bibliography page. A work without entries has no section (R-02).
+2. The bibliography page, at `/utwory/<slug>/bibliografia`. Hero, as on the About page: the type line "Bibliografia utworu · Leopold Buczkowski" and the work's title.
+3. A card "Bibliografia" with the count and every entry, as a numbered list in the order the editor set.
+4. Side column "Bibliografie utworów": "Bibliografia do utworu „<title>”" for every published work with at least one entry, by first edition. The current work is highlighted. Each links to that work's bibliography page. On mobile the column is below the card.
+5. A work without entries has no bibliography page (404). A draft work's bibliography is a 404 for readers (R-06).
 
 ### US-RA-07 — Tag page
 
@@ -154,7 +163,7 @@ Shows everything connected to a tag.
 2. Context column: the work (R-03) with year and fragment count; "Maszynopisy utworu", all typescripts of the same work with shelfmark and title, the current one marked.
 3. Main column, in order:
    1. "Skan maszynopisu": the reader (R-11); the counter shows the page count;
-   2. "Fragmenty z maszynopisu": a preview (R-09) of its fragments as a numbered list (fragment number, location, shelfmark), in page order.
+   2. "Fragmenty z maszynopisu": a preview (R-09) of its fragments as a numbered list (fragment number, scan number, shelfmark), in page order.
 4. Tag column: tags on the typescript and on its fragments.
 5. Contextual materials (R-08): those linked to its work.
 
@@ -311,7 +320,7 @@ Everything happens in Django admin. Every image field requires a text alternativ
 3. Fragments may overlap, and the same text can carry several tags.
 4. A fragment stores its selected text. If the underlying text changes so that it no longer matches, the fragment is flagged for review, never silently moved or deleted.
 5. The editor never writes markup (TEI or otherwise).
-6. The fragment's own form has: location (e.g. "rozdział I"), shelfmark number (e.g. "1618.0009"; the institution comes from the document) and a "featured" checkbox. Featured fragments come first in previews (R-09) and can appear on the home page (US-RA-02).
+6. The fragment's own form has: the shelfmark as two fields, archival unit number (e.g. "1618") and scan number (e.g. "0009"; requires the unit number; the institution comes from the document), and a "featured" checkbox. Featured fragments come first in previews (R-09) and can appear on the home page (US-RA-02).
 
 ### US-WR-10 — Tag whole entities and work links
 
@@ -336,6 +345,11 @@ Everything happens in Django admin. Every image field requires a text alternativ
 
 1. An institution has an abbreviation (required, unique, e.g. "ML") and a full name (e.g. "Muzeum Literatury").
 2. Shelfmarks are always shown as "<abbreviation>, sygn. <number>", built from the two fields, never typed as one string.
+
+### US-WR-15 — Work bibliography
+
+1. Bibliography entries are added, edited, deleted and reordered inline on the work's form. Each entry is one line of text (required).
+2. The order is set with a number: lower numbers come first.
 
 ---
 
@@ -362,7 +376,6 @@ Later:
 
 - **Ukrainian version.** A separate, similar but simpler service. A "Polski / Українська" switch in the menu and footer always lands on its home page. Links between language versions of a work (e.g. "Czarny potok" PL ↔ UA) live in the Ukrainian service.
 - **Epicycloid.** The slowly animated background on the home page (brief 5.1). Not in Figma.
-- **Bibliography of a work** as a separate rich-text field. In v1 the secondary texts list (R-08) is the bibliography.
 - **Header images** on the work and tag pages.
 - **More content pages** (e.g. a conference page).
 - **SEO.** v1 has only per-URL title and description meta tags.

@@ -2,6 +2,7 @@ import type { RouteObject } from "react-router";
 
 import { SiteLayout } from "@/components/layout/SiteLayout";
 import { AboutPage } from "@/pages/AboutPage";
+import { BibliographyPage } from "@/pages/BibliographyPage";
 import { HomePage } from "@/pages/HomePage";
 import { MaterialPage } from "@/pages/MaterialPage";
 import { NotePage } from "@/pages/NotePage";
@@ -26,6 +27,7 @@ export const routes: RouteObject[] = [
       { path: "maszynopisy", element: <TypescriptsPage /> },
       { path: "tagi", element: <TagsPage /> },
       { path: "utwory/:slug", element: <WorkPage /> },
+      { path: "utwory/:slug/bibliografia", element: <BibliographyPage /> },
       { path: "tagi/:slug", element: <TagPage /> },
       { path: "maszynopisy/:id", element: <TypescriptPage /> },
       { path: "zapiski/:id", element: <NotePage /> },

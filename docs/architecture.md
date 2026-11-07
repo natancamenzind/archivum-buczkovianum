@@ -83,6 +83,7 @@ Every image field has a companion `<field>_alt` text field. `clean()` rejects an
 | `Institution` | `abbreviation` (unique), `name` | — |
 | `Work` | `slug`, `genre`, `cover_image` | — |
 | `Edition` | `publisher`, `place`, `year`, `cover_image` | → Work (inline in admin) |
+| `BibliographyEntry` | `text` (one line), `order` | → Work (inline in admin) |
 | `Typescript` | `is_main` (one per work); `Archival` | → Work, → Document |
 | `Note` | `content_kind`, `image`, `file`, `external_url`; `Archival` | `works`: many-to-many to Work; → Document (optional) |
 | `SecondaryText` | `kind`, `author`, `source`, `letter_date`, `sender`, `recipient`; `Archival` | ↔ Works via `SecondaryTextWorkLink`; → Document |
@@ -91,7 +92,7 @@ Every image field has a companion `<field>_alt` text field. `clean()` rejects an
 | `SiteSettings` | `intro_text`, `portrait`, `about_intro`, `about_project` | singleton |
 | `TeamMember` | `name`, `role`, `bio`, `group` (`leadership` \| `team` \| `site`), `order` | — |
 
-`Institution`, `Edition`, `SiteSettings` and `TeamMember` are not `Publishable`.
+`Institution`, `Edition`, `BibliographyEntry`, `SiteSettings` and `TeamMember` are not `Publishable`. A work's bibliography is ordered by `order`, then by creation. It is not in the search index.
 
 `content_kind` is one of `image`, `document`, `external_media`, `ocr_text`, `plain_text`. The two text kinds require a `Document`.
 
@@ -136,8 +137,8 @@ The text always comes from the scan, so the two cannot disagree. An OCR text cha
 - `start`, `end`: character offsets into `Document.text`,
 - `quote`: the selected text, copied at creation time,
 - `tags`: many-to-many to `Tag`,
-- `location`: short text, optional (e.g. "rozdział I"),
-- `shelfmark`: optional (e.g. `1618.0009`); the institution comes from the document's owner,
+- `unit_number`: the archival unit, the shelfmark before the dot, optional (e.g. `1618`),
+- `scan_number`: the scan in that unit, the shelfmark after the dot, optional (e.g. `0009`); it requires `unit_number`. The shelfmark is the two joined with a dot (`1618.0009`); the institution comes from the document's owner,
 - `description`: plain text, optional,
 - `is_featured`: bool (R-09, US-RA-02),
 - `needs_review`: bool.
@@ -162,15 +163,17 @@ TEI is not a storage format. A TEI export can be generated from `Document` and `
 
 `PREVIEW_LIMIT` (default 2) is a single setting. A preview query orders fragments by `is_featured` descending, then by position in the text, and takes the first `PREVIEW_LIMIT`. The total count is returned with the preview, so the API serves "2 z 24" and the "all" link in one response.
 
+The work page's bibliography preview (US-RA-21) is the exception: it shows the first `BIBLIOGRAPHY_PREVIEW_LIMIT` (5) entries, in their order.
+
 ## 5. Editor panel
 
-- Django admin for all CRUD. Inlines handle editions, work links and team members.
+- Django admin for all CRUD. Inlines handle editions, bibliography entries, work links and team members.
 - `django-prose-editor` is used for every rich-text field. It is configured with a minimal toolbar: bold, italic, link, lists and headings.
 - **Tagger:** one custom admin view per `Document`.
   - The view shows the text in a plain `<div>`, with existing fragments highlighted.
   - The editor selects text. Vanilla JavaScript computes the offsets and the tag picker POSTs `{start, end, quote, tag_ids}` to a staff-only endpoint.
   - No build step and no framework.
-  - The view lists every fragment, with a link to its admin form, where the editor sets `location`, `shelfmark` and `is_featured` (US-WR-09 AC6). Fragments with `needs_review` are listed first, so the editor can fix or delete them.
+  - The view lists every fragment, with a link to its admin form, where the editor sets `unit_number`, `scan_number` and `is_featured` (US-WR-09 AC6). Fragments with `needs_review` are listed first, so the editor can fix or delete them.
 - The tagger is offered only where US-WR-09 allows it: main typescripts, and notes, secondary texts and contextual materials with a `Document`.
 - The tag admin list can be filtered by `kind`.
 - **Draft preview** (US-WR-13): every `Publishable` model defines `get_absolute_url()`, so admin shows "View on site" for drafts too.
@@ -245,7 +248,8 @@ Read-only and public: `GET` only, published entities and visible fragments only.
 |----------|---------|
 | `/api/home/` | Settings, statistics, works, one random featured fragment, tag cloud with occurrence counts |
 | `/api/works/` | Works list (US-RA-18) |
-| `/api/works/<slug>/` | Work page payload (US-RA-04) |
+| `/api/works/<slug>/` | Work page payload (US-RA-04), with the bibliography preview (US-RA-21) |
+| `/api/works/<slug>/bibliography/` | Bibliography page: the work, all its entries, the published works with a bibliography by first edition (US-RA-21) |
 | `/api/typescripts/` | Typescripts list, grouped by work (US-RA-19) |
 | `/api/tags/` | Tags list with occurrence counts (US-RA-20) |
 | `/api/tags/<slug>/` | Tag page payload |
@@ -271,7 +275,7 @@ The OpenAPI schema is generated by drf-spectacular. The frontend client in `fron
 
 - One route per public page:
   - `/`,
-  - `/utwory`, `/utwory/:slug`,
+  - `/utwory`, `/utwory/:slug`, `/utwory/:slug/bibliografia`,
   - `/maszynopisy`, `/maszynopisy/:id`,
   - `/tagi`, `/tagi/:slug`,
   - `/zapiski/:id`,

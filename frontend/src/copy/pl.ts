@@ -56,6 +56,11 @@ export function fragmentLabel(number: number): string {
   return `Fragment ${String(number).padStart(2, "0")}`;
 }
 
+/** The scan a fragment comes from, as the API gives it: "skan 9"; "" without one (R-10). */
+export function scanLabel(scanNumber: string): string {
+  return scanNumber === "" ? "" : `skan ${scanNumber}`;
+}
+
 export const copy = {
   siteName: "Archivum Buczkovianum",
   /** Header, main navigation and footer (R-07). */
@@ -160,8 +165,19 @@ export const copy = {
     typescripts: "Maszynopisy",
     notes: "Zapiski",
     notesDescription: "Zapiski autora związane z utworem",
+    bibliography: "Bibliografia",
+    allBibliography: (count: number) => `Cała bibliografia (${String(count)})`,
     loading: "Wczytuję utwór…",
     error: "Nie udało się wczytać utworu. Spróbuj ponownie później.",
+  },
+  /** A work's bibliography page (US-RA-21). */
+  bibliography: {
+    type: "Bibliografia utworu",
+    title: "Bibliografia",
+    works: "Bibliografie utworów",
+    workBibliography: (work: string) => `Bibliografia do utworu „${work}”`,
+    loading: "Wczytuję bibliografię…",
+    error: "Nie udało się wczytać bibliografii. Spróbuj ponownie później.",
   },
   /** The secondary text page (US-RA-10). */
   secondaryText: {

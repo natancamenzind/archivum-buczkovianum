@@ -88,6 +88,8 @@ def page_meta(request: HttpRequest) -> PageMeta | None:
             return PAGES[name]
         case [kind, key] if kind in ENTITIES:
             return entity_meta(request, kind, key)
+        case ["utwory", slug, page] if page.lower() == "bibliografia":
+            return bibliography_meta(request, slug)
     return None
 
 
@@ -138,3 +140,15 @@ def entity_meta(request: HttpRequest, kind: str, key: str) -> PageMeta | None:
         page_title(entity.title),
         Truncator(description).chars(DESCRIPTION_LENGTH) or DESCRIPTION,
     )
+
+
+def bibliography_meta(request: HttpRequest, slug: str) -> PageMeta | None:
+    """A work's bibliography page (US-RA-21): only a work with entries has one."""
+    if not slug_re.match(slug):
+        return None
+    works = Work.objects.with_bibliography()
+    work = (works if request.user.is_staff else works.published()).filter(slug=slug).first()
+    if work is None:
+        return None
+    name = f"Bibliografia utworu „{work.title}”"
+    return PageMeta(page_title(name), f"{name} Leopolda Buczkowskiego.")

@@ -60,7 +60,7 @@ const RESULTS: Results = {
       source_type: "typescript",
       work: "Wertepy",
       number: 1,
-      location: "rozdział I",
+      scan_number: "9",
       quote: "Szedł dezerter przez las.",
       scan: "",
       start_page: null,
@@ -344,7 +344,7 @@ describe("SearchPage", () => {
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     const card = within(group("Fragmenty"));
-    expect(card.getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" })).toHaveAttribute(
+    expect(card.getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" })).toHaveAttribute(
       "href",
       "/maszynopisy/1?fragment=7",
     );
