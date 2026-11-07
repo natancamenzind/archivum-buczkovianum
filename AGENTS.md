@@ -35,12 +35,13 @@ Run everything from the repo root.
 
 ### Linear issues
 
-Fixes and changes outside the stories are Linear issues (`ARC-25`). For each one:
+Fixes and changes outside the stories are Linear issues (`ARC-25`). Always follow these steps, in this order, for each one:
 
-1. Read the issue, its comments and its screenshots. Move it to **In Progress**.
-2. Branch from `origin/main`, named after the issue: `arc-25-select-chevron-padding`.
-3. When `make check` passes, commit, push and open a PR. Its title starts with the issue ID (`ARC-25: …`) and its description opens with `Fixes [ARC-25](<issue URL>).`
-4. Move the issue to **In Review** and attach the PR link to it.
+1. First, before any other work, move the issue to **In Progress**. Then read it, its comments and its screenshots.
+2. Work in a new git worktree, never in the main checkout. Run `git fetch origin`, then create the worktree on a new branch from the fresh `origin/main`, named after the issue: `git worktree add ../buczkovianum-arc-25 -b arc-25-select-chevron-padding origin/main`. Run `make setup` in it.
+3. When the code and tests are done, run `git fetch origin` and rebase onto the current `origin/main`. Run `make check` after the rebase; it must pass.
+4. If the issue produced changes, commit, push and open a PR. Its title starts with the issue ID (`ARC-25: …`) and its description opens with `Fixes [ARC-25](<issue URL>).` If nothing needed to change, open no PR and explain why in a comment on the issue.
+5. Move the issue to **In Review** and attach the PR link to it.
 
 ## Ownership
 
