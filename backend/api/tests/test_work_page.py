@@ -1,7 +1,7 @@
+from pathlib import Path
 from typing import Any
 
 import pytest
-from django.core.files.base import ContentFile
 from django.test import Client
 from django.urls import reverse
 from pytest_django import DjangoAssertNumQueries
@@ -23,6 +23,7 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
+from archive.tests.files import image_file
 
 PUBLISHED = Status.PUBLISHED
 TEXT = "Pierwsza strona maszynopisu. Druga strona maszynopisu. Trzecia strona."
@@ -65,6 +66,32 @@ class TestWorkPageEndpoint:
         assert result["title"] == "Wertepy"
         assert result["description"] == "<p>Powieść.</p>"
         assert result["year"] == 1947
+
+    def test_arc_29_the_hero_has_the_header_image_and_its_alternative(
+        self, client: Client, settings: Settings, tmp_path: Path
+    ) -> None:
+        # Arrange
+        settings.MEDIA_ROOT = tmp_path
+        work = published_work(
+            header_image=image_file("wertepy.png"), header_image_alt="Pejzaż podolski"
+        )
+
+        # Act
+        result = page(client, work)
+
+        # Assert
+        assert result["header_image"] == "/media/headers/wertepy.webp"
+        assert result["header_image_alt"] == "Pejzaż podolski"
+
+    def test_arc_29_a_work_without_a_header_image_gives_an_empty_one(self, client: Client) -> None:
+        # Arrange
+        work = published_work()
+
+        # Act
+        result = page(client, work)
+
+        # Assert
+        assert (result["header_image"], result["header_image_alt"]) == ("", "")
 
     def test_us_ra_04_ac1_a_work_without_editions_has_no_year(self, client: Client) -> None:
         # Arrange
@@ -192,7 +219,7 @@ class TestWorkPageEndpoint:
             shelfmark="1678.0104",
             content_kind=ContentKind.IMAGE,
             external_url="",
-            image=ContentFile(b"image", name="note.jpg"),
+            image=image_file("note.jpg"),
             image_alt="Karta z notesu",
         )
         note.works.add(work)
@@ -221,7 +248,7 @@ class TestWorkPageEndpoint:
         assert note_card["title"] == "Notes 18 · karta 4"
         assert note_card["shelfmark"] == "ML, sygn. 1678.0104"
         assert note_card["description"] == "<p>Notatka o dezerterze.</p>"
-        assert note_card["image"].endswith(".jpg")
+        assert note_card["image"].endswith(".webp")
         assert note_card["image_alt"] == "Karta z notesu"
         assert note_card["tags"] == [{"slug": "dezerter", "title": "Dezerter"}]
 
@@ -331,7 +358,7 @@ class TestWorkPageEndpoint:
             status=PUBLISHED,
             content_kind=ContentKind.IMAGE,
             external_url="",
-            image=ContentFile(b"image", name="photo.jpg"),
+            image=image_file("photo.jpg"),
             image_alt="Autor przy biurku",
         )
         MaterialWorkLinkFactory.create(material=photo, work=work)
@@ -452,6 +479,8 @@ class TestWorkPageSchema:
                     "is_draft",
                     "title",
                     "description",
+                    "header_image",
+                    "header_image_alt",
                     "year",
                     "editions",
                     "main_typescript",

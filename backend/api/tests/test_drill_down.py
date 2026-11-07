@@ -6,7 +6,6 @@ from typing import Any
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
-from django.core.files.base import ContentFile
 from django.core.management import call_command
 from django.test import Client
 from django.urls import reverse
@@ -27,6 +26,7 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
+from archive.tests.files import image_file
 
 PUBLISHED = Status.PUBLISHED
 
@@ -123,7 +123,7 @@ class TestDrillDown:
                 status=status,
                 content_kind=ContentKind.IMAGE,
                 external_url="",
-                image=ContentFile(b"image", name="photo.jpg"),
+                image=image_file("photo.jpg"),
                 image_alt="Autor przy biurku",
             )
             MaterialWorkLinkFactory.create(work=work, material=photo).tags.add(tag)

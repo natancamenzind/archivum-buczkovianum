@@ -139,6 +139,11 @@ export function WorkPage() {
           label={label}
           title={work.title}
           description={work.description === "" ? undefined : <RichText html={work.description} />}
+          image={
+            work.header_image === ""
+              ? undefined
+              : { src: work.header_image, alt: work.header_image_alt }
+          }
         />
       }
       context={

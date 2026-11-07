@@ -1,7 +1,6 @@
 from typing import Any
 
 import pytest
-from django.core.files.base import ContentFile
 from django.test import Client
 from django.urls import reverse
 from pytest_django import DjangoAssertNumQueries
@@ -21,6 +20,7 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
+from archive.tests.files import image_file
 
 PUBLISHED = Status.PUBLISHED
 TEXT = "Pierwsza strona maszynopisu. Druga strona maszynopisu. Trzecia strona."
@@ -221,7 +221,7 @@ class TestTypescriptPageEndpoint:
             status=PUBLISHED,
             content_kind=ContentKind.IMAGE,
             external_url="",
-            image=ContentFile(b"image", name="photo.jpg"),
+            image=image_file("photo.jpg"),
             image_alt="Autor przy biurku",
             institution=institution,
             shelfmark="1700",
@@ -250,7 +250,7 @@ class TestTypescriptPageEndpoint:
         assert visual["url"] == photo.get_absolute_url()
         assert visual["title"] == "Zdjęcie"
         assert visual["shelfmark"] == "ML, sygn. 1700"
-        assert visual["image"].endswith(".jpg")
+        assert visual["image"].endswith(".webp")
         assert visual["image_alt"] == "Autor przy biurku"
 
     def test_us_ra_08_ac5_a_visual_material_without_its_image_has_an_empty_one(
@@ -348,6 +348,8 @@ class TestTypescriptPageSchema:
                 "is_draft",
                 "title",
                 "description",
+                "header_image",
+                "header_image_alt",
                 "shelfmark",
                 "document",
                 "page_count",

@@ -18,6 +18,7 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
+from archive.tests.files import image_file
 
 PUBLISHED = Status.PUBLISHED
 
@@ -107,7 +108,7 @@ class TestNotePageEndpoint:
         note = published_note(
             content_kind=ContentKind.IMAGE,
             external_url="",
-            image=ContentFile(b"image", name="card.jpg"),
+            image=image_file("card.jpg"),
             image_alt="Karta z notesu",
         )
 
@@ -334,6 +335,8 @@ class TestNotePageSchema:
                 "is_draft",
                 "title",
                 "description",
+                "header_image",
+                "header_image_alt",
                 "shelfmark",
                 "content",
                 "works",

@@ -31,6 +31,8 @@ const TAG: TagData = {
   is_draft: false,
   title: "Dezerter",
   description: "<p>Postać dezertera w prozie Buczkowskiego.</p>",
+  header_image: "",
+  header_image_alt: "",
   occurrences: 4,
   works: [
     { slug: "wertepy", title: "Wertepy", year: 1947, fragment_count: 2 },

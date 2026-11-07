@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from django.core.files.base import ContentFile
 from django.test import Client
 from django.urls import reverse
 from pytest_django import DjangoAssertNumQueries
@@ -20,6 +19,7 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
+from archive.tests.files import image_file
 
 PUBLISHED = Status.PUBLISHED
 
@@ -55,7 +55,7 @@ class TestHomeEndpoint:
         settings.MEDIA_ROOT = tmp_path
         SiteSettingsFactory.create(
             intro_text="<p>Archiwum <em>Buczkowskiego</em>.</p>",
-            portrait=ContentFile(b"img", name="portret.jpg"),
+            portrait=image_file("portret.jpg"),
             portrait_alt="Leopold Buczkowski, portret",
         )
 
@@ -64,7 +64,7 @@ class TestHomeEndpoint:
 
         # Assert
         assert result["intro"] == "<p>Archiwum <em>Buczkowskiego</em>.</p>"
-        assert result["portrait"] == "/media/site/portret.jpg"
+        assert result["portrait"] == "/media/site/portret.webp"
         assert result["portrait_alt"] == "Leopold Buczkowski, portret"
 
     def test_us_ra_01_ac2_counts_published_works_visible_fragments_and_published_tags(
@@ -141,11 +141,11 @@ class TestHomeEndpoint:
         # Arrange
         settings.MEDIA_ROOT = tmp_path
         site = SiteSettings.load()
-        site.portrait = ContentFile(b"img", name="stary.jpg")
+        site.portrait = image_file("stary.jpg")
         site.save()
         home(client)
         site.intro_text = "<p>Nowy wstęp.</p>"
-        site.portrait = ContentFile(b"img", name="nowy.jpg")
+        site.portrait = image_file("nowy.jpg")
         site.portrait_alt = "Nowy portret"
         site.save()
 
@@ -154,7 +154,7 @@ class TestHomeEndpoint:
 
         # Assert
         assert result["intro"] == "<p>Nowy wstęp.</p>"
-        assert result["portrait"] == "/media/site/nowy.jpg"
+        assert result["portrait"] == "/media/site/nowy.webp"
         assert result["portrait_alt"] == "Nowy portret"
 
     def test_us_ra_02_ac1_features_a_visible_featured_fragment_as_a_card(

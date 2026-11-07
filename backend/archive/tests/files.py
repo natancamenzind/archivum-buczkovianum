@@ -1,8 +1,10 @@
 """Uploaded files built in memory for tests: no large fixtures in the repository."""
 
 import io
+from pathlib import PurePath
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from PIL import Image
 from pypdf import PdfWriter
 from pypdf.generic import (
     ArrayObject,
@@ -94,3 +96,13 @@ def searchable_pdf(*pages: str) -> bytes:
 def scan_file(*pages: str, name: str = "scan.pdf") -> SimpleUploadedFile:
     """A searchable PDF scan with these page texts (`searchable_pdf()`)."""
     return SimpleUploadedFile(name, searchable_pdf(*pages), content_type="application/pdf")
+
+
+def image_file(
+    name: str, size: tuple[int, int] = (4, 2), exif: Image.Exif | None = None
+) -> SimpleUploadedFile:
+    """A small image in the format its name's extension gives, with `exif` if given."""
+    image_format = Image.registered_extensions()[PurePath(name).suffix]
+    output = io.BytesIO()
+    Image.new("RGB", size, "sienna").save(output, format=image_format, exif=exif or Image.Exif())
+    return SimpleUploadedFile(name, output.getvalue(), content_type=f"image/{image_format.lower()}")

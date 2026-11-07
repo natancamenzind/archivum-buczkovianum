@@ -3,7 +3,6 @@
 from typing import TYPE_CHECKING, Any
 
 import pytest
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms.utils import ErrorDict
 from django.test import Client
 from django.urls import reverse
@@ -22,7 +21,7 @@ from archive.tests.factories import (
     TagFactory,
     WorkFactory,
 )
-from archive.tests.files import SCAN_WITHOUT_TEXT, scan_file
+from archive.tests.files import SCAN_WITHOUT_TEXT, image_file, scan_file
 from search.models import EntityType
 from search.query import search
 
@@ -99,10 +98,6 @@ def found(text: str) -> list[tuple[str, str]]:
     ]
 
 
-def image_file() -> SimpleUploadedFile:
-    return SimpleUploadedFile("zdjecie.jpg", b"\xff\xd8\xff", content_type="image/jpeg")
-
-
 @pytest.mark.django_db
 class TestContextualMaterialForm:
     def test_us_wr_07_ac1_adds_a_material_with_its_fields(self, admin_client: Client) -> None:
@@ -150,7 +145,7 @@ class TestContextualMaterialForm:
         # Arrange
         work = WorkFactory.create()
         data = form_data(
-            work, content_kind=ContentKind.IMAGE, image=image_file(), image_alt="Chata"
+            work, content_kind=ContentKind.IMAGE, image=image_file("zdjecie.jpg"), image_alt="Chata"
         )
 
         # Act
@@ -159,7 +154,7 @@ class TestContextualMaterialForm:
         # Assert
         assert response.status_code == 302
         material = ContextualMaterial.objects.get()
-        assert material.image.name and material.image.name.endswith(".jpg")
+        assert material.image.name and material.image.name.endswith(".webp")
         assert material.document is None
 
     def test_us_wr_07_ac2_document_file(self, admin_client: Client) -> None:

@@ -1,13 +1,14 @@
 import pytest
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Model
 from django.test import Client, RequestFactory
 from django.urls import reverse
 from django_prose_editor.fields import ProseEditorFormField
 from pytest_django import DjangoAssertNumQueries
 
-from archive.models import Document, Fragment, SiteSettings, Status, Tag, Work
+from archive.models import Document, Fragment, Publishable, SiteSettings, Status, Tag, Work
 from archive.tests.factories import (
     DocumentFactory,
     FragmentFactory,
@@ -20,6 +21,7 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
+from archive.tests.files import image_file
 
 MODELS = [model for model in admin.site._registry if model._meta.app_label == "archive"]
 
@@ -53,6 +55,59 @@ class TestEditorPanel:
 
         # Assert
         assert response.status_code == 200
+
+    @pytest.mark.parametrize(
+        "model",
+        [m for m in MODELS if issubclass(m, Publishable)],
+        ids=lambda model: model.__name__,
+    )
+    def test_arc_29_every_entity_form_has_an_optional_header_image(
+        self, admin_client: Client, model: type[Model]
+    ) -> None:
+        # Arrange
+        url = reverse(f"admin:archive_{model._meta.model_name}_add")
+
+        # Act
+        form = admin_client.get(url).context["adminform"].form
+
+        # Assert
+        assert not form.fields["header_image"].required
+        assert not form.fields["header_image_alt"].required
+
+    def test_arc_29_an_image_uploaded_in_the_editor_panel_is_stored_as_webp(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        SiteSettingsFactory.create()
+        url = reverse("admin:archive_sitesettings_change", args=[1])
+        data = {"portrait": image_file("portret.jpg"), "portrait_alt": "Portret"}
+
+        # Act
+        response = admin_client.post(url, data)
+
+        # Assert
+        assert response.status_code == 302
+        assert SiteSettings.load().portrait.name == "site/portret.webp"
+
+    def test_arc_29_the_editor_panel_rejects_a_file_that_is_not_an_image(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        SiteSettingsFactory.create()
+        url = reverse("admin:archive_sitesettings_change", args=[1])
+        data = {
+            "portrait": SimpleUploadedFile("portret.jpg", b"not an image"),
+            "portrait_alt": "Portret",
+        }
+
+        # Act
+        response = admin_client.post(url, data)
+
+        # Assert
+        assert response.status_code == 200
+        assert response.context["adminform"].form.errors["portrait"] == [
+            "Plik nie jest czytelnym obrazem. Wgraj plik JPG, PNG lub WebP."
+        ]
 
     def test_us_wr_13_ac1_draft_has_a_view_on_site_link(self, admin_client: Client) -> None:
         # Arrange

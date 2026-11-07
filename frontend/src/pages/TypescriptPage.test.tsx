@@ -18,6 +18,8 @@ const TYPESCRIPT: TypescriptData = {
   is_draft: false,
   title: "Maszynopis „Wertepów”",
   description: "<p>Pierwsza wersja maszynopisu powieści.</p>",
+  header_image: "",
+  header_image_alt: "",
   shelfmark: "ML, sygn. 1618",
   document: 10,
   page_count: 2,

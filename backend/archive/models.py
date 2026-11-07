@@ -15,11 +15,14 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
 from django.db.models import Exists, Expression, F, Func, OuterRef, Q, Subquery, Value
+from django.db.models.fields.files import FieldFile
 from django.utils.text import Truncator
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 from django_prose_editor.fields import ProseEditorField, create_sanitizer
+from django_stubs_ext import StrOrPromise
 
+from archive.images import to_webp, validate_image
 from search.models import EntityType, IndexedContent, SearchEntry, Weight, html_to_text
 
 IMAGE_EXTENSIONS = FileExtensionValidator(["jpg", "jpeg", "png", "webp"])
@@ -69,9 +72,11 @@ def format_shelfmark(institution: "Institution | None", number: str) -> str:
 
 
 class BaseModel(models.Model):
-    """Base of every model: timestamps, and a text alternative for every image (R-12).
+    """Base of every model: timestamps, a text alternative for every image (R-12), and images
+    stored as WebP (ARC-29).
 
     Any file field `X` with a companion `X_alt` field must have `X_alt` filled when `X` is set.
+    An image field is a file field validated by `IMAGE_EXTENSIONS`.
     """
 
     created_at = models.DateTimeField(_("created"), auto_now_add=True)
@@ -81,15 +86,35 @@ class BaseModel(models.Model):
         abstract = True
 
     def save(self, *args: Any, **kwargs: Any) -> None:
-        """Sanitize rich text on every save, not only in forms: the site renders it as HTML."""
+        """Sanitize rich text on every save, not only in forms: the site renders it as HTML.
+        Convert new images to WebP."""
         for field in self._meta.concrete_fields:
             if isinstance(field, ProseEditorField):
                 setattr(self, field.attname, field.sanitize(getattr(self, field.attname)))
+        for upload in self.new_images().values():
+            upload.file = to_webp(upload.file)
+            upload.name = upload.file.name
         super().save(*args, **kwargs)
+
+    def new_images(self) -> "dict[str, FieldFile]":
+        """The image fields given a file that is not stored yet, by field name."""
+        return {
+            field.name: upload
+            for field in self._meta.concrete_fields
+            if isinstance(field, models.FileField)
+            and IMAGE_EXTENSIONS in field.validators
+            and (upload := getattr(self, field.attname))
+            and not upload._committed
+        }
 
     def clean(self) -> None:
         super().clean()
-        errors = {}
+        errors: dict[str, ValidationError | StrOrPromise] = {}
+        for name, upload in self.new_images().items():
+            try:
+                validate_image(upload.file)
+            except ValidationError as error:
+                errors[name] = error
         for field in self._meta.get_fields():
             alt_name = f"{field.name}_alt"
             if (
@@ -152,6 +177,16 @@ class Publishable(BaseModel):
     )
     title = models.CharField(_("title"), max_length=255)
     description = rich_text_field(verbose_name=_("description"))
+    header_image = models.FileField(
+        _("header image"),
+        upload_to="headers/",
+        blank=True,
+        validators=[IMAGE_EXTENSIONS],
+        help_text=_("Optional. Shown behind the title at the top of the page."),
+    )
+    header_image_alt = models.CharField(
+        _("header image text alternative"), max_length=255, blank=True
+    )
 
     search_type: ClassVar[EntityType]
     # Defined by every concrete model.

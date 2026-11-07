@@ -1,8 +1,12 @@
+from typing import Any
+
 import pytest
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
 from django.db.models import ProtectedError
+from django.db.models.fields.files import FieldFile
+from PIL import Image
 from pytest_django import DjangoAssertNumQueries
 
 from archive.models import (
@@ -31,15 +35,14 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
+from archive.tests.files import image_file
 
 
 @pytest.mark.django_db
 class TestAltText:
     def test_r_12_image_without_alt_is_rejected(self) -> None:
         # Arrange
-        work = WorkFactory.create(
-            cover_image=ContentFile(b"img", name="cover.png"), cover_image_alt=""
-        )
+        work = WorkFactory.create(cover_image=image_file("cover.png"), cover_image_alt="")
 
         # Act
         with pytest.raises(ValidationError) as error:
@@ -50,15 +53,119 @@ class TestAltText:
 
     def test_r_12_image_with_alt_is_accepted(self) -> None:
         # Arrange
-        work = WorkFactory.create(
-            cover_image=ContentFile(b"img", name="cover.png"), cover_image_alt="Okładka"
-        )
+        work = WorkFactory.create(cover_image=image_file("cover.png"), cover_image_alt="Okładka")
 
         # Act
         work.full_clean()
 
         # Assert
         assert work.cover_image_alt == "Okładka"
+
+
+def stored_image(upload: FieldFile) -> Image.Image:
+    with upload.open("rb"):
+        image = Image.open(upload)
+        image.load()
+    return image
+
+
+@pytest.mark.django_db
+class TestWebpImages:
+    def test_arc_29_an_uploaded_image_is_stored_as_webp(self) -> None:
+        # Arrange
+        work = WorkFactory.build(
+            cover_image=image_file("okladka.png", size=(6, 3)), cover_image_alt="Okładka"
+        )
+
+        # Act
+        work.full_clean()
+        work.save()
+
+        # Assert
+        assert work.cover_image.name == "works/okladka.webp"
+        image = stored_image(work.cover_image)
+        assert (image.format, image.size) == ("WEBP", (6, 3))
+
+    def test_arc_29_a_photo_is_turned_upright_before_conversion(self) -> None:
+        # Arrange
+        exif = Image.Exif()
+        exif[0x0112] = 6  # Orientation: rotated 90 degrees clockwise.
+        settings = SiteSettings.load()
+        settings.portrait = image_file("portret.jpg", size=(6, 3), exif=exif)
+        settings.portrait_alt = "Portret"
+
+        # Act
+        settings.save()
+
+        # Assert
+        assert stored_image(settings.portrait).size == (3, 6)
+
+    def test_arc_29_a_webp_upload_is_kept_as_it_is(self) -> None:
+        # Arrange
+        upload = image_file("naglowek.webp")
+        content = upload.read()
+        tag = TagFactory.build(header_image=upload, header_image_alt="Nagłówek")
+
+        # Act
+        tag.save()
+
+        # Assert
+        tag.header_image.open("rb")
+        with tag.header_image:
+            assert tag.header_image.read() == content
+        assert tag.header_image.name == "headers/naglowek.webp"
+
+    def test_arc_29_a_stored_image_is_not_converted_again(self) -> None:
+        # Arrange
+        work = WorkFactory.create(
+            header_image=image_file("naglowek.png"), header_image_alt="Pejzaż"
+        )
+        name = work.header_image.name
+
+        # Act
+        work.title = "Nowy tytuł"
+        work.save()
+
+        # Assert
+        assert work.header_image.name == name
+
+    def test_arc_29_a_file_that_is_not_an_image_is_rejected(self) -> None:
+        # Arrange
+        note = NoteFactory.build(
+            header_image=ContentFile(b"not an image", name="naglowek.jpg"),
+            header_image_alt="Pejzaż",
+        )
+
+        # Act
+        with pytest.raises(ValidationError) as error:
+            note.full_clean()
+
+        # Assert
+        assert error.value.message_dict["header_image"] == [
+            "Plik nie jest czytelnym obrazem. Wgraj plik JPG, PNG lub WebP."
+        ]
+
+    @pytest.mark.parametrize(
+        "factory",
+        [
+            WorkFactory,
+            TypescriptFactory,
+            NoteFactory,
+            SecondaryTextFactory,
+            ContextualMaterialFactory,
+            TagFactory,
+        ],
+    )
+    def test_arc_29_r_12_a_header_image_needs_its_text_alternative(self, factory: Any) -> None:
+        # Arrange
+        item = factory.create(header_image=image_file("naglowek.png"), header_image_alt="")
+
+        # Act
+        with pytest.raises(ValidationError) as error:
+            item.full_clean()
+
+        # Assert
+        assert "header_image_alt" in error.value.message_dict
 
 
 @pytest.mark.django_db

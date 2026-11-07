@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from django.core.files.base import ContentFile
 from django.test import Client
 from django.urls import reverse
 from pytest_django import DjangoAssertNumQueries
@@ -17,6 +16,7 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
+from archive.tests.files import image_file
 
 PUBLISHED = Status.PUBLISHED
 
@@ -179,15 +179,13 @@ class TestWorksEndpoint:
     ) -> None:
         # Arrange
         settings.MEDIA_ROOT = tmp_path
-        published_work(
-            cover_image=ContentFile(b"img", name="wertepy.png"), cover_image_alt="Koń na okładce"
-        )
+        published_work(cover_image=image_file("wertepy.png"), cover_image_alt="Koń na okładce")
 
         # Act
         result = cards(client)
 
         # Assert
-        assert result[0]["cover_image"] == "/media/works/wertepy.png"
+        assert result[0]["cover_image"] == "/media/works/wertepy.webp"
         assert result[0]["cover_image_alt"] == "Koń na okładce"
 
     @pytest.mark.parametrize("method", ("post", "put", "patch", "delete"))

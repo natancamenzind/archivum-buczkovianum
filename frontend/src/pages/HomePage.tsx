@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { components } from "@/api/schema";
 import { ArrowLink } from "@/components/ArrowLink";
 import { FragmentCard } from "@/components/FragmentCard";
+import { HeroBackdrop } from "@/components/HeroBackdrop";
 import { RichText } from "@/components/RichText";
 import { SectionHeader } from "@/components/SectionHeader";
 import { TagCloud } from "@/components/TagCloud";
@@ -35,16 +36,8 @@ function Hero({ home }: { home: Home | undefined }) {
     // A div, not <header>: the site header is the page's only banner landmark (R-07).
     <div data-slot="home-hero" className="relative overflow-hidden bg-inverse">
       {home !== undefined && home.portrait !== "" && (
-        <img
-          src={home.portrait}
-          alt={home.portrait_alt}
-          className="absolute inset-0 size-full object-cover"
-        />
+        <HeroBackdrop src={home.portrait} alt={home.portrait_alt} />
       )}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-linear-to-r from-inverse/94 via-inverse/72 to-inverse/20"
-      />
       <div className="relative px-page-mobile pt-64 pb-24 md:px-page md:py-64">
         <div className="flex flex-col gap-16 md:max-w-2xl">
           {/* The design's ornament is 40 px wide; 48 is the nearest spacing token. */}

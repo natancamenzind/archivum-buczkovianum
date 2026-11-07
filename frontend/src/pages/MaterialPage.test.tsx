@@ -42,6 +42,8 @@ const MATERIAL: MaterialData = {
   is_draft: false,
   title: "Buczkowski w Konstancinie",
   description: "<p>Fotografia z lat sześćdziesiątych.</p>",
+  header_image: "",
+  header_image_alt: "",
   shelfmark: "ML, sygn. 1700",
   content: {
     ...NO_CONTENT,
