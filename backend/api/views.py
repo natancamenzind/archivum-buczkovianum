@@ -14,6 +14,8 @@ from rest_framework.response import Response
 from api.serializers import (
     AboutPage,
     AboutPageSerializer,
+    BibliographyPage,
+    BibliographyPageSerializer,
     ContextualMaterials,
     DecadeFacet,
     DocumentSerializer,
@@ -379,8 +381,23 @@ def work(request: Request, slug: str) -> Response:
             SecondaryText.objects.filter(works=current),
             ContextualMaterial.objects.filter(works=current),
         ),
+        bibliography=current.bibliography_preview(),
     )
     return Response(WorkPageSerializer(page).data)
+
+
+@extend_schema(responses=BibliographyPageSerializer)
+@api_view(["GET"])
+def work_bibliography(request: Request, slug: str) -> Response:
+    """The work's bibliography page (US-RA-21). A draft work's is shown only to staff (R-06);
+    a work without entries has none."""
+    current = get_object_or_404(viewable(request, Work.objects.with_bibliography()), slug=slug)
+    page = BibliographyPage(
+        work=current,
+        entries=list(current.bibliography.all()),
+        works=list(Work.objects.published().with_bibliography().with_year()),
+    )
+    return Response(BibliographyPageSerializer(page).data)
 
 
 def related_fragments(item: Note | SecondaryText | ContextualMaterial) -> Preview[Fragment]:

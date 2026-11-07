@@ -18,6 +18,7 @@ from django.db import models, transaction
 from django.utils.text import slugify
 
 from archive.models import (
+    BibliographyEntry,
     ContentKind,
     ContextualMaterial,
     Document,
@@ -47,7 +48,7 @@ PUBLISHED = Status.PUBLISHED
 SENTENCE = re.compile(r"[^.!?\s][^.!?]*[.!?]")
 
 # Deleted in this order: an item protects its document, a work its typescripts, an institution
-# its items. Editions, work links and fragments go with what they belong to.
+# its items. Editions, bibliography entries, work links and fragments go with what they belong to.
 CONTENT: tuple[type[models.Model], ...] = (
     Typescript,
     Note,
@@ -95,7 +96,26 @@ class WorkData:
     description: str
     editions: list[tuple[str, str, int]]
     typescripts: list[TypescriptData] = field(default_factory=list)
+    bibliography: list[str] = field(default_factory=list)
 
+
+# The bibliography of Wertepy, as in design/screens/bibliografia-wertepy.md.
+WERTEPY_BIBLIOGRAPHY = [
+    "[Autor], [Tytuł recenzji], „[Czasopismo]” [rok], nr [numer], s. [strony]",
+    "[Autor], [Tytuł opracowania], [Wydawnictwo], [miejsce] [rok], s. [strony]",
+    "[Autor], [Tytuł rozdziału], w: [Tytuł tomu], red. [Redaktor], [Wydawnictwo], [miejsce] "
+    "[rok], s. [strony]",
+    "[Autor], [Tytuł artykułu], „[Czasopismo]” [rok], nr [numer]",
+    "[Autor], [Tytuł monografii], [Wydawnictwo], [miejsce] [rok]",
+    "[Autor], [Tytuł szkicu], w: [Tytuł tomu], [Wydawnictwo], [miejsce] [rok], s. [strony]",
+    "[Autor], [Tytuł recenzji], „[Czasopismo]” [rok], nr [numer], s. [strony]",
+    "[Autor], [Tytuł wywiadu], rozm. [Rozmówca], „[Czasopismo]” [rok], nr [numer]",
+    "[Autor], [Tytuł opracowania], [Wydawnictwo], [miejsce] [rok], s. [strony]",
+    "[Autor], [Tytuł artykułu], „[Czasopismo]” [rok], nr [numer], s. [strony]",
+    "[Autor], [Tytuł monografii], [Wydawnictwo], [miejsce] [rok], s. [strony]",
+    "[Autor], [Tytuł posłowia], w: L. Buczkowski, Wertepy, [Wydawnictwo], [miejsce] [rok], "
+    "s. [strony]",
+]
 
 WORKS = [
     WorkData(
@@ -112,6 +132,7 @@ WORKS = [
             TypescriptData("Pierwsza wersja", "1618", "wertepy-1618", 24, is_main=True),
             TypescriptData("Druga wersja", "1619", "wertepy-1619"),
         ],
+        WERTEPY_BIBLIOGRAPHY,
     ),
     WorkData(
         "czarny-potok",
@@ -119,6 +140,7 @@ WORKS = [
         "<p>[Opis utworu: dwa, trzy zdania.]</p>",
         [("Państwowy Instytut Wydawniczy", "Warszawa", 1954)],
         [TypescriptData("Maszynopis", "1609", "czarny-potok-1609", 18, is_main=True)],
+        WERTEPY_BIBLIOGRAPHY[1:3],
     ),
     WorkData(
         "dorycki-kruzganek",
@@ -296,6 +318,8 @@ class Command(BaseCommand):
         )
         for publisher, place, year in data.editions:
             saved(Edition(work=work, publisher=publisher, place=place, year=year))
+        for order, text in enumerate(data.bibliography, start=1):
+            saved(BibliographyEntry(work=work, text=text, order=order))
         for typescript_data in data.typescripts:
             document = ocr_document(typescript_data.scan)
             saved(
