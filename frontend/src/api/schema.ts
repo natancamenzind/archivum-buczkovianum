@@ -4,1276 +4,1276 @@
  */
 
 export interface paths {
-  "/api/about/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/about/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The About page (US-RA-13): introduction, project text and the team by group.
+         *
+         *     Empty groups are left out (R-02), so the page renders every group it gets.
+         */
+        get: operations["about_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * @description The About page (US-RA-13): introduction, project text and the team by group.
-     *
-     *     Empty groups are left out (R-02), so the page renders every group it gets.
-     */
-    get: operations["about_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/documents/{id}/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/documents/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The text of a published item for the reader (R-11), with its fragments and their
+         *     published tags. The text of a draft is shown only to staff; of no item, it is not found
+         *     (R-06).
+         */
+        get: operations["documents_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * @description The text of a published item for the reader (R-11), with its fragments and their
-     *     published tags. The text of a draft is shown only to staff; of no item, it is not found
-     *     (R-06).
-     */
-    get: operations["documents_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/editor/fragments/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/editor/fragments/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["editor_fragments_list"];
+        put?: never;
+        post: operations["editor_fragments_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get: operations["editor_fragments_list"];
-    put?: never;
-    post: operations["editor_fragments_create"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/editor/fragments/{id}/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/editor/fragments/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["editor_fragments_destroy"];
+        options?: never;
+        head?: never;
+        patch: operations["editor_fragments_partial_update"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete: operations["editor_fragments_destroy"];
-    options?: never;
-    head?: never;
-    patch: operations["editor_fragments_partial_update"];
-    trace?: never;
-  };
-  "/api/home/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/home/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The home page (US-RA-01): introduction and portrait, the counts, the work cards, a random
+         *     featured fragment (US-RA-02) and the tag cloud.
+         */
+        get: operations["home_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * @description The home page (US-RA-01): introduction and portrait, the counts, the work cards, a random
-     *     featured fragment (US-RA-02) and the tag cloud.
-     */
-    get: operations["home_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/materials/{id}/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/materials/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The contextual material page (US-RA-12). A draft material is shown only to staff (R-06). */
+        get: operations["materials_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** @description The contextual material page (US-RA-12). A draft material is shown only to staff (R-06). */
-    get: operations["materials_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/notes/{id}/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/notes/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The note page (US-RA-11). A draft note is shown only to staff (R-06). */
+        get: operations["notes_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** @description The note page (US-RA-11). A draft note is shown only to staff (R-06). */
-    get: operations["notes_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/search/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/search/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The search results (US-RA-15, US-RA-16) in the tab and filters, grouped by type. A blank
+         *     `q`, or one of stopwords only, finds everything.
+         */
+        get: operations["search_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * @description The search results (US-RA-15, US-RA-16) in the tab and filters, grouped by type. A blank
-     *     `q`, or one of stopwords only, finds everything.
-     */
-    get: operations["search_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/search/autocomplete/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/search/autocomplete/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description Suggestions under the search fields (US-RA-17): published works and tags whose title
+         *     contains `q`. Empty for a blank `q`.
+         */
+        get: operations["search_autocomplete_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * @description Suggestions under the search fields (US-RA-17): published works and tags whose title
-     *     contains `q`. Empty for a blank `q`.
-     */
-    get: operations["search_autocomplete_list"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/secondary-texts/{id}/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/secondary-texts/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The secondary text page (US-RA-10). A draft secondary text is shown only to staff (R-06). */
+        get: operations["secondary_texts_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** @description The secondary text page (US-RA-10). A draft secondary text is shown only to staff (R-06). */
-    get: operations["secondary_texts_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/tags/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/tags/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The tags list (US-RA-20): published tags with at least one occurrence (D26), the most
+         *     frequent first. The cloud and the alphabetical index both take this one list.
+         */
+        get: operations["tags_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * @description The tags list (US-RA-20): published tags with at least one occurrence (D26), the most
-     *     frequent first. The cloud and the alphabetical index both take this one list.
-     */
-    get: operations["tags_list"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/tags/{slug}/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/tags/{slug}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The tag page (US-RA-07). A draft tag is shown only to staff (R-06). */
+        get: operations["tags_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** @description The tag page (US-RA-07). A draft tag is shown only to staff (R-06). */
-    get: operations["tags_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/typescripts/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/typescripts/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The typescripts list (US-RA-19): published typescripts grouped by their published work,
+         *     works by first edition. A work without published typescripts has no group (R-02).
+         */
+        get: operations["typescripts_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * @description The typescripts list (US-RA-19): published typescripts grouped by their published work,
-     *     works by first edition. A work without published typescripts has no group (R-02).
-     */
-    get: operations["typescripts_list"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/typescripts/{id}/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/typescripts/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The typescript page (US-RA-08). A draft typescript is shown only to staff (R-06); a draft
+         *     work leaves out the work, its contextual materials and nothing else.
+         */
+        get: operations["typescripts_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /**
-     * @description The typescript page (US-RA-08). A draft typescript is shown only to staff (R-06); a draft
-     *     work leaves out the work, its contextual materials and nothing else.
-     */
-    get: operations["typescripts_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/works/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/works/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The works list (US-RA-18): every published work as a card, by first edition. */
+        get: operations["works_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** @description The works list (US-RA-18): every published work as a card, by first edition. */
-    get: operations["works_list"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/works/{slug}/": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/api/works/{slug}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The work page (US-RA-04). A draft work is shown only to staff (R-06). */
+        get: operations["works_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** @description The work page (US-RA-04). A draft work is shown only to staff (R-06). */
-    get: operations["works_retrieve"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    /** @description US-RA-13. `intro` and `project` are rich text: HTML, sanitized when an editor saves it. */
-    AboutPage: {
-      /** @description HTML. */
-      intro: string;
-      /** @description HTML. */
-      project: string;
-      /** @description Groups that have members, in the order of TeamMember.Group. */
-      team: components["schemas"]["TeamGroup"][];
+    schemas: {
+        /** @description US-RA-13. `intro` and `project` are rich text: HTML, sanitized when an editor saves it. */
+        AboutPage: {
+            /** @description HTML. */
+            intro: string;
+            /** @description HTML. */
+            project: string;
+            /** @description Groups that have members, in the order of TeamMember.Group. */
+            team: components["schemas"]["TeamGroup"][];
+        };
+        ContextualMaterials: {
+            /** @description By title. */
+            texts: components["schemas"]["MaterialText"][];
+            /** @description By title. */
+            visuals: components["schemas"]["VisualMaterial"][];
+        };
+        DecadeFacet: {
+            /** @description E.g. 1940 for 1940 to 1949. */
+            decade: number;
+            count: number;
+        };
+        /** @description The text of an item for the reader (R-11, architecture section 4.4). */
+        Document: {
+            readonly id: number;
+            readonly kind: components["schemas"]["DocumentKindEnum"];
+            readonly text: string;
+            readonly page_offsets: number[];
+            /** @description PDF URL; empty for a plain text. */
+            readonly scan: string;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            readonly is_draft: boolean;
+            /** @description By position. */
+            readonly fragments: components["schemas"]["DocumentFragment"][];
+        };
+        /**
+         * @description A fragment for the reader (R-11), from a queryset with `with_number()`.
+         *
+         *     The context holds the fragments' `document` and the `institution` of its owner.
+         */
+        DocumentFragment: {
+            readonly id: number;
+            readonly start: number;
+            readonly end: number;
+            /** @description 1-based, by position in the text. */
+            readonly number: number;
+            /** @description 1-based scan page the fragment starts on; null for a plain text. */
+            readonly start_page: number | null;
+            /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
+            readonly scan_number: string;
+            /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
+            readonly shelfmark: string;
+            /** @description Published tags, by name. */
+            readonly tags: components["schemas"]["TagChip"][];
+        };
+        /**
+         * @description * `ocr` - Scan + OCR text
+         *     * `plain` - Plain text
+         * @enum {string}
+         */
+        DocumentKindEnum: "ocr" | "plain";
+        Edition: {
+            readonly year: number;
+            readonly publisher: string;
+            readonly place: string;
+        };
+        EditorFragment: {
+            readonly id: number;
+            document: number;
+            start: number;
+            end: number;
+            quote: string;
+            tag_ids: number[];
+            readonly tags: components["schemas"]["EditorTag"][];
+            /** @description The text changed. Check the fragment, then clear this box. */
+            readonly needs_review: boolean;
+        };
+        EditorTag: {
+            readonly id: number;
+            /** Name */
+            readonly title: string;
+        };
+        /** @description US-RA-02. The context's `works` holds the card's works (see `FragmentCardSerializer`). */
+        FeaturedFragment: {
+            fragment: components["schemas"]["FragmentCard"];
+            /** @description The source's first published work, by first edition, and the count of the Fragmenty search filtered to it; null when the source has no published work. */
+            work: components["schemas"]["WorkFacet"] | null;
+        };
+        /**
+         * @description The fragment card (R-10), from a queryset with `with_number()`. Its source is the
+         *     published item holding the fragment's document.
+         *
+         *     Without the context's `works` (the sources' published works by document ID, by year), each
+         *     card queries its source's works.
+         */
+        FragmentCard: {
+            readonly id: number;
+            /** @description The source, scrolled to the fragment. */
+            readonly url: string;
+            readonly source_type: components["schemas"]["SourceTypeEnum"];
+            /** @description The source's published works, by year. */
+            readonly work: string;
+            /** @description 1-based, by position in the text. */
+            readonly number: number;
+            /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
+            readonly scan_number: string;
+            /** @description The selected text. */
+            readonly quote: string;
+            /** @description PDF URL; empty for a plain text. */
+            readonly scan: string;
+            /** @description 1-based scan page the fragment starts on; null for a plain text. */
+            readonly start_page: number | null;
+            /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
+            readonly shelfmark: string;
+            readonly description: string;
+            /** @description Published tags, by name. */
+            readonly tags: components["schemas"]["TagChip"][];
+        };
+        FragmentCardPreview: {
+            /** @description Featured first, then text order (R-09). */
+            items: components["schemas"]["FragmentCard"][];
+            /** @description The number of all the fragments. */
+            total: number;
+        };
+        FragmentPreview: {
+            /** @description Featured first, then text order (R-09). */
+            items: components["schemas"]["FragmentRow"][];
+            /** @description The number of all the fragments. */
+            total: number;
+        };
+        /**
+         * @description A row of "Fragmenty z maszynopisu" (US-RA-08 AC3), from a queryset with `with_number()`.
+         *
+         *     The context's `institution` is the one of the fragments' document owner.
+         */
+        FragmentRow: {
+            readonly id: number;
+            /** @description 1-based, by position in the text. */
+            readonly number: number;
+            /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
+            readonly scan_number: string;
+            /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
+            readonly shelfmark: string;
+        };
+        /**
+         * @description * `leadership` - Project leadership
+         *     * `team` - Team members
+         *     * `site` - Website development
+         * @enum {string}
+         */
+        GroupEnum: "leadership" | "team" | "site";
+        /** @description US-RA-01. `intro` is rich text: HTML, sanitized when an editor saves it. */
+        HomePage: {
+            /** @description HTML. */
+            intro: string;
+            /** @description Empty when there is no portrait. */
+            readonly portrait: string;
+            portrait_alt: string;
+            statistics: components["schemas"]["HomeStatistics"];
+            /** @description By first edition. */
+            works: components["schemas"]["WorkCard"][];
+            /** @description A random visible featured fragment; null when there is none. */
+            featured: components["schemas"]["FeaturedFragment"] | null;
+            /** @description The tag cloud: tags in use, the most frequent first. */
+            tags: components["schemas"]["TagCount"][];
+        };
+        HomeStatistics: {
+            /** @description Published works. */
+            works: number;
+            /** @description Visible fragments of every document. */
+            fragments: number;
+            /** @description Published tags. */
+            tags: number;
+        };
+        /** @description A note, typescript, secondary text or contextual material result. */
+        ItemResult: {
+            /** @description The item's page; with `?q=` naming the first match, for the reader (R-11 AC3). */
+            readonly url: string;
+            title: string;
+            /** @description E.g. "ML, sygn. 1678"; may be empty. */
+            shelfmark: string;
+            /** @description HTML: the escaped text around the match, the search terms in <mark>. */
+            snippet: string;
+        };
+        /**
+         * @description US-RA-12. `description` is rich text: HTML, sanitized when an editor saves it. The type
+         *     line's kind is `content.kind`.
+         */
+        MaterialPage: {
+            id: number;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            /** @description E.g. "ML, sygn. 1700"; may be empty. */
+            shelfmark: string;
+            content: components["schemas"]["MediaContent"];
+            /** @description Related works, by first edition (R-03). */
+            works: components["schemas"]["WorkSummary"][];
+            /** @description Typescript fragments sharing a tag with the material or its fragments. */
+            fragments: components["schemas"]["FragmentCardPreview"];
+            /** @description Tags on the material, its fragments and its work links, by name. */
+            tags: components["schemas"]["TagChip"][];
+        };
+        /**
+         * @description A row of "Teksty sekundarne" (R-08): a secondary text, or a contextual material that is
+         *     not an image, which shows its title only (D5).
+         */
+        MaterialText: {
+            url: string;
+            readonly author: string;
+            title: string;
+            /** @description Publisher, place, year, pages. */
+            readonly publication: string;
+        };
+        /**
+         * @description The content of a note or contextual material (US-RA-11 AC3): only the field of its kind
+         *     is filled.
+         */
+        MediaContent: {
+            kind: components["schemas"]["MediaContentKindEnum"];
+            /** @description Empty unless the kind is `image`. */
+            readonly image: string;
+            image_alt: string;
+            /** @description Empty unless the kind is `document`. */
+            readonly file: string;
+            /** @description An audio or video link; empty unless `external_media`. */
+            external_url: string;
+            /** @description The text for the reader, /api/documents/<id>/; null unless a text kind. */
+            document: number | null;
+        };
+        /**
+         * @description * `image` - Image
+         *     * `document` - Document file
+         *     * `external_media` - External audio or video link
+         *     * `ocr_text` - OCR text (scan + OCR file)
+         *     * `plain_text` - Plain text
+         * @enum {string}
+         */
+        MediaContentKindEnum: "image" | "document" | "external_media" | "ocr_text" | "plain_text";
+        /**
+         * @description The note card (US-RA-04 AC3). `description` is rich text: HTML, sanitized when an editor
+         *     saves it.
+         */
+        NoteCard: {
+            readonly url: string;
+            readonly title: string;
+            /** @description E.g. "ML, sygn. 1678"; may be empty. */
+            readonly shelfmark: string;
+            /** @description HTML. */
+            readonly description: string;
+            /** @description Empty when the note is not an image. */
+            readonly image: string;
+            /** Image text alternative */
+            readonly image_alt: string;
+            /** @description Published tags, by name. */
+            readonly tags: components["schemas"]["TagChip"][];
+        };
+        /** @description US-RA-11. `description` is rich text: HTML, sanitized when an editor saves it. */
+        NotePage: {
+            id: number;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            /** @description E.g. "ML, sygn. 1678"; may be empty. */
+            shelfmark: string;
+            content: components["schemas"]["MediaContent"];
+            /** @description Related works, by first edition (R-03). */
+            works: components["schemas"]["WorkSummary"][];
+            /** @description Typescript fragments sharing a tag with the note or its fragments. */
+            fragments: components["schemas"]["FragmentCardPreview"];
+            /** @description Tags on the note and its fragments, by name. */
+            tags: components["schemas"]["TagChip"][];
+        };
+        PatchedEditorFragment: {
+            readonly id?: number;
+            document?: number;
+            start?: number;
+            end?: number;
+            quote?: string;
+            tag_ids?: number[];
+            readonly tags?: components["schemas"]["EditorTag"][];
+            /** @description The text changed. Check the fragment, then clear this box. */
+            readonly needs_review?: boolean;
+        };
+        /** @description Each filter's counts apply the tab and the other filters, but not that filter itself. */
+        SearchFacets: {
+            /** @description Results in each tab, with the filters applied. */
+            tabs: components["schemas"]["TabCounts"];
+            /** @description Works with results in the tab, and the selected ones, by first edition. */
+            works: components["schemas"]["WorkFacet"][];
+            /** @description Decades with results in the tab, and the selected ones, in order. */
+            decades: components["schemas"]["DecadeFacet"][];
+            /** @description Results with a scan. */
+            has_scan: number;
+            /** @description Results with a transcription. */
+            has_text: number;
+        };
+        /**
+         * @description The search results (US-RA-15, US-RA-16): the groups of the tab, each by relevance or by
+         *     title, as asked, and the facet counts.
+         *
+         *     The context's `work_fragments` holds the matching fragments of each work, by work id, and
+         *     `works` the fragment cards' works (see `FragmentCardSerializer`).
+         */
+        SearchPage: {
+            facets: components["schemas"]["SearchFacets"];
+            /** @description Results in all the groups. */
+            total: number;
+            works: components["schemas"]["WorkResult"][];
+            tags: components["schemas"]["TagResult"][];
+            fragments: components["schemas"]["FragmentCard"][];
+            notes: components["schemas"]["ItemResult"][];
+            typescripts: components["schemas"]["ItemResult"][];
+            secondary_texts: components["schemas"]["ItemResult"][];
+            materials: components["schemas"]["ItemResult"][];
+            /** @description The most frequent tags, only when nothing was found (US-RA-15 AC8). */
+            suggested_tags: components["schemas"]["TagCount"][];
+        };
+        /** @description US-RA-10. `description` is rich text: HTML, sanitized when an editor saves it. */
+        SecondaryTextPage: {
+            id: number;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            kind: components["schemas"]["SecondaryTextPageKindEnum"];
+            /** @description For letters; may be empty. */
+            sender: string;
+            /**
+             * Format: date
+             * @description For letters.
+             */
+            letter_date: string | null;
+            /** @description The text for the reader: /api/documents/<id>/. */
+            document: number;
+            /** @description Related works, by first edition (R-03). */
+            works: components["schemas"]["WorkSummary"][];
+            /** @description Typescript fragments sharing a tag with the text or its fragments. */
+            fragments: components["schemas"]["FragmentCardPreview"];
+            /** @description Tags on the text, its fragments and its work links, by name. */
+            tags: components["schemas"]["TagChip"][];
+        };
+        /**
+         * @description * `letter` - Letter
+         *     * `review` - Review
+         *     * `study` - Study
+         *     * `recording` - Recording
+         *     * `other` - Other
+         * @enum {string}
+         */
+        SecondaryTextPageKindEnum: "letter" | "review" | "study" | "recording" | "other";
+        /**
+         * @description * `typescript` - typescript
+         *     * `note` - note
+         *     * `secondary_text` - secondary_text
+         *     * `material` - material
+         * @enum {string}
+         */
+        SourceTypeEnum: "typescript" | "note" | "secondary_text" | "material";
+        /** @description A suggestion under the search fields (US-RA-17): a work or a tag, and its page. */
+        Suggestion: {
+            readonly type: components["schemas"]["TypeEnum"];
+            readonly title: string;
+            readonly url: string;
+        };
+        TabCounts: {
+            all: number;
+            works: number;
+            fragments: number;
+            notes: number;
+            tags: number;
+        };
+        TagChip: {
+            /** @description Part of the page address. */
+            readonly slug: string;
+            /** Name */
+            readonly title: string;
+        };
+        /** @description A tag with its occurrence count (US-RA-20), from a queryset with `with_occurrences()`. */
+        TagCount: {
+            /** @description Part of the page address. */
+            readonly slug: string;
+            /** Name */
+            readonly title: string;
+            readonly occurrences: number;
+        };
+        /**
+         * @description US-RA-07, from a tag with `with_occurrences()`. `description` is rich text: HTML,
+         *     sanitized when an editor saves it.
+         */
+        TagPage: {
+            slug: string;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            occurrences: number;
+            /** @description The works the tag refers to (US-RA-07 AC5), by first edition. `fragment_count` counts the main typescript's fragments that carry the tag (D19). */
+            works: components["schemas"]["WorkSummary"][];
+            /** @description Every visible fragment with the tag: by work, then text order. */
+            fragments: components["schemas"]["FragmentCard"][];
+            /** @description Notes with the tag on the whole note or a fragment, by title. */
+            notes: components["schemas"]["NoteCard"][];
+            /** @description Published related tags, by name. */
+            related: components["schemas"]["TagChip"][];
+            /** @description Those with the tag on the whole item, a fragment, or a work link. */
+            materials: components["schemas"]["ContextualMaterials"];
+        };
+        /**
+         * @description A tag result, from a tag with `with_occurrences()`. The snippet is cut from its
+         *     description.
+         */
+        TagResult: {
+            url: string;
+            title: string;
+            occurrences: number;
+            /** @description HTML: the escaped text around the match, the search terms in <mark>. */
+            snippet: string;
+        };
+        TeamGroup: {
+            group: components["schemas"]["GroupEnum"];
+            members: components["schemas"]["TeamMember"][];
+        };
+        TeamMember: {
+            /** Full name */
+            readonly name: string;
+            readonly role: string;
+            /** Short biography */
+            readonly bio: string;
+        };
+        /**
+         * @description * `work` - work
+         *     * `tag` - tag
+         * @enum {string}
+         */
+        TypeEnum: "work" | "tag";
+        /** @description A work's group on the typescripts list (US-RA-19 AC2), from a work with `with_year()`. */
+        TypescriptGroup: {
+            slug: string;
+            title: string;
+            genre: string;
+            /** @description The year of the first edition; null without editions. */
+            year: number | null;
+            /** @description By shelfmark, as numbers. */
+            typescripts: components["schemas"]["TypescriptRow"][];
+        };
+        /** @description US-RA-08. `description` is rich text: HTML, sanitized when an editor saves it. */
+        TypescriptPage: {
+            id: number;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            /** @description E.g. "ML, sygn. 1618"; may be empty. */
+            shelfmark: string;
+            /** @description The text for the reader: /api/documents/<id>/. */
+            document: number;
+            page_count: number;
+            /** @description Null while the work is a draft. */
+            work: components["schemas"]["WorkSummary"] | null;
+            /** @description The work's typescripts by shelfmark, this one included. */
+            work_typescripts: components["schemas"]["TypescriptRow"][];
+            fragments: components["schemas"]["FragmentPreview"];
+            /** @description Tags on the typescript and on its fragments, by name. */
+            tags: components["schemas"]["TagChip"][];
+            /** @description Those linked to the typescript's work. */
+            materials: components["schemas"]["ContextualMaterials"];
+        };
+        TypescriptRow: {
+            readonly id: number;
+            readonly title: string;
+            /** @description E.g. "ML, sygn. 1618"; may be empty. */
+            readonly shelfmark: string;
+        };
+        /** @description A thumbnail of "Materiały wizualne" (R-08), captioned with title and shelfmark. */
+        VisualMaterial: {
+            readonly url: string;
+            readonly title: string;
+            /** @description E.g. "ML, sygn. 1700"; may be empty. */
+            readonly shelfmark: string;
+            /** @description Empty when the material has no image. */
+            readonly image: string;
+            /** Image text alternative */
+            readonly image_alt: string;
+        };
+        /**
+         * @description The work card (US-RA-01 AC3), from a queryset with `with_year()` and
+         *     `with_fragment_count()`.
+         */
+        WorkCard: {
+            /** @description Part of the page address. */
+            readonly slug: string;
+            readonly title: string;
+            /** @description E.g. powieść. */
+            readonly genre: string;
+            /** @description The year of the first edition; null without editions. */
+            readonly year: number | null;
+            /** @description Empty when the work has no cover. */
+            readonly cover_image: string;
+            /** Cover image text alternative */
+            readonly cover_image_alt: string;
+            /** @description Visible fragments of the main typescript (D19); 0 without one. */
+            readonly fragment_count: number;
+        };
+        WorkFacet: {
+            id: number;
+            title: string;
+            count: number;
+        };
+        /**
+         * @description US-RA-04, from a work with `with_year()`. `description` is rich text: HTML, sanitized when
+         *     an editor saves it.
+         */
+        WorkPage: {
+            slug: string;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
+            title: string;
+            /** @description HTML. */
+            description: string;
+            /** @description The year of the first edition; null without editions. */
+            year: number | null;
+            /** @description By year. */
+            editions: components["schemas"]["Edition"][];
+            /** @description The typescript whose fragments the preview shows; null without a published one. */
+            main_typescript: number | null;
+            /** @description The main typescript's visible fragments. */
+            fragments: components["schemas"]["FragmentCardPreview"];
+            /** @description By shelfmark, as numbers. */
+            typescripts: components["schemas"]["TypescriptRow"][];
+            /** @description By title. */
+            notes: components["schemas"]["NoteCard"][];
+            /** @description Tags that refer to the work (US-RA-07 AC5), by name. */
+            tags: components["schemas"]["TagChip"][];
+            /** @description Those linked to the work. */
+            materials: components["schemas"]["ContextualMaterials"];
+        };
+        /** @description A work result (US-RA-15 AC5), from a work with `with_year()`. Works show no snippet. */
+        WorkResult: {
+            url: string;
+            title: string;
+            genre: string;
+            /** @description The year of the first edition; null without editions. */
+            year: number | null;
+            /** @description The work's fragments that match the query. */
+            readonly fragments: number;
+        };
+        /**
+         * @description A work in a context column (R-03), from a queryset with `with_year()` and
+         *     `with_fragment_count()`.
+         */
+        WorkSummary: {
+            /** @description Part of the page address. */
+            readonly slug: string;
+            readonly title: string;
+            /** @description The year of the first edition; null without editions. */
+            readonly year: number | null;
+            /** @description Visible fragments of the main typescript (D19); 0 without one. */
+            readonly fragment_count: number;
+        };
     };
-    ContextualMaterials: {
-      /** @description By title. */
-      texts: components["schemas"]["MaterialText"][];
-      /** @description By title. */
-      visuals: components["schemas"]["VisualMaterial"][];
-    };
-    DecadeFacet: {
-      /** @description E.g. 1940 for 1940 to 1949. */
-      decade: number;
-      count: number;
-    };
-    /** @description The text of an item for the reader (R-11, architecture section 4.4). */
-    Document: {
-      readonly id: number;
-      readonly kind: components["schemas"]["DocumentKindEnum"];
-      readonly text: string;
-      readonly page_offsets: number[];
-      /** @description PDF URL; empty for a plain text. */
-      readonly scan: string;
-      /** @description True only for staff previewing a draft (US-WR-13). */
-      readonly is_draft: boolean;
-      /** @description By position. */
-      readonly fragments: components["schemas"]["DocumentFragment"][];
-    };
-    /**
-     * @description A fragment for the reader (R-11), from a queryset with `with_number()`.
-     *
-     *     The context holds the fragments' `document` and the `institution` of its owner.
-     */
-    DocumentFragment: {
-      readonly id: number;
-      readonly start: number;
-      readonly end: number;
-      /** @description 1-based, by position in the text. */
-      readonly number: number;
-      /** @description 1-based scan page the fragment starts on; null for a plain text. */
-      readonly start_page: number | null;
-      /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
-      readonly scan_number: string;
-      /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
-      readonly shelfmark: string;
-      /** @description Published tags, by name. */
-      readonly tags: components["schemas"]["TagChip"][];
-    };
-    /**
-     * @description * `ocr` - Scan + OCR text
-     *     * `plain` - Plain text
-     * @enum {string}
-     */
-    DocumentKindEnum: "ocr" | "plain";
-    Edition: {
-      readonly year: number;
-      readonly publisher: string;
-      readonly place: string;
-    };
-    EditorFragment: {
-      readonly id: number;
-      document: number;
-      start: number;
-      end: number;
-      quote: string;
-      tag_ids: number[];
-      readonly tags: components["schemas"]["EditorTag"][];
-      /** @description The text changed. Check the fragment, then clear this box. */
-      readonly needs_review: boolean;
-    };
-    EditorTag: {
-      readonly id: number;
-      /** Name */
-      readonly title: string;
-    };
-    /** @description US-RA-02. The context's `works` holds the card's works (see `FragmentCardSerializer`). */
-    FeaturedFragment: {
-      fragment: components["schemas"]["FragmentCard"];
-      /** @description The source's first published work, by first edition, and the count of the Fragmenty search filtered to it; null when the source has no published work. */
-      work: components["schemas"]["WorkFacet"] | null;
-    };
-    /**
-     * @description The fragment card (R-10), from a queryset with `with_number()`. Its source is the
-     *     published item holding the fragment's document.
-     *
-     *     Without the context's `works` (the sources' published works by document ID, by year), each
-     *     card queries its source's works.
-     */
-    FragmentCard: {
-      readonly id: number;
-      /** @description The source, scrolled to the fragment. */
-      readonly url: string;
-      readonly source_type: components["schemas"]["SourceTypeEnum"];
-      /** @description The source's published works, by year. */
-      readonly work: string;
-      /** @description 1-based, by position in the text. */
-      readonly number: number;
-      /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
-      readonly scan_number: string;
-      /** @description The selected text. */
-      readonly quote: string;
-      /** @description PDF URL; empty for a plain text. */
-      readonly scan: string;
-      /** @description 1-based scan page the fragment starts on; null for a plain text. */
-      readonly start_page: number | null;
-      /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
-      readonly shelfmark: string;
-      readonly description: string;
-      /** @description Published tags, by name. */
-      readonly tags: components["schemas"]["TagChip"][];
-    };
-    FragmentCardPreview: {
-      /** @description Featured first, then text order (R-09). */
-      items: components["schemas"]["FragmentCard"][];
-      /** @description The number of all the fragments. */
-      total: number;
-    };
-    FragmentPreview: {
-      /** @description Featured first, then text order (R-09). */
-      items: components["schemas"]["FragmentRow"][];
-      /** @description The number of all the fragments. */
-      total: number;
-    };
-    /**
-     * @description A row of "Fragmenty z maszynopisu" (US-RA-08 AC3), from a queryset with `with_number()`.
-     *
-     *     The context's `institution` is the one of the fragments' document owner.
-     */
-    FragmentRow: {
-      readonly id: number;
-      /** @description 1-based, by position in the text. */
-      readonly number: number;
-      /** @description The shelfmark after the dot without leading zeros, e.g. "9"; may be empty. */
-      readonly scan_number: string;
-      /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
-      readonly shelfmark: string;
-    };
-    /**
-     * @description * `leadership` - Project leadership
-     *     * `team` - Team members
-     *     * `site` - Website development
-     * @enum {string}
-     */
-    GroupEnum: "leadership" | "team" | "site";
-    /** @description US-RA-01. `intro` is rich text: HTML, sanitized when an editor saves it. */
-    HomePage: {
-      /** @description HTML. */
-      intro: string;
-      /** @description Empty when there is no portrait. */
-      readonly portrait: string;
-      portrait_alt: string;
-      statistics: components["schemas"]["HomeStatistics"];
-      /** @description By first edition. */
-      works: components["schemas"]["WorkCard"][];
-      /** @description A random visible featured fragment; null when there is none. */
-      featured: components["schemas"]["FeaturedFragment"] | null;
-      /** @description The tag cloud: tags in use, the most frequent first. */
-      tags: components["schemas"]["TagCount"][];
-    };
-    HomeStatistics: {
-      /** @description Published works. */
-      works: number;
-      /** @description Visible fragments of every document. */
-      fragments: number;
-      /** @description Published tags. */
-      tags: number;
-    };
-    /** @description A note, typescript, secondary text or contextual material result. */
-    ItemResult: {
-      /** @description The item's page; with `?q=` naming the first match, for the reader (R-11 AC3). */
-      readonly url: string;
-      title: string;
-      /** @description E.g. "ML, sygn. 1678"; may be empty. */
-      shelfmark: string;
-      /** @description HTML: the escaped text around the match, the search terms in <mark>. */
-      snippet: string;
-    };
-    /**
-     * @description US-RA-12. `description` is rich text: HTML, sanitized when an editor saves it. The type
-     *     line's kind is `content.kind`.
-     */
-    MaterialPage: {
-      id: number;
-      /** @description True only for staff previewing a draft (US-WR-13). */
-      is_draft: boolean;
-      title: string;
-      /** @description HTML. */
-      description: string;
-      /** @description E.g. "ML, sygn. 1700"; may be empty. */
-      shelfmark: string;
-      content: components["schemas"]["MediaContent"];
-      /** @description Related works, by first edition (R-03). */
-      works: components["schemas"]["WorkSummary"][];
-      /** @description Typescript fragments sharing a tag with the material or its fragments. */
-      fragments: components["schemas"]["FragmentCardPreview"];
-      /** @description Tags on the material, its fragments and its work links, by name. */
-      tags: components["schemas"]["TagChip"][];
-    };
-    /**
-     * @description A row of "Teksty sekundarne" (R-08): a secondary text, or a contextual material that is
-     *     not an image, which shows its title only (D5).
-     */
-    MaterialText: {
-      url: string;
-      readonly author: string;
-      title: string;
-      /** @description Publisher, place, year, pages. */
-      readonly publication: string;
-    };
-    /**
-     * @description The content of a note or contextual material (US-RA-11 AC3): only the field of its kind
-     *     is filled.
-     */
-    MediaContent: {
-      kind: components["schemas"]["MediaContentKindEnum"];
-      /** @description Empty unless the kind is `image`. */
-      readonly image: string;
-      image_alt: string;
-      /** @description Empty unless the kind is `document`. */
-      readonly file: string;
-      /** @description An audio or video link; empty unless `external_media`. */
-      external_url: string;
-      /** @description The text for the reader, /api/documents/<id>/; null unless a text kind. */
-      document: number | null;
-    };
-    /**
-     * @description * `image` - Image
-     *     * `document` - Document file
-     *     * `external_media` - External audio or video link
-     *     * `ocr_text` - OCR text (scan + OCR file)
-     *     * `plain_text` - Plain text
-     * @enum {string}
-     */
-    MediaContentKindEnum: "image" | "document" | "external_media" | "ocr_text" | "plain_text";
-    /**
-     * @description The note card (US-RA-04 AC3). `description` is rich text: HTML, sanitized when an editor
-     *     saves it.
-     */
-    NoteCard: {
-      readonly url: string;
-      readonly title: string;
-      /** @description E.g. "ML, sygn. 1678"; may be empty. */
-      readonly shelfmark: string;
-      /** @description HTML. */
-      readonly description: string;
-      /** @description Empty when the note is not an image. */
-      readonly image: string;
-      /** Image text alternative */
-      readonly image_alt: string;
-      /** @description Published tags, by name. */
-      readonly tags: components["schemas"]["TagChip"][];
-    };
-    /** @description US-RA-11. `description` is rich text: HTML, sanitized when an editor saves it. */
-    NotePage: {
-      id: number;
-      /** @description True only for staff previewing a draft (US-WR-13). */
-      is_draft: boolean;
-      title: string;
-      /** @description HTML. */
-      description: string;
-      /** @description E.g. "ML, sygn. 1678"; may be empty. */
-      shelfmark: string;
-      content: components["schemas"]["MediaContent"];
-      /** @description Related works, by first edition (R-03). */
-      works: components["schemas"]["WorkSummary"][];
-      /** @description Typescript fragments sharing a tag with the note or its fragments. */
-      fragments: components["schemas"]["FragmentCardPreview"];
-      /** @description Tags on the note and its fragments, by name. */
-      tags: components["schemas"]["TagChip"][];
-    };
-    PatchedEditorFragment: {
-      readonly id?: number;
-      document?: number;
-      start?: number;
-      end?: number;
-      quote?: string;
-      tag_ids?: number[];
-      readonly tags?: components["schemas"]["EditorTag"][];
-      /** @description The text changed. Check the fragment, then clear this box. */
-      readonly needs_review?: boolean;
-    };
-    /** @description Each filter's counts apply the tab and the other filters, but not that filter itself. */
-    SearchFacets: {
-      /** @description Results in each tab, with the filters applied. */
-      tabs: components["schemas"]["TabCounts"];
-      /** @description Works with results in the tab, and the selected ones, by first edition. */
-      works: components["schemas"]["WorkFacet"][];
-      /** @description Decades with results in the tab, and the selected ones, in order. */
-      decades: components["schemas"]["DecadeFacet"][];
-      /** @description Results with a scan. */
-      has_scan: number;
-      /** @description Results with a transcription. */
-      has_text: number;
-    };
-    /**
-     * @description The search results (US-RA-15, US-RA-16): the groups of the tab, each by relevance or by
-     *     title, as asked, and the facet counts.
-     *
-     *     The context's `work_fragments` holds the matching fragments of each work, by work id, and
-     *     `works` the fragment cards' works (see `FragmentCardSerializer`).
-     */
-    SearchPage: {
-      facets: components["schemas"]["SearchFacets"];
-      /** @description Results in all the groups. */
-      total: number;
-      works: components["schemas"]["WorkResult"][];
-      tags: components["schemas"]["TagResult"][];
-      fragments: components["schemas"]["FragmentCard"][];
-      notes: components["schemas"]["ItemResult"][];
-      typescripts: components["schemas"]["ItemResult"][];
-      secondary_texts: components["schemas"]["ItemResult"][];
-      materials: components["schemas"]["ItemResult"][];
-      /** @description The most frequent tags, only when nothing was found (US-RA-15 AC8). */
-      suggested_tags: components["schemas"]["TagCount"][];
-    };
-    /** @description US-RA-10. `description` is rich text: HTML, sanitized when an editor saves it. */
-    SecondaryTextPage: {
-      id: number;
-      /** @description True only for staff previewing a draft (US-WR-13). */
-      is_draft: boolean;
-      title: string;
-      /** @description HTML. */
-      description: string;
-      kind: components["schemas"]["SecondaryTextPageKindEnum"];
-      /** @description For letters; may be empty. */
-      sender: string;
-      /**
-       * Format: date
-       * @description For letters.
-       */
-      letter_date: string | null;
-      /** @description The text for the reader: /api/documents/<id>/. */
-      document: number;
-      /** @description Related works, by first edition (R-03). */
-      works: components["schemas"]["WorkSummary"][];
-      /** @description Typescript fragments sharing a tag with the text or its fragments. */
-      fragments: components["schemas"]["FragmentCardPreview"];
-      /** @description Tags on the text, its fragments and its work links, by name. */
-      tags: components["schemas"]["TagChip"][];
-    };
-    /**
-     * @description * `letter` - Letter
-     *     * `review` - Review
-     *     * `study` - Study
-     *     * `recording` - Recording
-     *     * `other` - Other
-     * @enum {string}
-     */
-    SecondaryTextPageKindEnum: "letter" | "review" | "study" | "recording" | "other";
-    /**
-     * @description * `typescript` - typescript
-     *     * `note` - note
-     *     * `secondary_text` - secondary_text
-     *     * `material` - material
-     * @enum {string}
-     */
-    SourceTypeEnum: "typescript" | "note" | "secondary_text" | "material";
-    /** @description A suggestion under the search fields (US-RA-17): a work or a tag, and its page. */
-    Suggestion: {
-      readonly type: components["schemas"]["TypeEnum"];
-      readonly title: string;
-      readonly url: string;
-    };
-    TabCounts: {
-      all: number;
-      works: number;
-      fragments: number;
-      notes: number;
-      tags: number;
-    };
-    TagChip: {
-      /** @description Part of the page address. */
-      readonly slug: string;
-      /** Name */
-      readonly title: string;
-    };
-    /** @description A tag with its occurrence count (US-RA-20), from a queryset with `with_occurrences()`. */
-    TagCount: {
-      /** @description Part of the page address. */
-      readonly slug: string;
-      /** Name */
-      readonly title: string;
-      readonly occurrences: number;
-    };
-    /**
-     * @description US-RA-07, from a tag with `with_occurrences()`. `description` is rich text: HTML,
-     *     sanitized when an editor saves it.
-     */
-    TagPage: {
-      slug: string;
-      /** @description True only for staff previewing a draft (US-WR-13). */
-      is_draft: boolean;
-      title: string;
-      /** @description HTML. */
-      description: string;
-      occurrences: number;
-      /** @description The works the tag refers to (US-RA-07 AC5), by first edition. `fragment_count` counts the main typescript's fragments that carry the tag (D19). */
-      works: components["schemas"]["WorkSummary"][];
-      /** @description Every visible fragment with the tag: by work, then text order. */
-      fragments: components["schemas"]["FragmentCard"][];
-      /** @description Notes with the tag on the whole note or a fragment, by title. */
-      notes: components["schemas"]["NoteCard"][];
-      /** @description Published related tags, by name. */
-      related: components["schemas"]["TagChip"][];
-      /** @description Those with the tag on the whole item, a fragment, or a work link. */
-      materials: components["schemas"]["ContextualMaterials"];
-    };
-    /**
-     * @description A tag result, from a tag with `with_occurrences()`. The snippet is cut from its
-     *     description.
-     */
-    TagResult: {
-      url: string;
-      title: string;
-      occurrences: number;
-      /** @description HTML: the escaped text around the match, the search terms in <mark>. */
-      snippet: string;
-    };
-    TeamGroup: {
-      group: components["schemas"]["GroupEnum"];
-      members: components["schemas"]["TeamMember"][];
-    };
-    TeamMember: {
-      /** Full name */
-      readonly name: string;
-      readonly role: string;
-      /** Short biography */
-      readonly bio: string;
-    };
-    /**
-     * @description * `work` - work
-     *     * `tag` - tag
-     * @enum {string}
-     */
-    TypeEnum: "work" | "tag";
-    /** @description A work's group on the typescripts list (US-RA-19 AC2), from a work with `with_year()`. */
-    TypescriptGroup: {
-      slug: string;
-      title: string;
-      genre: string;
-      /** @description The year of the first edition; null without editions. */
-      year: number | null;
-      /** @description By shelfmark, as numbers. */
-      typescripts: components["schemas"]["TypescriptRow"][];
-    };
-    /** @description US-RA-08. `description` is rich text: HTML, sanitized when an editor saves it. */
-    TypescriptPage: {
-      id: number;
-      /** @description True only for staff previewing a draft (US-WR-13). */
-      is_draft: boolean;
-      title: string;
-      /** @description HTML. */
-      description: string;
-      /** @description E.g. "ML, sygn. 1618"; may be empty. */
-      shelfmark: string;
-      /** @description The text for the reader: /api/documents/<id>/. */
-      document: number;
-      page_count: number;
-      /** @description Null while the work is a draft. */
-      work: components["schemas"]["WorkSummary"] | null;
-      /** @description The work's typescripts by shelfmark, this one included. */
-      work_typescripts: components["schemas"]["TypescriptRow"][];
-      fragments: components["schemas"]["FragmentPreview"];
-      /** @description Tags on the typescript and on its fragments, by name. */
-      tags: components["schemas"]["TagChip"][];
-      /** @description Those linked to the typescript's work. */
-      materials: components["schemas"]["ContextualMaterials"];
-    };
-    TypescriptRow: {
-      readonly id: number;
-      readonly title: string;
-      /** @description E.g. "ML, sygn. 1618"; may be empty. */
-      readonly shelfmark: string;
-    };
-    /** @description A thumbnail of "Materiały wizualne" (R-08), captioned with title and shelfmark. */
-    VisualMaterial: {
-      readonly url: string;
-      readonly title: string;
-      /** @description E.g. "ML, sygn. 1700"; may be empty. */
-      readonly shelfmark: string;
-      /** @description Empty when the material has no image. */
-      readonly image: string;
-      /** Image text alternative */
-      readonly image_alt: string;
-    };
-    /**
-     * @description The work card (US-RA-01 AC3), from a queryset with `with_year()` and
-     *     `with_fragment_count()`.
-     */
-    WorkCard: {
-      /** @description Part of the page address. */
-      readonly slug: string;
-      readonly title: string;
-      /** @description E.g. powieść. */
-      readonly genre: string;
-      /** @description The year of the first edition; null without editions. */
-      readonly year: number | null;
-      /** @description Empty when the work has no cover. */
-      readonly cover_image: string;
-      /** Cover image text alternative */
-      readonly cover_image_alt: string;
-      /** @description Visible fragments of the main typescript (D19); 0 without one. */
-      readonly fragment_count: number;
-    };
-    WorkFacet: {
-      id: number;
-      title: string;
-      count: number;
-    };
-    /**
-     * @description US-RA-04, from a work with `with_year()`. `description` is rich text: HTML, sanitized when
-     *     an editor saves it.
-     */
-    WorkPage: {
-      slug: string;
-      /** @description True only for staff previewing a draft (US-WR-13). */
-      is_draft: boolean;
-      title: string;
-      /** @description HTML. */
-      description: string;
-      /** @description The year of the first edition; null without editions. */
-      year: number | null;
-      /** @description By year. */
-      editions: components["schemas"]["Edition"][];
-      /** @description The typescript whose fragments the preview shows; null without a published one. */
-      main_typescript: number | null;
-      /** @description The main typescript's visible fragments. */
-      fragments: components["schemas"]["FragmentCardPreview"];
-      /** @description By shelfmark, as numbers. */
-      typescripts: components["schemas"]["TypescriptRow"][];
-      /** @description By title. */
-      notes: components["schemas"]["NoteCard"][];
-      /** @description Tags that refer to the work (US-RA-07 AC5), by name. */
-      tags: components["schemas"]["TagChip"][];
-      /** @description Those linked to the work. */
-      materials: components["schemas"]["ContextualMaterials"];
-    };
-    /** @description A work result (US-RA-15 AC5), from a work with `with_year()`. Works show no snippet. */
-    WorkResult: {
-      url: string;
-      title: string;
-      genre: string;
-      /** @description The year of the first edition; null without editions. */
-      year: number | null;
-      /** @description The work's fragments that match the query. */
-      readonly fragments: number;
-    };
-    /**
-     * @description A work in a context column (R-03), from a queryset with `with_year()` and
-     *     `with_fragment_count()`.
-     */
-    WorkSummary: {
-      /** @description Part of the page address. */
-      readonly slug: string;
-      readonly title: string;
-      /** @description The year of the first edition; null without editions. */
-      readonly year: number | null;
-      /** @description Visible fragments of the main typescript (D19); 0 without one. */
-      readonly fragment_count: number;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  about_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    about_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["AboutPage"];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AboutPage"];
+                };
+            };
         };
-      };
     };
-  };
-  documents_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    documents_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["Document"];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Document"];
+                };
+            };
         };
-      };
     };
-  };
-  editor_fragments_list: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    editor_fragments_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["EditorFragment"][];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorFragment"][];
+                };
+            };
         };
-      };
     };
-  };
-  editor_fragments_create: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["EditorFragment"];
-        "application/x-www-form-urlencoded": components["schemas"]["EditorFragment"];
-        "multipart/form-data": components["schemas"]["EditorFragment"];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    editor_fragments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["EditorFragment"];
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditorFragment"];
+                "application/x-www-form-urlencoded": components["schemas"]["EditorFragment"];
+                "multipart/form-data": components["schemas"]["EditorFragment"];
+            };
         };
-      };
-    };
-  };
-  editor_fragments_destroy: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description No response body */
-      204: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorFragment"];
+                };
+            };
         };
-        content?: never;
-      };
     };
-  };
-  editor_fragments_partial_update: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: {
-      content: {
-        "application/json": components["schemas"]["PatchedEditorFragment"];
-        "application/x-www-form-urlencoded": components["schemas"]["PatchedEditorFragment"];
-        "multipart/form-data": components["schemas"]["PatchedEditorFragment"];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    editor_fragments_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["EditorFragment"];
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
-      };
     };
-  };
-  home_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    editor_fragments_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["HomePage"];
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedEditorFragment"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedEditorFragment"];
+                "multipart/form-data": components["schemas"]["PatchedEditorFragment"];
+            };
         };
-      };
-    };
-  };
-  materials_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditorFragment"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["MaterialPage"];
-        };
-      };
     };
-  };
-  notes_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    home_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["NotePage"];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HomePage"];
+                };
+            };
         };
-      };
     };
-  };
-  search_retrieve: {
-    parameters: {
-      query?: {
-        /** @description Decades of first editions, e.g. 1940 for 1940 to 1949. */
-        decade?: number[];
-        has_scan?: boolean;
-        has_text?: boolean;
-        /** @description Web search syntax: quoted phrases, or, -word. */
-        q?: string;
-        /**
-         * @description Within each group. An empty query is always sorted by title.
-         *
-         *     * `relevance` - Relevance
-         *     * `title` - Title
-         */
-        sort?: "relevance" | "title";
-        /**
-         * @description * `all` - All
-         *     * `works` - Works
-         *     * `fragments` - Fragments
-         *     * `notes` - Notes
-         *     * `tags` - Tags
-         */
-        tab?: "all" | "works" | "fragments" | "notes" | "tags";
-        /** @description Ids of published works. */
-        work?: number[];
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    materials_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["SearchPage"];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterialPage"];
+                };
+            };
         };
-      };
     };
-  };
-  search_autocomplete_list: {
-    parameters: {
-      query?: {
-        /** @description What the reader has typed so far. */
-        q?: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    notes_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["Suggestion"][];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotePage"];
+                };
+            };
         };
-      };
     };
-  };
-  secondary_texts_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    search_retrieve: {
+        parameters: {
+            query?: {
+                /** @description Decades of first editions, e.g. 1940 for 1940 to 1949. */
+                decade?: number[];
+                has_scan?: boolean;
+                has_text?: boolean;
+                /** @description Web search syntax: quoted phrases, or, -word. */
+                q?: string;
+                /**
+                 * @description Within each group. An empty query is always sorted by title.
+                 *
+                 *     * `relevance` - Relevance
+                 *     * `title` - Title
+                 */
+                sort?: "relevance" | "title";
+                /**
+                 * @description * `all` - All
+                 *     * `works` - Works
+                 *     * `fragments` - Fragments
+                 *     * `notes` - Notes
+                 *     * `tags` - Tags
+                 */
+                tab?: "all" | "works" | "fragments" | "notes" | "tags";
+                /** @description Ids of published works. */
+                work?: number[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["SecondaryTextPage"];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchPage"];
+                };
+            };
         };
-      };
     };
-  };
-  tags_list: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    search_autocomplete_list: {
+        parameters: {
+            query?: {
+                /** @description What the reader has typed so far. */
+                q?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["TagCount"][];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Suggestion"][];
+                };
+            };
         };
-      };
     };
-  };
-  tags_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    secondary_texts_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["TagPage"];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecondaryTextPage"];
+                };
+            };
         };
-      };
     };
-  };
-  typescripts_list: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    tags_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["TypescriptGroup"][];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagCount"][];
+                };
+            };
         };
-      };
     };
-  };
-  typescripts_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        id: number;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    tags_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["TypescriptPage"];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TagPage"];
+                };
+            };
         };
-      };
     };
-  };
-  works_list: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    typescripts_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["WorkCard"][];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TypescriptGroup"][];
+                };
+            };
         };
-      };
     };
-  };
-  works_retrieve: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
+    typescripts_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["WorkPage"];
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TypescriptPage"];
+                };
+            };
         };
-      };
     };
-  };
+    works_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkCard"][];
+                };
+            };
+        };
+    };
+    works_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkPage"];
+                };
+            };
+        };
+    };
 }

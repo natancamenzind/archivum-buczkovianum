@@ -11,17 +11,17 @@ paths:
 
         Empty groups are left out (R-02), so the page renders every group it gets.
       tags:
-        - about
+      - about
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AboutPage"
-          description: ""
+                $ref: '#/components/schemas/AboutPage'
+          description: ''
   /api/documents/{id}/:
     get:
       operationId: documents_retrieve
@@ -30,109 +30,109 @@ paths:
         published tags. The text of a draft is shown only to staff; of no item, it is not found
         (R-06).
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
       tags:
-        - documents
+      - documents
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Document"
-          description: ""
+                $ref: '#/components/schemas/Document'
+          description: ''
   /api/editor/fragments/:
     get:
       operationId: editor_fragments_list
       tags:
-        - editor
+      - editor
       security:
-        - cookieAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/EditorFragment"
-          description: ""
+                  $ref: '#/components/schemas/EditorFragment'
+          description: ''
     post:
       operationId: editor_fragments_create
       tags:
-        - editor
+      - editor
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/EditorFragment"
+              $ref: '#/components/schemas/EditorFragment'
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/EditorFragment"
+              $ref: '#/components/schemas/EditorFragment'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/EditorFragment"
+              $ref: '#/components/schemas/EditorFragment'
         required: true
       security:
-        - cookieAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/EditorFragment"
-          description: ""
+                $ref: '#/components/schemas/EditorFragment'
+          description: ''
   /api/editor/fragments/{id}/:
     patch:
       operationId: editor_fragments_partial_update
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
       tags:
-        - editor
+      - editor
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PatchedEditorFragment"
+              $ref: '#/components/schemas/PatchedEditorFragment'
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/PatchedEditorFragment"
+              $ref: '#/components/schemas/PatchedEditorFragment'
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/PatchedEditorFragment"
+              $ref: '#/components/schemas/PatchedEditorFragment'
       security:
-        - cookieAuth: []
+      - cookieAuth: []
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/EditorFragment"
-          description: ""
+                $ref: '#/components/schemas/EditorFragment'
+          description: ''
     delete:
       operationId: editor_fragments_destroy
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
       tags:
-        - editor
+      - editor
       security:
-        - cookieAuth: []
+      - cookieAuth: []
       responses:
-        "204":
+        '204':
           description: No response body
   /api/home/:
     get:
@@ -141,62 +141,62 @@ paths:
         The home page (US-RA-01): introduction and portrait, the counts, the work cards, a random
         featured fragment (US-RA-02) and the tag cloud.
       tags:
-        - home
+      - home
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HomePage"
-          description: ""
+                $ref: '#/components/schemas/HomePage'
+          description: ''
   /api/materials/{id}/:
     get:
       operationId: materials_retrieve
       description: The contextual material page (US-RA-12). A draft material is shown
         only to staff (R-06).
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
       tags:
-        - materials
+      - materials
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MaterialPage"
-          description: ""
+                $ref: '#/components/schemas/MaterialPage'
+          description: ''
   /api/notes/{id}/:
     get:
       operationId: notes_retrieve
       description: The note page (US-RA-11). A draft note is shown only to staff (R-06).
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
       tags:
-        - notes
+      - notes
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/NotePage"
-          description: ""
+                $ref: '#/components/schemas/NotePage'
+          description: ''
   /api/search/:
     get:
       operationId: search_retrieve
@@ -204,84 +204,84 @@ paths:
         The search results (US-RA-15, US-RA-16) in the tab and filters, grouped by type. A blank
         `q`, or one of stopwords only, finds everything.
       parameters:
-        - in: query
-          name: decade
-          schema:
-            type: array
-            items:
-              type: integer
-              maximum: 32767
-              minimum: 0
-          description: Decades of first editions, e.g. 1940 for 1940 to 1949.
-        - in: query
-          name: has_scan
-          schema:
-            type: boolean
-            default: false
-        - in: query
-          name: has_text
-          schema:
-            type: boolean
-            default: false
-        - in: query
-          name: q
-          schema:
-            type: string
-            default: ""
-          description: "Web search syntax: quoted phrases, or, -word."
-        - in: query
-          name: sort
-          schema:
-            enum:
-              - relevance
-              - title
-            type: string
-            default: relevance
-            minLength: 1
-          description: |-
-            Within each group. An empty query is always sorted by title.
+      - in: query
+        name: decade
+        schema:
+          type: array
+          items:
+            type: integer
+            maximum: 32767
+            minimum: 0
+        description: Decades of first editions, e.g. 1940 for 1940 to 1949.
+      - in: query
+        name: has_scan
+        schema:
+          type: boolean
+          default: false
+      - in: query
+        name: has_text
+        schema:
+          type: boolean
+          default: false
+      - in: query
+        name: q
+        schema:
+          type: string
+          default: ''
+        description: 'Web search syntax: quoted phrases, or, -word.'
+      - in: query
+        name: sort
+        schema:
+          enum:
+          - relevance
+          - title
+          type: string
+          default: relevance
+          minLength: 1
+        description: |-
+          Within each group. An empty query is always sorted by title.
 
-            * `relevance` - Relevance
-            * `title` - Title
-        - in: query
-          name: tab
-          schema:
-            enum:
-              - all
-              - works
-              - fragments
-              - notes
-              - tags
-            type: string
-            default: all
-            minLength: 1
-          description: |-
-            * `all` - All
-            * `works` - Works
-            * `fragments` - Fragments
-            * `notes` - Notes
-            * `tags` - Tags
-        - in: query
-          name: work
-          schema:
-            type: array
-            items:
-              type: integer
-              maximum: 2147483647
-              minimum: 1
-          description: Ids of published works.
+          * `relevance` - Relevance
+          * `title` - Title
+      - in: query
+        name: tab
+        schema:
+          enum:
+          - all
+          - works
+          - fragments
+          - notes
+          - tags
+          type: string
+          default: all
+          minLength: 1
+        description: |-
+          * `all` - All
+          * `works` - Works
+          * `fragments` - Fragments
+          * `notes` - Notes
+          * `tags` - Tags
+      - in: query
+        name: work
+        schema:
+          type: array
+          items:
+            type: integer
+            maximum: 2147483647
+            minimum: 1
+        description: Ids of published works.
       tags:
-        - search
+      - search
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SearchPage"
-          description: ""
+                $ref: '#/components/schemas/SearchPage'
+          description: ''
   /api/search/autocomplete/:
     get:
       operationId: search_autocomplete_list
@@ -289,48 +289,48 @@ paths:
         Suggestions under the search fields (US-RA-17): published works and tags whose title
         contains `q`. Empty for a blank `q`.
       parameters:
-        - in: query
-          name: q
-          schema:
-            type: string
-          description: What the reader has typed so far.
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: What the reader has typed so far.
       tags:
-        - search
+      - search
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Suggestion"
-          description: ""
+                  $ref: '#/components/schemas/Suggestion'
+          description: ''
   /api/secondary-texts/{id}/:
     get:
       operationId: secondary_texts_retrieve
       description: The secondary text page (US-RA-10). A draft secondary text is shown
         only to staff (R-06).
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
       tags:
-        - secondary-texts
+      - secondary-texts
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SecondaryTextPage"
-          description: ""
+                $ref: '#/components/schemas/SecondaryTextPage'
+          description: ''
   /api/tags/:
     get:
       operationId: tags_list
@@ -338,41 +338,41 @@ paths:
         The tags list (US-RA-20): published tags with at least one occurrence (D26), the most
         frequent first. The cloud and the alphabetical index both take this one list.
       tags:
-        - tags
+      - tags
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/TagCount"
-          description: ""
+                  $ref: '#/components/schemas/TagCount'
+          description: ''
   /api/tags/{slug}/:
     get:
       operationId: tags_retrieve
       description: The tag page (US-RA-07). A draft tag is shown only to staff (R-06).
       parameters:
-        - in: path
-          name: slug
-          schema:
-            type: string
-          required: true
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
       tags:
-        - tags
+      - tags
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TagPage"
-          description: ""
+                $ref: '#/components/schemas/TagPage'
+          description: ''
   /api/typescripts/:
     get:
       operationId: typescripts_list
@@ -380,19 +380,19 @@ paths:
         The typescripts list (US-RA-19): published typescripts grouped by their published work,
         works by first edition. A work without published typescripts has no group (R-02).
       tags:
-        - typescripts
+      - typescripts
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/TypescriptGroup"
-          description: ""
+                  $ref: '#/components/schemas/TypescriptGroup'
+          description: ''
   /api/typescripts/{id}/:
     get:
       operationId: typescripts_retrieve
@@ -400,70 +400,70 @@ paths:
         The typescript page (US-RA-08). A draft typescript is shown only to staff (R-06); a draft
         work leaves out the work, its contextual materials and nothing else.
       parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
       tags:
-        - typescripts
+      - typescripts
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/TypescriptPage"
-          description: ""
+                $ref: '#/components/schemas/TypescriptPage'
+          description: ''
   /api/works/:
     get:
       operationId: works_list
-      description: "The works list (US-RA-18): every published work as a card, by
-        first edition."
+      description: 'The works list (US-RA-18): every published work as a card, by
+        first edition.'
       tags:
-        - works
+      - works
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/WorkCard"
-          description: ""
+                  $ref: '#/components/schemas/WorkCard'
+          description: ''
   /api/works/{slug}/:
     get:
       operationId: works_retrieve
       description: The work page (US-RA-04). A draft work is shown only to staff (R-06).
       parameters:
-        - in: path
-          name: slug
-          schema:
-            type: string
-          required: true
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
       tags:
-        - works
+      - works
       security:
-        - cookieAuth: []
-        - {}
+      - cookieAuth: []
+      - {}
       responses:
-        "200":
+        '200':
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WorkPage"
-          description: ""
+                $ref: '#/components/schemas/WorkPage'
+          description: ''
 components:
   schemas:
     AboutPage:
       type: object
-      description: "US-RA-13. `intro` and `project` are rich text: HTML, sanitized
-        when an editor saves it."
+      description: 'US-RA-13. `intro` and `project` are rich text: HTML, sanitized
+        when an editor saves it.'
       properties:
         intro:
           type: string
@@ -474,28 +474,28 @@ components:
         team:
           type: array
           items:
-            $ref: "#/components/schemas/TeamGroup"
+            $ref: '#/components/schemas/TeamGroup'
           description: Groups that have members, in the order of TeamMember.Group.
       required:
-        - intro
-        - project
-        - team
+      - intro
+      - project
+      - team
     ContextualMaterials:
       type: object
       properties:
         texts:
           type: array
           items:
-            $ref: "#/components/schemas/MaterialText"
+            $ref: '#/components/schemas/MaterialText'
           description: By title.
         visuals:
           type: array
           items:
-            $ref: "#/components/schemas/VisualMaterial"
+            $ref: '#/components/schemas/VisualMaterial'
           description: By title.
       required:
-        - texts
-        - visuals
+      - texts
+      - visuals
     DecadeFacet:
       type: object
       properties:
@@ -505,8 +505,8 @@ components:
         count:
           type: integer
       required:
-        - count
-        - decade
+      - count
+      - decade
     Document:
       type: object
       description: The text of an item for the reader (R-11, architecture section
@@ -517,7 +517,7 @@ components:
           readOnly: true
         kind:
           allOf:
-            - $ref: "#/components/schemas/DocumentKindEnum"
+          - $ref: '#/components/schemas/DocumentKindEnum'
           readOnly: true
         text:
           type: string
@@ -540,17 +540,17 @@ components:
         fragments:
           type: array
           items:
-            $ref: "#/components/schemas/DocumentFragment"
+            $ref: '#/components/schemas/DocumentFragment'
           readOnly: true
           description: By position.
       required:
-        - fragments
-        - id
-        - is_draft
-        - kind
-        - page_offsets
-        - scan
-        - text
+      - fragments
+      - id
+      - is_draft
+      - kind
+      - page_offsets
+      - scan
+      - text
     DocumentFragment:
       type: object
       description: |-
@@ -589,22 +589,22 @@ components:
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagChip"
+            $ref: '#/components/schemas/TagChip'
           readOnly: true
           description: Published tags, by name.
       required:
-        - end
-        - id
-        - number
-        - scan_number
-        - shelfmark
-        - start
-        - start_page
-        - tags
+      - end
+      - id
+      - number
+      - scan_number
+      - shelfmark
+      - start
+      - start_page
+      - tags
     DocumentKindEnum:
       enum:
-        - ocr
-        - plain
+      - ocr
+      - plain
       type: string
       description: |-
         * `ocr` - Scan + OCR text
@@ -622,9 +622,9 @@ components:
           type: string
           readOnly: true
       required:
-        - place
-        - publisher
-        - year
+      - place
+      - publisher
+      - year
     EditorFragment:
       type: object
       properties:
@@ -650,21 +650,21 @@ components:
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/EditorTag"
+            $ref: '#/components/schemas/EditorTag'
           readOnly: true
         needs_review:
           type: boolean
           readOnly: true
           description: The text changed. Check the fragment, then clear this box.
       required:
-        - document
-        - end
-        - id
-        - needs_review
-        - quote
-        - start
-        - tag_ids
-        - tags
+      - document
+      - end
+      - id
+      - needs_review
+      - quote
+      - start
+      - tag_ids
+      - tags
     EditorTag:
       type: object
       properties:
@@ -676,24 +676,24 @@ components:
           readOnly: true
           title: Name
       required:
-        - id
-        - title
+      - id
+      - title
     FeaturedFragment:
       type: object
       description: US-RA-02. The context's `works` holds the card's works (see `FragmentCardSerializer`).
       properties:
         fragment:
-          $ref: "#/components/schemas/FragmentCard"
+          $ref: '#/components/schemas/FragmentCard'
         work:
           allOf:
-            - $ref: "#/components/schemas/WorkFacet"
+          - $ref: '#/components/schemas/WorkFacet'
           nullable: true
           description: The source's first published work, by first edition, and the
             count of the Fragmenty search filtered to it; null when the source has
             no published work.
       required:
-        - fragment
-        - work
+      - fragment
+      - work
     FragmentCard:
       type: object
       description: |-
@@ -712,7 +712,7 @@ components:
           description: The source, scrolled to the fragment.
         source_type:
           allOf:
-            - $ref: "#/components/schemas/SourceTypeEnum"
+          - $ref: '#/components/schemas/SourceTypeEnum'
           readOnly: true
         work:
           type: string
@@ -751,50 +751,50 @@ components:
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagChip"
+            $ref: '#/components/schemas/TagChip'
           readOnly: true
           description: Published tags, by name.
       required:
-        - description
-        - id
-        - number
-        - quote
-        - scan
-        - scan_number
-        - shelfmark
-        - source_type
-        - start_page
-        - tags
-        - url
-        - work
+      - description
+      - id
+      - number
+      - quote
+      - scan
+      - scan_number
+      - shelfmark
+      - source_type
+      - start_page
+      - tags
+      - url
+      - work
     FragmentCardPreview:
       type: object
       properties:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/FragmentCard"
+            $ref: '#/components/schemas/FragmentCard'
           description: Featured first, then text order (R-09).
         total:
           type: integer
           description: The number of all the fragments.
       required:
-        - items
-        - total
+      - items
+      - total
     FragmentPreview:
       type: object
       properties:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/FragmentRow"
+            $ref: '#/components/schemas/FragmentRow'
           description: Featured first, then text order (R-09).
         total:
           type: integer
           description: The number of all the fragments.
       required:
-        - items
-        - total
+      - items
+      - total
     FragmentRow:
       type: object
       description: |-
@@ -819,15 +819,15 @@ components:
           readOnly: true
           description: E.g. "ML, sygn. 1618.0009"; may be empty.
       required:
-        - id
-        - number
-        - scan_number
-        - shelfmark
+      - id
+      - number
+      - scan_number
+      - shelfmark
     GroupEnum:
       enum:
-        - leadership
-        - team
-        - site
+      - leadership
+      - team
+      - site
       type: string
       description: |-
         * `leadership` - Project leadership
@@ -835,8 +835,8 @@ components:
         * `site` - Website development
     HomePage:
       type: object
-      description: "US-RA-01. `intro` is rich text: HTML, sanitized when an editor
-        saves it."
+      description: 'US-RA-01. `intro` is rich text: HTML, sanitized when an editor
+        saves it.'
       properties:
         intro:
           type: string
@@ -848,30 +848,30 @@ components:
         portrait_alt:
           type: string
         statistics:
-          $ref: "#/components/schemas/HomeStatistics"
+          $ref: '#/components/schemas/HomeStatistics'
         works:
           type: array
           items:
-            $ref: "#/components/schemas/WorkCard"
+            $ref: '#/components/schemas/WorkCard'
           description: By first edition.
         featured:
           allOf:
-            - $ref: "#/components/schemas/FeaturedFragment"
+          - $ref: '#/components/schemas/FeaturedFragment'
           nullable: true
           description: A random visible featured fragment; null when there is none.
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagCount"
-          description: "The tag cloud: tags in use, the most frequent first."
+            $ref: '#/components/schemas/TagCount'
+          description: 'The tag cloud: tags in use, the most frequent first.'
       required:
-        - featured
-        - intro
-        - portrait
-        - portrait_alt
-        - statistics
-        - tags
-        - works
+      - featured
+      - intro
+      - portrait
+      - portrait_alt
+      - statistics
+      - tags
+      - works
     HomeStatistics:
       type: object
       properties:
@@ -885,9 +885,9 @@ components:
           type: integer
           description: Published tags.
       required:
-        - fragments
-        - tags
-        - works
+      - fragments
+      - tags
+      - works
     ItemResult:
       type: object
       description: A note, typescript, secondary text or contextual material result.
@@ -904,13 +904,13 @@ components:
           description: E.g. "ML, sygn. 1678"; may be empty.
         snippet:
           type: string
-          description: "HTML: the escaped text around the match, the search terms
-            in <mark>."
+          description: 'HTML: the escaped text around the match, the search terms
+            in <mark>.'
       required:
-        - shelfmark
-        - snippet
-        - title
-        - url
+      - shelfmark
+      - snippet
+      - title
+      - url
     MaterialPage:
       type: object
       description: |-
@@ -931,33 +931,33 @@ components:
           type: string
           description: E.g. "ML, sygn. 1700"; may be empty.
         content:
-          $ref: "#/components/schemas/MediaContent"
+          $ref: '#/components/schemas/MediaContent'
         works:
           type: array
           items:
-            $ref: "#/components/schemas/WorkSummary"
+            $ref: '#/components/schemas/WorkSummary'
           description: Related works, by first edition (R-03).
         fragments:
           allOf:
-            - $ref: "#/components/schemas/FragmentCardPreview"
+          - $ref: '#/components/schemas/FragmentCardPreview'
           description: Typescript fragments sharing a tag with the material or its
             fragments.
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagChip"
+            $ref: '#/components/schemas/TagChip'
           description: Tags on the material, its fragments and its work links, by
             name.
       required:
-        - content
-        - description
-        - fragments
-        - id
-        - is_draft
-        - shelfmark
-        - tags
-        - title
-        - works
+      - content
+      - description
+      - fragments
+      - id
+      - is_draft
+      - shelfmark
+      - tags
+      - title
+      - works
     MaterialText:
       type: object
       description: |-
@@ -976,10 +976,10 @@ components:
           readOnly: true
           description: Publisher, place, year, pages.
       required:
-        - author
-        - publication
-        - title
-        - url
+      - author
+      - publication
+      - title
+      - url
     MediaContent:
       type: object
       description: |-
@@ -987,7 +987,7 @@ components:
         is filled.
       properties:
         kind:
-          $ref: "#/components/schemas/MediaContentKindEnum"
+          $ref: '#/components/schemas/MediaContentKindEnum'
         image:
           type: string
           readOnly: true
@@ -1007,19 +1007,19 @@ components:
           description: The text for the reader, /api/documents/<id>/; null unless
             a text kind.
       required:
-        - document
-        - external_url
-        - file
-        - image
-        - image_alt
-        - kind
+      - document
+      - external_url
+      - file
+      - image
+      - image_alt
+      - kind
     MediaContentKindEnum:
       enum:
-        - image
-        - document
-        - external_media
-        - ocr_text
-        - plain_text
+      - image
+      - document
+      - external_media
+      - ocr_text
+      - plain_text
       type: string
       description: |-
         * `image` - Image
@@ -1058,21 +1058,21 @@ components:
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagChip"
+            $ref: '#/components/schemas/TagChip'
           readOnly: true
           description: Published tags, by name.
       required:
-        - description
-        - image
-        - image_alt
-        - shelfmark
-        - tags
-        - title
-        - url
+      - description
+      - image
+      - image_alt
+      - shelfmark
+      - tags
+      - title
+      - url
     NotePage:
       type: object
-      description: "US-RA-11. `description` is rich text: HTML, sanitized when an
-        editor saves it."
+      description: 'US-RA-11. `description` is rich text: HTML, sanitized when an
+        editor saves it.'
       properties:
         id:
           type: integer
@@ -1088,31 +1088,31 @@ components:
           type: string
           description: E.g. "ML, sygn. 1678"; may be empty.
         content:
-          $ref: "#/components/schemas/MediaContent"
+          $ref: '#/components/schemas/MediaContent'
         works:
           type: array
           items:
-            $ref: "#/components/schemas/WorkSummary"
+            $ref: '#/components/schemas/WorkSummary'
           description: Related works, by first edition (R-03).
         fragments:
           allOf:
-            - $ref: "#/components/schemas/FragmentCardPreview"
+          - $ref: '#/components/schemas/FragmentCardPreview'
           description: Typescript fragments sharing a tag with the note or its fragments.
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagChip"
+            $ref: '#/components/schemas/TagChip'
           description: Tags on the note and its fragments, by name.
       required:
-        - content
-        - description
-        - fragments
-        - id
-        - is_draft
-        - shelfmark
-        - tags
-        - title
-        - works
+      - content
+      - description
+      - fragments
+      - id
+      - is_draft
+      - shelfmark
+      - tags
+      - title
+      - works
     PatchedEditorFragment:
       type: object
       properties:
@@ -1138,7 +1138,7 @@ components:
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/EditorTag"
+            $ref: '#/components/schemas/EditorTag'
           readOnly: true
         needs_review:
           type: boolean
@@ -1151,18 +1151,18 @@ components:
       properties:
         tabs:
           allOf:
-            - $ref: "#/components/schemas/TabCounts"
+          - $ref: '#/components/schemas/TabCounts'
           description: Results in each tab, with the filters applied.
         works:
           type: array
           items:
-            $ref: "#/components/schemas/WorkFacet"
+            $ref: '#/components/schemas/WorkFacet'
           description: Works with results in the tab, and the selected ones, by first
             edition.
         decades:
           type: array
           items:
-            $ref: "#/components/schemas/DecadeFacet"
+            $ref: '#/components/schemas/DecadeFacet'
           description: Decades with results in the tab, and the selected ones, in
             order.
         has_scan:
@@ -1172,11 +1172,11 @@ components:
           type: integer
           description: Results with a transcription.
       required:
-        - decades
-        - has_scan
-        - has_text
-        - tabs
-        - works
+      - decades
+      - has_scan
+      - has_text
+      - tabs
+      - works
     SearchPage:
       type: object
       description: |-
@@ -1187,59 +1187,59 @@ components:
         `works` the fragment cards' works (see `FragmentCardSerializer`).
       properties:
         facets:
-          $ref: "#/components/schemas/SearchFacets"
+          $ref: '#/components/schemas/SearchFacets'
         total:
           type: integer
           description: Results in all the groups.
         works:
           type: array
           items:
-            $ref: "#/components/schemas/WorkResult"
+            $ref: '#/components/schemas/WorkResult'
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagResult"
+            $ref: '#/components/schemas/TagResult'
         fragments:
           type: array
           items:
-            $ref: "#/components/schemas/FragmentCard"
+            $ref: '#/components/schemas/FragmentCard'
         notes:
           type: array
           items:
-            $ref: "#/components/schemas/ItemResult"
+            $ref: '#/components/schemas/ItemResult'
         typescripts:
           type: array
           items:
-            $ref: "#/components/schemas/ItemResult"
+            $ref: '#/components/schemas/ItemResult'
         secondary_texts:
           type: array
           items:
-            $ref: "#/components/schemas/ItemResult"
+            $ref: '#/components/schemas/ItemResult'
         materials:
           type: array
           items:
-            $ref: "#/components/schemas/ItemResult"
+            $ref: '#/components/schemas/ItemResult'
         suggested_tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagCount"
+            $ref: '#/components/schemas/TagCount'
           description: The most frequent tags, only when nothing was found (US-RA-15
             AC8).
       required:
-        - facets
-        - fragments
-        - materials
-        - notes
-        - secondary_texts
-        - suggested_tags
-        - tags
-        - total
-        - typescripts
-        - works
+      - facets
+      - fragments
+      - materials
+      - notes
+      - secondary_texts
+      - suggested_tags
+      - tags
+      - total
+      - typescripts
+      - works
     SecondaryTextPage:
       type: object
-      description: "US-RA-10. `description` is rich text: HTML, sanitized when an
-        editor saves it."
+      description: 'US-RA-10. `description` is rich text: HTML, sanitized when an
+        editor saves it.'
       properties:
         id:
           type: integer
@@ -1252,7 +1252,7 @@ components:
           type: string
           description: HTML.
         kind:
-          $ref: "#/components/schemas/SecondaryTextPageKindEnum"
+          $ref: '#/components/schemas/SecondaryTextPageKindEnum'
         sender:
           type: string
           description: For letters; may be empty.
@@ -1263,40 +1263,40 @@ components:
           description: For letters.
         document:
           type: integer
-          description: "The text for the reader: /api/documents/<id>/."
+          description: 'The text for the reader: /api/documents/<id>/.'
         works:
           type: array
           items:
-            $ref: "#/components/schemas/WorkSummary"
+            $ref: '#/components/schemas/WorkSummary'
           description: Related works, by first edition (R-03).
         fragments:
           allOf:
-            - $ref: "#/components/schemas/FragmentCardPreview"
+          - $ref: '#/components/schemas/FragmentCardPreview'
           description: Typescript fragments sharing a tag with the text or its fragments.
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagChip"
+            $ref: '#/components/schemas/TagChip'
           description: Tags on the text, its fragments and its work links, by name.
       required:
-        - description
-        - document
-        - fragments
-        - id
-        - is_draft
-        - kind
-        - letter_date
-        - sender
-        - tags
-        - title
-        - works
+      - description
+      - document
+      - fragments
+      - id
+      - is_draft
+      - kind
+      - letter_date
+      - sender
+      - tags
+      - title
+      - works
     SecondaryTextPageKindEnum:
       enum:
-        - letter
-        - review
-        - study
-        - recording
-        - other
+      - letter
+      - review
+      - study
+      - recording
+      - other
       type: string
       description: |-
         * `letter` - Letter
@@ -1306,10 +1306,10 @@ components:
         * `other` - Other
     SourceTypeEnum:
       enum:
-        - typescript
-        - note
-        - secondary_text
-        - material
+      - typescript
+      - note
+      - secondary_text
+      - material
       type: string
       description: |-
         * `typescript` - typescript
@@ -1318,12 +1318,12 @@ components:
         * `material` - material
     Suggestion:
       type: object
-      description: "A suggestion under the search fields (US-RA-17): a work or a tag,
-        and its page."
+      description: 'A suggestion under the search fields (US-RA-17): a work or a tag,
+        and its page.'
       properties:
         type:
           allOf:
-            - $ref: "#/components/schemas/TypeEnum"
+          - $ref: '#/components/schemas/TypeEnum'
           readOnly: true
         title:
           type: string
@@ -1332,9 +1332,9 @@ components:
           type: string
           readOnly: true
       required:
-        - title
-        - type
-        - url
+      - title
+      - type
+      - url
     TabCounts:
       type: object
       properties:
@@ -1349,11 +1349,11 @@ components:
         tags:
           type: integer
       required:
-        - all
-        - fragments
-        - notes
-        - tags
-        - works
+      - all
+      - fragments
+      - notes
+      - tags
+      - works
     TagChip:
       type: object
       properties:
@@ -1367,8 +1367,8 @@ components:
           readOnly: true
           title: Name
       required:
-        - slug
-        - title
+      - slug
+      - title
     TagCount:
       type: object
       description: A tag with its occurrence count (US-RA-20), from a queryset with
@@ -1387,9 +1387,9 @@ components:
           type: integer
           readOnly: true
       required:
-        - occurrences
-        - slug
-        - title
+      - occurrences
+      - slug
+      - title
     TagPage:
       type: object
       description: |-
@@ -1411,41 +1411,41 @@ components:
         works:
           type: array
           items:
-            $ref: "#/components/schemas/WorkSummary"
+            $ref: '#/components/schemas/WorkSummary'
           description: The works the tag refers to (US-RA-07 AC5), by first edition.
             `fragment_count` counts the main typescript's fragments that carry the
             tag (D19).
         fragments:
           type: array
           items:
-            $ref: "#/components/schemas/FragmentCard"
-          description: "Every visible fragment with the tag: by work, then text order."
+            $ref: '#/components/schemas/FragmentCard'
+          description: 'Every visible fragment with the tag: by work, then text order.'
         notes:
           type: array
           items:
-            $ref: "#/components/schemas/NoteCard"
+            $ref: '#/components/schemas/NoteCard'
           description: Notes with the tag on the whole note or a fragment, by title.
         related:
           type: array
           items:
-            $ref: "#/components/schemas/TagChip"
+            $ref: '#/components/schemas/TagChip'
           description: Published related tags, by name.
         materials:
           allOf:
-            - $ref: "#/components/schemas/ContextualMaterials"
+          - $ref: '#/components/schemas/ContextualMaterials'
           description: Those with the tag on the whole item, a fragment, or a work
             link.
       required:
-        - description
-        - fragments
-        - is_draft
-        - materials
-        - notes
-        - occurrences
-        - related
-        - slug
-        - title
-        - works
+      - description
+      - fragments
+      - is_draft
+      - materials
+      - notes
+      - occurrences
+      - related
+      - slug
+      - title
+      - works
     TagResult:
       type: object
       description: |-
@@ -1460,25 +1460,25 @@ components:
           type: integer
         snippet:
           type: string
-          description: "HTML: the escaped text around the match, the search terms
-            in <mark>."
+          description: 'HTML: the escaped text around the match, the search terms
+            in <mark>.'
       required:
-        - occurrences
-        - snippet
-        - title
-        - url
+      - occurrences
+      - snippet
+      - title
+      - url
     TeamGroup:
       type: object
       properties:
         group:
-          $ref: "#/components/schemas/GroupEnum"
+          $ref: '#/components/schemas/GroupEnum'
         members:
           type: array
           items:
-            $ref: "#/components/schemas/TeamMember"
+            $ref: '#/components/schemas/TeamMember'
       required:
-        - group
-        - members
+      - group
+      - members
     TeamMember:
       type: object
       properties:
@@ -1494,13 +1494,13 @@ components:
           readOnly: true
           title: Short biography
       required:
-        - bio
-        - name
-        - role
+      - bio
+      - name
+      - role
     TypeEnum:
       enum:
-        - work
-        - tag
+      - work
+      - tag
       type: string
       description: |-
         * `work` - work
@@ -1523,18 +1523,18 @@ components:
         typescripts:
           type: array
           items:
-            $ref: "#/components/schemas/TypescriptRow"
+            $ref: '#/components/schemas/TypescriptRow'
           description: By shelfmark, as numbers.
       required:
-        - genre
-        - slug
-        - title
-        - typescripts
-        - year
+      - genre
+      - slug
+      - title
+      - typescripts
+      - year
     TypescriptPage:
       type: object
-      description: "US-RA-08. `description` is rich text: HTML, sanitized when an
-        editor saves it."
+      description: 'US-RA-08. `description` is rich text: HTML, sanitized when an
+        editor saves it.'
       properties:
         id:
           type: integer
@@ -1551,43 +1551,43 @@ components:
           description: E.g. "ML, sygn. 1618"; may be empty.
         document:
           type: integer
-          description: "The text for the reader: /api/documents/<id>/."
+          description: 'The text for the reader: /api/documents/<id>/.'
         page_count:
           type: integer
         work:
           allOf:
-            - $ref: "#/components/schemas/WorkSummary"
+          - $ref: '#/components/schemas/WorkSummary'
           nullable: true
           description: Null while the work is a draft.
         work_typescripts:
           type: array
           items:
-            $ref: "#/components/schemas/TypescriptRow"
+            $ref: '#/components/schemas/TypescriptRow'
           description: The work's typescripts by shelfmark, this one included.
         fragments:
-          $ref: "#/components/schemas/FragmentPreview"
+          $ref: '#/components/schemas/FragmentPreview'
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagChip"
+            $ref: '#/components/schemas/TagChip'
           description: Tags on the typescript and on its fragments, by name.
         materials:
           allOf:
-            - $ref: "#/components/schemas/ContextualMaterials"
+          - $ref: '#/components/schemas/ContextualMaterials'
           description: Those linked to the typescript's work.
       required:
-        - description
-        - document
-        - fragments
-        - id
-        - is_draft
-        - materials
-        - page_count
-        - shelfmark
-        - tags
-        - title
-        - work
-        - work_typescripts
+      - description
+      - document
+      - fragments
+      - id
+      - is_draft
+      - materials
+      - page_count
+      - shelfmark
+      - tags
+      - title
+      - work
+      - work_typescripts
     TypescriptRow:
       type: object
       properties:
@@ -1602,9 +1602,9 @@ components:
           readOnly: true
           description: E.g. "ML, sygn. 1618"; may be empty.
       required:
-        - id
-        - shelfmark
-        - title
+      - id
+      - shelfmark
+      - title
     VisualMaterial:
       type: object
       description: A thumbnail of "Materiały wizualne" (R-08), captioned with title
@@ -1629,11 +1629,11 @@ components:
           readOnly: true
           title: Image text alternative
       required:
-        - image
-        - image_alt
-        - shelfmark
-        - title
-        - url
+      - image
+      - image_alt
+      - shelfmark
+      - title
+      - url
     WorkCard:
       type: object
       description: |-
@@ -1670,13 +1670,13 @@ components:
           readOnly: true
           description: Visible fragments of the main typescript (D19); 0 without one.
       required:
-        - cover_image
-        - cover_image_alt
-        - fragment_count
-        - genre
-        - slug
-        - title
-        - year
+      - cover_image
+      - cover_image_alt
+      - fragment_count
+      - genre
+      - slug
+      - title
+      - year
     WorkFacet:
       type: object
       properties:
@@ -1687,9 +1687,9 @@ components:
         count:
           type: integer
       required:
-        - count
-        - id
-        - title
+      - count
+      - id
+      - title
     WorkPage:
       type: object
       description: |-
@@ -1713,7 +1713,7 @@ components:
         editions:
           type: array
           items:
-            $ref: "#/components/schemas/Edition"
+            $ref: '#/components/schemas/Edition'
           description: By year.
         main_typescript:
           type: integer
@@ -1722,40 +1722,40 @@ components:
             a published one.
         fragments:
           allOf:
-            - $ref: "#/components/schemas/FragmentCardPreview"
+          - $ref: '#/components/schemas/FragmentCardPreview'
           description: The main typescript's visible fragments.
         typescripts:
           type: array
           items:
-            $ref: "#/components/schemas/TypescriptRow"
+            $ref: '#/components/schemas/TypescriptRow'
           description: By shelfmark, as numbers.
         notes:
           type: array
           items:
-            $ref: "#/components/schemas/NoteCard"
+            $ref: '#/components/schemas/NoteCard'
           description: By title.
         tags:
           type: array
           items:
-            $ref: "#/components/schemas/TagChip"
+            $ref: '#/components/schemas/TagChip'
           description: Tags that refer to the work (US-RA-07 AC5), by name.
         materials:
           allOf:
-            - $ref: "#/components/schemas/ContextualMaterials"
+          - $ref: '#/components/schemas/ContextualMaterials'
           description: Those linked to the work.
       required:
-        - description
-        - editions
-        - fragments
-        - is_draft
-        - main_typescript
-        - materials
-        - notes
-        - slug
-        - tags
-        - title
-        - typescripts
-        - year
+      - description
+      - editions
+      - fragments
+      - is_draft
+      - main_typescript
+      - materials
+      - notes
+      - slug
+      - tags
+      - title
+      - typescripts
+      - year
     WorkResult:
       type: object
       description: A work result (US-RA-15 AC5), from a work with `with_year()`. Works
@@ -1776,11 +1776,11 @@ components:
           readOnly: true
           description: The work's fragments that match the query.
       required:
-        - fragments
-        - genre
-        - title
-        - url
-        - year
+      - fragments
+      - genre
+      - title
+      - url
+      - year
     WorkSummary:
       type: object
       description: |-
@@ -1805,10 +1805,10 @@ components:
           readOnly: true
           description: Visible fragments of the main typescript (D19); 0 without one.
       required:
-        - fragment_count
-        - slug
-        - title
-        - year
+      - fragment_count
+      - slug
+      - title
+      - year
   securitySchemes:
     cookieAuth:
       type: apiKey
