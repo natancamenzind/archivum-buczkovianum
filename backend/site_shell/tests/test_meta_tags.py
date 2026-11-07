@@ -10,6 +10,7 @@ from pytest_django import DjangoAssertNumQueries
 
 from archive.models import Publishable, Status
 from archive.tests.factories import (
+    BibliographyEntryFactory,
     ContextualMaterialFactory,
     NoteFactory,
     SecondaryTextFactory,
@@ -252,6 +253,60 @@ class TestEntityPages:
         title, _ = head(client, url, status=404)
 
         assert title == "Nie znaleziono strony — Archivum Buczkovianum"
+
+
+@pytest.mark.django_db
+class TestBibliographyPage:
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "/works/wertepy/bibliography",
+            "/works/wertepy/bibliography/",
+            "/Works/wertepy/Bibliography",
+        ],
+    )
+    def test_us_ra_21_ac2_the_bibliography_page_has_its_title_and_description(
+        self, client: Client, url: str
+    ) -> None:
+        work = WorkFactory.create(title="Wertepy", slug="wertepy", status=PUBLISHED)
+        BibliographyEntryFactory.create(work=work)
+
+        assert head(client, url) == (
+            "Bibliografia utworu „Wertepy” — Archivum Buczkovianum",
+            "Bibliografia utworu „Wertepy” Leopolda Buczkowskiego.",
+        )
+
+    def test_us_ra_21_ac5_a_work_without_entries_has_no_bibliography_page(
+        self, client: Client
+    ) -> None:
+        work = WorkFactory.create(status=PUBLISHED)
+
+        head(client, f"{work.get_absolute_url()}/bibliography", status=404)
+
+    def test_us_ra_21_ac5_a_draft_works_bibliography_is_404_for_a_reader(
+        self, client: Client
+    ) -> None:
+        entry = BibliographyEntryFactory.create()
+
+        head(client, f"{entry.work.get_absolute_url()}/bibliography", status=404)
+
+    def test_us_ra_21_ac5_a_draft_works_bibliography_is_shown_to_staff(
+        self, client: Client
+    ) -> None:
+        entry = BibliographyEntryFactory.create(work__title="Szkic")
+        client.force_login(User.objects.create_user(username="editor", is_staff=True))
+
+        title, _ = head(client, f"{entry.work.get_absolute_url()}/bibliography")
+
+        assert title == "Bibliografia utworu „Szkic” — Archivum Buczkovianum"
+
+    @pytest.mark.parametrize(
+        "url", ["/works/missing/bibliography", "/works/wertepy/bibliography/x"]
+    )
+    def test_seo_a_bibliography_url_with_no_page_is_404(self, client: Client, url: str) -> None:
+        BibliographyEntryFactory.create(work__slug="wertepy", work__status=PUBLISHED)
+
+        head(client, url, status=404)
 
 
 @pytest.mark.parametrize("url", ["/unknown", "/about/team", "/search/x", "/index.html/x"])

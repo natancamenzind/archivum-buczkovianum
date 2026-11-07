@@ -177,7 +177,7 @@ class TestEditorPanel:
         response = admin_client.get(reverse("admin:archive_work_add"))
 
         # Assert
-        (editions,) = response.context["inline_admin_formsets"]
+        editions, _bibliography = response.context["inline_admin_formsets"]
         assert list(editions.formset.form.base_fields) == ["work", "publisher", "place", "year"]
 
 

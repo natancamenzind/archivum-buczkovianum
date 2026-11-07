@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-    dependencies = (("archive", "0008_fragment_unit_and_scan_number"),)
+    dependencies = (("archive", "0009_bibliography_entry"),)
 
     operations = (
         migrations.RemoveField(
