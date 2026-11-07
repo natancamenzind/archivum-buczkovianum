@@ -81,7 +81,7 @@ Every image field has a companion `<field>_alt` text field. `clean()` rejects an
 | Model | Key fields | Relations |
 |-------|-----------|-----------|
 | `Institution` | `abbreviation` (unique), `name` | — |
-| `Work` | `slug`, `genre`, `cover_image` | — |
+| `Work` | `slug`, `cover_image` | — |
 | `Edition` | `publisher`, `place`, `year` | → Work (inline in admin) |
 | `BibliographyEntry` | `text` (one line), `order` | → Work (inline in admin) |
 | `Typescript` | `is_main` (one per work); `Archival` | → Work, → Document |

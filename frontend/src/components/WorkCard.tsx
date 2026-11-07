@@ -42,9 +42,6 @@ function Cover({ work }: { work: Work }) {
  * keyboard focus lift the card and turn the title to the accent (design/rules.md).
  */
 export function WorkCard({ work }: { work: Work }) {
-  // Genre and year, leaving out whichever is missing (R-02).
-  const meta = [work.genre, work.year].filter(Boolean).join(" · ");
-
   return (
     <Link
       to={`/utwory/${work.slug}`}
@@ -60,7 +57,10 @@ export function WorkCard({ work }: { work: Work }) {
         )}
       >
         <Cover work={work} />
-        {meta !== "" && <p className="text-cousine-etykieta text-accent-foreground">{meta}</p>}
+        {/* Without a year there is no type line (R-02). */}
+        {work.year !== null && (
+          <p className="text-cousine-etykieta text-accent-foreground">{work.year}</p>
+        )}
         <h3 className="text-lora-tytul-elementu text-foreground transition-colors duration-180 ease-out group-hover:text-accent-foreground group-focus-visible:text-accent-foreground motion-reduce:transition-none">
           {work.title}
         </h3>

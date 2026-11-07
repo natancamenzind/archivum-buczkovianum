@@ -82,7 +82,6 @@ class WorkCardSerializer(serializers.ModelSerializer[Work]):
         fields = (
             "slug",
             "title",
-            "genre",
             "year",
             "cover_image",
             "cover_image_alt",
@@ -130,7 +129,6 @@ class TypescriptGroupSerializer(serializers.Serializer[TypescriptGroup]):
 
     slug = serializers.CharField(source="work.slug")
     title = serializers.CharField(source="work.title")
-    genre = serializers.CharField(source="work.genre", allow_blank=True)
     year = serializers.IntegerField(
         source="work.year",
         allow_null=True,
@@ -779,7 +777,6 @@ class WorkResultSerializer(serializers.Serializer[Found[Work]]):
 
     url = serializers.CharField(source="hit.entry.url")
     title = serializers.CharField(source="item.title")
-    genre = serializers.CharField(source="item.genre", allow_blank=True)
     year = serializers.IntegerField(
         source="item.year",
         allow_null=True,

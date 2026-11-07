@@ -52,7 +52,7 @@ class TestTypescriptsEndpoint:
 
     def test_us_ra_19_ac2_a_group_has_what_its_header_and_cards_show(self, client: Client) -> None:
         # Arrange
-        work = published_work(1947, slug="wertepy", title="Wertepy", genre="powieść")
+        work = published_work(1947, slug="wertepy", title="Wertepy")
         typescript = published_typescript(
             work, title="Pierwsza wersja", institution=InstitutionFactory.create(), shelfmark="1618"
         )
@@ -65,7 +65,6 @@ class TestTypescriptsEndpoint:
             {
                 "slug": "wertepy",
                 "title": "Wertepy",
-                "genre": "powieść",
                 "year": 1947,
                 "typescripts": [
                     {"id": typescript.pk, "title": "Pierwsza wersja", "shelfmark": "ML, sygn. 1618"}
@@ -207,7 +206,6 @@ class TestTypescriptsSchema:
 
         # Assert
         assert sorted(schemas["TypescriptGroup"]["required"]) == [
-            "genre",
             "slug",
             "title",
             "typescripts",

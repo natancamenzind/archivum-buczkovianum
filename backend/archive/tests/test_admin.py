@@ -7,7 +7,7 @@ from django.urls import reverse
 from django_prose_editor.fields import ProseEditorFormField
 from pytest_django import DjangoAssertNumQueries
 
-from archive.models import Document, Fragment, SiteSettings, Status, Tag
+from archive.models import Document, Fragment, SiteSettings, Status, Tag, Work
 from archive.tests.factories import (
     DocumentFactory,
     FragmentFactory,
@@ -151,6 +151,20 @@ class TestEditorPanel:
 
         # Assert
         assert permissions == (False, False)
+
+    def test_us_wr_03_ac1_work_form_has_no_genre(
+        self, rf: RequestFactory, admin_user: User
+    ) -> None:
+        # Arrange: works are described by their year only (ARC-15).
+        model_admin = admin.site.get_model_admin(Work)
+        request = rf.get("/")
+        request.user = admin_user
+
+        # Act
+        fields = model_admin.get_fields(request)
+
+        # Assert
+        assert "genre" not in fields
 
     def test_us_wr_11_ac1_settings_form_has_no_funding_note(
         self, rf: RequestFactory, admin_user: User

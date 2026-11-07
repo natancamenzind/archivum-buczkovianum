@@ -133,7 +133,7 @@ class BibliographyEntryInline(admin.TabularInline[BibliographyEntry, Work]):
 
 @admin.register(Work)
 class WorkAdmin(SearchIndexedAdmin[Work]):
-    list_display = ("title", "genre", "status", "updated_at")
+    list_display = ("title", "status", "updated_at")
     list_filter = ("status",)
     search_fields = ("title",)
     autocomplete_fields = ("tags",)

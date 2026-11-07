@@ -44,7 +44,7 @@ const RESULTS: Results = {
     has_text: 0,
   },
   total: 8,
-  works: [{ url: "/utwory/wertepy", title: "Wertepy", genre: "powieść", year: 1947, fragments: 2 }],
+  works: [{ url: "/utwory/wertepy", title: "Wertepy", year: 1947, fragments: 2 }],
   tags: [
     {
       url: "/tagi/dezerter",
@@ -323,7 +323,7 @@ describe("SearchPage", () => {
     expect(router.state.location.search).toBe("?q=dezerter");
   });
 
-  it("US-RA-15 AC5: a work shows its type, author, genre, year and matching fragments", async () => {
+  it("US-RA-15 AC5: a work shows its type, author, year and matching fragments", async () => {
     mockSearch();
 
     const { container } = renderRoute("/szukaj?q=dezerter");
@@ -332,7 +332,7 @@ describe("SearchPage", () => {
     const link = within(group("Utwory")).getByRole("link");
     expect(link).toHaveAttribute("href", "/utwory/wertepy");
     expect(link).toHaveTextContent("Wertepy");
-    expect(link).toHaveTextContent("Utwór · Leopold Buczkowski · powieść · 1947");
+    expect(link).toHaveTextContent("Utwór · Leopold Buczkowski · 1947");
     expect(link).toHaveTextContent("2 fragmenty");
     expect(await axeViolations(container)).toEqual([]);
   });

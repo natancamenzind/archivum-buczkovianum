@@ -19,15 +19,12 @@ async function fetchTypescripts(): Promise<TypescriptGroup[]> {
 }
 
 function Group({ group }: { group: TypescriptGroup }) {
-  // Genre and year, leaving out whichever is missing (R-02).
-  const meta = [group.genre, group.year].filter(Boolean).join(" · ");
-
   return (
     <Card className="h-full">
       <SectionHeader
         title={group.title}
         count={String(group.typescripts.length)}
-        description={meta === "" ? undefined : meta}
+        description={group.year?.toString()}
       />
       <ol>
         {group.typescripts.map((typescript, index) => (

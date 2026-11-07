@@ -54,9 +54,7 @@ class TestWorkPageEndpoint:
         self, client: Client
     ) -> None:
         # Arrange
-        work = published_work(
-            1957, slug="wertepy", title="Wertepy", genre="powieść", description="<p>Powieść.</p>"
-        )
+        work = published_work(1957, slug="wertepy", title="Wertepy", description="<p>Powieść.</p>")
         EditionFactory.create(work=work, year=1947)
 
         # Act

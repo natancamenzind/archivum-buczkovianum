@@ -637,7 +637,6 @@ class Work(Publishable, Taggable):
     slug = models.SlugField(
         _("slug"), max_length=255, unique=True, help_text=_("Part of the page address.")
     )
-    genre = models.CharField(_("genre"), max_length=100, blank=True, help_text=_("E.g. powieść."))
     cover_image = models.FileField(
         _("cover image"), upload_to="works/", blank=True, validators=[IMAGE_EXTENSIONS]
     )

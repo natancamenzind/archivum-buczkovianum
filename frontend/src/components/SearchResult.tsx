@@ -75,13 +75,13 @@ function ResultRow({ icon: Icon, title, meta, to, match, snippet }: ResultRowPro
   );
 }
 
-/** A work: author, genre, year and how many of its fragments match; no snippet (AC5, AC6). */
+/** A work: author, year and how many of its fragments match; no snippet (AC5, AC6). */
 export function WorkResult({ work }: { work: WorkResultData }) {
   return (
     <ResultRow
       icon={BookIcon}
       title={work.title}
-      meta={[copy.searchResults.types.works, copy.author, work.genre, work.year?.toString()]
+      meta={[copy.searchResults.types.works, copy.author, work.year?.toString()]
         .filter(Boolean)
         .join(" · ")}
       to={work.url}

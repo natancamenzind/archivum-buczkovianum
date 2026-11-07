@@ -94,9 +94,7 @@ class TestHomeEndpoint:
         # Arrange
         later = WorkFactory.create(status=PUBLISHED, slug="czarny-potok")
         EditionFactory.create(work=later, year=1954)
-        first = WorkFactory.create(
-            status=PUBLISHED, slug="wertepy", title="Wertepy", genre="powieść"
-        )
+        first = WorkFactory.create(status=PUBLISHED, slug="wertepy", title="Wertepy")
         EditionFactory.create(work=first, year=1947)
         main = TypescriptFactory.create(work=first, status=PUBLISHED, is_main=True)
         FragmentFactory.create_batch(2, document=main.document)
@@ -110,7 +108,6 @@ class TestHomeEndpoint:
         assert result["works"][0] == {
             "slug": "wertepy",
             "title": "Wertepy",
-            "genre": "powieść",
             "year": 1947,
             "cover_image": "",
             "cover_image_alt": "",

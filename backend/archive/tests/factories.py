@@ -45,7 +45,6 @@ class WorkFactory(DjangoModelFactory[Work]):
 
     title = Sequence(lambda n: f"Work {n}")
     slug = Sequence(lambda n: f"work-{n}")
-    genre = "powieść"
 
 
 class EditionFactory(DjangoModelFactory[Edition]):

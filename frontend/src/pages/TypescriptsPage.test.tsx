@@ -15,7 +15,6 @@ const GROUPS: TypescriptGroup[] = [
   {
     slug: "wertepy",
     title: "Wertepy",
-    genre: "powieść",
     year: 1947,
     typescripts: [
       { id: 1, title: "Pierwsza wersja", shelfmark: "ML, sygn. 1618" },
@@ -25,7 +24,6 @@ const GROUPS: TypescriptGroup[] = [
   {
     slug: "czarny-potok",
     title: "Czarny potok",
-    genre: "",
     year: null,
     typescripts: [{ id: 3, title: "Maszynopis", shelfmark: "" }],
   },
@@ -95,18 +93,18 @@ describe("TypescriptsPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("US-RA-19 AC2: the group header shows the work's genre, year and count", async () => {
+  it("US-RA-19 AC2: the group header shows the work's year and count", async () => {
     mockTypescripts();
 
     renderRoute("/maszynopisy");
 
     await screen.findByRole("heading", { level: 2, name: "Wertepy" });
-    expect(within(group("Wertepy")).getByText("powieść · 1947")).toBeVisible();
+    expect(within(group("Wertepy")).getByText("1947")).toBeVisible();
     expect(within(group("Wertepy")).getByText("2")).toBeVisible();
     expect(within(group("Czarny potok")).getByText("1")).toBeVisible();
   });
 
-  it("R-02: a work without genre and year shows no description line", async () => {
+  it("R-02: a work without a year shows no description line", async () => {
     mockTypescripts();
 
     renderRoute("/maszynopisy");

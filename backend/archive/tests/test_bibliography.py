@@ -19,7 +19,6 @@ def form_data(work: Work, *entries: dict[str, Any]) -> dict[str, Any]:
     data: dict[str, Any] = {
         "title": work.title,
         "slug": work.slug,
-        "genre": work.genre,
         "status": work.status,
         "description": work.description,
         "editions-TOTAL_FORMS": 0,
