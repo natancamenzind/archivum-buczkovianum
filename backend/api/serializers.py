@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from archive.models import (
     Archival,
+    BibliographyEntry,
     ContentKind,
     ContextualMaterial,
     Document,
@@ -302,6 +303,13 @@ class EditionSerializer(serializers.ModelSerializer[Edition]):
         read_only_fields = fields
 
 
+class BibliographyPreviewSerializer(serializers.Serializer[Preview[BibliographyEntry]]):
+    items = serializers.ListField(
+        child=serializers.CharField(), help_text="The first entries' texts, in order."
+    )
+    total = serializers.IntegerField(help_text="The number of all the entries.")
+
+
 class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
     """The fragment card (R-10), from a queryset with `with_number()`. Its source is the
     published item holding the fragment's document.
@@ -414,6 +422,7 @@ class WorkPage:
     notes: list[Note]
     tags: list[Tag]
     materials: ContextualMaterials
+    bibliography: Preview[BibliographyEntry]
 
 
 class WorkPageSerializer(serializers.Serializer[WorkPage]):
@@ -445,6 +454,46 @@ class WorkPageSerializer(serializers.Serializer[WorkPage]):
         many=True, help_text="Tags that refer to the work (US-RA-07 AC5), by name."
     )
     materials = ContextualMaterialsSerializer(help_text="Those linked to the work.")
+    bibliography = BibliographyPreviewSerializer(help_text="Empty when the work has no entries.")
+
+
+class BibliographyWorkSerializer(serializers.ModelSerializer[Work]):
+    """A work in the bibliography page's side column, from a queryset with `with_year()`."""
+
+    year = serializers.IntegerField(
+        read_only=True,
+        allow_null=True,
+        help_text="The year of the first edition; null without editions.",
+    )
+
+    class Meta:
+        model = Work
+        fields = ("slug", "title", "year")
+        # Output only, so the schema marks every field as present, the blank ones too.
+        read_only_fields = fields
+
+
+@dataclass(frozen=True)
+class BibliographyPage:
+    work: Work
+    entries: list[BibliographyEntry]
+    works: list[Work]
+
+
+class BibliographyPageSerializer(serializers.Serializer[BibliographyPage]):
+    """US-RA-21."""
+
+    slug = serializers.CharField(source="work.slug")
+    is_draft = serializers.BooleanField(
+        source="work.is_draft", help_text="True only for staff previewing a draft (US-WR-13)."
+    )
+    title = serializers.CharField(source="work.title")
+    entries = serializers.ListField(
+        child=serializers.CharField(), help_text="Every entry's text, in order."
+    )
+    works = BibliographyWorkSerializer(
+        many=True, help_text="Published works with a bibliography, by first edition."
+    )
 
 
 @dataclass(frozen=True)

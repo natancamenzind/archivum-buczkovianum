@@ -2,7 +2,7 @@
 
 Viewport: mobile, 390px wide. Preview: `../previews/screens/utwor-wertepy-mobile.png`
 
-- box "Utwór — Wertepy (mobile)" · flex-column · gap 0px · 390px × 2469px · bg var(--color-bg-page)
+- box "Utwór — Wertepy (mobile)" · flex-column · gap 0px · 390px × 2932px · bg var(--color-bg-page)
   - **Nagłówek serwisu [Rozmiar=Mobile]** {Rozmiar=“Mobile”} · flex-row · padding 0px var(--layout-page-margin-mobile) 0px var(--layout-page-margin-mobile) · justify space-between · align center · w fill, h 64px · bg var(--color-bg-page) · border-bottom 1px var(--color-border-subtle)
   - **Nagłówek strony [Rozmiar=Mobile]** {Pokaż opis=true, Opis=“Pierwsza powieść Leopolda Buczkowskiego, wydana w 1947 roku. Sceny z codziennego życia podolskiej wsi w dwudziestoleciu międzywojennym.”, Tytuł=“Wertepy”, Etykieta=“Utwór · 1947”, Rozmiar=“Mobile”} · flex-column · gap var(--space-16) · padding var(--space-32) var(--layout-page-margin-mobile) var(--space-24) var(--layout-page-margin-mobile) · w fill, h hug · bg var(--color-bg-inverse) · paper grain (noise, white @4%)
   - box "Treść" · flex-column · gap var(--space-24) · padding var(--space-24) var(--layout-page-margin-mobile) var(--space-32) var(--layout-page-margin-mobile) · w fill, h hug
@@ -20,6 +20,15 @@ Viewport: mobile, 390px wide. Preview: `../previews/screens/utwor-wertepy-mobile
       - **Element listy bocznej [Stan=Domyślny]** {Pokaż opis=true, Tytuł=“Gebethner i Wolff”, Opis=“Warszawa · pierwsze wydanie”, Rok=“1947”, Stan=“Domyślny”} · flex-column · gap var(--space-4) · padding var(--space-8) 0px var(--space-8) var(--space-12) · w fill, h hug · border-left 1px var(--color-border-subtle)
       - **Element listy bocznej [Stan=Domyślny]** {Pokaż opis=true, Tytuł=“Państwowy Instytut Wydawniczy”, Opis=“Warszawa”, Rok=“1957”, Stan=“Domyślny”} · flex-column · gap var(--space-4) · padding var(--space-8) 0px var(--space-8) var(--space-12) · w fill, h hug · border-left 1px var(--color-border-subtle)
       - **Element listy bocznej [Stan=Domyślny]** {Pokaż opis=true, Tytuł=“Wydawnictwo Literackie”, Opis=“Kraków”, Rok=“1973”, Stan=“Domyślny”} · flex-column · gap var(--space-4) · padding var(--space-8) 0px var(--space-8) var(--space-12) · w fill, h hug · border-left 1px var(--color-border-subtle)
+    - box "Bibliografia" · flex-column · gap var(--space-8) · w fill, h hug · overflow hidden
+      - **Nagłówek kolumny** {Pokaż liczbę=true, Liczba=“5 z 12”, Etykieta=“Bibliografia”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - box "Lista" · flex-column · gap 0px · w fill, h hug · overflow hidden
+        - **Pozycja bibliografii** {Treść=“[Autor], [Tytuł recenzji], „[Czasopismo]” [rok], nr [numer], s. [strony]”, Nr=“01”} · flex-row · gap var(--space-12) · padding var(--space-12) 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Pozycja bibliografii** {Treść=“[Autor], [Tytuł opracowania], [Wydawnictwo], [miejsce] [rok], s. [strony]”, Nr=“02”} · flex-row · gap var(--space-12) · padding var(--space-12) 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Pozycja bibliografii** {Treść=“[Autor], [Tytuł rozdziału], w: [Tytuł tomu], red. [Redaktor], [Wydawnictwo], [miejsce] [rok], s. [strony]”, Nr=“03”} · flex-row · gap var(--space-12) · padding var(--space-12) 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Pozycja bibliografii** {Treść=“[Autor], [Tytuł artykułu], „[Czasopismo]” [rok], nr [numer]”, Nr=“04”} · flex-row · gap var(--space-12) · padding var(--space-12) 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+        - **Pozycja bibliografii** {Treść=“[Autor], [Tytuł monografii], [Wydawnictwo], [miejsce] [rok]”, Nr=“05”} · flex-row · gap var(--space-12) · padding var(--space-12) 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - **Link ze strzałką [Stan=Domyślny]** {Etykieta=“Cała bibliografia (12)”, Stan=“Domyślny”} · flex-row · gap var(--space-4) · align center · w hug, h hug
     - box "Tagi" · flex-column · gap var(--space-8) · w fill, h hug
       - **Nagłówek kolumny** {Pokaż liczbę=true, Liczba=“6”, Etykieta=“Tagi”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
       - box "Tagi" · flex-row wrap · gap var(--space-8) · w fill, h hug

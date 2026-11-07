@@ -300,6 +300,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/works/{slug}/bibliography/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * @description The work's bibliography page (US-RA-21). A draft work's is shown only to staff (R-06);
+         *     a work without entries has none.
+         */
+        get: operations["works_bibliography_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -312,6 +332,31 @@ export interface components {
             project: string;
             /** @description Groups that have members, in the order of TeamMember.Group. */
             team: components["schemas"]["TeamGroup"][];
+        };
+        /** @description US-RA-21. */
+        BibliographyPage: {
+            slug: string;
+            /** @description True only for staff previewing a draft (US-WR-13). */
+            is_draft: boolean;
+            title: string;
+            /** @description Every entry's text, in order. */
+            entries: string[];
+            /** @description Published works with a bibliography, by first edition. */
+            works: components["schemas"]["BibliographyWork"][];
+        };
+        BibliographyPreview: {
+            /** @description The first entries' texts, in order. */
+            items: string[];
+            /** @description The number of all the entries. */
+            total: number;
+        };
+        /** @description A work in the bibliography page's side column, from a queryset with `with_year()`. */
+        BibliographyWork: {
+            /** @description Part of the page address. */
+            readonly slug: string;
+            readonly title: string;
+            /** @description The year of the first edition; null without editions. */
+            readonly year: number | null;
         };
         ContextualMaterials: {
             /** @description By title. */
@@ -845,6 +890,8 @@ export interface components {
             tags: components["schemas"]["TagChip"][];
             /** @description Those linked to the work. */
             materials: components["schemas"]["ContextualMaterials"];
+            /** @description Empty when the work has no entries. */
+            bibliography: components["schemas"]["BibliographyPreview"];
         };
         /** @description A work result (US-RA-15 AC5), from a work with `with_year()`. Works show no snippet. */
         WorkResult: {
@@ -1272,6 +1319,27 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkPage"];
+                };
+            };
+        };
+    };
+    works_bibliography_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BibliographyPage"];
                 };
             };
         };

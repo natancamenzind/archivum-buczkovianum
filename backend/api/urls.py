@@ -15,6 +15,7 @@ from api.views import (
     typescript,
     typescripts,
     work,
+    work_bibliography,
     works,
 )
 
@@ -28,6 +29,7 @@ urlpatterns = [
     path("search/", search_results, name="search"),
     path("search/autocomplete/", search_autocomplete, name="search-autocomplete"),
     path("works/<slug:slug>/", work, name="work"),
+    path("works/<slug:slug>/bibliography/", work_bibliography, name="work-bibliography"),
     path("tags/<slug:slug>/", tag, name="tag"),
     path("typescripts/<int:pk>/", typescript, name="typescript"),
     path("notes/<int:pk>/", note, name="note"),

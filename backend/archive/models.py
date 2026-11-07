@@ -14,7 +14,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
-from django.db.models import Expression, F, Func, OuterRef, Q, Subquery, Value
+from django.db.models import Exists, Expression, F, Func, OuterRef, Q, Subquery, Value
 from django.utils.text import Truncator
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
@@ -614,6 +614,10 @@ class WorkQuerySet(PublishableQuerySet["Work"]):
             fragments = fragments.filter(tags=tag)
         return self.annotate(fragment_count=count_of(fragments))
 
+    def with_bibliography(self) -> Self:
+        """The works with at least one bibliography entry (US-RA-21 AC4)."""
+        return self.filter(Exists(BibliographyEntry.objects.filter(work=OuterRef("pk"))))
+
     def referred_to_by(self, tag: "Tag") -> Self:
         """The works a tag refers to (US-RA-07 AC5): the tag is on the work, on a published item
         related to it, on a visible fragment of such an item, or on a visible work link."""
@@ -667,6 +671,13 @@ class Work(Publishable, Taggable):
             result = super().delete(*args, **kwargs)
             self.update_related_search_entries(items)
         return result
+
+    def bibliography_preview(self) -> "Preview[BibliographyEntry]":
+        """The first entries of the bibliography and their count: "5 z 12" (US-RA-21 AC1)."""
+        entries = self.bibliography.all()
+        return Preview(
+            items=list(entries[: settings.BIBLIOGRAPHY_PREVIEW_LIMIT]), total=entries.count()
+        )
 
     def related_items(self) -> list[Publishable]:
         return [
@@ -732,6 +743,35 @@ class Edition(BaseModel):
             result = super().delete(*args, **kwargs)
             self.work.update_search_entries()
         return result
+
+
+class BibliographyEntry(BaseModel):
+    """One line of a work's bibliography (US-WR-15)."""
+
+    work = models.ForeignKey(
+        Work, verbose_name=_("work"), on_delete=models.CASCADE, related_name="bibliography"
+    )
+    text = models.CharField(
+        _("entry"),
+        max_length=1000,
+        help_text=_("One line, e.g. Author, Title, Publisher, place year, p. pages."),
+    )
+    order = models.PositiveSmallIntegerField(
+        _("order"), default=0, help_text=_("Lower numbers are shown first.")
+    )
+
+    class Meta:
+        ordering = ("order", "pk")
+        verbose_name = _("bibliography entry")
+        verbose_name_plural = _("bibliography")
+
+    def __str__(self) -> str:
+        return self.text
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """An entry is one line (US-WR-15 AC1): line breaks become spaces."""
+        self.text = " ".join(self.text.split())
+        super().save(*args, **kwargs)
 
 
 class Typescript(Publishable, Taggable, Archival):
