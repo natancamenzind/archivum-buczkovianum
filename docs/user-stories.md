@@ -184,7 +184,7 @@ Shows everything connected to a tag.
 
 Not in Figma; uses the secondary text page layout.
 
-1. Hero: "Zapisek · <shelfmark>", title, optional description.
+1. Hero: "Zapisek · <shelfmark>", title. A note has no description.
 2. Context column: related works (R-03).
 3. Main column, in order:
    1. the content, by type:
@@ -292,7 +292,7 @@ Everything happens in Django admin. Every image field requires a text alternativ
 
 ### US-WR-05 — Add a note
 
-1. Fields: title (required, e.g. "Notes 18 · karta 4"); optional description; shelfmark; content.
+1. Fields: title (required, e.g. "Notes 18 · karta 4"); shelfmark; content. A note has no description.
 2. Content is one of: image; document; external audio/video link; OCR text (a searchable PDF scan, checked as in US-WR-04 AC2); plain text (e.g. a letter transcription).
 3. Linked to one or more works.
 

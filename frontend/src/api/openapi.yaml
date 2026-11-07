@@ -1119,9 +1119,7 @@ components:
         * `plain_text` - Plain text
     NoteCard:
       type: object
-      description: |-
-        The note card (US-RA-04 AC3). `description` is rich text: HTML, sanitized when an editor
-        saves it.
+      description: The note card (US-RA-04 AC3).
       properties:
         url:
           type: string
@@ -1133,10 +1131,6 @@ components:
           type: string
           readOnly: true
           description: E.g. "ML, sygn. 1678"; may be empty.
-        description:
-          type: string
-          readOnly: true
-          description: HTML.
         image:
           type: string
           readOnly: true
@@ -1152,7 +1146,6 @@ components:
           readOnly: true
           description: Published tags, by name.
       required:
-      - description
       - image
       - image_alt
       - shelfmark
@@ -1161,8 +1154,7 @@ components:
       - url
     NotePage:
       type: object
-      description: 'US-RA-11. `description` is rich text: HTML, sanitized when an
-        editor saves it.'
+      description: US-RA-11.
       properties:
         id:
           type: integer
@@ -1171,9 +1163,6 @@ components:
           description: True only for staff previewing a draft (US-WR-13).
         title:
           type: string
-        description:
-          type: string
-          description: HTML.
         header_image:
           type: string
           description: Shown behind the title; empty when there is none.
@@ -1200,7 +1189,6 @@ components:
           description: Tags on the note and its fragments, by name.
       required:
       - content
-      - description
       - fragments
       - header_image
       - header_image_alt

@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Archivum Buczkovianum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-07 14:28+0100\n"
+"POT-Creation-Date: 2026-11-07 20:02+0100\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -85,9 +85,6 @@ msgstr "Publicznie widać tylko opublikowane byty."
 msgid "title"
 msgstr "tytuł"
 
-msgid "description"
-msgstr "opis"
-
 msgid "header image"
 msgstr "obraz nagłówka"
 
@@ -96,6 +93,9 @@ msgstr "Opcjonalny. Wyświetlany w tle tytułu u góry strony."
 
 msgid "header image text alternative"
 msgstr "tekst alternatywny obrazu nagłówka"
+
+msgid "description"
+msgstr "opis"
 
 msgid "tags"
 msgstr "tagi"

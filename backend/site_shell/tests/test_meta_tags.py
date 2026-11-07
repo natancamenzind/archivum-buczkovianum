@@ -149,7 +149,7 @@ def test_seo_the_search_page_title_follows_its_state(client: Client, url: str, n
 
 @pytest.mark.django_db
 class TestEntityPages:
-    @pytest.mark.parametrize("factory", ENTITY_FACTORIES)
+    @pytest.mark.parametrize("factory", [f for f in ENTITY_FACTORIES if f is not NoteFactory])
     def test_seo_every_entity_page_has_its_title_and_description(
         self, client: Client, factory: type[DjangoModelFactory[Publishable]]
     ) -> None:
@@ -162,6 +162,14 @@ class TestEntityPages:
         assert head(client, entity.get_absolute_url()) == (
             "Wertepy — Archivum Buczkovianum",
             "Powieść o Wertepach. Drugi akapit.",
+        )
+
+    def test_arc_35_a_note_page_gets_the_site_description(self, client: Client) -> None:
+        note = NoteFactory.create(title="Notes 18", status=PUBLISHED)
+
+        assert head(client, note.get_absolute_url()) == (
+            "Notes 18 — Archivum Buczkovianum",
+            DESCRIPTION,
         )
 
     @pytest.mark.parametrize("url", ["/utwory/wertepy/", "/utwory/wertepy//", "/Utwory/wertepy"])

@@ -213,7 +213,6 @@ class TestWorkPageEndpoint:
         dezerter = TagFactory.create(title="Dezerter", slug="dezerter", status=PUBLISHED)
         note = NoteFactory.create(
             title="Notes 18 · karta 4",
-            description="<p>Notatka o dezerterze.</p>",
             status=PUBLISHED,
             institution=InstitutionFactory.create(),
             shelfmark="1678.0104",
@@ -239,7 +238,6 @@ class TestWorkPageEndpoint:
             "url": recording.get_absolute_url(),
             "title": "Nagranie",
             "shelfmark": "",
-            "description": "",
             "image": "",
             "image_alt": "",
             "tags": [],
@@ -247,7 +245,6 @@ class TestWorkPageEndpoint:
         assert note_card["url"] == note.get_absolute_url()
         assert note_card["title"] == "Notes 18 · karta 4"
         assert note_card["shelfmark"] == "ML, sygn. 1678.0104"
-        assert note_card["description"] == "<p>Notatka o dezerterze.</p>"
         assert note_card["image"].endswith(".webp")
         assert note_card["image_alt"] == "Karta z notesu"
         assert note_card["tags"] == [{"slug": "dezerter", "title": "Dezerter"}]
@@ -512,7 +509,7 @@ class TestWorkPageSchema:
             ),
             (
                 "NoteCard",
-                ("url", "title", "shelfmark", "description", "image", "image_alt", "tags"),
+                ("url", "title", "shelfmark", "image", "image_alt", "tags"),
             ),
         ):
             assert sorted(schemas[name]["required"]) == sorted(fields)

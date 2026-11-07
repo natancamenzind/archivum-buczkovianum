@@ -68,8 +68,6 @@ const WORK: WorkData = {
       url: "/zapiski/3",
       title: "Notes 18 · karta 4",
       shelfmark: "ML, sygn. 1678.0104",
-      description:
-        '<p>Notatka o postaci dezertera. <a href="https://example.com/notes">Źródło</a></p>',
       image: "/media/content/note.jpg",
       image_alt: "Karta notesu z rysunkiem",
       tags: [{ slug: "dezerter", title: "Dezerter" }],
@@ -78,7 +76,6 @@ const WORK: WorkData = {
       url: "/zapiski/4",
       title: "Nagranie",
       shelfmark: "",
-      description: "",
       image: "",
       image_alt: "",
       tags: [],
@@ -449,9 +446,6 @@ describe("WorkPage", () => {
       "/media/content/note.jpg",
     );
     expect(within(note).getByText("ML, sygn. 1678.0104")).toBeVisible();
-    // ARC-35: the card leaves the description to the note's page.
-    expect(within(note).queryByText(/Notatka o postaci dezertera/)).not.toBeInTheDocument();
-    expect(within(note).queryByRole("link", { name: "Źródło" })).not.toBeInTheDocument();
     expect(within(note).getByRole("link", { name: "Dezerter" })).toHaveAttribute(
       "href",
       "/tagi/dezerter",

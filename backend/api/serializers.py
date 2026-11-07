@@ -414,20 +414,18 @@ class FragmentCardPreviewSerializer(serializers.Serializer[Preview[Fragment]]):
 
 
 class NoteCardSerializer(serializers.ModelSerializer[Note]):
-    """The note card (US-RA-04 AC3). `description` is rich text: HTML, sanitized when an editor
-    saves it."""
+    """The note card (US-RA-04 AC3)."""
 
     url = serializers.CharField(source="get_absolute_url", read_only=True)
     shelfmark = serializers.CharField(
         source="shelfmark_display", read_only=True, help_text='E.g. "ML, sygn. 1678"; may be empty.'
     )
-    description = serializers.CharField(read_only=True, help_text="HTML.")
     image = serializers.SerializerMethodField(help_text="Empty when the note is not an image.")
     tags = TagChipSerializer(many=True, read_only=True, help_text="Published tags, by name.")
 
     class Meta:
         model = Note
-        fields = ("url", "title", "shelfmark", "description", "image", "image_alt", "tags")
+        fields = ("url", "title", "shelfmark", "image", "image_alt", "tags")
         # Output only, so the schema marks every field as present, the blank ones too.
         read_only_fields = fields
 
@@ -602,16 +600,13 @@ class NotePage:
 
 
 class NotePageSerializer(serializers.Serializer[NotePage]):
-    """US-RA-11. `description` is rich text: HTML, sanitized when an editor saves it."""
+    """US-RA-11."""
 
     id = serializers.IntegerField(source="note.pk")
     is_draft = serializers.BooleanField(
         source="note.is_draft", help_text="True only for staff previewing a draft (US-WR-13)."
     )
     title = serializers.CharField(source="note.title")
-    description = serializers.CharField(
-        source="note.description", allow_blank=True, help_text="HTML."
-    )
     header_image = ImageUrlField(
         source="note.header_image", help_text="Shown behind the title; empty when there is none."
     )

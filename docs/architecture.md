@@ -63,7 +63,7 @@ Every public entity inherits from an abstract `Publishable` with:
 
 - `status`: `draft` | `published`,
 - `title`,
-- `description` (rich text, optional),
+- `description` (rich text, optional), on every entity but `Note`, which has none. It lives in the abstract `Described(Publishable)`,
 - `header_image` (optional), shown behind the page's hero,
 - `tags`: many-to-many to `Tag` (tags on the whole entity),
 - `created_at`, `updated_at`.

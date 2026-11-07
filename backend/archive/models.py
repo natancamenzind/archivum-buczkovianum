@@ -176,7 +176,6 @@ class Publishable(BaseModel):
         help_text=_("Only published items are visible to the public."),
     )
     title = models.CharField(_("title"), max_length=255)
-    description = rich_text_field(verbose_name=_("description"))
     header_image = models.FileField(
         _("header image"),
         upload_to="headers/",
@@ -218,8 +217,9 @@ class Publishable(BaseModel):
 
     @property
     def description_text(self) -> str:
-        """The description without its HTML, for the search index."""
-        return html_to_text(self.description)
+        """The description without its HTML, for the search index and the page's meta
+        description. Empty for an entity without a description."""
+        return ""
 
     def update_search_entry(self) -> None:
         """Index a published entity, unindex a draft (architecture section 6).
@@ -233,6 +233,19 @@ class Publishable(BaseModel):
             SearchEntry.write(self.search_type, self.pk, content)
         if isinstance(self, Archival):
             self.update_fragment_entries(content)
+
+
+class Described(Publishable):
+    """A public entity with a description: every one but the note (ARC-35)."""
+
+    description = rich_text_field(verbose_name=_("description"))
+
+    class Meta(Publishable.Meta):
+        abstract = True
+
+    @property
+    def description_text(self) -> str:
+        return html_to_text(self.description)
 
 
 class Taggable(models.Model):
@@ -527,7 +540,7 @@ class TagQuerySet(PublishableQuerySet["Tag"]):
         return self.filter(referring)
 
 
-class Tag(Publishable):
+class Tag(Described):
     class Kind(models.TextChoices):
         KEYWORD = "keyword", _("Buczkowski's keyword")
         INTERPRETATION = "interpretation", _("Interpretation")
@@ -668,7 +681,7 @@ class WorkQuerySet(PublishableQuerySet["Work"]):
         )
 
 
-class Work(Publishable, Taggable):
+class Work(Described, Taggable):
     slug = models.SlugField(
         _("slug"), max_length=255, unique=True, help_text=_("Part of the page address.")
     )
@@ -802,7 +815,7 @@ class BibliographyEntry(BaseModel):
         super().save(*args, **kwargs)
 
 
-class Typescript(Publishable, Taggable, Archival):
+class Typescript(Described, Taggable, Archival):
     document_required = True
     works_lookup = "typescripts"
     search_type = EntityType.TYPESCRIPT
@@ -864,7 +877,7 @@ class Note(Publishable, Taggable, MediaContent):
         return f"/zapiski/{self.pk}"
 
 
-class SecondaryText(Publishable, Taggable, Archival):
+class SecondaryText(Described, Taggable, Archival):
     class Kind(models.TextChoices):
         LETTER = "letter", _("Letter")
         REVIEW = "review", _("Review")
@@ -906,7 +919,7 @@ class SecondaryText(Publishable, Taggable, Archival):
         return f"/teksty-sekundarne/{self.pk}"
 
 
-class ContextualMaterial(Publishable, Taggable, MediaContent):
+class ContextualMaterial(Described, Taggable, MediaContent):
     works_lookup = "materials"
     search_type = EntityType.MATERIAL
 

@@ -991,7 +991,6 @@ class TestRichText:
             WorkFactory,
             TagFactory,
             TypescriptFactory,
-            NoteFactory,
             SecondaryTextFactory,
             ContextualMaterialFactory,
         ],

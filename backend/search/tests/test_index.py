@@ -89,7 +89,7 @@ class TestWrites:
         [
             (WorkFactory, EntityType.WORK),
             (TagFactory, EntityType.TAG),
-            (NoteFactory, EntityType.NOTE),
+            (ContextualMaterialFactory, EntityType.MATERIAL),
         ],
     )
     def test_us_wr_03_ac1_a_rich_text_description_is_indexed_without_html(
