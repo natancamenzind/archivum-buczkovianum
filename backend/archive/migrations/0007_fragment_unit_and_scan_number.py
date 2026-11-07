@@ -16,7 +16,7 @@ def join_shelfmarks(apps: migrations.state.StateApps, schema_editor: object) -> 
 
 
 class Migration(migrations.Migration):
-    dependencies = (("archive", "0005_verbose_names"),)
+    dependencies = (("archive", "0006_ocr_text_searchable_pdf"),)
 
     operations = (
         migrations.AddField(
