@@ -293,21 +293,46 @@ class FragmentAdmin(SearchIndexedAdmin[Fragment]):
     list_display = (
         "__str__",
         "document",
+        "works",
         "unit_number",
         "scan_number",
         "is_featured",
         "needs_review",
     )
     list_filter = ("needs_review", "is_featured")
-    list_select_related = tuple(f"document__{owner}" for owner in Document.owner_accessors())
+    list_select_related = (
+        *(f"document__{owner}" for owner in Document.owner_accessors()),
+        "document__typescript__work",
+    )
     search_fields = ("quote",)
     ordering = ("-needs_review", "document", "start")
-    readonly_fields = ("document", "quote")
+    readonly_fields = ("document", "works", "quote")
     autocomplete_fields = ("tags",)
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Fragment]:
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related(
+                "document__note__works",
+                "document__secondarytext__works",
+                "document__contextualmaterial__works",
+            )
+        )
 
     def has_add_permission(self, request: HttpRequest) -> bool:
         """Fragments are created by selecting text in the tagger."""
         return False
+
+    @admin.display(description=_("works"))
+    def works(self, obj: Fragment) -> str | None:
+        """The works of the fragment's typescript, note, secondary text or contextual material."""
+        owner = obj.document.owner
+        if isinstance(owner, Typescript):
+            return str(owner.work)
+        if isinstance(owner, Note | SecondaryText | ContextualMaterial):
+            return ", ".join(sorted(str(work) for work in owner.works.all())) or None
+        return None
 
 
 @admin.register(SiteSettings)

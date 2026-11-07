@@ -134,6 +134,33 @@ class TestEditorPanel:
         # Assert
         assert response.status_code == 403
 
+    def test_arc_18_fragment_list_shows_the_work_of_its_typescript(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        typescript = TypescriptFactory.create(work__title="Wertepy")
+        FragmentFactory.create(document=typescript.document)
+        url = reverse("admin:archive_fragment_changelist")
+
+        # Act
+        response = admin_client.get(url)
+
+        # Assert
+        assert '<td class="field-works">Wertepy</td>' in response.content.decode()
+
+    def test_arc_18_fragment_form_shows_the_works_of_its_note(self, admin_client: Client) -> None:
+        # Arrange
+        note = NoteFactory.create(document=DocumentFactory.create())
+        note.works.add(WorkFactory.create(title="Wertepy"), WorkFactory.create(title="Pamflet"))
+        fragment = FragmentFactory.create(document=note.document)
+        url = reverse("admin:archive_fragment_change", args=[fragment.pk])
+
+        # Act
+        response = admin_client.get(url)
+
+        # Assert
+        assert '<div class="readonly">Pamflet, Wertepy</div>' in response.content.decode()
+
     def test_us_wr_11_site_settings_cannot_be_added_twice_or_deleted(
         self, rf: RequestFactory, admin_user: User
     ) -> None:
