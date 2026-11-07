@@ -538,7 +538,7 @@ class Tag(Publishable):
                 carrier.update_search_entry()
 
     def get_absolute_url(self) -> str:
-        return f"/tags/{self.slug}"
+        return f"/tagi/{self.slug}"
 
     def indexed_content(self) -> IndexedContent:
         work_ids, decades = search_filters(Work.objects.referred_to_by(self))
@@ -663,7 +663,7 @@ class Work(Publishable, Taggable):
             self.update_related_search_entries(self.related_items())
 
     def get_absolute_url(self) -> str:
-        return f"/works/{self.slug}"
+        return f"/utwory/{self.slug}"
 
     def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
         items = self.related_items()
@@ -804,7 +804,7 @@ class Typescript(Publishable, Taggable, Archival):
             super().save(*args, **kwargs)
 
     def get_absolute_url(self) -> str:
-        return f"/typescripts/{self.pk}"
+        return f"/maszynopisy/{self.pk}"
 
     def validate_constraints(self, exclude: Collection[str] | None = None) -> None:
         """Skip "one main typescript per work" here: `save()` unmarks the previous one first."""
@@ -827,7 +827,7 @@ class Note(Publishable, Taggable, MediaContent):
         verbose_name_plural = _("notes")
 
     def get_absolute_url(self) -> str:
-        return f"/notes/{self.pk}"
+        return f"/zapiski/{self.pk}"
 
 
 class SecondaryText(Publishable, Taggable, Archival):
@@ -869,7 +869,7 @@ class SecondaryText(Publishable, Taggable, Archival):
         verbose_name_plural = _("secondary texts")
 
     def get_absolute_url(self) -> str:
-        return f"/secondary-texts/{self.pk}"
+        return f"/teksty-sekundarne/{self.pk}"
 
 
 class ContextualMaterial(Publishable, Taggable, MediaContent):
@@ -887,7 +887,7 @@ class ContextualMaterial(Publishable, Taggable, MediaContent):
         verbose_name_plural = _("contextual materials")
 
     def get_absolute_url(self) -> str:
-        return f"/materials/{self.pk}"
+        return f"/materialy/{self.pk}"
 
 
 class WorkLinkQuerySet[L: "SecondaryTextWorkLink | MaterialWorkLink"](models.QuerySet[L]):

@@ -16,7 +16,7 @@ const DOCUMENT_URL = "*/api/documents/21/";
 
 const FRAGMENT: Fragment = {
   id: 5,
-  url: "/typescripts/1?fragment=5",
+  url: "/maszynopisy/1?fragment=5",
   source_type: "typescript",
   work: "Wertepy",
   number: 1,
@@ -53,7 +53,7 @@ const MATERIAL: MaterialData = {
     { slug: "czarny-potok", title: "Czarny potok", year: null, fragment_count: 0 },
   ],
   fragments: {
-    items: [FRAGMENT, { ...FRAGMENT, id: 6, url: "/typescripts/2?fragment=6", number: 2 }],
+    items: [FRAGMENT, { ...FRAGMENT, id: 6, url: "/maszynopisy/2?fragment=6", number: 2 }],
     total: 5,
   },
   tags: [
@@ -94,7 +94,7 @@ function mockContent(content: Partial<Content>) {
   mockPage({ content: { ...NO_CONTENT, ...content } });
 }
 
-async function renderPage(url = "/materials/4") {
+async function renderPage(url = "/materialy/4") {
   const result = renderRoute(url);
   await screen.findByRole("heading", { level: 1 });
   return result;
@@ -199,7 +199,7 @@ describe("MaterialPage", () => {
     const works = column("Powiązane utwory");
     const links = within(works).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual(["1947Wertepy", "Czarny potok"]);
-    expect(links[0]).toHaveAttribute("href", "/works/wertepy");
+    expect(links[0]).toHaveAttribute("href", "/utwory/wertepy");
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -248,7 +248,7 @@ describe("MaterialPage", () => {
     fireEvent.click(fragment);
     expect(within(text).getByRole("link", { name: "Dezerter" })).toHaveAttribute(
       "href",
-      "/tags/dezerter",
+      "/tagi/dezerter",
     );
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -256,7 +256,7 @@ describe("MaterialPage", () => {
   it("US-RA-12 AC3: opened from a search result, the reader highlights and scrolls to the match", async () => {
     mockContent({ kind: "ocr_text", document: 21 });
 
-    await renderPage("/materials/4?q=las");
+    await renderPage("/materialy/4?q=las");
 
     const match = await screen.findByText("las", { selector: "mark" });
     expect(scrollIntoView.mock.contexts[0]).toBe(match);
@@ -272,7 +272,7 @@ describe("MaterialPage", () => {
     expect(within(fragments).getAllByRole("article")).toHaveLength(2);
     expect(
       within(fragments).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
-    ).toHaveAttribute("href", "/typescripts/1?fragment=5");
+    ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(within(fragments).queryByText(/Wszystkie/)).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -288,7 +288,7 @@ describe("MaterialPage", () => {
         .getAllByRole("link")
         .map((link) => link.textContent),
     ).toEqual(["Las", "Pamięć"]);
-    expect(within(tags).getByRole("link", { name: "Las" })).toHaveAttribute("href", "/tags/las");
+    expect(within(tags).getByRole("link", { name: "Las" })).toHaveAttribute("href", "/tagi/las");
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -305,7 +305,7 @@ describe("MaterialPage", () => {
   it("R-06: a material the API does not find shows the not-found page", async () => {
     server.use(http.get(PAGE_URL, () => new HttpResponse(null, { status: 404 })));
 
-    renderRoute("/materials/4");
+    renderRoute("/materialy/4");
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Nie znaleziono strony" }),
@@ -313,7 +313,7 @@ describe("MaterialPage", () => {
   });
 
   it("an address that is not a material number shows the not-found page", () => {
-    renderRoute("/materials/list");
+    renderRoute("/materialy/list");
 
     expect(screen.getByRole("heading", { level: 1, name: "Nie znaleziono strony" })).toBeVisible();
   });
@@ -326,7 +326,7 @@ describe("MaterialPage", () => {
       }),
     );
 
-    renderRoute("/materials/4");
+    renderRoute("/materialy/4");
 
     expect(screen.getByRole("status")).toHaveTextContent("Wczytuję materiał kontekstowy…");
     expect(

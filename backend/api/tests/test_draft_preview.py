@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.test import Client
 from django.urls import reverse
 
+from api.tests.pages import endpoint
 from archive.models import ContentKind, Publishable, Status
 from archive.tests.factories import (
     ContextualMaterialFactory,
@@ -23,8 +24,8 @@ PUBLISHED = Status.PUBLISHED
 
 
 def page_url(entity: Publishable) -> str:
-    """The entity's page endpoint: `/api` and its site URL."""
-    return f"/api{entity.get_absolute_url()}/"
+    """The endpoint of the entity's page."""
+    return endpoint(entity.get_absolute_url())
 
 
 # Every entity page endpoint (architecture section 7), by its entity's factory.

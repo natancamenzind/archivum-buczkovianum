@@ -143,7 +143,7 @@ Jako RA widzę korpus informacji o utworze; na pierwszy rzut oka tylko kluczowe 
 ### US-RA-21 — Bibliografia utworu
 
 1. Strona utworu: pod wydaniami sekcja „Bibliografia” z licznikiem („5 z 12”), pierwsze 5 pozycji jako lista numerowana i link „Cała bibliografia (12)” do strony bibliografii utworu. Utwór bez pozycji nie ma tej sekcji (R-02).
-2. Strona bibliografii pod adresem `/works/<slug>/bibliography`. Hiro jak na stronie „O archiwum”: wiersz typu „Bibliografia utworu · Leopold Buczkowski” i tytuł utworu.
+2. Strona bibliografii pod adresem `/utwory/<slug>/bibliografia`. Hiro jak na stronie „O archiwum”: wiersz typu „Bibliografia utworu · Leopold Buczkowski” i tytuł utworu.
 3. Karta „Bibliografia” z licznikiem i wszystkimi pozycjami jako lista numerowana, w kolejności ustalonej przez redaktorkę.
 4. Kolumna boczna „Bibliografie utworów”: „Bibliografia do utworu „<tytuł>”” dla każdego opublikowanego utworu z co najmniej jedną pozycją, w kolejności pierwszych wydań. Bieżący utwór jest wyróżniony. Każda pozycja prowadzi do bibliografii danego utworu. Na telefonie kolumna jest pod kartą.
 5. Utwór bez pozycji nie ma strony bibliografii (404). Bibliografia szkicu utworu zwraca czytelnikowi 404 (R-06).

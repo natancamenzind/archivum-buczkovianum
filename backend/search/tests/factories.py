@@ -13,5 +13,5 @@ class SearchEntryFactory(DjangoModelFactory[SearchEntry]):
     entity_type = EntityType.WORK
     entity_id = Sequence(lambda n: n + 1000)
     title = Sequence(lambda n: f"Entry {n}")
-    url = "/works/entry"
+    url = "/utwory/entry"
     vector = ""

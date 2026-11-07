@@ -83,7 +83,7 @@ export function BibliographyPage() {
                   <SideListItem
                     meta={work.year?.toString()}
                     title={copy.bibliography.workBibliography(work.title)}
-                    to={`/works/${work.slug}/bibliography`}
+                    to={`/utwory/${work.slug}/bibliografia`}
                     current={work.slug === bibliography.slug}
                   />
                 </li>

@@ -6,8 +6,8 @@ import { axeViolations, renderRoute } from "@/test/render";
 import { server } from "@/test/server";
 
 const SUGGESTIONS = [
-  { type: "work", title: "Czarny potok", url: "/works/czarny-potok" },
-  { type: "tag", title: "Czarny las", url: "/tags/czarny-las" },
+  { type: "work", title: "Czarny potok", url: "/utwory/czarny-potok" },
+  { type: "tag", title: "Czarny las", url: "/tagi/czarny-las" },
 ];
 
 let queries: string[];
@@ -58,7 +58,7 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-17 AC1: typing in the header field suggests works and tags", async () => {
-    const { container } = renderRoute("/about");
+    const { container } = renderRoute("/o-archiwum");
 
     expect(await suggestionsFor(headerField(), "czarny p")).toEqual([WORK, TAG]);
     expect(queries.at(-1)).toBe("czarny p");
@@ -67,14 +67,14 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-17 AC1: typing in the search page's field suggests works and tags", async () => {
-    const { container } = renderRoute("/search");
+    const { container } = renderRoute("/szukaj");
 
     expect(await suggestionsFor(pageField(), "czarny")).toEqual([WORK, TAG]);
     expect(await axeViolations(container)).toEqual([]);
   });
 
   it("US-RA-17 AC1: one letter asks for no suggestions", async () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
 
     fireEvent.change(headerField(), { target: { value: "c" } });
     await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
@@ -84,7 +84,7 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-17 AC1: without matches the list stays closed", async () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
     await suggestionsFor(headerField(), "czarny");
 
     fireEvent.change(headerField(), { target: { value: "wertepy" } });
@@ -94,7 +94,7 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-17 AC1: the field asks only once the typing pauses", async () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
     const field = headerField();
 
     for (const value of ["cz", "cza", "czar", "czarn"]) {
@@ -106,7 +106,7 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-17 AC1: the search page's query asks for nothing until the reader types", async () => {
-    renderRoute("/search?q=czarny");
+    renderRoute("/szukaj?q=czarny");
 
     pageField().focus();
     await act(() => new Promise((resolve) => setTimeout(resolve, 400)));
@@ -118,19 +118,19 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-17 AC2: clicking a suggestion opens its page", async () => {
-    const { router } = renderRoute("/about");
+    const { router } = renderRoute("/o-archiwum");
 
     await suggestionsFor(headerField(), "czarny");
     fireEvent.click(option(WORK));
 
-    expect(router.state.location.pathname).toBe("/works/czarny-potok");
+    expect(router.state.location.pathname).toBe("/utwory/czarny-potok");
     expect(activeNavItem()).toBe("Utwory");
     expect(headerField()).toHaveValue("");
     expect(screen.queryByRole("listbox")).toBeNull();
   });
 
   it("US-RA-17 AC2: choosing a suggestion with the keyboard opens its page", async () => {
-    const { container, router } = renderRoute("/about");
+    const { container, router } = renderRoute("/o-archiwum");
     const field = headerField();
 
     await suggestionsFor(field, "czarny");
@@ -142,11 +142,11 @@ describe("SearchCombobox", () => {
     expect(option(WORK)).toHaveAttribute("aria-selected", "false");
     expect(await axeViolations(container)).toEqual([]);
     fireEvent.keyDown(field, { key: "Enter" });
-    expect(router.state.location.pathname).toBe("/tags/czarny-las");
+    expect(router.state.location.pathname).toBe("/tagi/czarny-las");
   });
 
   it("US-RA-17 AC2: pointing at a suggestion makes it the active one until the pointer leaves", async () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
 
     await suggestionsFor(headerField(), "czarny");
     fireEvent.mouseMove(option(TAG));
@@ -158,7 +158,7 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-17 AC1: on the search page, the edited query is asked for, not the old one", async () => {
-    renderRoute("/search?q=czarny");
+    renderRoute("/szukaj?q=czarny");
 
     expect(await suggestionsFor(pageField(), "czarny p")).toEqual([WORK, TAG]);
 
@@ -166,7 +166,7 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-17 AC1: arrows in a one-letter field move the caret as usual", async () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
 
     fireEvent.change(headerField(), { target: { value: "c" } });
 
@@ -176,28 +176,28 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-17 AC2: Enter while composing a letter chooses nothing", async () => {
-    const { router } = renderRoute("/about");
+    const { router } = renderRoute("/o-archiwum");
     const field = headerField();
 
     await suggestionsFor(field, "czarny");
     fireEvent.keyDown(field, { key: "ArrowDown" });
     fireEvent.keyDown(field, { key: "Enter", isComposing: true });
 
-    expect(router.state.location.pathname).toBe("/about");
+    expect(router.state.location.pathname).toBe("/o-archiwum");
   });
 
   it("US-RA-17 AC2: a suggestion on the search page opens its page", async () => {
-    const { router } = renderRoute("/search");
+    const { router } = renderRoute("/szukaj");
 
     await suggestionsFor(pageField(), "czarny");
     fireEvent.click(option(TAG));
 
-    expect(router.state.location.pathname).toBe("/tags/czarny-las");
+    expect(router.state.location.pathname).toBe("/tagi/czarny-las");
     expect(screen.queryByRole("search", { name: "Wyszukiwanie" })).toBeNull();
   });
 
   it("US-RA-17 AC2: the arrows wrap around the list", async () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
     const field = headerField();
 
     await suggestionsFor(field, "czarny");
@@ -208,7 +208,7 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-14 AC1: Enter without a chosen suggestion still searches", async () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
 
     await suggestionsFor(headerField(), "czarny");
     // The key is not prevented, so the browser submits the form.
@@ -220,7 +220,7 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-17 AC1: Escape closes the list and keeps the text", async () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
     const field = headerField();
 
     await suggestionsFor(field, "czarny");
@@ -234,7 +234,7 @@ describe("SearchCombobox", () => {
   });
 
   it("US-RA-17 AC1: leaving the field closes the list", async () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
     const field = headerField();
 
     await suggestionsFor(field, "czarny");

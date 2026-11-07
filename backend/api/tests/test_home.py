@@ -184,7 +184,7 @@ class TestHomeEndpoint:
         # Assert
         card = result["featured"]["fragment"]
         assert card["id"] == featured.pk
-        assert card["url"] == f"/typescripts/{main.pk}?fragment={featured.pk}"
+        assert card["url"] == f"/maszynopisy/{main.pk}?fragment={featured.pk}"
         assert card["work"] == "Wertepy"
         assert card["number"] == 2
         assert card["scan_number"] == "9"

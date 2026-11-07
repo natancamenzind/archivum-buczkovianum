@@ -84,17 +84,17 @@ export function withoutFilters(state: SearchState): SearchState {
 }
 
 /**
- * The search page's URL for a fresh search for `query` (architecture §8), e.g. `/search?q=…`. A
- * blank query is `/search`, the search entry.
+ * The search page's URL for a fresh search for `query` (architecture §8), e.g. `/szukaj?q=…`. A
+ * blank query is `/szukaj`, the search entry.
  */
 export function searchUrl(query: string): string {
   const q = query.trim();
-  return q === "" ? "/search" : `/search?${new URLSearchParams({ q }).toString()}`;
+  return q === "" ? "/szukaj" : `/szukaj?${new URLSearchParams({ q }).toString()}`;
 }
 
 /**
  * The search page's URL for `state`'s query, tab, filters and sort (architecture §8), e.g.
- * `/search?q=…&tab=works`. Defaults are left out, but a blank query names its tab, even "all",
+ * `/szukaj?q=…&tab=works`. Defaults are left out, but a blank query names its tab, even "all",
  * so it still lists everything in it (US-RA-16 AC5).
  */
 export function browseUrl(state: SearchState): string {
@@ -122,5 +122,5 @@ export function browseUrl(state: SearchState): string {
   if (sort !== "relevance") {
     params.set("sort", sort);
   }
-  return `/search?${params.toString()}`;
+  return `/szukaj?${params.toString()}`;
 }

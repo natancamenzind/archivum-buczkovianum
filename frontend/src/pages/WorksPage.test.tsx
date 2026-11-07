@@ -68,7 +68,7 @@ describe("WorksPage", () => {
   it("US-RA-18: the hero shows the label, the title 'Utwory' and the description", async () => {
     mockWorks();
 
-    const { container } = renderRoute("/works");
+    const { container } = renderRoute("/utwory");
 
     const title = screen.getByRole("heading", { level: 1, name: "Utwory" });
     const hero = title.closest<HTMLElement>("[data-slot=page-header]");
@@ -87,7 +87,7 @@ describe("WorksPage", () => {
   it("US-RA-18 AC2: the cards come in the API's order, with the count in the section header", async () => {
     mockWorks();
 
-    const { container } = renderRoute("/works");
+    const { container } = renderRoute("/utwory");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie utwory" });
     const titles = workCards().map(
@@ -102,7 +102,7 @@ describe("WorksPage", () => {
   it("US-RA-18 AC2: fragment counts use the right plural for 1, 2 and 5", async () => {
     mockWorks();
 
-    renderRoute("/works");
+    renderRoute("/utwory");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie utwory" });
     const [first, second, third] = workCards();
@@ -114,7 +114,7 @@ describe("WorksPage", () => {
   it("D23: a work with 0 fragments shows no count", async () => {
     mockWorks();
 
-    renderRoute("/works");
+    renderRoute("/utwory");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie utwory" });
     const last = workCards().at(-1);
@@ -132,7 +132,7 @@ describe("WorksPage", () => {
       work("czarny-potok", "Czarny potok", 1954, 2),
     ]);
 
-    const { container } = renderRoute("/works");
+    const { container } = renderRoute("/utwory");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie utwory" });
     const [withCover, withoutCover] = workCards();
@@ -145,22 +145,22 @@ describe("WorksPage", () => {
   it("US-RA-18 AC2: each card links to its work page (R-01)", async () => {
     mockWorks();
 
-    renderRoute("/works");
+    renderRoute("/utwory");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie utwory" });
     const links = workCards().map((card) => within(card).getByRole("link"));
     expect(links.map((link) => link.getAttribute("href"))).toEqual([
-      "/works/wertepy",
-      "/works/czarny-potok",
-      "/works/dorycki-kruzganek",
-      "/works/pierwsza-swietnosc",
+      "/utwory/wertepy",
+      "/utwory/czarny-potok",
+      "/utwory/dorycki-kruzganek",
+      "/utwory/pierwsza-swietnosc",
     ]);
   });
 
   it("US-RA-18: without published works the section is hidden (R-02)", async () => {
     mockWorks([]);
 
-    renderRoute("/works");
+    renderRoute("/utwory");
 
     await waitFor(() => {
       expect(screen.queryByRole("status")).toBeNull();
@@ -172,7 +172,7 @@ describe("WorksPage", () => {
   it("says it is loading, then shows the list", async () => {
     mockWorks();
 
-    const { container } = renderRoute("/works");
+    const { container } = renderRoute("/utwory");
 
     expect(screen.getByRole("status")).toHaveTextContent("Wczytuję utwory…");
     expect(await axeViolations(container)).toEqual([]);
@@ -183,7 +183,7 @@ describe("WorksPage", () => {
   it("says so when the API fails, keeping the title", async () => {
     server.use(http.get(WORKS_URL, () => HttpResponse.json({}, { status: 500 })));
 
-    const { container } = renderRoute("/works");
+    const { container } = renderRoute("/utwory");
 
     expect(
       await screen.findByText("Nie udało się wczytać utworów. Spróbuj ponownie później."),
@@ -195,7 +195,7 @@ describe("WorksPage", () => {
 
   it("keeps the list without an error when a background refetch fails", async () => {
     mockWorks();
-    renderRoute("/works");
+    renderRoute("/utwory");
     await screen.findByRole("heading", { level: 2, name: "Wszystkie utwory" });
 
     let refetched = false;
@@ -231,7 +231,7 @@ describe("WorksPage", () => {
   it("US-RA-20: one column on mobile, the Figma grid on desktop, rows of equal height", async () => {
     mockWorks();
 
-    renderRoute("/works");
+    renderRoute("/utwory");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie utwory" });
     expect(within(section()).getByRole("list")).toHaveClass(

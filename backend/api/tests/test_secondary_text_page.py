@@ -145,7 +145,7 @@ class TestSecondaryTextPageEndpoint:
         assert second["id"] == fragments[1].pk
         assert first == {
             "id": fragments[0].pk,
-            "url": f"/typescripts/{typescript.pk}?fragment={fragments[0].pk}",
+            "url": f"/maszynopisy/{typescript.pk}?fragment={fragments[0].pk}",
             "source_type": "typescript",
             "work": "Wertepy",
             "number": 1,

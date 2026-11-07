@@ -43,11 +43,11 @@ describe("TagCloud", () => {
 
     expect(screen.getByRole("link", { name: "Dezerter 4 wystąpienia" })).toHaveAttribute(
       "href",
-      "/tags/dezerter",
+      "/tagi/dezerter",
     );
     expect(screen.getByRole("link", { name: "Zima 1 wystąpienie" })).toHaveAttribute(
       "href",
-      "/tags/zima",
+      "/tagi/zima",
     );
     expect(await axeViolations(container)).toEqual([]);
   });

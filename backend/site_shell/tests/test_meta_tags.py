@@ -76,32 +76,32 @@ def head(client: Client, url: str, status: int = 200) -> tuple[str, str]:
     [
         ("/", "Archivum Buczkovianum", DESCRIPTION),
         (
-            "/works",
+            "/utwory",
             "Utwory — Archivum Buczkovianum",
             "Wszystkie utwory Leopolda Buczkowskiego w archiwum, w kolejności wydania.",
         ),
         (
-            "/typescripts/",
+            "/maszynopisy/",
             "Maszynopisy — Archivum Buczkovianum",
             "Jednostki archiwalne z maszynopisami utworów, pogrupowane według utworu.",
         ),
         (
-            "/tags",
+            "/tagi",
             "Tagi — Archivum Buczkovianum",
             "Motywy łączące fragmenty i zapiski z różnych utworów.",
         ),
         (
-            "/about",
+            "/o-archiwum",
             "O archiwum — Archivum Buczkovianum",
             "O projekcie Archivum Buczkovianum i jego zespole.",
         ),
         (
-            "/About/",
+            "/O-Archiwum/",
             "O archiwum — Archivum Buczkovianum",
             "O projekcie Archivum Buczkovianum i jego zespole.",
         ),
         (
-            "/search",
+            "/szukaj",
             "Wyszukiwanie — Archivum Buczkovianum",
             "Szukaj w archiwum: tytuły, opisy, transkrypcje i tagi.",
         ),
@@ -122,23 +122,23 @@ def test_seo_every_list_page_has_its_title_and_description(
 @pytest.mark.parametrize(
     ("url", "name"),
     [
-        ("/search?q=dezerter", "Wyniki dla „dezerter”"),
-        ("/search?q=+czarny+potok+&tab=works", "Wyniki dla „czarny potok”"),
-        ("/search?tab=all", "Wszystkie wyniki"),
-        ("/search?q=+&tab=fragments&work=3", "Wszystkie wyniki"),
-        ("/search?work=3", "Wszystkie wyniki"),
-        ("/search?decade=1950&decade=x", "Wszystkie wyniki"),
-        ("/search?has_scan=1", "Wszystkie wyniki"),
-        ("/search?has_text=1", "Wszystkie wyniki"),
-        ("/search?q=", "Wyszukiwanie"),
-        ("/search?q=abc&q=", "Wyniki dla „abc”"),
-        ("/search?q=&q=abc", "Wyszukiwanie"),
-        ("/search?has_scan=1&has_scan=0", "Wszystkie wyniki"),
-        ("/search?has_text=0&has_text=1", "Wyszukiwanie"),
-        ("/search?work=2147483648&decade=32770", "Wyszukiwanie"),
-        (f"/search?work={'1' * 5000}&decade={'1' * 5000}", "Wyszukiwanie"),
+        ("/szukaj?q=dezerter", "Wyniki dla „dezerter”"),
+        ("/szukaj?q=+czarny+potok+&tab=works", "Wyniki dla „czarny potok”"),
+        ("/szukaj?tab=all", "Wszystkie wyniki"),
+        ("/szukaj?q=+&tab=fragments&work=3", "Wszystkie wyniki"),
+        ("/szukaj?work=3", "Wszystkie wyniki"),
+        ("/szukaj?decade=1950&decade=x", "Wszystkie wyniki"),
+        ("/szukaj?has_scan=1", "Wszystkie wyniki"),
+        ("/szukaj?has_text=1", "Wszystkie wyniki"),
+        ("/szukaj?q=", "Wyszukiwanie"),
+        ("/szukaj?q=abc&q=", "Wyniki dla „abc”"),
+        ("/szukaj?q=&q=abc", "Wyszukiwanie"),
+        ("/szukaj?has_scan=1&has_scan=0", "Wszystkie wyniki"),
+        ("/szukaj?has_text=0&has_text=1", "Wyszukiwanie"),
+        ("/szukaj?work=2147483648&decade=32770", "Wyszukiwanie"),
+        (f"/szukaj?work={'1' * 5000}&decade={'1' * 5000}", "Wyszukiwanie"),
         (
-            "/search?work=abc&work=0&decade=1955&decade=1950&has_scan=true&sort=title",
+            "/szukaj?work=abc&work=0&decade=1955&decade=1950&has_scan=true&sort=title",
             "Wyszukiwanie",
         ),
     ],
@@ -164,7 +164,7 @@ class TestEntityPages:
             "Powieść o Wertepach. Drugi akapit.",
         )
 
-    @pytest.mark.parametrize("url", ["/works/wertepy/", "/works/wertepy//", "/Works/wertepy"])
+    @pytest.mark.parametrize("url", ["/utwory/wertepy/", "/utwory/wertepy//", "/Utwory/wertepy"])
     def test_seo_an_entity_url_matches_as_react_router_matches_it(
         self, client: Client, url: str
     ) -> None:
@@ -231,20 +231,20 @@ class TestEntityPages:
     @pytest.mark.parametrize(
         "url",
         [
-            "/works/missing",
-            "/tags/missing/",
-            "/typescripts/999999",
-            "/typescripts/2147483648",
-            "/typescripts/99999999999999999999",
-            f"/typescripts/{'1' * 5000}",
-            "/notes/abc",
-            "/notes/%EF%BC%91",  # a full-width digit one
-            "/secondary-texts/-1",
-            "/materials/",
-            "/works/wertepy/extra",
-            "/works//wertepy",
-            "/works/%00",
-            "/tags/zażółć",
+            "/utwory/missing",
+            "/tagi/missing/",
+            "/maszynopisy/999999",
+            "/maszynopisy/2147483648",
+            "/maszynopisy/99999999999999999999",
+            f"/maszynopisy/{'1' * 5000}",
+            "/zapiski/abc",
+            "/zapiski/%EF%BC%91",  # a full-width digit one
+            "/teksty-sekundarne/-1",
+            "/materialy/",
+            "/utwory/wertepy/extra",
+            "/utwory//wertepy",
+            "/utwory/%00",
+            "/tagi/zażółć",
         ],
     )
     def test_seo_an_entity_url_with_no_entity_is_404(self, client: Client, url: str) -> None:
@@ -260,9 +260,9 @@ class TestBibliographyPage:
     @pytest.mark.parametrize(
         "url",
         [
-            "/works/wertepy/bibliography",
-            "/works/wertepy/bibliography/",
-            "/Works/wertepy/Bibliography",
+            "/utwory/wertepy/bibliografia",
+            "/utwory/wertepy/bibliografia/",
+            "/Utwory/wertepy/Bibliografia",
         ],
     )
     def test_us_ra_21_ac2_the_bibliography_page_has_its_title_and_description(
@@ -281,14 +281,14 @@ class TestBibliographyPage:
     ) -> None:
         work = WorkFactory.create(status=PUBLISHED)
 
-        head(client, f"{work.get_absolute_url()}/bibliography", status=404)
+        head(client, f"{work.get_absolute_url()}/bibliografia", status=404)
 
     def test_us_ra_21_ac5_a_draft_works_bibliography_is_404_for_a_reader(
         self, client: Client
     ) -> None:
         entry = BibliographyEntryFactory.create()
 
-        head(client, f"{entry.work.get_absolute_url()}/bibliography", status=404)
+        head(client, f"{entry.work.get_absolute_url()}/bibliografia", status=404)
 
     def test_us_ra_21_ac5_a_draft_works_bibliography_is_shown_to_staff(
         self, client: Client
@@ -296,12 +296,12 @@ class TestBibliographyPage:
         entry = BibliographyEntryFactory.create(work__title="Szkic")
         client.force_login(User.objects.create_user(username="editor", is_staff=True))
 
-        title, _ = head(client, f"{entry.work.get_absolute_url()}/bibliography")
+        title, _ = head(client, f"{entry.work.get_absolute_url()}/bibliografia")
 
         assert title == "Bibliografia utworu „Szkic” — Archivum Buczkovianum"
 
     @pytest.mark.parametrize(
-        "url", ["/works/missing/bibliography", "/works/wertepy/bibliography/x"]
+        "url", ["/utwory/missing/bibliografia", "/utwory/wertepy/bibliografia/x"]
     )
     def test_seo_a_bibliography_url_with_no_page_is_404(self, client: Client, url: str) -> None:
         BibliographyEntryFactory.create(work__slug="wertepy", work__status=PUBLISHED)
@@ -309,7 +309,7 @@ class TestBibliographyPage:
         head(client, url, status=404)
 
 
-@pytest.mark.parametrize("url", ["/unknown", "/about/team", "/search/x", "/index.html/x"])
+@pytest.mark.parametrize("url", ["/unknown", "/o-archiwum/team", "/szukaj/x", "/index.html/x"])
 def test_seo_an_unknown_url_is_404_with_the_frontend_not_found_page(
     client: Client, url: str
 ) -> None:
@@ -318,6 +318,31 @@ def test_seo_an_unknown_url_is_404_with_the_frontend_not_found_page(
     assert (title, description) == ("Nie znaleziono strony — Archivum Buczkovianum", DESCRIPTION)
 
 
-@pytest.mark.parametrize("url", ["/.env", "/.git/config", "/.well-known/x", "/works/.env/"])
+@pytest.mark.parametrize("url", ["/.env", "/.git/config", "/.well-known/x", "/utwory/.env/"])
 def test_seo_a_path_with_a_dot_segment_is_404(client: Client, url: str) -> None:
     assert client.get(url).status_code == 404
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/works",
+        "/works/wertepy",
+        "/works/wertepy/bibliography",
+        "/utwory/wertepy/bibliography",
+        "/typescripts",
+        "/tags",
+        "/tags/dezerter",
+        "/about",
+        "/search?q=dezerter",
+    ],
+)
+def test_arc_14_english_page_urls_are_404(client: Client, path: str) -> None:
+    work = WorkFactory.create(slug="wertepy", status=PUBLISHED)
+    BibliographyEntryFactory.create(work=work)
+    TagFactory.create(slug="dezerter", status=PUBLISHED)
+
+    title, _ = head(client, path, status=404)
+
+    assert title == "Nie znaleziono strony — Archivum Buczkovianum"

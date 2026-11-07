@@ -44,10 +44,10 @@ const RESULTS: Results = {
     has_text: 0,
   },
   total: 8,
-  works: [{ url: "/works/wertepy", title: "Wertepy", genre: "powieść", year: 1947, fragments: 2 }],
+  works: [{ url: "/utwory/wertepy", title: "Wertepy", genre: "powieść", year: 1947, fragments: 2 }],
   tags: [
     {
-      url: "/tags/dezerter",
+      url: "/tagi/dezerter",
       title: "Dezerter",
       occurrences: 4,
       snippet: "Postać <mark>dezertera</mark> w prozie.",
@@ -56,7 +56,7 @@ const RESULTS: Results = {
   fragments: [
     {
       id: 7,
-      url: "/typescripts/1?fragment=7",
+      url: "/maszynopisy/1?fragment=7",
       source_type: "typescript",
       work: "Wertepy",
       number: 1,
@@ -70,7 +70,7 @@ const RESULTS: Results = {
   ],
   notes: [
     {
-      url: "/notes/3?q=dezerterze",
+      url: "/zapiski/3?q=dezerterze",
       title: "Notes 18",
       shelfmark: "ML, sygn. 1678.0104",
       snippet: "Notatka o <mark>dezerterze</mark>.",
@@ -78,7 +78,7 @@ const RESULTS: Results = {
   ],
   typescripts: [
     {
-      url: "/typescripts/1?q=dezerter",
+      url: "/maszynopisy/1?q=dezerter",
       title: "Maszynopis Wertepów",
       shelfmark: "ML, sygn. 1618",
       snippet: "Szedł <mark>dezerter</mark> przez las.",
@@ -86,7 +86,7 @@ const RESULTS: Results = {
   ],
   secondary_texts: [
     {
-      url: "/secondary-texts/4",
+      url: "/teksty-sekundarne/4",
       title: "Recenzja",
       shelfmark: "",
       snippet: "O &lt;dezerterze&gt;.",
@@ -94,7 +94,7 @@ const RESULTS: Results = {
   ],
   materials: [
     {
-      url: "/materials/8?q=Dezerter",
+      url: "/materialy/8?q=Dezerter",
       title: "Dezerter na zdjęciu",
       shelfmark: "",
       snippet: "<mark>Dezerter</mark> w lesie.",
@@ -150,7 +150,7 @@ describe("SearchPage", () => {
   });
 
   it("US-RA-14 AC1: the search page shows the submitted query in its field", async () => {
-    const { container } = renderRoute("/search?q=dezerter+w+stodole");
+    const { container } = renderRoute("/szukaj?q=dezerter+w+stodole");
 
     expect(screen.getByRole("heading", { level: 1, name: "Wyszukiwanie" })).toBeInTheDocument();
     expect(searchBox()).toHaveValue("dezerter w stodole");
@@ -158,7 +158,7 @@ describe("SearchPage", () => {
   });
 
   it("US-RA-14 AC1: submitting the page's field searches for the new query", () => {
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     fireEvent.change(searchBox(), { target: { value: "  potok " } });
     fireEvent.click(within(searchForm()).getByRole("button", { name: "Szukaj" }));
@@ -167,7 +167,7 @@ describe("SearchPage", () => {
   });
 
   it("US-RA-14 AC1: submitting keeps the focus in the field", () => {
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     searchBox().focus();
     fireEvent.change(searchBox(), { target: { value: "potok" } });
@@ -178,7 +178,7 @@ describe("SearchPage", () => {
   });
 
   it("US-RA-14 AC2: a quoted phrase survives the trip through the URL", () => {
-    renderRoute("/search");
+    renderRoute("/szukaj");
     const phrase = "„dezerter w stodole” & ł#?+";
 
     fireEvent.change(searchBox(), { target: { value: phrase } });
@@ -189,7 +189,7 @@ describe("SearchPage", () => {
   });
 
   it("US-RA-14 AC1: the empty field shows the placeholder and no clear button", async () => {
-    const { container } = renderRoute("/search");
+    const { container } = renderRoute("/szukaj");
 
     expect(searchBox()).toHaveValue("");
     expect(searchBox()).toHaveAttribute("placeholder", "Tytuł, opis, transkrypcja lub tag");
@@ -198,7 +198,7 @@ describe("SearchPage", () => {
   });
 
   it("US-RA-14 AC1: 'Wyczyść' empties the field and keeps the focus in it", () => {
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     fireEvent.click(within(searchForm()).getByRole("button", { name: "Wyczyść" }));
 
@@ -208,7 +208,7 @@ describe("SearchPage", () => {
   });
 
   it("US-RA-14 AC1: a blank query opens the search page without one", () => {
-    const { router } = renderRoute("/search?q=dezerter&sort=title");
+    const { router } = renderRoute("/szukaj?q=dezerter&sort=title");
 
     fireEvent.change(searchBox(), { target: { value: "   " } });
     fireEvent.submit(searchForm());
@@ -218,7 +218,7 @@ describe("SearchPage", () => {
   });
 
   it("US-RA-14 AC2: under the field, what is searched and the exact-phrase hint", async () => {
-    const { container } = renderRoute("/search");
+    const { container } = renderRoute("/szukaj");
 
     expect(
       screen.getByText("Przeszukiwane: tytuły, opisy, transkrypcje i tagi"),
@@ -233,7 +233,7 @@ describe("SearchPage", () => {
   });
 
   it("R-12: the field and its buttons show a focus outline", () => {
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     expect(searchForm()).toHaveClass("has-[input:focus-visible]:outline-2");
     for (const name of ["Wyczyść", "Szukaj"]) {
@@ -247,7 +247,7 @@ describe("SearchPage", () => {
   it("US-RA-15 AC2: the header shows the query and the total", async () => {
     const requests = mockSearch();
 
-    const { container } = renderRoute("/search?q=dezerter");
+    const { container } = renderRoute("/szukaj?q=dezerter");
 
     expect(await screen.findByText("8 wyników we wszystkich kategoriach")).toBeVisible();
     expect(screen.getByRole("heading", { level: 2, name: "Wyniki dla „dezerter”" })).toBeVisible();
@@ -259,7 +259,7 @@ describe("SearchPage", () => {
   it("US-RA-15 AC3: results are grouped by type, each group with its count, in order", async () => {
     mockSearch();
 
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     // After the filters' heading and the results' title.
@@ -288,7 +288,7 @@ describe("SearchPage", () => {
       materials: [],
     });
 
-    renderRoute("/search?q=wertepy");
+    renderRoute("/szukaj?q=wertepy");
 
     await screen.findByText("1 wynik we wszystkich kategoriach");
     expect(screen.queryByRole("heading", { level: 2, name: "Tagi" })).toBeNull();
@@ -298,7 +298,7 @@ describe("SearchPage", () => {
   it("US-RA-15 AC4: the reader can sort by title, kept in the URL", async () => {
     const requests = mockSearch();
 
-    const { router } = renderRoute("/search?q=dezerter");
+    const { router } = renderRoute("/szukaj?q=dezerter");
 
     const sort = await screen.findByRole<HTMLSelectElement>("combobox", { name: "Sortuj" });
     await screen.findByText("8 wyników we wszystkich kategoriach");
@@ -314,7 +314,7 @@ describe("SearchPage", () => {
   it("US-RA-15 AC4: sorting back by relevance drops the sort from the URL", async () => {
     mockSearch();
 
-    const { router } = renderRoute("/search?q=dezerter&sort=title");
+    const { router } = renderRoute("/szukaj?q=dezerter&sort=title");
 
     const sort = await screen.findByRole("combobox", { name: "Sortuj" });
     await screen.findByText("8 wyników we wszystkich kategoriach");
@@ -326,11 +326,11 @@ describe("SearchPage", () => {
   it("US-RA-15 AC5: a work shows its type, author, genre, year and matching fragments", async () => {
     mockSearch();
 
-    const { container } = renderRoute("/search?q=dezerter");
+    const { container } = renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     const link = within(group("Utwory")).getByRole("link");
-    expect(link).toHaveAttribute("href", "/works/wertepy");
+    expect(link).toHaveAttribute("href", "/utwory/wertepy");
     expect(link).toHaveTextContent("Wertepy");
     expect(link).toHaveTextContent("Utwór · Leopold Buczkowski · powieść · 1947");
     expect(link).toHaveTextContent("2 fragmenty");
@@ -340,13 +340,13 @@ describe("SearchPage", () => {
   it("US-RA-15 AC5: a fragment result is a fragment card", async () => {
     mockSearch();
 
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     const card = within(group("Fragmenty"));
     expect(card.getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" })).toHaveAttribute(
       "href",
-      "/typescripts/1?fragment=7",
+      "/maszynopisy/1?fragment=7",
     );
     expect(card.getByText("Maszynopis")).toBeVisible();
     expect(card.getByText("Szedł dezerter przez las.")).toBeVisible();
@@ -355,7 +355,7 @@ describe("SearchPage", () => {
   it("US-RA-15 AC5: every result shows its type and links to its page", async () => {
     mockSearch();
 
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     expect(within(group("Zapiski")).getByRole("link")).toHaveTextContent(
@@ -373,18 +373,18 @@ describe("SearchPage", () => {
     const tag = within(group("Tagi"));
     expect(tag.getByText("Tag")).toBeVisible();
     expect(tag.getByText("4 wystąpienia")).toBeVisible();
-    expect(tag.getByRole("link", { name: "Otwórz tag" })).toHaveAttribute("href", "/tags/dezerter");
+    expect(tag.getByRole("link", { name: "Otwórz tag" })).toHaveAttribute("href", "/tagi/dezerter");
   });
 
   it("US-RA-15 AC6: a text match shows a highlighted snippet and opens at the match", async () => {
     mockSearch();
 
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     const note = within(group("Zapiski")).getByRole("link");
     expect(within(note).getByText("dezerterze", { selector: "mark" })).toBeVisible();
-    expect(note).toHaveAttribute("href", "/notes/3?q=dezerterze");
+    expect(note).toHaveAttribute("href", "/zapiski/3?q=dezerterze");
     expect(within(group("Tagi")).getByText("dezertera", { selector: "mark" })).toBeVisible();
     // The snippet is the API's escaped text, never markup of its own.
     expect(within(group("Teksty sekundarne")).getByRole("link")).toHaveTextContent(
@@ -395,7 +395,7 @@ describe("SearchPage", () => {
   it("US-RA-15 AC6: a work shows no snippet", async () => {
     mockSearch();
 
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     expect(within(group("Utwory")).queryByText(/dezerter/i)).toBeNull();
@@ -411,7 +411,7 @@ describe("SearchPage", () => {
       ],
     });
 
-    const { container } = renderRoute("/search?q=dezerterka");
+    const { container } = renderRoute("/szukaj?q=dezerterka");
 
     expect(
       await screen.findByRole("heading", { level: 2, name: "Brak wyników dla „dezerterka”" }),
@@ -425,7 +425,7 @@ describe("SearchPage", () => {
     expect(
       screen
         .getAllByRole("link")
-        .filter((link) => link.getAttribute("href")?.startsWith("/tags/"))
+        .filter((link) => link.getAttribute("href")?.startsWith("/tagi/"))
         .map((link) => link.textContent),
     ).toEqual(["Dezerter", "Wojna", "Wieś"]);
     expect(screen.queryByRole("combobox", { name: "Sortuj" })).toBeNull();
@@ -435,7 +435,7 @@ describe("SearchPage", () => {
   it("US-RA-15: while results load, the page says it is searching and disables sorting", async () => {
     mockPendingSearch();
 
-    const { container } = renderRoute("/search?q=dezerter");
+    const { container } = renderRoute("/szukaj?q=dezerter");
 
     expect(await screen.findByText("Przeszukuję utwory, fragmenty, zapiski i tagi…")).toBeVisible();
     expect(screen.getByRole("combobox", { name: "Sortuj" })).toBeDisabled();
@@ -446,7 +446,7 @@ describe("SearchPage", () => {
     mockPendingSearch();
     const skeleton = "[aria-hidden=true][data-slot=card]";
 
-    const { container } = renderRoute("/search?q=dezerter");
+    const { container } = renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("Przeszukuję utwory, fragmenty, zapiski i tagi…");
     expect(container.querySelector(skeleton)).toBeNull();
@@ -459,7 +459,7 @@ describe("SearchPage", () => {
   it("US-RA-15: a failed search says so", async () => {
     server.use(http.get(SEARCH_URL, () => new HttpResponse(null, { status: 500 })));
 
-    const { container } = renderRoute("/search?q=dezerter");
+    const { container } = renderRoute("/szukaj?q=dezerter");
 
     expect(
       await screen.findByText("Nie udało się wczytać wyników. Spróbuj ponownie później."),
@@ -470,7 +470,7 @@ describe("SearchPage", () => {
   it("US-RA-15: without a query, a tab or a filter, nothing is searched", () => {
     const requests = mockSearch();
 
-    renderRoute("/search?sort=title");
+    renderRoute("/szukaj?sort=title");
 
     expect(screen.queryByRole("heading", { level: 2 })).toBeNull();
     expect(requests).toEqual([]);
@@ -503,7 +503,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC1: the tabs, each with its count, 'Wszystko' by default", async () => {
     mockSearch();
 
-    const { container } = renderRoute("/search?q=dezerter");
+    const { container } = renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     expect(
@@ -521,7 +521,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC1: a tab shows only its results and keeps the query and filters", async () => {
     const requests = mockSearch();
 
-    const { router } = renderRoute("/search?q=dezerter&work=1");
+    const { router } = renderRoute("/szukaj?q=dezerter&work=1");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     fireEvent.click(within(tabs()).getByRole("link", { name: "Utwory 1" }));
@@ -538,7 +538,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC1: while results load, the tab counts show a dash", async () => {
     mockPendingSearch();
 
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("Przeszukuję utwory, fragmenty, zapiski i tagi…");
     expect(within(tabs()).getByRole("link", { name: "Utwory –" })).toBeVisible();
@@ -547,7 +547,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC2: every filter value shows its count", async () => {
     mockSearch();
 
-    const { container } = renderRoute("/search?q=dezerter");
+    const { container } = renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     const column = within(filters());
@@ -571,7 +571,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC2: choosing works filters the results by them", async () => {
     const requests = mockSearch();
 
-    const { router } = renderRoute("/search?q=dezerter");
+    const { router } = renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     fireEvent.click(within(filters()).getByRole("checkbox", { name: "Wertepy 5" }));
@@ -591,7 +591,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC2: choosing a decade filters by it; 'Wszystkie lata' clears it", async () => {
     const requests = mockSearch();
 
-    const { router } = renderRoute("/search?q=dezerter");
+    const { router } = renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     fireEvent.change(within(filters()).getByRole("combobox", { name: "Okres" }), {
@@ -611,7 +611,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC2: the availability filters keep results with a scan or a transcription", async () => {
     const requests = mockSearch();
 
-    const { router } = renderRoute("/search?q=dezerter");
+    const { router } = renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     fireEvent.click(within(filters()).getByRole("checkbox", { name: "Ze skanem 3" }));
@@ -627,7 +627,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC2: while results load, the previous filters stay, dimmed", async () => {
     mockSearch();
 
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     mockPendingSearch();
@@ -642,7 +642,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC3: 'Filtry (n)' opens the filters in a full-screen panel", async () => {
     mockSearch();
 
-    renderRoute("/search?q=dezerter&work=1&has_scan=1");
+    renderRoute("/szukaj?q=dezerter&work=1&has_scan=1");
 
     const panel = within(await openPanel());
     expect(panel.getByRole("heading", { name: "Filtry" })).toBeVisible();
@@ -656,7 +656,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC3: 'Filtry (n)' counts the selected filter values", async () => {
     mockSearch();
 
-    renderRoute("/search?q=dezerter&work=1&work=2&decade=1940&has_text=1");
+    renderRoute("/szukaj?q=dezerter&work=1&work=2&decade=1940&has_text=1");
 
     expect(await screen.findByRole("button", { name: "Filtry (4)" })).toBeVisible();
   });
@@ -669,7 +669,7 @@ describe("SearchPage tabs and filters", () => {
       }),
     );
 
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     const panel = within(await openPanel());
     fireEvent.click(panel.getByRole("checkbox", { name: "Wertepy 5" }));
@@ -686,7 +686,7 @@ describe("SearchPage tabs and filters", () => {
     mockSearch();
 
     const { router } = renderRoute(
-      "/search?q=dezerter&tab=works&work=1&decade=1940&has_scan=1&sort=title",
+      "/szukaj?q=dezerter&tab=works&work=1&decade=1940&has_scan=1&sort=title",
     );
 
     const panel = within(await openPanel());
@@ -700,7 +700,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC3: 'Wyczyść' without a query keeps listing everything, panel open", async () => {
     mockSearch();
 
-    const { router } = renderRoute("/search?work=1");
+    const { router } = renderRoute("/szukaj?work=1");
 
     const panel = within(await openPanel());
     fireEvent.click(panel.getByRole("button", { name: "Wyczyść" }));
@@ -717,7 +717,7 @@ describe("SearchPage tabs and filters", () => {
       }),
     );
 
-    renderRoute("/search?q=dezerter&work=1");
+    renderRoute("/szukaj?q=dezerter&work=1");
 
     const panel = within(await openPanel());
     fireEvent.click(panel.getByRole("button", { name: "Wyczyść" }));
@@ -729,7 +729,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC3: while results load, the panel's filters are dimmed", async () => {
     mockSearch();
 
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     const panel = within(await openPanel());
     mockPendingSearch();
@@ -745,7 +745,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC3: the close icon closes the panel", async () => {
     mockSearch();
 
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     const panel = within(await openPanel());
     fireEvent.click(panel.getByRole("button", { name: "Zamknij filtry" }));
@@ -758,7 +758,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC4: a link restores the tab, filters and sort", async () => {
     const requests = mockSearch();
 
-    renderRoute("/search?q=dezerter&tab=fragments&work=2&decade=1950&has_text=1&sort=title");
+    renderRoute("/szukaj?q=dezerter&tab=fragments&work=2&decade=1950&has_text=1&sort=title");
 
     await screen.findByText("8 wyników w kategorii „Fragmenty”");
     const query = requests[0]?.searchParams;
@@ -779,7 +779,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC4: values that are not valid in a link are ignored", async () => {
     const requests = mockSearch();
 
-    renderRoute("/search?q=dezerter&tab=drafts&work=wertepy&work=0&work=2147483648&decade=1945");
+    renderRoute("/szukaj?q=dezerter&tab=drafts&work=wertepy&work=0&work=2147483648&decade=1945");
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     const query = requests[0]?.searchParams;
@@ -791,7 +791,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC4: a new search from the page's field keeps the tab, filters and sort", async () => {
     mockSearch();
 
-    const { router } = renderRoute("/search?q=dezerter&tab=works&work=1&sort=title");
+    const { router } = renderRoute("/szukaj?q=dezerter&tab=works&work=1&sort=title");
 
     await screen.findByText("8 wyników w kategorii „Utwory”");
     fireEvent.change(searchBox(), { target: { value: "potok" } });
@@ -804,7 +804,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC4: a search from the header's field starts afresh", async () => {
     mockSearch();
 
-    const { router } = renderRoute("/search?q=dezerter&tab=works&work=1");
+    const { router } = renderRoute("/szukaj?q=dezerter&tab=works&work=1");
 
     await screen.findByText("8 wyników w kategorii „Utwory”");
     const header = screen.getByRole("banner");
@@ -818,7 +818,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC5: an empty query lists everything in the tab and filters by title", async () => {
     const requests = mockSearch();
 
-    const { container } = renderRoute("/search?tab=works&work=1");
+    const { container } = renderRoute("/szukaj?tab=works&work=1");
 
     expect(
       await screen.findByRole("heading", { level: 2, name: "Wszystkie wyniki" }),
@@ -834,7 +834,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC5: without a query, 'Wszystko' lists everything", async () => {
     const requests = mockSearch();
 
-    const { router } = renderRoute("/search?tab=works");
+    const { router } = renderRoute("/szukaj?tab=works");
 
     await screen.findByText("8 wyników w kategorii „Utwory”");
     fireEvent.click(within(tabs()).getByRole("link", { name: "Wszystko 8" }));
@@ -847,7 +847,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC5: clearing the field keeps the tab and lists everything in it", async () => {
     mockSearch();
 
-    const { router } = renderRoute("/search?q=dezerter&tab=works");
+    const { router } = renderRoute("/szukaj?q=dezerter&tab=works");
 
     await screen.findByText("8 wyników w kategorii „Utwory”");
     fireEvent.click(within(searchForm()).getByRole("button", { name: "Wyczyść" }));
@@ -862,7 +862,7 @@ describe("SearchPage tabs and filters", () => {
   it("US-RA-16 AC2: with no filtered results, the tabs and filters stay to change them", async () => {
     mockSearch({ ...EMPTY, facets: RESULTS.facets });
 
-    const { container } = renderRoute("/search?tab=notes&has_scan=1");
+    const { container } = renderRoute("/szukaj?tab=notes&has_scan=1");
 
     expect(await screen.findByRole("heading", { level: 2, name: "Brak wyników" })).toBeVisible();
     expect(screen.getByText("Wybierz inną kategorię albo wyczyść filtry.")).toBeVisible();

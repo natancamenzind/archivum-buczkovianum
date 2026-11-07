@@ -48,16 +48,16 @@ NOT_FOUND = PageMeta(page_title("Nie znaleziono strony"))
 
 PAGES = {
     "": PageMeta(SITE_NAME),
-    "works": PageMeta(
+    "utwory": PageMeta(
         page_title("Utwory"),
         "Wszystkie utwory Leopolda Buczkowskiego w archiwum, w kolejności wydania.",
     ),
-    "typescripts": PageMeta(
+    "maszynopisy": PageMeta(
         page_title("Maszynopisy"),
         "Jednostki archiwalne z maszynopisami utworów, pogrupowane według utworu.",
     ),
-    "tags": PageMeta(page_title("Tagi"), "Motywy łączące fragmenty i zapiski z różnych utworów."),
-    "about": PageMeta(
+    "tagi": PageMeta(page_title("Tagi"), "Motywy łączące fragmenty i zapiski z różnych utworów."),
+    "o-archiwum": PageMeta(
         page_title("O archiwum"), "O projekcie Archivum Buczkovianum i jego zespole."
     ),
 }
@@ -65,12 +65,12 @@ SEARCH_DESCRIPTION = "Szukaj w archiwum: tytuły, opisy, transkrypcje i tagi."
 
 # The first segment of an entity page's URL: its entities, and the field the second segment is.
 ENTITIES: dict[str, tuple[Callable[[], PublishableQuerySet[Any]], str]] = {
-    "works": (Work.objects.all, "slug"),
-    "tags": (Tag.objects.all, "slug"),
-    "typescripts": (Typescript.objects.all, "pk"),
-    "notes": (Note.objects.all, "pk"),
-    "secondary-texts": (SecondaryText.objects.all, "pk"),
-    "materials": (ContextualMaterial.objects.all, "pk"),
+    "utwory": (Work.objects.all, "slug"),
+    "tagi": (Tag.objects.all, "slug"),
+    "maszynopisy": (Typescript.objects.all, "pk"),
+    "zapiski": (Note.objects.all, "pk"),
+    "teksty-sekundarne": (SecondaryText.objects.all, "pk"),
+    "materialy": (ContextualMaterial.objects.all, "pk"),
 }
 
 
@@ -82,13 +82,13 @@ def page_meta(request: HttpRequest) -> PageMeta | None:
     # React Router matches route paths case-insensitively.
     segments[0] = segments[0].lower()
     match segments:
-        case ["search"]:
+        case ["szukaj"]:
             return search_meta(request)
         case [name] if name in PAGES:
             return PAGES[name]
         case [kind, key] if kind in ENTITIES:
             return entity_meta(request, kind, key)
-        case ["works", slug, page] if page.lower() == "bibliography":
+        case ["utwory", slug, page] if page.lower() == "bibliografia":
             return bibliography_meta(request, slug)
     return None
 

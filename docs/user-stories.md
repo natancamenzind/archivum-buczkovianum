@@ -139,7 +139,7 @@ Shows what we know about a work, key information first.
 ### US-RA-21 — Work bibliography
 
 1. Work page: below the editions, the section "Bibliografia" with a count ("5 z 12"), the first 5 entries as a numbered list, and the link "Cała bibliografia (12)" to the work's bibliography page. A work without entries has no section (R-02).
-2. The bibliography page, at `/works/<slug>/bibliography`. Hero, as on the About page: the type line "Bibliografia utworu · Leopold Buczkowski" and the work's title.
+2. The bibliography page, at `/utwory/<slug>/bibliografia`. Hero, as on the About page: the type line "Bibliografia utworu · Leopold Buczkowski" and the work's title.
 3. A card "Bibliografia" with the count and every entry, as a numbered list in the order the editor set.
 4. Side column "Bibliografie utworów": "Bibliografia do utworu „<title>”" for every published work with at least one entry, by first edition. The current work is highlighted. Each links to that work's bibliography page. On mobile the column is below the card.
 5. A work without entries has no bibliography page (404). A draft work's bibliography is a 404 for readers (R-06).

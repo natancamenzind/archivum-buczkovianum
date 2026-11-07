@@ -19,7 +19,7 @@ def basic_auth(settings: Settings) -> None:
 
 
 @pytest.mark.usefixtures("basic_auth")
-@pytest.mark.parametrize("url", [PAGE, "/admin/", "/", "/works"])
+@pytest.mark.parametrize("url", [PAGE, "/admin/", "/", "/utwory"])
 def test_us_ops_01_ac3_no_credentials_is_401(client: Client, url: str) -> None:
     response = client.get(url)
 

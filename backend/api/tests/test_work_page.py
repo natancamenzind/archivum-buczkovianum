@@ -130,7 +130,7 @@ class TestWorkPageEndpoint:
         assert [item["id"] for item in result["fragments"]["items"]] == [featured.pk, first.pk]
         assert result["fragments"]["items"][1] == {
             "id": first.pk,
-            "url": f"/typescripts/{main.pk}?fragment={first.pk}",
+            "url": f"/maszynopisy/{main.pk}?fragment={first.pk}",
             "source_type": "typescript",
             "work": "Wertepy",
             "number": 1,

@@ -14,4 +14,19 @@ describe("NotFoundPage", () => {
     );
     expect(await axeViolations(container)).toEqual([]);
   });
+
+  it.each([
+    "/works",
+    "/works/wertepy",
+    "/works/wertepy/bibliography",
+    "/utwory/wertepy/bibliography",
+    "/typescripts/1",
+    "/tags",
+    "/about",
+    "/search?q=dezerter",
+  ])("ARC-14: the English URL %s is not a page", (url) => {
+    renderRoute(url);
+
+    expect(screen.getByRole("heading", { level: 1, name: "Nie znaleziono strony" })).toBeVisible();
+  });
 });

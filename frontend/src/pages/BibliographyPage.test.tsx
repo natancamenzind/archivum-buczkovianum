@@ -34,7 +34,7 @@ function mockPage(bibliography: Partial<BibliographyData> = {}) {
 }
 
 async function renderPage() {
-  const result = renderRoute("/works/wertepy/bibliography");
+  const result = renderRoute("/utwory/wertepy/bibliografia");
   await screen.findByRole("heading", { level: 1, name: "Wertepy" });
   return result;
 }
@@ -100,9 +100,9 @@ describe("BibliographyPage", () => {
     expect(within(works).getByText("3")).toBeVisible();
     const links = within(works).getAllByRole("link");
     expect(links.map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
-      ["1932Bibliografia do utworu „Czarny potok”", "/works/czarny-potok/bibliography"],
-      ["1947Bibliografia do utworu „Wertepy”", "/works/wertepy/bibliography"],
-      ["Bibliografia do utworu „Bez wydań”", "/works/bez-wydan/bibliography"],
+      ["1932Bibliografia do utworu „Czarny potok”", "/utwory/czarny-potok/bibliografia"],
+      ["1947Bibliografia do utworu „Wertepy”", "/utwory/wertepy/bibliografia"],
+      ["Bibliografia do utworu „Bez wydań”", "/utwory/bez-wydan/bibliografia"],
     ]);
     expect(links.map((link) => link.getAttribute("aria-current"))).toEqual([null, "page", null]);
     expect(await axeViolations(container)).toEqual([]);
@@ -141,7 +141,7 @@ describe("BibliographyPage", () => {
   it("US-RA-21 AC5: a bibliography the API does not find shows the not-found page", async () => {
     server.use(http.get(BIBLIOGRAPHY_URL, () => new HttpResponse(null, { status: 404 })));
 
-    renderRoute("/works/wertepy/bibliography");
+    renderRoute("/utwory/wertepy/bibliografia");
 
     expect(
       await screen.findByRole("heading", { level: 1, name: "Nie znaleziono strony" }),
@@ -151,7 +151,7 @@ describe("BibliographyPage", () => {
   it("shows the loading state, then an error when the page cannot be loaded", async () => {
     server.use(http.get(BIBLIOGRAPHY_URL, () => new HttpResponse(null, { status: 500 })));
 
-    renderRoute("/works/wertepy/bibliography");
+    renderRoute("/utwory/wertepy/bibliografia");
 
     expect(screen.getByRole("status")).toHaveTextContent("Wczytuję bibliografię…");
     expect(
