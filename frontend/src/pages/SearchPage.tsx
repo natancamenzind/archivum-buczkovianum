@@ -9,6 +9,7 @@ import { SearchField } from "@/components/SearchField";
 import { FilterPanel, SearchFilters } from "@/components/SearchFilters";
 import { type ItemGroup, ItemResult, TagResult, WorkResult } from "@/components/SearchResult";
 import { SearchTabs } from "@/components/SearchTabs";
+import { Select } from "@/components/Select";
 import { SectionHeader } from "@/components/SectionHeader";
 import { TagList } from "@/components/TagList";
 import { Card } from "@/components/ui/card";
@@ -220,7 +221,7 @@ function SearchResults({ state }: { state: SearchState }) {
                 {copy.searchResults.sort}
               </label>
               {/* An empty query is always sorted by title (US-RA-16 AC5). */}
-              <select
+              <Select
                 id={SORT_ID}
                 value={state.query === "" ? "title" : state.sort}
                 disabled={data === undefined || state.query === ""}
@@ -228,14 +229,14 @@ function SearchResults({ state }: { state: SearchState }) {
                   const sort = event.target.value;
                   change({ ...state, sort: isSort(sort) ? sort : "relevance" });
                 }}
-                className="grow rounded-sm border border-accent-border bg-card px-12 py-8 text-cousine-metadane text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:grow-0"
+                className="grow md:grow-0"
               >
                 {SORTS.map((option) => (
                   <option key={option} value={option}>
                     {copy.searchResults.sorts[option]}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
           {loading && <Skeleton />}
