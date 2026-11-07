@@ -86,6 +86,11 @@ export const copy = {
     /** The placeholder board for a work without a cover (plan D25, design/rules.md). */
     coverPlaceholder: "[Okładka]",
   },
+  /** The arrows of the works carousel on the home page (ARC-20). */
+  workCarousel: {
+    previous: "Poprzednie utwory",
+    next: "Następne utwory",
+  },
   /** The home page (US-RA-01). */
   home: {
     works: "Utwory",
