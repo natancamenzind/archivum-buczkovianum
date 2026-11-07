@@ -152,7 +152,8 @@ describe("HomePage", () => {
       "/works/wertepy",
       "/works/czarny-potok",
     ]);
-    expect(cards[0]).toHaveTextContent("powieść · 1947");
+    expect(cards[0]).toHaveTextContent("1947");
+    expect(cards[0]).not.toHaveTextContent("powieść");
     expect(cards[0]).toHaveTextContent("Leopold Buczkowski");
     expect(cards[0]).toHaveTextContent("24 fragmenty");
     expect(cards[1]).not.toHaveTextContent(/fragment/);

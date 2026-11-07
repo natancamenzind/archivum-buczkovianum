@@ -28,14 +28,15 @@ function card(): HTMLElement {
 }
 
 describe("WorkCard", () => {
-  it("US-RA-01 AC3: shows the cover, genre and year, title, author and fragment count", async () => {
+  it("US-RA-01 AC3: shows the cover, year, title, author and fragment count", async () => {
     const { container } = renderCard();
 
     expect(screen.getByRole("img", { name: "Okładka: koń na tle drzew" })).toHaveAttribute(
       "src",
       "/media/works/wertepy.png",
     );
-    expect(screen.getByText("powieść · 1947")).toBeVisible();
+    expect(screen.getByText("1947")).toBeVisible();
+    expect(screen.queryByText(/powieść/)).toBeNull();
     expect(screen.getByRole("heading", { level: 3, name: "Wertepy" })).toBeVisible();
     expect(screen.getByText("Leopold Buczkowski")).toBeVisible();
     expect(screen.getByText("24 fragmenty")).toBeVisible();
@@ -76,21 +77,12 @@ describe("WorkCard", () => {
 
     expect(screen.queryByRole("img")).toBeNull();
     expect(container.querySelector("[data-slot=cover-placeholder]")).toHaveTextContent("[Okładka]");
-    expect(card()).toHaveAccessibleName("powieść · 1947 Wertepy Leopold Buczkowski 24 fragmenty");
+    expect(card()).toHaveAccessibleName("1947 Wertepy Leopold Buczkowski 24 fragmenty");
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it.each([
-    ["year", { year: null }, "powieść"],
-    ["genre", { genre: "" }, "1947"],
-  ])("R-02: a missing %s is left out of the type line", (_, overrides, text) => {
-    renderCard(overrides);
-
-    expect(screen.getByText(text)).toBeVisible();
-  });
-
-  it("R-02: without genre and year there is no type line", () => {
-    const { container } = renderCard({ genre: "", year: null });
+  it("R-02: without a year there is no type line, even with a genre", () => {
+    const { container } = renderCard({ year: null });
 
     expect(container.querySelector(".text-cousine-etykieta")).toBeNull();
   });
