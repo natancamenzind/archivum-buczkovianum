@@ -98,12 +98,11 @@ def scan_file(*pages: str, name: str = "scan.pdf") -> SimpleUploadedFile:
     return SimpleUploadedFile(name, searchable_pdf(*pages), content_type="application/pdf")
 
 
-IMAGE_FORMATS = {".jpg": "JPEG", ".jpeg": "JPEG", ".png": "PNG", ".webp": "WEBP"}
-
-
-def image_file(name: str, size: tuple[int, int] = (4, 2)) -> SimpleUploadedFile:
-    """A small image in the format its name's extension gives."""
-    image_format = IMAGE_FORMATS[PurePath(name).suffix]
+def image_file(
+    name: str, size: tuple[int, int] = (4, 2), exif: Image.Exif | None = None
+) -> SimpleUploadedFile:
+    """A small image in the format its name's extension gives, with `exif` if given."""
+    image_format = Image.registered_extensions()[PurePath(name).suffix]
     output = io.BytesIO()
-    Image.new("RGB", size, "sienna").save(output, format=image_format)
+    Image.new("RGB", size, "sienna").save(output, format=image_format, exif=exif or Image.Exif())
     return SimpleUploadedFile(name, output.getvalue(), content_type=f"image/{image_format.lower()}")

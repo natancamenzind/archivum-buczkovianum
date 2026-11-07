@@ -70,7 +70,11 @@ export function MaterialPage() {
           description={
             material.description === "" ? undefined : <RichText html={material.description} />
           }
-          image={{ src: material.header_image, alt: material.header_image_alt }}
+          image={
+            material.header_image === ""
+              ? undefined
+              : { src: material.header_image, alt: material.header_image_alt }
+          }
         />
       }
       context={

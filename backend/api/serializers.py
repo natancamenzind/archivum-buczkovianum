@@ -37,19 +37,6 @@ class ImageUrlField(serializers.CharField):
         return image.url if image else ""
 
 
-def header_image_fields(
-    entity: str,
-) -> tuple[ImageUrlField, serializers.CharField]:
-    """`header_image` and `header_image_alt` of the page's `entity` (ARC-29)."""
-    return (
-        ImageUrlField(
-            source=f"{entity}.header_image",
-            help_text="Shown behind the title; empty when there is none.",
-        ),
-        serializers.CharField(source=f"{entity}.header_image_alt", allow_blank=True),
-    )
-
-
 @dataclass(frozen=True)
 class TeamGroup:
     group: TeamMember.Group
@@ -303,7 +290,11 @@ class TypescriptPageSerializer(serializers.Serializer[TypescriptPage]):
     description = serializers.CharField(
         source="typescript.description", allow_blank=True, help_text="HTML."
     )
-    header_image, header_image_alt = header_image_fields("typescript")
+    header_image = ImageUrlField(
+        source="typescript.header_image",
+        help_text="Shown behind the title; empty when there is none.",
+    )
+    header_image_alt = serializers.CharField(source="typescript.header_image_alt", allow_blank=True)
     shelfmark = serializers.CharField(
         source="typescript.shelfmark_display", help_text='E.g. "ML, sygn. 1618"; may be empty.'
     )
@@ -468,7 +459,10 @@ class WorkPageSerializer(serializers.Serializer[WorkPage]):
     description = serializers.CharField(
         source="work.description", allow_blank=True, help_text="HTML."
     )
-    header_image, header_image_alt = header_image_fields("work")
+    header_image = ImageUrlField(
+        source="work.header_image", help_text="Shown behind the title; empty when there is none."
+    )
+    header_image_alt = serializers.CharField(source="work.header_image_alt", allow_blank=True)
     year = serializers.IntegerField(
         source="work.year",
         allow_null=True,
@@ -548,7 +542,13 @@ class SecondaryTextPageSerializer(serializers.Serializer[SecondaryTextPage]):
     description = serializers.CharField(
         source="secondary_text.description", allow_blank=True, help_text="HTML."
     )
-    header_image, header_image_alt = header_image_fields("secondary_text")
+    header_image = ImageUrlField(
+        source="secondary_text.header_image",
+        help_text="Shown behind the title; empty when there is none.",
+    )
+    header_image_alt = serializers.CharField(
+        source="secondary_text.header_image_alt", allow_blank=True
+    )
     kind = serializers.ChoiceField(source="secondary_text.kind", choices=SecondaryText.Kind.choices)
     sender = serializers.CharField(
         source="secondary_text.sender", allow_blank=True, help_text="For letters; may be empty."
@@ -612,7 +612,10 @@ class NotePageSerializer(serializers.Serializer[NotePage]):
     description = serializers.CharField(
         source="note.description", allow_blank=True, help_text="HTML."
     )
-    header_image, header_image_alt = header_image_fields("note")
+    header_image = ImageUrlField(
+        source="note.header_image", help_text="Shown behind the title; empty when there is none."
+    )
+    header_image_alt = serializers.CharField(source="note.header_image_alt", allow_blank=True)
     shelfmark = serializers.CharField(
         source="note.shelfmark_display", help_text='E.g. "ML, sygn. 1678"; may be empty.'
     )
@@ -644,7 +647,11 @@ class MaterialPageSerializer(serializers.Serializer[MaterialPage]):
     description = serializers.CharField(
         source="material.description", allow_blank=True, help_text="HTML."
     )
-    header_image, header_image_alt = header_image_fields("material")
+    header_image = ImageUrlField(
+        source="material.header_image",
+        help_text="Shown behind the title; empty when there is none.",
+    )
+    header_image_alt = serializers.CharField(source="material.header_image_alt", allow_blank=True)
     shelfmark = serializers.CharField(
         source="material.shelfmark_display", help_text='E.g. "ML, sygn. 1700"; may be empty.'
     )
@@ -680,7 +687,10 @@ class TagPageSerializer(serializers.Serializer[TagPage]):
     description = serializers.CharField(
         source="tag.description", allow_blank=True, help_text="HTML."
     )
-    header_image, header_image_alt = header_image_fields("tag")
+    header_image = ImageUrlField(
+        source="tag.header_image", help_text="Shown behind the title; empty when there is none."
+    )
+    header_image_alt = serializers.CharField(source="tag.header_image_alt", allow_blank=True)
     occurrences = serializers.IntegerField(source="tag.occurrences")
     works = WorkSummarySerializer(
         many=True,

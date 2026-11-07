@@ -183,7 +183,11 @@ export function TypescriptPage() {
           description={
             typescript.description === "" ? undefined : <RichText html={typescript.description} />
           }
-          image={{ src: typescript.header_image, alt: typescript.header_image_alt }}
+          image={
+            typescript.header_image === ""
+              ? undefined
+              : { src: typescript.header_image, alt: typescript.header_image_alt }
+          }
         />
       }
       context={<Context typescript={typescript} />}

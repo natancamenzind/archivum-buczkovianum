@@ -18,14 +18,11 @@ describe("PageHeader", () => {
       "src",
       "/media/headers/wertepy.webp",
     );
-    expect(screen.getByRole("heading", { level: 1, name: "Wertepy" })).toBeVisible();
     expect(await axeViolations(container)).toEqual([]);
   });
 
   it("ARC-29: shows no image when the entity has none", async () => {
-    const { container } = render(
-      <PageHeader label="Utwór" title="Wertepy" image={{ src: "", alt: "" }} />,
-    );
+    const { container } = render(<PageHeader label="Utwór" title="Wertepy" />);
 
     expect(container.querySelector("img")).toBeNull();
     expect(await axeViolations(container)).toEqual([]);

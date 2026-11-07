@@ -22,7 +22,7 @@ from django.utils.translation import ngettext
 from django_prose_editor.fields import ProseEditorField, create_sanitizer
 from django_stubs_ext import StrOrPromise
 
-from archive.images import open_image, to_webp
+from archive.images import to_webp, validate_image
 from search.models import EntityType, IndexedContent, SearchEntry, Weight, html_to_text
 
 IMAGE_EXTENSIONS = FileExtensionValidator(["jpg", "jpeg", "png", "webp"])
@@ -112,7 +112,7 @@ class BaseModel(models.Model):
         errors: dict[str, ValidationError | StrOrPromise] = {}
         for name, upload in self.new_images().items():
             try:
-                open_image(upload.file)
+                validate_image(upload.file)
             except ValidationError as error:
                 errors[name] = error
         for field in self._meta.get_fields():

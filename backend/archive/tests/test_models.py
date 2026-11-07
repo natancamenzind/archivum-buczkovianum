@@ -1,4 +1,3 @@
-import io
 from typing import Any
 
 import pytest
@@ -64,9 +63,8 @@ class TestAltText:
 
 
 def stored_image(upload: FieldFile) -> Image.Image:
-    upload.open("rb")
-    with upload:
-        image = Image.open(io.BytesIO(upload.read()))
+    with upload.open("rb"):
+        image = Image.open(upload)
         image.load()
     return image
 
@@ -92,10 +90,8 @@ class TestWebpImages:
         # Arrange
         exif = Image.Exif()
         exif[0x0112] = 6  # Orientation: rotated 90 degrees clockwise.
-        output = io.BytesIO()
-        Image.new("RGB", (6, 3), "sienna").save(output, format="JPEG", exif=exif)
         settings = SiteSettings.load()
-        settings.portrait = ContentFile(output.getvalue(), name="portret.jpg")
+        settings.portrait = image_file("portret.jpg", size=(6, 3), exif=exif)
         settings.portrait_alt = "Portret"
 
         # Act
