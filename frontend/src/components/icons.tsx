@@ -69,6 +69,16 @@ export function ImageIcon(props: IconProps) {
   );
 }
 
+/** design/assets/icons/wstecz.svg */
+export function ChevronLeftIcon(props: IconProps) {
+  return <Icon {...props} paths={["M10 12L6 8L10 4"]} />;
+}
+
+/** design/assets/icons/dalej.svg */
+export function ChevronRightIcon(props: IconProps) {
+  return <Icon {...props} paths={["M6 12L10 8L6 4"]} />;
+}
+
 /** design/assets/icons/strzalka-prawo.svg */
 export function ArrowRightIcon(props: IconProps) {
   return <Icon {...props} paths={["M3.33337 8H12.6667", "M8 3.33334L12.6667 8L8 12.6667"]} />;

@@ -75,3 +75,4 @@ Generated from the Figma file "archiwum buczkowski model" (page "po korekcie") b
 - [Wyszukiwanie — wyniki (mobile)](screens/wyszukiwanie-wyniki-mobile.md) (mobile)
 - [Wyszukiwanie — panel filtrów (mobile)](screens/wyszukiwanie-panel-filtrow-mobile.md) (mobile)
 - [Bibliografia — Wertepy (mobile)](screens/bibliografia-wertepy-mobile.md) (mobile)
+- [Strona główna (mobile)](screens/strona-glowna-mobile.md) (mobile)

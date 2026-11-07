@@ -8,7 +8,7 @@ import { RichText } from "@/components/RichText";
 import { SectionHeader } from "@/components/SectionHeader";
 import { TagCloud } from "@/components/TagCloud";
 import { Card } from "@/components/ui/card";
-import { WorkCard } from "@/components/WorkCard";
+import { WorkCarousel } from "@/components/WorkCarousel";
 import { copy, formatCount, nouns, previewCount } from "@/copy/pl";
 import { api } from "@/lib/api";
 import { browseUrl, NEW_SEARCH } from "@/lib/search";
@@ -116,13 +116,7 @@ export function HomePage() {
                   count={String(data.works.length)}
                   description={copy.home.worksDescription}
                 />
-                <ul className="grid auto-rows-fr grid-cols-1 gap-24 sm:grid-cols-2 lg:grid-cols-4">
-                  {data.works.map((work) => (
-                    <li key={work.slug}>
-                      <WorkCard work={work} />
-                    </li>
-                  ))}
-                </ul>
+                <WorkCarousel works={data.works} />
               </Card>
             )}
             {data.featured !== null && (
