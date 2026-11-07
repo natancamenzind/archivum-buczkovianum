@@ -7,7 +7,6 @@ import { PageHeader } from "@/components/PageHeader";
 import { DocumentReader } from "@/components/Reader";
 import { RelatedFragments, RelatedTags, RelatedWorks } from "@/components/Related";
 import { RichText } from "@/components/RichText";
-import { SectionHeader } from "@/components/SectionHeader";
 import { Card } from "@/components/ui/card";
 import { copy } from "@/copy/pl";
 import { api } from "@/lib/api";
@@ -97,7 +96,6 @@ export function SecondaryTextPage() {
       main={
         <>
           <Card>
-            <SectionHeader title={copy.secondaryText.text} />
             <DocumentReader id={secondaryText.document} />
           </Card>
           {fragments.total > 0 && (

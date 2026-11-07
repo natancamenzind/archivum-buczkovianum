@@ -31,7 +31,7 @@ const LETTER: SecondaryTextData = {
   id: 4,
   is_draft: false,
   title: "List nr 32",
-  description: "<p>Transkrypcja listu z zachowaniem układu oryginału.</p>",
+  description: "<p>List do przyjaciela o pracy nad rękopisem.</p>",
   kind: "letter",
   sender: "Leopold Buczkowski",
   letter_date: "1947-10-01",
@@ -109,6 +109,15 @@ function card(name: string): HTMLElement {
   return element;
 }
 
+/** The card that holds the reader: the first card in the main column. */
+function readerCard(): HTMLElement {
+  const element = screen.getByRole("main").querySelector<HTMLElement>("[data-slot=card]");
+  if (element === null) {
+    throw new Error("The main column has no card.");
+  }
+  return element;
+}
+
 /** The block a column header heads: the header's parent. */
 function column(name: string): HTMLElement {
   const element = screen.getByRole("heading", { level: 3, name }).parentElement?.parentElement;
@@ -137,9 +146,7 @@ describe("SecondaryTextPage", () => {
 
     expect(within(hero()).getByRole("heading", { level: 1, name: "List nr 32" })).toBeVisible();
     expect(within(hero()).getByText("List · Leopold Buczkowski · 1.10.1947")).toBeVisible();
-    expect(
-      within(hero()).getByText("Transkrypcja listu z zachowaniem układu oryginału."),
-    ).toBeVisible();
+    expect(within(hero()).getByText("List do przyjaciela o pracy nad rękopisem.")).toBeVisible();
     expect(within(hero()).queryByRole("img")).not.toBeInTheDocument();
     // No navigation item is active on a secondary text page (R-07).
     const nav = screen.getByRole("navigation", { name: "Menu główne" });
@@ -205,12 +212,12 @@ describe("SecondaryTextPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("US-RA-10 AC3: 'Transkrypcja' shows the full text in the reader, its fragments highlighted", async () => {
+  it("US-RA-10 AC3: the first card shows the full text in the reader, its fragments highlighted", async () => {
     mockPage();
 
     const { container } = await renderPage();
 
-    const text = card("Transkrypcja");
+    const text = readerCard();
     const fragment = await within(text).findByRole("button", { name: "Fragment 01: piszę" });
     expect(within(text).getByText(/Drogi Panie,/)).toBeVisible();
     fireEvent.click(fragment);
@@ -226,9 +233,20 @@ describe("SecondaryTextPage", () => {
 
     const { container } = await renderPage();
 
-    const text = card("Transkrypcja");
+    const text = readerCard();
     expect(await within(text).findByText("Skan · strona 2 z 2")).toBeVisible();
     expect(screen.getByRole("group", { name: "Widok" })).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("ARC-10: the text's card has no 'Transkrypcja' heading", async () => {
+    mockPage();
+
+    const { container } = await renderPage();
+
+    await within(readerCard()).findByRole("button", { name: "Fragment 01: piszę" });
+    expect(within(readerCard()).queryByRole("heading")).not.toBeInTheDocument();
+    expect(screen.queryByText("Transkrypcja")).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -288,7 +306,7 @@ describe("SecondaryTextPage", () => {
 
     await screen.findByRole("button", { name: "Fragment 01: piszę" });
     const headings = screen.getAllByRole("heading").map((heading) => heading.textContent);
-    expect(headings).toEqual(["List nr 32", "Transkrypcja"]);
+    expect(headings).toEqual(["List nr 32"]);
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -329,7 +347,7 @@ describe("SecondaryTextPage", () => {
 
     await renderPage();
 
-    expect(within(card("Transkrypcja")).getByRole("status")).toHaveTextContent("Wczytuję tekst…");
+    expect(within(readerCard()).getByRole("status")).toHaveTextContent("Wczytuję tekst…");
     expect(
       await screen.findByText("Nie udało się wczytać tekstu. Spróbuj ponownie później."),
     ).toBeVisible();

@@ -190,7 +190,6 @@ export const copy = {
       other: "Tekst sekundarny",
     },
     works: "Powiązane utwory",
-    text: "Transkrypcja",
     fragments: "Powiązane fragmenty",
     tags: "Powiązane tagi",
     loading: "Wczytuję tekst sekundarny…",

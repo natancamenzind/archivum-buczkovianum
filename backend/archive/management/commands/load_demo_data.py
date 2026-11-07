@@ -250,7 +250,7 @@ class Command(BaseCommand):
             SecondaryText(
                 title="List nr 32",
                 kind=SecondaryText.Kind.LETTER,
-                description="<p>Transkrypcja listu z zachowaniem układu oryginału.</p>",
+                description="<p>List do przyjaciela o pracy nad rękopisem.</p>",
                 author="Leopold Buczkowski",
                 sender="Leopold Buczkowski",
                 letter_date=date(1947, 10, 1),

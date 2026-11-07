@@ -176,7 +176,7 @@ Shows everything connected to a tag.
 1. Hero: a type line with the kind and, for a letter, sender and date ("List · Leopold Buczkowski · 1.10.1947"); title; description. No header image.
 2. Context column: "Powiązane utwory" (R-03).
 3. Main column, in order:
-   1. "Transkrypcja": the full text in the reader (R-11), or as plain text;
+   1. the full text in the reader (R-11), or as plain text, with no heading;
    2. "Powiązane fragmenty": a preview (R-09) of typescript fragments that share at least one tag with this text or its fragments, as fragment cards (R-10). No "all" link.
 4. Tag column: "Powiązane tagi", tags on the text, its fragments and its work links.
 
