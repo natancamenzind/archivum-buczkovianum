@@ -137,17 +137,16 @@ class TestLoadedDemoData:
         main = Typescript.objects.get(work__slug="wertepy", is_main=True)
 
         # Act
-        result = Fragment.objects.filter(document=main.document).preview()
-        tags = {f.shelfmark: {tag.title for tag in f.tags.all()} for f in result.items}
+        result = Fragment.objects.filter(document=main.document).with_number().preview()
+        tags = {f.number: {tag.title for tag in f.tags.all()} for f in result.items}
 
         # Assert
         assert result.total == 24
         assert [f.shelfmark_display for f in result.items] == [
-            "ML, sygn. 1618.0009",
-            "ML, sygn. 1618.0019",
+            f"ML, sygn. 1618.{f.start_page}" for f in result.items
         ]
-        assert result.items[0].scan_display == "9"
-        assert tags == {"1618.0009": {"Dezerter", "Epidemia"}, "1618.0019": {"Dezerter"}}
+        assert result.items[0].scan_display == "1"
+        assert tags == {1: {"Dezerter", "Epidemia"}, 3: {"Dezerter"}}
 
     def test_every_ocr_text_is_its_scans_text_layer(self, demo: str) -> None:
         # Arrange

@@ -27,9 +27,9 @@ Tłumaczenie `docs/user-stories.md`. W razie rozbieżności obowiązuje wersja a
 | Bibliografia | Uporządkowana lista pozycji utworu. Pozycja to jedna linia dowolnego tekstu, np. „Autor, Tytuł, Wydawnictwo, miejsce rok, s. strony”. |
 | Powiązanie z utworem | Relacja między utworem a tekstem sekundarnym lub materiałem kontekstowym. Można je otagować. |
 | Tag | Nazwa dla relacji, łącząca fragmenty i zapiski: słowo klucz z Buczkowskiego (np. „dezerter”) albo nasza interpretacja (np. „wielokulturowość”). |
-| Fragment | Otagowany zakres tekstu (OCR lub tekstu litego), z opcjonalną sygnaturą (jednostka archiwalna i numer skanu). |
+| Fragment | Otagowany zakres tekstu (OCR lub tekstu litego), z sygnaturą wynikającą z dokumentu i numeru skanu. |
 | Wystąpienie | Jeden opublikowany element z danym tagiem: fragment, cały byt albo powiązanie z utworem. |
-| Sygnatura | Instytucja + numer, wyświetlane jako „ML, sygn. 1618”. Fragment ma własny numer („ML, sygn. 1618.0009”), a instytucję dziedziczy po dokumencie. |
+| Sygnatura | Instytucja + numer, wyświetlane jako „ML, sygn. 1618”. Fragment ma własny numer: numer dokumentu, kropka i numer skanu, na którym się zaczyna („ML, sygn. 1618.19”). |
 | Byt | Każdy obiekt archiwum, który ma własną stronę: utwór, maszynopis, tag, zapisek, tekst sekundarny, materiał kontekstowy. |
 | Tekst lity | Zwykły tekst bez skanu, np. transkrypcja listu. |
 
@@ -81,7 +81,7 @@ Każda strona określa, które elementy pokazuje.
 
 **R-10 Karta fragmentu.** Każdy fragment wyświetlamy jako taką kartę:
 
-1. linia lokalizacji: utwór, numer w dokumencie („fragment 01”), opcjonalny numer skanu z sygnatury, bez zer wiodących („skan 9” dla 1618.0009); etykieta z typem źródła („Maszynopis”, „Zapisek”);
+1. linia lokalizacji: utwór, numer w dokumencie („fragment 01”), opcjonalny numer skanu z sygnatury („skan 19” dla 1618.19); etykieta z typem źródła („Maszynopis”, „Zapisek”);
 2. cytat (pierwsze siedem słów tekstu fragmentu, a po nich „(…)”; krótszy tekst w całości); dla źródła OCR miniatura strony skanu, na której fragment się zaczyna;
 3. sygnatura, tagi.
 
@@ -324,7 +324,7 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 3. Fragmenty mogą na siebie zachodzić, a ten sam tekst może mieć kilka tagów.
 4. Fragment przechowuje zaznaczony tekst. Jeśli tekst źródłowy się zmieni i fragment przestanie pasować, fragment jest oznaczany do sprawdzenia, a nigdy po cichu przesuwany ani usuwany.
 5. Redaktorka nigdy nie wpisuje znaczników ręcznie (TEI ani żadnych innych).
-6. Własny formularz fragmentu ma: sygnaturę w dwóch polach, numer jednostki archiwalnej (np. „1618”) i numer skanu (np. „0009”; wymaga numeru jednostki; instytucja pochodzi z dokumentu) oraz pole wyboru „wyróżniony”. Wyróżnione fragmenty są pierwsze w podglądach (R-09) i mogą trafić na stronę główną (US-RA-02).
+6. Własny formularz fragmentu ma: sygnaturę tylko do odczytu, złożoną z sygnatury właściciela dokumentu i numeru skanu, na którym fragment się zaczyna (np. „ML, sygn. 1618.19”), oraz pole wyboru „wyróżniony”. Wyróżnione fragmenty są pierwsze w podglądach (R-09) i mogą trafić na stronę główną (US-RA-02).
 
 ### US-WR-10 — Tagowanie całych bytów i powiązań z utworem
 

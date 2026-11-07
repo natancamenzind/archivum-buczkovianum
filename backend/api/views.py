@@ -342,7 +342,7 @@ def typescript(request: Request, pk: int) -> Response:
         if work
         else ContextualMaterials(texts=[], visuals=[]),
     )
-    context = {"institution": current.institution}
+    context = {"owner": current}
     return Response(TypescriptPageSerializer(page, context=context).data)
 
 
@@ -584,5 +584,5 @@ def document(request: Request, pk: int) -> Response:
     owner = text.owner
     if not isinstance(owner, Publishable) or (owner.is_draft and not request.user.is_staff):
         raise Http404
-    context = {"document": text, "institution": owner.institution}
+    context = {"owner": owner}
     return Response(DocumentSerializer(text, context=context).data)

@@ -30,8 +30,8 @@ const TYPESCRIPT: TypescriptData = {
   ],
   fragments: {
     items: [
-      { id: 7, number: 3, scan_number: "19", shelfmark: "ML, sygn. 1618.0019" },
-      { id: 5, number: 1, scan_number: "9", shelfmark: "ML, sygn. 1618.0009" },
+      { id: 7, number: 3, scan_number: "19", shelfmark: "ML, sygn. 1618.19" },
+      { id: 5, number: 1, scan_number: "9", shelfmark: "ML, sygn. 1618.9" },
     ],
     total: 3,
   },
@@ -79,7 +79,7 @@ const DOCUMENT: Document = {
       number: 1,
       start_page: 1,
       scan_number: "9",
-      shelfmark: "ML, sygn. 1618.0009",
+      shelfmark: "ML, sygn. 1618.9",
       tags: [{ slug: "wies", title: "Wieś" }],
     },
     {
@@ -99,7 +99,7 @@ const DOCUMENT: Document = {
       number: 3,
       start_page: 2,
       scan_number: "19",
-      shelfmark: "ML, sygn. 1618.0019",
+      shelfmark: "ML, sygn. 1618.19",
       tags: [{ slug: "wojna", title: "Wojna" }],
     },
   ],
@@ -499,8 +499,8 @@ describe("TypescriptPage", () => {
     expect(within(fragments).getByText("2 z 3")).toBeVisible();
     const links = within(fragments).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual([
-      "03Fragment 03 · skan 19 · ML, sygn. 1618.0019",
-      "01Fragment 01 · skan 9 · ML, sygn. 1618.0009",
+      "03Fragment 03 · skan 19 · ML, sygn. 1618.19",
+      "01Fragment 01 · skan 9 · ML, sygn. 1618.9",
       "Wszystkie fragmenty (3)",
     ]);
     expect(links[0]).toHaveAttribute("href", "/maszynopisy/1?fragment=7");
@@ -547,9 +547,9 @@ describe("TypescriptPage", () => {
     expect(await within(fragments).findByText("3")).toBeVisible();
     const links = within(fragments).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual([
-      "01Fragment 01 · skan 9 · ML, sygn. 1618.0009",
+      "01Fragment 01 · skan 9 · ML, sygn. 1618.9",
       "02Fragment 02",
-      "03Fragment 03 · skan 19 · ML, sygn. 1618.0019",
+      "03Fragment 03 · skan 19 · ML, sygn. 1618.19",
     ]);
     expect(links[0]).toHaveFocus();
     // Opening a fragment keeps the list expanded.

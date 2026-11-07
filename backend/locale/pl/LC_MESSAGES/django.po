@@ -24,6 +24,9 @@ msgstr "aktualny skan"
 msgid "pages"
 msgstr "liczba stron"
 
+msgid "shelfmark"
+msgstr "sygnatura"
+
 msgid "works"
 msgstr "utwory"
 
@@ -102,9 +105,6 @@ msgstr "tagi"
 
 msgid "institution"
 msgstr "instytucja"
-
-msgid "shelfmark"
-msgstr "sygnatura"
 
 msgid "Number only, e.g. 1618. The institution is chosen separately."
 msgstr "Tylko numer, np. 1618. Instytucję wybiera się osobno."
@@ -376,18 +376,6 @@ msgstr "cytat"
 msgid "The selected text."
 msgstr "Zaznaczony tekst."
 
-msgid "archival unit number"
-msgstr "numer jednostki archiwalnej"
-
-msgid "The shelfmark before the dot, e.g. 1618; institution from the document."
-msgstr "Sygnatura przed kropką, np. 1618; instytucja pochodzi z dokumentu."
-
-msgid "scan number"
-msgstr "numer skanu"
-
-msgid "The shelfmark after the dot, e.g. 0009: the scan in the archival unit."
-msgstr "Sygnatura po kropce, np. 0009: skan w jednostce archiwalnej."
-
 msgid "featured"
 msgstr "wyróżniony"
 
@@ -402,9 +390,6 @@ msgstr "Tekst się zmienił. Sprawdź fragment, a potem odznacz to pole."
 
 msgid "fragment"
 msgstr "fragment"
-
-msgid "A scan number needs an archival unit number."
-msgstr "Numer skanu wymaga numeru jednostki archiwalnej."
 
 msgid "The fragment goes past the end of the text."
 msgstr "Fragment wychodzi poza koniec tekstu."

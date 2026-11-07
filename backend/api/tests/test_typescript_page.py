@@ -142,38 +142,30 @@ class TestTypescriptPageEndpoint:
     ) -> None:
         # Arrange
         settings.PREVIEW_LIMIT = 2
-        typescript = published_typescript(institution=InstitutionFactory.create())
+        typescript = published_typescript(institution=InstitutionFactory.create(), shelfmark="1618")
         document = typescript.document
-        first = FragmentFactory.create(
-            document=document, start=0, end=5, unit_number="1618", scan_number="0009"
-        )
+        first = FragmentFactory.create(document=document, start=0, end=5)
         FragmentFactory.create(document=document, start=10, end=15)
-        featured = FragmentFactory.create(
-            document=document,
-            start=30,
-            end=35,
-            unit_number="1618",
-            scan_number="0019",
-            is_featured=True,
-        )
+        featured = FragmentFactory.create(document=document, start=30, end=35, is_featured=True)
 
         # Act
         result = page(client, typescript)
 
-        # Assert: featured first, then text order (R-09); numbers count every fragment.
+        # Assert: featured first, then text order (R-09); numbers count every fragment. The
+        # shelfmark ends with the scan page, without leading zeros (ARC-11).
         assert result["fragments"] == {
             "items": [
                 {
                     "id": featured.pk,
                     "number": 3,
-                    "scan_number": "19",
-                    "shelfmark": "ML, sygn. 1618.0019",
+                    "scan_number": "2",
+                    "shelfmark": "ML, sygn. 1618.2",
                 },
                 {
                     "id": first.pk,
                     "number": 1,
-                    "scan_number": "9",
-                    "shelfmark": "ML, sygn. 1618.0009",
+                    "scan_number": "1",
+                    "shelfmark": "ML, sygn. 1618.1",
                 },
             ],
             "total": 3,

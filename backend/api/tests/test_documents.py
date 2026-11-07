@@ -53,10 +53,8 @@ class TestDocumentEndpoint:
         self, client: Client
     ) -> None:
         # Arrange
-        document = ocr_document(institution=InstitutionFactory.create())
-        second = FragmentFactory.create(
-            document=document, start=20, end=25, unit_number="1618", scan_number="0019"
-        )
+        document = ocr_document(institution=InstitutionFactory.create(), shelfmark="1618")
+        second = FragmentFactory.create(document=document, start=20, end=25)
         first = FragmentFactory.create(document=document, start=0, end=8)
         wies = TagFactory.create(title="Wieś", slug="wies", status=PUBLISHED)
         second.tags.add(TagFactory.create(title="Wojna", slug="wojna", status=PUBLISHED), wies)
@@ -73,8 +71,8 @@ class TestDocumentEndpoint:
                 "end": 8,
                 "number": 1,
                 "start_page": 1,
-                "scan_number": "",
-                "shelfmark": "",
+                "scan_number": "1",
+                "shelfmark": "ML, sygn. 1618.1",
                 "tags": [],
             },
             {
@@ -83,8 +81,8 @@ class TestDocumentEndpoint:
                 "end": 25,
                 "number": 2,
                 "start_page": 2,
-                "scan_number": "19",
-                "shelfmark": "ML, sygn. 1618.0019",
+                "scan_number": "2",
+                "shelfmark": "ML, sygn. 1618.2",
                 "tags": [{"slug": "wies", "title": "Wieś"}, {"slug": "wojna", "title": "Wojna"}],
             },
         ]
@@ -122,6 +120,7 @@ class TestDocumentEndpoint:
         assert result["scan"] == ""
         assert result["page_offsets"] == []
         assert result["fragments"][0]["start_page"] is None
+        assert result["fragments"][0]["scan_number"] == ""
 
     def test_r_06_the_text_of_a_draft_is_not_found(self, client: Client) -> None:
         # Arrange

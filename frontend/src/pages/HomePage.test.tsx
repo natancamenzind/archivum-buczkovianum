@@ -22,7 +22,7 @@ const FEATURED: Featured = {
     quote: "Grzybniak chodził od chałupy do chałupy.",
     scan: "",
     start_page: null,
-    shelfmark: "ML, sygn. 1618.0009",
+    shelfmark: "ML, sygn. 1618.9",
     tags: [{ slug: "epidemia", title: "Epidemia" }],
   },
   work: { id: 7, title: "Wertepy", count: 24 },

@@ -118,15 +118,13 @@ class TestSecondaryTextPageEndpoint:
         FragmentFactory.create(document=text.document).tags.add(tag)
         work = published_work(1947, title="Wertepy")
         typescript = TypescriptFactory.create(
-            work=work, status=PUBLISHED, institution=InstitutionFactory.create()
+            work=work, status=PUBLISHED, institution=InstitutionFactory.create(), shelfmark="1618"
         )
         fragments = [
             FragmentFactory.create(
                 document=typescript.document,
                 start=start,
                 end=start + 5,
-                unit_number="1618",
-                scan_number="0009",
             )
             for start in (0, 6, 12)
         ]
@@ -149,11 +147,11 @@ class TestSecondaryTextPageEndpoint:
             "source_type": "typescript",
             "work": "Wertepy",
             "number": 1,
-            "scan_number": "9",
+            "scan_number": "1",
             "quote": "Czarn",
             "scan": typescript.document.scan.url,
             "start_page": 1,
-            "shelfmark": "ML, sygn. 1618.0009",
+            "shelfmark": "ML, sygn. 1618.1",
             "tags": [{"slug": "pamiec", "title": "Pamięć"}],
         }
 

@@ -643,7 +643,7 @@ components:
       description: |-
         A fragment for the reader (R-11), from a queryset with `with_number()`.
 
-        The context holds the fragments' `document` and the `institution` of its owner.
+        The context's `owner` is the item whose text holds the fragments.
       properties:
         id:
           type: integer
@@ -667,12 +667,12 @@ components:
         scan_number:
           type: string
           readOnly: true
-          description: The shelfmark after the dot without leading zeros, e.g. "9";
-            may be empty.
+          description: The scan page the fragment starts on, e.g. "19"; empty for
+            a plain text.
         shelfmark:
           type: string
           readOnly: true
-          description: E.g. "ML, sygn. 1618.0009"; may be empty.
+          description: E.g. "ML, sygn. 1618.19"; may be empty.
         tags:
           type: array
           items:
@@ -812,8 +812,8 @@ components:
         scan_number:
           type: string
           readOnly: true
-          description: The shelfmark after the dot without leading zeros, e.g. "9";
-            may be empty.
+          description: The scan page the fragment starts on, e.g. "19"; empty for
+            a plain text.
         quote:
           type: string
           readOnly: true
@@ -831,7 +831,7 @@ components:
         shelfmark:
           type: string
           readOnly: true
-          description: E.g. "ML, sygn. 1618.0009"; may be empty.
+          description: E.g. "ML, sygn. 1618.19"; may be empty.
         tags:
           type: array
           items:
@@ -883,7 +883,7 @@ components:
       description: |-
         A row of "Fragmenty z maszynopisu" (US-RA-08 AC3), from a queryset with `with_number()`.
 
-        The context's `institution` is the one of the fragments' document owner.
+        The context's `owner` is the item whose text holds the fragments.
       properties:
         id:
           type: integer
@@ -895,12 +895,12 @@ components:
         scan_number:
           type: string
           readOnly: true
-          description: The shelfmark after the dot without leading zeros, e.g. "9";
-            may be empty.
+          description: The scan page the fragment starts on, e.g. "19"; empty for
+            a plain text.
         shelfmark:
           type: string
           readOnly: true
-          description: E.g. "ML, sygn. 1618.0009"; may be empty.
+          description: E.g. "ML, sygn. 1618.19"; may be empty.
       required:
       - id
       - number

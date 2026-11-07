@@ -12,6 +12,7 @@ from archive.tagger import highlight_segments
 from archive.tests.factories import (
     DocumentFactory,
     FragmentFactory,
+    InstitutionFactory,
     NoteFactory,
     TypescriptFactory,
     WorkFactory,
@@ -146,9 +147,42 @@ class TestTaggerAdmin:
         fields = model_admin.get_fields(request)
 
         # Assert
-        for name in ("unit_number", "scan_number", "is_featured"):
+        for name in ("shelfmark", "is_featured"):
             assert name in fields
-        assert "description" not in fields
+        for name in ("unit_number", "scan_number", "description"):
+            assert name not in fields
+        assert "shelfmark" in model_admin.get_readonly_fields(request)
+
+    def test_arc_11_fragment_form_shows_the_shelfmark_with_its_scan_page(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        document = DocumentFactory.create(ocr=True, text="a" * 30, page_offsets=list(range(20)))
+        TypescriptFactory.create(
+            document=document, institution=InstitutionFactory.create(), shelfmark="1618"
+        )
+        fragment = FragmentFactory.create(document=document, start=18, end=25)
+
+        # Act
+        response = admin_client.get(reverse("admin:archive_fragment_change", args=[fragment.pk]))
+
+        # Assert
+        assert "ML, sygn. 1618.19" in response.content.decode()
+
+    def test_arc_11_fragment_list_shows_the_shelfmark_with_its_scan_page(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        typescript = TypescriptFactory.create(
+            institution=InstitutionFactory.create(), shelfmark="1618"
+        )
+        FragmentFactory.create(document=typescript.document)
+
+        # Act
+        response = admin_client.get(reverse("admin:archive_fragment_changelist"))
+
+        # Assert
+        assert "ML, sygn. 1618.1" in response.content.decode()
 
 
 @pytest.mark.django_db

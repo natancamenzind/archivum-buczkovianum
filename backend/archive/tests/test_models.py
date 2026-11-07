@@ -227,57 +227,58 @@ class TestShelfmark:
     def test_us_wr_09_ac6_fragment_takes_institution_from_its_document(self) -> None:
         # Arrange
         typescript = TypescriptFactory.create(
-            institution=InstitutionFactory.create(abbreviation="ML")
-        )
-        fragment = FragmentFactory.create(
-            document=typescript.document, unit_number="1618", scan_number="0009"
+            institution=InstitutionFactory.create(abbreviation="ML"), shelfmark="1618"
         )
 
         # Act
-        display = fragment.shelfmark_display
+        fragment = FragmentFactory.create(document=typescript.document)
 
         # Assert
-        assert display == "ML, sygn. 1618.0009"
+        assert fragment.shelfmark_display == "ML, sygn. 1618.1"
 
-    def test_arc_7_fragment_shelfmark_without_scan_number_is_the_unit(self) -> None:
+    def test_arc_11_fragment_shelfmark_ends_with_its_scan_page_without_zeros(self) -> None:
         # Arrange
+        document = DocumentFactory.create(ocr=True, text="a" * 30, page_offsets=list(range(20)))
         typescript = TypescriptFactory.create(
-            institution=InstitutionFactory.create(abbreviation="ML")
+            institution=InstitutionFactory.create(abbreviation="ML"),
+            shelfmark="1618",
+            document=document,
         )
-        fragment = FragmentFactory.create(document=typescript.document, unit_number="1618")
 
         # Act
-        display = fragment.shelfmark_display
+        fragment = FragmentFactory.create(document=typescript.document, start=18, end=25)
 
         # Assert
-        assert display == "ML, sygn. 1618"
+        assert fragment.scan_display == "19"
+        assert fragment.shelfmark_display == "ML, sygn. 1618.19"
 
-    @pytest.mark.parametrize(
-        ("scan_number", "expected"),
-        [("0009", "9"), ("0104", "104"), ("12", "12"), ("0000", "0"), ("", "")],
-    )
-    def test_arc_7_scan_number_is_shown_without_leading_zeros(
-        self, scan_number: str, expected: str
-    ) -> None:
+    def test_arc_11_fragment_of_a_plain_text_has_its_owners_shelfmark(self) -> None:
         # Arrange
-        fragment = FragmentFactory.create(unit_number="1618", scan_number=scan_number)
+        note = NoteFactory.create(
+            institution=InstitutionFactory.create(abbreviation="ML"),
+            shelfmark="1700",
+            content_kind=ContentKind.PLAIN_TEXT,
+            external_url="",
+            document=DocumentFactory.create(),
+        )
 
         # Act
-        display = fragment.scan_display
+        fragment = FragmentFactory.create(document=note.document)
 
         # Assert
-        assert display == expected
+        assert fragment.scan_display == ""
+        assert fragment.shelfmark_display == "ML, sygn. 1700"
 
-    def test_arc_7_scan_number_needs_an_archival_unit_number(self) -> None:
+    def test_arc_11_fragment_without_its_owners_shelfmark_has_none(self) -> None:
         # Arrange
-        fragment = FragmentFactory.create(scan_number="0009")
+        typescript = TypescriptFactory.create(shelfmark="")
 
         # Act
-        with pytest.raises(ValidationError) as error:
-            fragment.full_clean()
+        fragment = FragmentFactory.create(document=typescript.document)
 
         # Assert
-        assert "unit_number" in error.value.message_dict
+        assert fragment.scan_display == "1"
+        assert fragment.shelfmark == ""
 
     def test_us_wr_14_ac1_institution_in_use_cannot_be_deleted(self) -> None:
         # Arrange
@@ -866,7 +867,7 @@ class TestFragment:
         fragment.document.text = "short"
         fragment.document.save()
         fragment.refresh_from_db()
-        fragment.unit_number = "1618"
+        fragment.is_featured = True
 
         # Act
         fragment.full_clean()

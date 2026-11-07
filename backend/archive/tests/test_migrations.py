@@ -27,9 +27,11 @@ class TestFragmentShelfmarkSplit:
 
         # Act
         executor = MigrationExecutor(connection)
-        executor.migrate(executor.loader.graph.leaf_nodes())
+        executor.migrate([AFTER])
 
         # Assert
         Fragment = executor.loader.project_state([AFTER]).apps.get_model("archive", "Fragment")
         split = Fragment.objects.order_by("start").values_list("unit_number", "scan_number")
         assert list(split) == [("1618", "0009"), ("1618", ""), ("", "")]
+        executor = MigrationExecutor(connection)
+        executor.migrate(executor.loader.graph.leaf_nodes())

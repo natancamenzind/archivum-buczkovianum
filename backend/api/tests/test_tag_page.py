@@ -133,7 +133,7 @@ class TestTagPageEndpoint:
         in_note = FragmentFactory.create(document=note.document, start=0, end=8)
         late_main = published_typescript(late, is_main=True)
         early_main = published_typescript(
-            early, is_main=True, institution=InstitutionFactory.create()
+            early, is_main=True, institution=InstitutionFactory.create(), shelfmark="1618"
         )
         assert early_main.document is not None
         second = FragmentFactory.create(
@@ -143,8 +143,6 @@ class TestTagPageEndpoint:
             document=early_main.document,
             start=0,
             end=8,
-            unit_number="1618",
-            scan_number="0009",
         )
         third = FragmentFactory.create(document=late_main.document, start=9, end=15)
         for fragment in (second, first, third, in_note):
@@ -171,11 +169,11 @@ class TestTagPageEndpoint:
             "source_type": "typescript",
             "work": "Wertepy",
             "number": 1,
-            "scan_number": "9",
+            "scan_number": "1",
             "quote": "Pierwsza",
             "scan": early_main.document.scan.url,
             "start_page": 1,
-            "shelfmark": "ML, sygn. 1618.0009",
+            "shelfmark": "ML, sygn. 1618.1",
             "tags": [{"slug": "dezerter", "title": "Dezerter"}],
         }
         assert result["fragments"][2]["url"] == f"/zapiski/{note.pk}?fragment={in_note.pk}"
