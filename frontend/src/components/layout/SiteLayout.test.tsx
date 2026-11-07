@@ -194,6 +194,20 @@ describe("SiteLayout", () => {
     );
   });
 
+  it("ARC-27: the funding note never overlaps the navigation", () => {
+    renderRoute("/o-archiwum");
+
+    // A link that can't shrink spills past a shrunk bar, under the note. So the links shrink with
+    // the bar (labels wrap) on narrow desktops, and from `lg` the bar keeps their full width.
+    expect(mainNav()).toHaveClass("lg:shrink-0");
+    for (const [name] of NAV_ITEMS) {
+      expect(within(mainNav()).getByRole("link", { name })).toHaveClass(
+        "md:flex-initial",
+        "lg:flex-none",
+      );
+    }
+  });
+
   it("R-12: every header control and navigation link shows a focus outline, the active item too", () => {
     renderRoute("/utwory");
 

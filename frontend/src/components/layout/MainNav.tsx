@@ -31,7 +31,7 @@ export function MainNav() {
   return (
     <nav
       aria-label={copy.layout.navLabel}
-      className="fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-background md:static md:border-t-0 md:bg-transparent"
+      className="fixed inset-x-0 bottom-0 z-10 flex border-t border-border bg-background md:static lg:shrink-0 md:border-t-0 md:bg-transparent"
     >
       {NAV_ITEMS.map(({ to, label, Icon }) => (
         <NavLink
@@ -44,7 +44,7 @@ export function MainNav() {
               "text-cousine-metadane-male text-muted-foreground transition-colors duration-150 ease-out motion-reduce:transition-none",
               "hover:text-accent-foreground focus-visible:text-accent-foreground",
               "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
-              "md:h-auto md:flex-none md:flex-row md:gap-8 md:px-16 md:py-32 md:text-cousine-nawigacja",
+              "md:h-auto md:flex-initial lg:flex-none md:flex-row md:gap-8 md:px-16 md:py-32 md:text-cousine-nawigacja",
               isActive && "border-accent-border text-accent-foreground",
             )
           }
