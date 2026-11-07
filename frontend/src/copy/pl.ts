@@ -56,6 +56,11 @@ export function fragmentLabel(number: number): string {
   return `Fragment ${String(number).padStart(2, "0")}`;
 }
 
+/** The scan a fragment comes from, as the API gives it: "skan 9"; "" without one (R-10). */
+export function scanLabel(scanNumber: string): string {
+  return scanNumber === "" ? "" : `skan ${scanNumber}`;
+}
+
 export const copy = {
   siteName: "Archivum Buczkovianum",
   /** Header, main navigation and footer (R-07). */

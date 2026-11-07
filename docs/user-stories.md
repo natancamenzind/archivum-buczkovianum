@@ -25,7 +25,7 @@ Sources: `docs/PROJECT_BRIEF.md` and the Figma file "archiwum-buczkowski-model",
 | Bibliography (bibliografia) | A work's ordered list of entries. An entry is one line of free text, e.g. "Autor, Tytuł, Wydawnictwo, miejsce rok, s. strony". |
 | Work link | The relation between a work and a secondary text or contextual material. Can be tagged. |
 | Tag | A motif linking fragments and notes: a Buczkowski keyword or an editorial interpretation. |
-| Fragment | A tagged character range in a text (OCR or plain), with optional shelfmark, location and description. |
+| Fragment | A tagged character range in a text (OCR or plain), with optional shelfmark (archival unit and scan number). |
 | Occurrence (wystąpienie) | One published item carrying a tag: a fragment, a whole entity, or a work link. |
 | Shelfmark (sygnatura) | Institution + number, shown as "ML, sygn. 1618". A fragment has its own number ("ML, sygn. 1618.0009") and takes the institution from its document. |
 
@@ -77,9 +77,9 @@ Each page defines which items it includes.
 
 **R-10 Fragment card.** Every fragment is shown as this card:
 
-1. location line: work, number in its document ("fragment 01"), optional location ("rozdział I"); a chip with the source type ("Maszynopis", "Zapisek");
+1. location line: work, number in its document ("fragment 01"), optional scan number from the shelfmark, without leading zeros ("skan 9" for 1618.0009); a chip with the source type ("Maszynopis", "Zapisek");
 2. quote (the fragment text, cut to a few lines); for an OCR source, a thumbnail of the scan page where the fragment starts;
-3. shelfmark, description, tags.
+3. shelfmark, tags.
 
 Clicking the card opens the source document scrolled to the fragment.
 
@@ -163,7 +163,7 @@ Shows everything connected to a tag.
 2. Context column: the work (R-03) with year and fragment count; "Maszynopisy utworu", all typescripts of the same work with shelfmark and title, the current one marked.
 3. Main column, in order:
    1. "Skan maszynopisu": the reader (R-11); the counter shows the page count;
-   2. "Fragmenty z maszynopisu": a preview (R-09) of its fragments as a numbered list (fragment number, location, shelfmark), in page order.
+   2. "Fragmenty z maszynopisu": a preview (R-09) of its fragments as a numbered list (fragment number, scan number, shelfmark), in page order.
 4. Tag column: tags on the typescript and on its fragments.
 5. Contextual materials (R-08): those linked to its work.
 
@@ -237,7 +237,7 @@ On mobile, all three lists use one column of the same components.
 
 Finds works, tags, fragments and notes by phrase.
 
-1. Indexed: all published entities and visible fragments — titles, descriptions, tag names and descriptions, fragment quotes and descriptions, OCR and plain texts.
+1. Indexed: all published entities and visible fragments — titles, descriptions, tag names and descriptions, fragment quotes, OCR and plain texts.
 2. The header shows the query and the total ("7 wyników we wszystkich kategoriach").
 3. The "Wszystko" tab groups results by type, each group with a count, in this order: Utwory, Tagi, Fragmenty, Zapiski, Maszynopisy, Teksty sekundarne, Materiały kontekstowe.
 4. Within a group, results are sorted by relevance (more occurrences rank higher), or by title if the reader chooses.
@@ -285,20 +285,20 @@ Everything happens in Django admin. Every image field requires a text alternativ
 
 ### US-WR-04 — Add a typescript
 
-1. Fields: work (required, must exist); title (required, e.g. "Pierwsza wersja"); optional description; shelfmark; scan file (required); OCR file (required).
-2. The OCR file must have as many pages as the scan. Otherwise the save is rejected with a message giving both page counts.
+1. Fields: work (required, must exist); title (required, e.g. "Pierwsza wersja"); optional description; shelfmark; scan (required): one searchable PDF, as the OCR program saves it, with the OCR text under the page images. The text is read from it; there is no separate OCR file.
+2. A scan without OCR text is rejected with a message saying how to save it as a searchable PDF.
 3. A "main typescript" checkbox. Only one per work: marking a new one unmarks the previous one.
 4. Saving updates the search index.
 
 ### US-WR-05 — Add a note
 
 1. Fields: title (required, e.g. "Notes 18 · karta 4"); optional description; shelfmark; content.
-2. Content is one of: image; document; external audio/video link; OCR text (scan + OCR file, checked as in US-WR-04 AC2); plain text (e.g. a letter transcription).
+2. Content is one of: image; document; external audio/video link; OCR text (a searchable PDF scan, checked as in US-WR-04 AC2); plain text (e.g. a letter transcription).
 3. Linked to one or more works.
 
 ### US-WR-06 — Add a secondary text
 
-1. Fields: title (required); kind (e.g. letter, review, study, recording); shelfmark; text as OCR (scan + OCR file) or plain text. Optional: description; author; source (publisher, place, year, pages, as one line of text); date, sender and recipient (for letters).
+1. Fields: title (required); kind (e.g. letter, review, study, recording); shelfmark; text as OCR (a searchable PDF scan) or plain text. Optional: description; author; source (publisher, place, year, pages, as one line of text); date, sender and recipient (for letters).
 2. Linked to one or more works. Each work link can be tagged (US-WR-10).
 
 ### US-WR-07 — Add a contextual material
@@ -320,7 +320,7 @@ Everything happens in Django admin. Every image field requires a text alternativ
 3. Fragments may overlap, and the same text can carry several tags.
 4. A fragment stores its selected text. If the underlying text changes so that it no longer matches, the fragment is flagged for review, never silently moved or deleted.
 5. The editor never writes markup (TEI or otherwise).
-6. The fragment's own form has: location (e.g. "rozdział I"), shelfmark number (e.g. "1618.0009"; the institution comes from the document), description, and a "featured" checkbox. Featured fragments come first in previews (R-09) and can appear on the home page (US-RA-02).
+6. The fragment's own form has: the shelfmark as two fields, archival unit number (e.g. "1618") and scan number (e.g. "0009"; requires the unit number; the institution comes from the document), and a "featured" checkbox. Featured fragments come first in previews (R-09) and can appear on the home page (US-RA-02).
 
 ### US-WR-10 — Tag whole entities and work links
 

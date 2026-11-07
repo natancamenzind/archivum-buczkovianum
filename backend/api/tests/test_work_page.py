@@ -112,9 +112,8 @@ class TestWorkPageEndpoint:
             document=document,
             start=0,
             end=8,
-            location="rozdział I",
-            shelfmark="1618.0009",
-            description="Grzybniak leczy chorych.",
+            unit_number="1618",
+            scan_number="0009",
         )
         first.tags.add(epidemia, TagFactory.create(status=Status.DRAFT))
         FragmentFactory.create(document=document, start=9, end=15)
@@ -135,12 +134,11 @@ class TestWorkPageEndpoint:
             "source_type": "typescript",
             "work": "Wertepy",
             "number": 1,
-            "location": "rozdział I",
+            "scan_number": "9",
             "quote": "Pierwsza",
             "scan": document.scan.url,
             "start_page": 1,
             "shelfmark": "ML, sygn. 1618.0009",
-            "description": "Grzybniak leczy chorych.",
             "tags": [{"slug": "epidemia", "title": "Epidemia"}],
         }
         assert result["fragments"]["items"][0]["start_page"] == 2
@@ -477,12 +475,11 @@ class TestWorkPageSchema:
                     "source_type",
                     "work",
                     "number",
-                    "location",
+                    "scan_number",
                     "quote",
                     "scan",
                     "start_page",
                     "shelfmark",
-                    "description",
                     "tags",
                 ),
             ),

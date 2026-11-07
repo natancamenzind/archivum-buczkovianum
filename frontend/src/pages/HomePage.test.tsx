@@ -18,12 +18,11 @@ const FEATURED: Featured = {
     source_type: "typescript",
     work: "Wertepy",
     number: 1,
-    location: "rozdział I",
+    scan_number: "9",
     quote: "Grzybniak chodził od chałupy do chałupy.",
     scan: "",
     start_page: null,
     shelfmark: "ML, sygn. 1618.0009",
-    description: "Grzybniak leczy chorych podczas epidemii tyfusu.",
     tags: [{ slug: "epidemia", title: "Epidemia" }],
   },
   work: { id: 7, title: "Wertepy", count: 24 },
@@ -191,7 +190,7 @@ describe("HomePage", () => {
     expect(within(featured).getByText("Wybór redakcji")).toBeVisible();
     expect(within(featured).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
     expect(
-      within(featured).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
+      within(featured).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
     ).toHaveAttribute("href", "/typescripts/1?fragment=5");
     expect(within(featured).getByRole("link", { name: "Epidemia" })).toHaveAttribute(
       "href",

@@ -16,15 +16,8 @@
     <div class="tagger-layout">
       <section class="tagger-text-panel">
         <h2>{% translate "Text" %}</h2>
-        <div id="tagger-text" class="tagger-text" tabindex="0">
-          {% for segment in segments %}
-            {% if segment.fragment_ids %}
-              <span class="tagger-fragment" data-fragment-ids="{{ segment.fragment_ids|join:',' }}">{{ segment.text }}</span>
-            {% else %}
-              {{ segment.text }}
-            {% endif %}
-          {% endfor %}
-        </div>
+        {# One line: tagger.js counts offsets over this text, so whitespace here would shift them. #}
+        <div id="tagger-text" class="tagger-text" tabindex="0">{% for segment in segments %}{% if segment.fragment_ids %}<span class="tagger-fragment" data-fragment-ids="{{ segment.fragment_ids|join:',' }}">{{ segment.text }}</span>{% else %}{{ segment.text }}{% endif %}{% endfor %}</div>
         <form id="tagger-create" class="tagger-form">
           <p>
             <label for="tagger-selection">{% translate "Selection" %}</label>

@@ -1,65 +1,163 @@
-%PDF-1.4
+%PDF-1.3
+%âãÏÓ
 1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
+<<
+/Producer (pypdf)
+>>
 endobj
 2 0 obj
-<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R] /Count 4 >>
+<<
+/Type /Pages
+/Count 4
+/Kids [ 4 0 R 6 0 R 8 0 R 10 0 R ]
+>>
 endobj
 3 0 obj
-<< /Length 64 >>
-stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1625 - strona 1 z 4) Tj ET
-endstream
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
 endobj
 4 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 3 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 5 0 R
+>>
 endobj
 5 0 obj
-<< /Length 64 >>
+<<
+/Length 269
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1625 - strona 2 z 4) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Pami ukada si w kruganek, po którym chodzi si w kóko. Pami tych dni) Tj T* (wracaa do niego latami, zawsze w tej samej kolejnoci. Ojciec naprawia uprz) Tj T* (przy lampie naftowej. Midzy wierzbami przemkn kto obcy.) Tj ET
 endstream
 endobj
 6 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 5 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 7 0 R
+>>
 endobj
 7 0 obj
-<< /Length 64 >>
+<<
+/Length 247
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1625 - strona 3 z 4) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Gorczka nie spadaa trzeci dzie. Lekarz przyjecha dopiero wtedy, gdy byo ju) Tj T* (po wszystkim. Za wsi zaczynay si wertepy i bezdroa a po horyzont. lady na) Tj T* (niegu prowadziy prosto do lasu.) Tj ET
 endstream
 endobj
 8 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 7 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 9 0 R
+>>
 endobj
 9 0 obj
-<< /Length 64 >>
+<<
+/Length 246
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1625 - strona 4 z 4) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Wieczorem kobiety pieway przy kdzieli. Kto spali most, eby nikt nie móg) Tj T* (przej na drug stron. Listy przychodziy rzadko i zawsze otwarte. Kiedy) Tj T* (pisa, nie podnosi gowy znad papieru.) Tj ET
 endstream
 endobj
 10 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 9 0 R /Resources << /Font << /F1 11 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 11 0 R
+>>
 endobj
 11 0 obj
-<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+<<
+/Length 266
+>>
+stream
+BT /F1 11 Tf 14 TL 56 780 Td (Na strychu znaleziono stary karabin owinity w pótno. Mróz ci kaue w jedn) Tj T* (noc. Chopcy biegali po zamarznitym stawie, nie bojc si niczego. W karczmie) Tj T* (mówiono szeptem o tym, co stao si w ssiedniej wsi.) Tj ET
+endstream
 endobj
 xref
 0 12
 0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000134 00000 n 
-0000000248 00000 n 
-0000000375 00000 n 
-0000000489 00000 n 
-0000000616 00000 n 
-0000000730 00000 n 
-0000000857 00000 n 
-0000000971 00000 n 
-0000001099 00000 n 
+0000000015 00000 n 
+0000000054 00000 n 
+0000000132 00000 n 
+0000000181 00000 n 
+0000000584 00000 n 
+0000000904 00000 n 
+0000001307 00000 n 
+0000001605 00000 n 
+0000002008 00000 n 
+0000002305 00000 n 
+0000002710 00000 n 
 trailer
-<< /Size 12 /Root 1 0 R >>
+<<
+/Size 12
+/Root 3 0 R
+/Info 1 0 R
+>>
 startxref
-1170
+3028
 %%EOF

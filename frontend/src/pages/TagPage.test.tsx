@@ -18,12 +18,11 @@ const FRAGMENT: Fragment = {
   source_type: "typescript",
   work: "Wertepy",
   number: 1,
-  location: "rozdział I",
+  scan_number: "9",
   quote: "Dezerter stał w stodole.",
   scan: "/media/scans/wertepy.pdf",
   start_page: 3,
   shelfmark: "ML, sygn. 1618.0009",
-  description: "Fragment oznaczony tagiem „Dezerter”.",
   tags: [{ slug: "dezerter", title: "Dezerter" }],
 };
 
@@ -47,12 +46,11 @@ const TAG: TagData = {
       source_type: "note",
       work: "Czarny potok",
       number: 2,
-      location: "",
+      scan_number: "",
       quote: "Uciekł z wojska.",
       scan: "",
       start_page: null,
       shelfmark: "",
-      description: "",
       tags: [],
     },
   ],
@@ -226,7 +224,7 @@ describe("TagPage", () => {
       throw new Error("Expected two fragment cards.");
     }
     expect(
-      within(first).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
+      within(first).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
     ).toHaveAttribute("href", "/typescripts/1?fragment=5");
     expect(within(first).getByText("Maszynopis")).toBeVisible();
     expect(within(first).getByRole("img", { name: "Skan · strona 3" })).toBeVisible();

@@ -282,7 +282,7 @@ class DocumentAdmin(admin.ModelAdmin[Document]):
     def get_readonly_fields(
         self, request: HttpRequest, obj: Document | None = None
     ) -> tuple[str, ...]:
-        """An OCR text changes only with a new OCR file, which also sets its page boundaries."""
+        """An OCR text changes only with a new scan, whose text layer also sets its pages."""
         if obj is not None and obj.kind == Document.Kind.OCR:
             return ("text",)
         return ()
@@ -290,10 +290,17 @@ class DocumentAdmin(admin.ModelAdmin[Document]):
 
 @admin.register(Fragment)
 class FragmentAdmin(SearchIndexedAdmin[Fragment]):
-    list_display = ("__str__", "document", "location", "is_featured", "needs_review")
+    list_display = (
+        "__str__",
+        "document",
+        "unit_number",
+        "scan_number",
+        "is_featured",
+        "needs_review",
+    )
     list_filter = ("needs_review", "is_featured")
     list_select_related = tuple(f"document__{owner}" for owner in Document.owner_accessors())
-    search_fields = ("quote", "description")
+    search_fields = ("quote",)
     ordering = ("-needs_review", "document", "start")
     readonly_fields = ("document", "quote")
     autocomplete_fields = ("tags",)

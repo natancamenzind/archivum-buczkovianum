@@ -5,7 +5,6 @@ from typing import Any
 
 from django import forms
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
-from django.core.validators import FileExtensionValidator
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
@@ -20,8 +19,6 @@ from archive.models import (
 )
 from archive.uploads import load_ocr_upload
 
-TEXT_EXTENSION = FileExtensionValidator(["txt"])
-
 
 class TypedTextField(forms.CharField):
     """Text typed into a textarea, with the LF line breaks fragments count by: browsers send
@@ -34,10 +31,11 @@ class TypedTextField(forms.CharField):
 class TextUploadForm[M: Archival](forms.ModelForm[M]):
     """An archival item's form, where the editor uploads the item's text (US-WR-04).
 
-    The item's `Document` is created and replaced here, never picked by ID: the admin using
-    this form excludes the `document` field. An item without a text requires both files.
-    Later, uploading both files together replaces the text in place, so its fragments are
-    re-anchored, not lost. Leaving both empty keeps the text.
+    The text is the scan's OCR text layer: one searchable PDF holds both. The item's `Document`
+    is created and replaced here, never picked by ID: the admin using this form excludes the
+    `document` field. An item without a text requires a scan. Later, uploading a new scan
+    replaces the text in place, so its fragments are re-anchored, not lost. Leaving the field
+    empty keeps the text.
 
     `text_kind()` says which kind of text the item gets; here it is always an OCR text.
     """
@@ -46,21 +44,14 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
         label=_("scan"),
         required=False,
         validators=[PDF_EXTENSION],
-        help_text=_("PDF file."),
-    )
-    ocr_file = forms.FileField(
-        label=_("OCR file"),
-        required=False,
-        validators=[TEXT_EXTENSION],
         help_text=_(
-            "UTF-8 .txt file, as Tesseract writes it: a form feed between pages. "
-            "It must have as many pages as the scan."
+            "A searchable PDF, as an OCR program saves it: the page images with the OCR text "
+            "under them. The text is read from it."
         ),
     )
 
-    upload_fields = ("scan", "ocr_file")
     # Where the form explains a missing or wrong text better than the model's error does.
-    text_fields: tuple[str, ...] = upload_fields
+    text_fields: tuple[str, ...] = ("scan",)
     # The document loaded from the form, saved with the item.
     uploaded_document: Document | None = None
     # The stored scan the item no longer has, deleted once the save is committed.
@@ -77,27 +68,26 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
         return self.cleaned_data
 
     def take_ocr_upload(self) -> None:
-        """Load the scan and the OCR file. Both are required while the item has no text."""
-        if any(self.has_error(name) for name in self.upload_fields):
+        """Load the scan and its text. A scan is required while the item has no text.
+
+        The scan is read only when the rest of the form is valid: reading a long one takes
+        seconds, and a rejected form comes back without its file anyway.
+        """
+        if self.has_error("scan"):
             return
-        scan, ocr_file = self.cleaned_data.get("scan"), self.cleaned_data.get("ocr_file")
+        scan = self.cleaned_data.get("scan")
         document = self.instance.document
-        if scan is None and ocr_file is None:
+        if scan is None:
             if document is None:
-                for name in self.upload_fields:
-                    self.add_required_error(name)
+                self.add_required_error("scan")
             return
-        if scan is None or ocr_file is None:
-            self.add_error(
-                "scan" if scan is None else "ocr_file",
-                _("Upload the scan and the OCR file together, so their pages can be compared."),
-            )
+        if self.errors:
             return
         replaced_scan = (document.scan.name or "") if document is not None else ""
         try:
-            self.uploaded_document = load_ocr_upload(document, scan, ocr_file)
+            self.uploaded_document = load_ocr_upload(document, scan)
         except ValidationError as error:
-            self.add_error(None, error)
+            self.add_error("scan", error)
             return
         self.replaced_scan = replaced_scan
         self.instance.document = self.uploaded_document
@@ -109,7 +99,8 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
     def add_error(self, field: str | None, error: Any) -> None:
         """Show the model's errors about `document`, which is not on this form, above the form.
 
-        They are left out when the upload fields already have errors that say more.
+        They are left out when the upload fields already have errors that say more, or when a
+        scan was uploaded but not read yet (`take_ocr_upload()`): it gives the item its text.
         """
         if (
             isinstance(error, ValidationError)
@@ -118,7 +109,9 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
             and "document" not in self.fields
         ):
             messages = error.error_dict.pop("document")
-            if not any(self.has_error(name) for name in (*self.text_fields, NON_FIELD_ERRORS)):
+            if self.cleaned_data.get("scan") is None and not any(
+                self.has_error(name) for name in (*self.text_fields, NON_FIELD_ERRORS)
+            ):
                 error.error_dict.setdefault(NON_FIELD_ERRORS, []).extend(messages)
             if not error.error_dict:
                 return
@@ -168,7 +161,7 @@ class PlainTextForm[M: Archival](TextUploadForm[M]):
         help_text=_("E.g. a letter transcription."),
     )
 
-    text_fields = (*TextUploadForm.upload_fields, "plain_text")
+    text_fields = ("scan", "plain_text")
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -183,19 +176,16 @@ class PlainTextForm[M: Archival](TextUploadForm[M]):
             self.take_plain_text()
         elif "plain_text" in self.changed_data and cleaned_data.get("plain_text"):
             self.add_error("plain_text", _("Leave this empty for this kind of content."))
-        if kind != Document.Kind.OCR:
-            for name in self.upload_fields:
-                if cleaned_data.get(name) is not None:
-                    self.add_error(name, _("Leave this empty for this kind of content."))
+        if kind != Document.Kind.OCR and cleaned_data.get("scan") is not None:
+            self.add_error("scan", _("Leave this empty for this kind of content."))
         return cleaned_data
 
     def take_ocr_upload(self) -> None:
-        """Ask for both files, too, when the item's text is a plain text that becomes OCR."""
+        """Ask for a scan, too, when the item's text is a plain text that becomes OCR."""
         document = self.instance.document
-        files = [self.cleaned_data.get(name) for name in self.upload_fields]
-        if document is not None and document.kind != Document.Kind.OCR and files == [None, None]:
-            for name in self.upload_fields:
-                self.add_required_error(name)
+        scan = self.cleaned_data.get("scan")
+        if document is not None and document.kind != Document.Kind.OCR and scan is None:
+            self.add_required_error("scan")
             return
         super().take_ocr_upload()
 
@@ -224,7 +214,7 @@ class SecondaryTextForm(PlainTextForm[SecondaryText]):
         required=False,
         strip=False,
         widget=forms.Textarea,
-        help_text=_("Or enter the text here instead of uploading a scan and an OCR file."),
+        help_text=_("Or enter the text here instead of uploading a scan."),
     )
 
     @property
@@ -252,11 +242,11 @@ class SecondaryTextForm(PlainTextForm[SecondaryText]):
         if self.has_error("plain_text"):
             return cleaned_data
         if plain_text != self.stored_plain_text:
-            uploading = any(cleaned_data.get(name) for name in self.upload_fields)
+            uploading = cleaned_data.get("scan") is not None
             if plain_text and uploading:
                 self.add_error(
                     "plain_text",
-                    _("Upload a scan and its OCR file, or enter a plain text, not both."),
+                    _("Upload a scan or enter a plain text, not both."),
                 )
                 return cleaned_data
             if plain_text:
@@ -266,19 +256,19 @@ class SecondaryTextForm(PlainTextForm[SecondaryText]):
                 if self.instance.document is None:
                     self.add_error(
                         None,
-                        _("Upload a scan and its OCR file, or enter a plain text."),
+                        _("Upload a scan or enter a plain text."),
                     )
                 else:
                     self.add_required_error("plain_text")
                 return cleaned_data
-        if any(cleaned_data.get(name) for name in self.upload_fields) or (
+        if cleaned_data.get("scan") is not None or (
             self.instance.document is not None and self.instance.document.kind == Document.Kind.OCR
         ):
             self.take_ocr_upload()
         elif self.instance.document is None:
             self.add_error(
                 None,
-                _("Upload a scan and its OCR file, or enter a plain text."),
+                _("Upload a scan or enter a plain text."),
             )
         return cleaned_data
 

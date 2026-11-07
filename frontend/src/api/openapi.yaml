@@ -664,10 +664,11 @@ components:
           readOnly: true
           description: 1-based scan page the fragment starts on; null for a plain
             text.
-        location:
+        scan_number:
           type: string
           readOnly: true
-          description: E.g. rozdział I.
+          description: The shelfmark after the dot without leading zeros, e.g. "9";
+            may be empty.
         shelfmark:
           type: string
           readOnly: true
@@ -681,8 +682,8 @@ components:
       required:
       - end
       - id
-      - location
       - number
+      - scan_number
       - shelfmark
       - start
       - start_page
@@ -808,10 +809,11 @@ components:
           type: integer
           readOnly: true
           description: 1-based, by position in the text.
-        location:
+        scan_number:
           type: string
           readOnly: true
-          description: E.g. rozdział I.
+          description: The shelfmark after the dot without leading zeros, e.g. "9";
+            may be empty.
         quote:
           type: string
           readOnly: true
@@ -830,9 +832,6 @@ components:
           type: string
           readOnly: true
           description: E.g. "ML, sygn. 1618.0009"; may be empty.
-        description:
-          type: string
-          readOnly: true
         tags:
           type: array
           items:
@@ -840,12 +839,11 @@ components:
           readOnly: true
           description: Published tags, by name.
       required:
-      - description
       - id
-      - location
       - number
       - quote
       - scan
+      - scan_number
       - shelfmark
       - source_type
       - start_page
@@ -894,18 +892,19 @@ components:
           type: integer
           readOnly: true
           description: 1-based, by position in the text.
-        location:
+        scan_number:
           type: string
           readOnly: true
-          description: E.g. rozdział I.
+          description: The shelfmark after the dot without leading zeros, e.g. "9";
+            may be empty.
         shelfmark:
           type: string
           readOnly: true
           description: E.g. "ML, sygn. 1618.0009"; may be empty.
       required:
       - id
-      - location
       - number
+      - scan_number
       - shelfmark
     GroupEnum:
       enum:
@@ -1109,7 +1108,7 @@ components:
         * `image` - Image
         * `document` - Document file
         * `external_media` - External audio or video link
-        * `ocr_text` - OCR text (scan + OCR file)
+        * `ocr_text` - OCR text (searchable PDF scan)
         * `plain_text` - Plain text
     NoteCard:
       type: object

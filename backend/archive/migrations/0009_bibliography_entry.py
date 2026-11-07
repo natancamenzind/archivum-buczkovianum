@@ -22,7 +22,7 @@ def grant_editors(apps: migrations.state.StateApps, schema_editor: object) -> No
 
 
 class Migration(migrations.Migration):
-    dependencies = (("archive", "0005_verbose_names"),)
+    dependencies = (("archive", "0008_fragment_unit_and_scan_number"),)
 
     operations = (
         migrations.CreateModel(

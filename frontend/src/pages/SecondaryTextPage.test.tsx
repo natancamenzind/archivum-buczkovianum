@@ -19,12 +19,11 @@ const FRAGMENT: Fragment = {
   source_type: "typescript",
   work: "Wertepy",
   number: 1,
-  location: "rozdział I",
+  scan_number: "9",
   quote: "Grzybniak chodził od chałupy do chałupy.",
   scan: "",
   start_page: null,
   shelfmark: "ML, sygn. 1618.0009",
-  description: "Grzybniak leczy chorych podczas epidemii tyfusu.",
   tags: [{ slug: "pamiec", title: "Pamięć" }],
 };
 
@@ -69,7 +68,7 @@ const DOCUMENT: Document = {
       end: 18,
       number: 1,
       start_page: null,
-      location: "",
+      scan_number: "",
       shelfmark: "",
       tags: [{ slug: "wojna", title: "Wojna" }],
     },
@@ -254,10 +253,10 @@ describe("SecondaryTextPage", () => {
     const cards = within(fragments).getAllByRole("article");
     expect(cards).toHaveLength(2);
     expect(
-      within(fragments).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
+      within(fragments).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
     ).toHaveAttribute("href", "/typescripts/1?fragment=5");
     expect(
-      within(fragments).getByRole("link", { name: "Czarny potok · Fragment 02 · rozdział I" }),
+      within(fragments).getByRole("link", { name: "Czarny potok · Fragment 02 · skan 9" }),
     ).toHaveAttribute("href", "/typescripts/2?fragment=6");
     expect(within(fragments).queryByText(/Wszystkie/)).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);

@@ -27,7 +27,7 @@ Tłumaczenie `docs/user-stories.md`. W razie rozbieżności obowiązuje wersja a
 | Bibliografia | Uporządkowana lista pozycji utworu. Pozycja to jedna linia dowolnego tekstu, np. „Autor, Tytuł, Wydawnictwo, miejsce rok, s. strony”. |
 | Powiązanie z utworem | Relacja między utworem a tekstem sekundarnym lub materiałem kontekstowym. Można je otagować. |
 | Tag | Nazwa dla relacji, łącząca fragmenty i zapiski: słowo klucz z Buczkowskiego (np. „dezerter”) albo nasza interpretacja (np. „wielokulturowość”). |
-| Fragment | Otagowany zakres tekstu (OCR lub tekstu litego), z opcjonalną sygnaturą, lokalizacją i opisem. |
+| Fragment | Otagowany zakres tekstu (OCR lub tekstu litego), z opcjonalną sygnaturą (jednostka archiwalna i numer skanu). |
 | Wystąpienie | Jeden opublikowany element z danym tagiem: fragment, cały byt albo powiązanie z utworem. |
 | Sygnatura | Instytucja + numer, wyświetlane jako „ML, sygn. 1618”. Fragment ma własny numer („ML, sygn. 1618.0009”), a instytucję dziedziczy po dokumencie. |
 | Byt | Każdy obiekt archiwum, który ma własną stronę: utwór, maszynopis, tag, zapisek, tekst sekundarny, materiał kontekstowy. |
@@ -81,9 +81,9 @@ Każda strona określa, które elementy pokazuje.
 
 **R-10 Karta fragmentu.** Każdy fragment wyświetlamy jako taką kartę:
 
-1. linia lokalizacji: utwór, numer w dokumencie („fragment 01”), opcjonalna lokalizacja („rozdział I”); etykieta z typem źródła („Maszynopis”, „Zapisek”);
+1. linia lokalizacji: utwór, numer w dokumencie („fragment 01”), opcjonalny numer skanu z sygnatury, bez zer wiodących („skan 9” dla 1618.0009); etykieta z typem źródła („Maszynopis”, „Zapisek”);
 2. cytat (tekst fragmentu skrócony do kilku linii); dla źródła OCR miniatura strony skanu, na której fragment się zaczyna;
-3. sygnatura, opis, tagi.
+3. sygnatura, tagi.
 
 Kliknięcie karty otwiera dokument źródłowy przewinięty do fragmentu.
 
@@ -167,7 +167,7 @@ Jako RA widzę wszystko, co jest powiązane z tagiem.
 2. Kolumna kontekstu: utwór (R-03) z rokiem i liczbą fragmentów; „Maszynopisy utworu”, wszystkie maszynopisy tego samego utworu z sygnaturą i tytułem, z zaznaczonym bieżącym.
 3. Kolumna główna, kolejno:
    1. „Skan maszynopisu”: czytnik (R-11); licznik pokazuje liczbę stron;
-   2. „Fragmenty z maszynopisu”: podgląd (R-09) jego fragmentów jako numerowana lista (numer fragmentu, lokalizacja, sygnatura), w kolejności stron.
+   2. „Fragmenty z maszynopisu”: podgląd (R-09) jego fragmentów jako numerowana lista (numer fragmentu, numer skanu, sygnatura), w kolejności stron.
 4. Kolumna tagów: tagi na maszynopisie i na jego fragmentach.
 5. Materiały kontekstowe (R-08): te powiązane z jego utworem.
 
@@ -241,7 +241,7 @@ Na telefonie wszystkie trzy listy mają jedną kolumnę z tych samych komponent�
 
 Jako RA znajduję utwory, tagi, fragmenty i zapiski, wpisując frazę.
 
-1. Wszystko jest indeksowane: wszystkie opublikowane byty i widoczne fragmenty — tytuły, opisy, nazwy i opisy tagów, cytaty i opisy fragmentów, teksty OCR i teksty lite.
+1. Wszystko jest indeksowane: wszystkie opublikowane byty i widoczne fragmenty — tytuły, opisy, nazwy i opisy tagów, cytaty fragmentów, teksty OCR i teksty lite.
 2. Nagłówek pokazuje zapytanie i łączną liczbę wyników („7 wyników we wszystkich kategoriach”).
 3. Zakładka „Wszystko” grupuje wyniki według typu, każda grupa z licznikiem, w tej kolejności: Utwory, Tagi, Fragmenty, Zapiski, Maszynopisy, Teksty sekundarne, Materiały kontekstowe.
 4. W grupie wyniki są sortowane według trafności (więcej wzmianek = wyżej) albo, jeśli czytelnik wybierze, według tytułu.
@@ -289,20 +289,20 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 
 ### US-WR-04 — Dodawanie maszynopisu
 
-1. Pola: utwór (wymagany, musi już istnieć); tytuł (wymagany, np. „Pierwsza wersja”); opcjonalny opis; sygnatura; plik źródłowy ze skanem (wymagany); plik OCR (wymagany).
-2. Plik OCR musi mieć tyle stron co skan. W przeciwnym razie zapis jest odrzucany z komunikatem podającym obie liczby stron.
+1. Pola: utwór (wymagany, musi już istnieć); tytuł (wymagany, np. „Pierwsza wersja”); opcjonalny opis; sygnatura; skan (wymagany): jeden przeszukiwalny PDF, taki jak zapisuje go program do OCR, z tekstem OCR pod obrazami stron. Tekst jest odczytywany z tego pliku; nie ma osobnego pliku OCR.
+2. Skan bez tekstu OCR jest odrzucany z komunikatem, jak zapisać go jako przeszukiwalny PDF.
 3. Pole wyboru „główny maszynopis”. Tylko jeden na utwór: zaznaczenie nowego odznacza poprzedni.
 4. Zapis aktualizuje indeks wyszukiwarki.
 
 ### US-WR-05 — Dodawanie zapisku
 
 1. Pola: tytuł (wymagany, np. „Notes 18 · karta 4”); opcjonalny opis; sygnatura; treść.
-2. Treść to jedno z: obrazek; dokument; zewnętrzny link audio/wideo; tekst OCR (skan + plik OCR, sprawdzany jak w US-WR-04 AC2); tekst lity (np. transkrypcja listu).
+2. Treść to jedno z: obrazek; dokument; zewnętrzny link audio/wideo; tekst OCR (skan w przeszukiwalnym PDF, sprawdzany jak w US-WR-04 AC2); tekst lity (np. transkrypcja listu).
 3. Może być w relacji z jednym lub wieloma utworami.
 
 ### US-WR-06 — Dodawanie tekstu sekundarnego
 
-1. Pola: tytuł (wymagany); rodzaj (np. list, recenzja, opracowanie, nagranie); sygnatura; tekst w wersji OCR (skan + plik OCR) albo tekst lity. Opcjonalnie: opis; autor; źródło (wydawnictwo, miejsce, rok, strony, jako jedna linia tekstu); data, nadawca i adresat (dla listów).
+1. Pola: tytuł (wymagany); rodzaj (np. list, recenzja, opracowanie, nagranie); sygnatura; tekst w wersji OCR (skan w przeszukiwalnym PDF) albo tekst lity. Opcjonalnie: opis; autor; źródło (wydawnictwo, miejsce, rok, strony, jako jedna linia tekstu); data, nadawca i adresat (dla listów).
 2. Może być w relacji z jednym lub wieloma utworami. Każde powiązanie z utworem można otagować (US-WR-10).
 
 ### US-WR-07 — Dodawanie materiału kontekstowego
@@ -324,7 +324,7 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 3. Fragmenty mogą na siebie zachodzić, a ten sam tekst może mieć kilka tagów.
 4. Fragment przechowuje zaznaczony tekst. Jeśli tekst źródłowy się zmieni i fragment przestanie pasować, fragment jest oznaczany do sprawdzenia, a nigdy po cichu przesuwany ani usuwany.
 5. Redaktorka nigdy nie wpisuje znaczników ręcznie (TEI ani żadnych innych).
-6. Własny formularz fragmentu ma: lokalizację (np. „rozdział I”), numer sygnatury (np. „1618.0009”; instytucja pochodzi z dokumentu), opis i pole wyboru „wyróżniony”. Wyróżnione fragmenty są pierwsze w podglądach (R-09) i mogą trafić na stronę główną (US-RA-02).
+6. Własny formularz fragmentu ma: sygnaturę w dwóch polach, numer jednostki archiwalnej (np. „1618”) i numer skanu (np. „0009”; wymaga numeru jednostki; instytucja pochodzi z dokumentu) oraz pole wyboru „wyróżniony”. Wyróżnione fragmenty są pierwsze w podglądach (R-09) i mogą trafić na stronę główną (US-RA-02).
 
 ### US-WR-10 — Tagowanie całych bytów i powiązań z utworem
 

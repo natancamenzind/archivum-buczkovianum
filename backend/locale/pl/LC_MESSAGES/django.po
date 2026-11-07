@@ -30,22 +30,12 @@ msgstr "Archiwum"
 msgid "scan"
 msgstr "skan"
 
-msgid "PDF file."
-msgstr "Plik PDF."
-
-msgid "OCR file"
-msgstr "plik OCR"
-
 msgid ""
-"UTF-8 .txt file, as Tesseract writes it: a form feed between pages. It must "
-"have as many pages as the scan."
+"A searchable PDF, as an OCR program saves it: the page images with the OCR "
+"text under them. The text is read from it."
 msgstr ""
-"Plik .txt w UTF-8, taki jak zapisuje go Tesseract: strony rozdzielone "
-"znakiem nowej strony (form feed). Musi mieć tyle stron co skan."
-
-msgid ""
-"Upload the scan and the OCR file together, so their pages can be compared."
-msgstr "Wgraj skan i plik OCR razem, żeby dało się porównać ich strony."
+"Przeszukiwalny PDF, taki jak zapisuje go program do OCR: obrazy stron "
+"z tekstem OCR pod spodem. Tekst jest odczytywany z tego pliku."
 
 msgid "plain text"
 msgstr "tekst lity"
@@ -56,14 +46,14 @@ msgstr "Np. transkrypcja listu."
 msgid "Leave this empty for this kind of content."
 msgstr "Przy tym rodzaju treści zostaw to pole puste."
 
-msgid "Or enter the text here instead of uploading a scan and an OCR file."
-msgstr "Albo wpisz tekst tutaj, zamiast wgrywać skan i plik OCR."
+msgid "Or enter the text here instead of uploading a scan."
+msgstr "Albo wpisz tekst tutaj, zamiast wgrywać skan."
 
-msgid "Upload a scan and its OCR file, or enter a plain text, not both."
-msgstr "Wgraj skan z plikiem OCR albo wpisz tekst lity, nie jedno i drugie."
+msgid "Upload a scan or enter a plain text, not both."
+msgstr "Wgraj skan albo wpisz tekst lity, nie jedno i drugie."
 
-msgid "Upload a scan and its OCR file, or enter a plain text."
-msgstr "Wgraj skan z plikiem OCR albo wpisz tekst lity."
+msgid "Upload a scan or enter a plain text."
+msgstr "Wgraj skan albo wpisz tekst lity."
 
 msgid "created"
 msgstr "utworzono"
@@ -149,8 +139,8 @@ msgstr "Dokument"
 msgid "External audio or video link"
 msgstr "Zewnętrzny link audio/wideo"
 
-msgid "OCR text (scan + OCR file)"
-msgstr "Tekst OCR (skan + plik OCR)"
+msgid "OCR text (searchable PDF scan)"
+msgstr "Tekst OCR (skan w przeszukiwalnym PDF)"
 
 msgid "Plain text"
 msgstr "Tekst lity"
@@ -348,6 +338,9 @@ msgstr "powiązania z utworami"
 msgid "Scan + OCR text"
 msgstr "Skan + tekst OCR"
 
+msgid "PDF file."
+msgstr "Plik PDF."
+
 msgid "document"
 msgstr "dokument"
 
@@ -360,9 +353,9 @@ msgstr "Tekst OCR wymaga skanu."
 msgid "A plain text has no scan."
 msgstr "Tekst lity nie ma skanu."
 
-msgid "Upload a new OCR file to change an OCR text, so pages stay aligned."
+msgid "Upload a new scan to change an OCR text, so pages stay aligned."
 msgstr ""
-"Żeby zmienić tekst OCR, wgraj nowy plik OCR. Dzięki temu strony pozostaną "
+"Żeby zmienić tekst OCR, wgraj nowy skan. Dzięki temu strony pozostaną "
 "dopasowane do skanu."
 
 msgid "start"
@@ -377,17 +370,17 @@ msgstr "cytat"
 msgid "The selected text."
 msgstr "Zaznaczony tekst."
 
-msgid "location"
-msgstr "lokalizacja"
+msgid "archival unit number"
+msgstr "numer jednostki archiwalnej"
 
-msgid "E.g. rozdział I."
-msgstr "Np. rozdział I."
+msgid "The shelfmark before the dot, e.g. 1618; institution from the document."
+msgstr "Sygnatura przed kropką, np. 1618; instytucja pochodzi z dokumentu."
 
-msgid "shelfmark number"
-msgstr "numer sygnatury"
+msgid "scan number"
+msgstr "numer skanu"
 
-msgid "Number only, e.g. 1618.0009; institution from the document."
-msgstr "Tylko numer, np. 1618.0009; instytucja pochodzi z dokumentu."
+msgid "The shelfmark after the dot, e.g. 0009: the scan in the archival unit."
+msgstr "Sygnatura po kropce, np. 0009: skan w jednostce archiwalnej."
 
 msgid "featured"
 msgstr "wyróżniony"
@@ -403,6 +396,9 @@ msgstr "Tekst się zmienił. Sprawdź fragment, a potem odznacz to pole."
 
 msgid "fragment"
 msgstr "fragment"
+
+msgid "A scan number needs an archival unit number."
+msgstr "Numer skanu wymaga numeru jednostki archiwalnej."
 
 msgid "The fragment goes past the end of the text."
 msgstr "Fragment wychodzi poza koniec tekstu."
@@ -491,16 +487,12 @@ msgstr "Nie ma jeszcze fragmentów."
 msgid "The scan is not a readable PDF file."
 msgstr "Skan nie jest czytelnym plikiem PDF."
 
-msgid "The OCR file is not UTF-8 text. Save it as UTF-8 and upload it again."
-msgstr "Plik OCR nie jest tekstem w UTF-8. Zapisz go w UTF-8 i wgraj ponownie."
-
-#, python-format
-msgid "The scan has %(scan)d page, the OCR file has %(ocr)d."
-msgid_plural "The scan has %(scan)d pages, the OCR file has %(ocr)d."
-msgstr[0] "Skan ma %(scan)d stronę, plik OCR ma %(ocr)d."
-msgstr[1] "Skan ma %(scan)d strony, plik OCR ma %(ocr)d."
-msgstr[2] "Skan ma %(scan)d stron, plik OCR ma %(ocr)d."
-msgstr[3] "Skan ma %(scan)d strony, plik OCR ma %(ocr)d."
+msgid ""
+"The scan has no OCR text. Save it from the OCR program as a searchable PDF, "
+"with the text under the page images, and upload it again."
+msgstr ""
+"Skan nie ma tekstu OCR. Zapisz go w programie do OCR jako przeszukiwalny "
+"PDF, z tekstem pod obrazami stron, i wgraj ponownie."
 
 msgid "Work"
 msgstr "Utwór"

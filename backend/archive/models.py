@@ -5,7 +5,7 @@ in field definitions, database constraints, `clean()` and `save()`. There are no
 """
 
 from bisect import bisect_right
-from collections.abc import Callable, Collection
+from collections.abc import Callable, Collection, Sequence
 from dataclasses import dataclass
 from typing import Any, ClassVar, Self, cast
 
@@ -375,7 +375,7 @@ class ContentKind(models.TextChoices):
     IMAGE = "image", _("Image")
     DOCUMENT = "document", _("Document file")
     EXTERNAL_MEDIA = "external_media", _("External audio or video link")
-    OCR_TEXT = "ocr_text", _("OCR text (scan + OCR file)")
+    OCR_TEXT = "ocr_text", _("OCR text (searchable PDF scan)")
     PLAIN_TEXT = "plain_text", _("Plain text")
 
 
@@ -1050,9 +1050,11 @@ class Document(BaseModel):
             return owner.is_main
         return isinstance(owner, (Note, SecondaryText, ContextualMaterial))
 
-    def set_ocr_text(self, raw: str) -> None:
-        """Load Tesseract plain-text output: pages separated by a form feed (`\\f`)."""
-        pages = raw.removesuffix("\f").split("\f")
+    def set_ocr_pages(self, pages: Sequence[str]) -> None:
+        """Load the text of each scan page, read from the scan's text layer (`archive.uploads`).
+
+        A page without text still gets its offset, so there is one offset per scan page.
+        """
         offsets, position = [], 0
         for page in pages:
             offsets.append(position)
@@ -1082,7 +1084,7 @@ class Document(BaseModel):
             and self._saved_page_offsets == self.page_offsets
         ):
             raise ValidationError(
-                {"text": _("Upload a new OCR file to change an OCR text, so pages stay aligned.")}
+                {"text": _("Upload a new scan to change an OCR text, so pages stay aligned.")}
             )
 
 
@@ -1154,16 +1156,18 @@ class Fragment(BaseModel, Taggable):
     start = models.PositiveIntegerField(_("start"), editable=False)
     end = models.PositiveIntegerField(_("end"), editable=False)
     quote = models.TextField(_("quote"), editable=False, help_text=_("The selected text."))
-    location = models.CharField(
-        _("location"), max_length=255, blank=True, help_text=_("E.g. rozdział I.")
-    )
-    shelfmark = models.CharField(
-        _("shelfmark number"),
+    unit_number = models.CharField(
+        _("archival unit number"),
         max_length=50,
         blank=True,
-        help_text=_("Number only, e.g. 1618.0009; institution from the document."),
+        help_text=_("The shelfmark before the dot, e.g. 1618; institution from the document."),
     )
-    description = models.TextField(_("description"), blank=True)
+    scan_number = models.CharField(
+        _("scan number"),
+        max_length=50,
+        blank=True,
+        help_text=_("The shelfmark after the dot, e.g. 0009: the scan in the archival unit."),
+    )
     is_featured = models.BooleanField(
         _("featured"),
         default=False,
@@ -1220,7 +1224,7 @@ class Fragment(BaseModel, Taggable):
             IndexedContent(
                 title=str(self),
                 url=f"{owner.url}?fragment={self.pk}",
-                texts=[(self.quote, Weight.QUOTE), (self.description, Weight.DESCRIPTION)],
+                texts=[(self.quote, Weight.QUOTE)],
                 tags=self.published_tag_names(),
                 work_ids=owner.work_ids,
                 decades=owner.decades,
@@ -1234,12 +1238,26 @@ class Fragment(BaseModel, Taggable):
         return self.document.page_number(self.start)
 
     @property
+    def shelfmark(self) -> str:
+        """The number part of the shelfmark, e.g. "1618.0009"."""
+        return ".".join(part for part in (self.unit_number, self.scan_number) if part)
+
+    @property
     def shelfmark_display(self) -> str:
         owner = self.document.owner
         return format_shelfmark(owner.institution if owner else None, self.shelfmark)
 
+    @property
+    def scan_display(self) -> str:
+        """The scan number without leading zeros, e.g. "9" for "0009"; "" when not set."""
+        return self.scan_number.lstrip("0") or self.scan_number[-1:]
+
     def clean(self) -> None:
         super().clean()
+        if self.scan_number and not self.unit_number:
+            raise ValidationError(
+                {"unit_number": _("A scan number needs an archival unit number.")}
+            )
         # Offsets are set once, by the tagger. Later only re-anchoring moves them.
         if self._state.adding and self.end > len(self.document.text):
             raise ValidationError(_("The fragment goes past the end of the text."))
