@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { components } from "@/api/schema";
 import { ColumnHeader } from "@/components/ColumnHeader";
 import { CheckIcon, ChevronDownIcon, CloseIcon } from "@/components/icons";
+import { Select } from "@/components/Select";
 import {
   Dialog,
   DialogClose,
@@ -122,14 +123,13 @@ export function SearchFilters({ facets, state, onChange }: FiltersProps) {
       </FilterGroup>
       {facets.decades.length > 0 && (
         <FilterGroup label={searchFilters.period}>
-          <select
+          <Select
             aria-label={searchFilters.period}
             value={state.decade ?? ""}
             onChange={(event) => {
               const decade = event.target.value;
               onChange({ ...state, decade: decade === "" ? null : Number(decade) });
             }}
-            className={`w-full rounded-sm border border-accent-border bg-card px-12 py-8 text-cousine-metadane text-foreground ${FOCUS_CLASSES}`}
           >
             <option value="">{searchFilters.allYears}</option>
             {facets.decades.map(({ decade, count }) => (
@@ -137,7 +137,7 @@ export function SearchFilters({ facets, state, onChange }: FiltersProps) {
                 {searchFilters.decade(decade, count)}
               </option>
             ))}
-          </select>
+          </Select>
         </FilterGroup>
       )}
     </div>

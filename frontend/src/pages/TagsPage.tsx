@@ -23,7 +23,7 @@ async function fetchTags(): Promise<TagCount[]> {
 function TagRow({ tag }: { tag: TagCount }) {
   return (
     <Link
-      to={`/tags/${tag.slug}`}
+      to={`/tagi/${tag.slug}`}
       className="flex items-center justify-between gap-12 border-b border-border py-12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <span className="text-lora-tekst text-foreground">{tag.title}</span>{" "}

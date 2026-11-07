@@ -66,7 +66,7 @@ describe("TypescriptsPage", () => {
   it("US-RA-19: the hero shows the label, the title 'Maszynopisy' and the description", async () => {
     mockTypescripts();
 
-    const { container } = renderRoute("/typescripts");
+    const { container } = renderRoute("/maszynopisy");
 
     const title = screen.getByRole("heading", { level: 1, name: "Maszynopisy" });
     const hero = title.closest<HTMLElement>("[data-slot=page-header]");
@@ -85,7 +85,7 @@ describe("TypescriptsPage", () => {
   it("US-RA-19 AC2: one group per work, in the API's order", async () => {
     mockTypescripts();
 
-    const { container } = renderRoute("/typescripts");
+    const { container } = renderRoute("/maszynopisy");
 
     await screen.findByRole("heading", { level: 2, name: "Wertepy" });
     const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
@@ -96,7 +96,7 @@ describe("TypescriptsPage", () => {
   it("US-RA-19 AC2: the group header shows the work's year and count", async () => {
     mockTypescripts();
 
-    renderRoute("/typescripts");
+    renderRoute("/maszynopisy");
 
     await screen.findByRole("heading", { level: 2, name: "Wertepy" });
     expect(within(group("Wertepy")).getByText("1947")).toBeVisible();
@@ -107,7 +107,7 @@ describe("TypescriptsPage", () => {
   it("R-02: a work without a year shows no description line", async () => {
     mockTypescripts();
 
-    renderRoute("/typescripts");
+    renderRoute("/maszynopisy");
 
     await screen.findByRole("heading", { level: 2, name: "Czarny potok" });
     // Title, count and the one card: nothing between them.
@@ -117,7 +117,7 @@ describe("TypescriptsPage", () => {
   it("US-RA-19 AC2: each card shows its number, title and shelfmark", async () => {
     mockTypescripts();
 
-    renderRoute("/typescripts");
+    renderRoute("/maszynopisy");
 
     await screen.findByRole("heading", { level: 2, name: "Wertepy" });
     const [first, second] = rows("Wertepy");
@@ -130,16 +130,16 @@ describe("TypescriptsPage", () => {
   it("US-RA-19 AC2: each card opens the typescript page", async () => {
     mockTypescripts();
 
-    renderRoute("/typescripts");
+    renderRoute("/maszynopisy");
 
     await screen.findByRole("heading", { level: 2, name: "Wertepy" });
     const links = [...rows("Wertepy"), ...rows("Czarny potok")].map((row) =>
       within(row).getByRole("link"),
     );
     expect(links.map((link) => link.getAttribute("href"))).toEqual([
-      "/typescripts/1",
-      "/typescripts/2",
-      "/typescripts/3",
+      "/maszynopisy/1",
+      "/maszynopisy/2",
+      "/maszynopisy/3",
     ]);
     expect(links[0]).toHaveAccessibleName("Pierwsza wersja, ML, sygn. 1618");
   });
@@ -147,7 +147,7 @@ describe("TypescriptsPage", () => {
   it("US-RA-19 AC2: two cards per row on desktop, one column on mobile", async () => {
     mockTypescripts();
 
-    renderRoute("/typescripts");
+    renderRoute("/maszynopisy");
 
     await screen.findByRole("heading", { level: 2, name: "Wertepy" });
     const grid = group("Wertepy").closest("ul");
@@ -158,7 +158,7 @@ describe("TypescriptsPage", () => {
   it("R-02: without published typescripts no group is shown", async () => {
     mockTypescripts([]);
 
-    renderRoute("/typescripts");
+    renderRoute("/maszynopisy");
 
     await waitFor(() => {
       expect(screen.queryByRole("status")).toBeNull();
@@ -170,7 +170,7 @@ describe("TypescriptsPage", () => {
   it("says it is loading, then shows the list", async () => {
     mockTypescripts();
 
-    const { container } = renderRoute("/typescripts");
+    const { container } = renderRoute("/maszynopisy");
 
     expect(screen.getByRole("status")).toHaveTextContent("Wczytuję maszynopisy…");
     expect(await axeViolations(container)).toEqual([]);
@@ -181,7 +181,7 @@ describe("TypescriptsPage", () => {
   it("says so when the API fails, keeping the title", async () => {
     server.use(http.get(TYPESCRIPTS_URL, () => HttpResponse.json({}, { status: 500 })));
 
-    const { container } = renderRoute("/typescripts");
+    const { container } = renderRoute("/maszynopisy");
 
     expect(
       await screen.findByText("Nie udało się wczytać maszynopisów. Spróbuj ponownie później."),

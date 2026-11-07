@@ -2,6 +2,7 @@ from factory.declarations import Sequence, SubFactory, Trait
 from factory.django import DjangoModelFactory, FileField
 
 from archive.models import (
+    BibliographyEntry,
     ContentKind,
     ContextualMaterial,
     Document,
@@ -54,6 +55,15 @@ class EditionFactory(DjangoModelFactory[Edition]):
     publisher = "Czytelnik"
     place = "Warszawa"
     year = 1947
+
+
+class BibliographyEntryFactory(DjangoModelFactory[BibliographyEntry]):
+    class Meta:
+        model = BibliographyEntry
+
+    work = SubFactory(WorkFactory)
+    text = Sequence(lambda n: f"Autor {n}, Tytuł {n}, Czytelnik, Warszawa 1960, s. {n}")
+    order = Sequence(lambda n: n)
 
 
 class DocumentFactory(DjangoModelFactory[Document]):

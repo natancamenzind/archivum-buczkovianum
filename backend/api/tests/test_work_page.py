@@ -9,6 +9,7 @@ from pytest_django.fixtures import Settings
 
 from archive.models import ContentKind, Status, Typescript, Work
 from archive.tests.factories import (
+    BibliographyEntryFactory,
     ContextualMaterialFactory,
     DocumentFactory,
     EditionFactory,
@@ -109,8 +110,8 @@ class TestWorkPageEndpoint:
             document=document,
             start=0,
             end=8,
-            location="rozdział I",
-            shelfmark="1618.0009",
+            unit_number="1618",
+            scan_number="0009",
         )
         first.tags.add(epidemia, TagFactory.create(status=Status.DRAFT))
         FragmentFactory.create(document=document, start=9, end=15)
@@ -127,11 +128,11 @@ class TestWorkPageEndpoint:
         assert [item["id"] for item in result["fragments"]["items"]] == [featured.pk, first.pk]
         assert result["fragments"]["items"][1] == {
             "id": first.pk,
-            "url": f"/typescripts/{main.pk}?fragment={first.pk}",
+            "url": f"/maszynopisy/{main.pk}?fragment={first.pk}",
             "source_type": "typescript",
             "work": "Wertepy",
             "number": 1,
-            "location": "rozdział I",
+            "scan_number": "9",
             "quote": "Pierwsza",
             "scan": document.scan.url,
             "start_page": 1,
@@ -346,6 +347,36 @@ class TestWorkPageEndpoint:
         assert [item["title"] for item in result["materials"]["texts"]] == ["Recenzja"]
         assert [item["title"] for item in result["materials"]["visuals"]] == ["Zdjęcie"]
 
+    def test_us_ra_21_ac1_the_first_five_bibliography_entries_and_their_count(
+        self, client: Client
+    ) -> None:
+        # Arrange
+        work = published_work()
+        for number in range(12, 0, -1):
+            BibliographyEntryFactory.create(work=work, text=f"Pozycja {number}", order=number)
+        BibliographyEntryFactory.create(text="Inny utwór")
+
+        # Act
+        result = page(client, work)
+
+        # Assert
+        assert result["bibliography"] == {
+            "items": [f"Pozycja {number}" for number in range(1, 6)],
+            "total": 12,
+        }
+
+    def test_us_ra_21_ac1_a_work_without_entries_has_an_empty_bibliography(
+        self, client: Client
+    ) -> None:
+        # Arrange
+        work = published_work()
+
+        # Act
+        result = page(client, work)
+
+        # Assert
+        assert result["bibliography"] == {"items": [], "total": 0}
+
     def test_r_06_a_draft_work_is_not_found(self, client: Client) -> None:
         # Arrange
         work = WorkFactory.create(status=Status.DRAFT)
@@ -377,6 +408,7 @@ class TestWorkPageEndpoint:
 
         def add_related() -> None:
             EditionFactory.create(work=work, year=1960)
+            BibliographyEntryFactory.create(work=work)
             published_typescript(work, institution=institution)
             tag = TagFactory.create(status=PUBLISHED)
             FragmentFactory.create(document=main.document).tags.add(tag)
@@ -391,7 +423,7 @@ class TestWorkPageEndpoint:
         add_related()
         add_related()
         page(client, work)
-        with django_assert_num_queries(14) as before:
+        with django_assert_num_queries(16) as before:
             page(client, work)
         for _ in range(4):
             add_related()
@@ -428,9 +460,11 @@ class TestWorkPageSchema:
                     "notes",
                     "tags",
                     "materials",
+                    "bibliography",
                 ),
             ),
             ("Edition", ("year", "publisher", "place")),
+            ("BibliographyPreview", ("items", "total")),
             (
                 "FragmentCard",
                 (
@@ -439,7 +473,7 @@ class TestWorkPageSchema:
                     "source_type",
                     "work",
                     "number",
-                    "location",
+                    "scan_number",
                     "quote",
                     "scan",
                     "start_page",

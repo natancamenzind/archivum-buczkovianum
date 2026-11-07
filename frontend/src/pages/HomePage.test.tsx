@@ -14,11 +14,11 @@ const HOME_URL = "*/api/home/";
 const FEATURED: Featured = {
   fragment: {
     id: 5,
-    url: "/typescripts/1?fragment=5",
+    url: "/maszynopisy/1?fragment=5",
     source_type: "typescript",
     work: "Wertepy",
     number: 1,
-    location: "rozdział I",
+    scan_number: "9",
     quote: "Grzybniak chodził od chałupy do chałupy.",
     scan: "",
     start_page: null,
@@ -147,8 +147,8 @@ describe("HomePage", () => {
       cards.map((card) => within(card).getByRole("heading", { level: 3 }).textContent),
     ).toEqual(["Wertepy", "Czarny potok"]);
     expect(cards.map((card) => within(card).getByRole("link").getAttribute("href"))).toEqual([
-      "/works/wertepy",
-      "/works/czarny-potok",
+      "/utwory/wertepy",
+      "/utwory/czarny-potok",
     ]);
     expect(cards[0]).toHaveTextContent("1947");
     expect(cards[0]).toHaveTextContent("Leopold Buczkowski");
@@ -170,9 +170,9 @@ describe("HomePage", () => {
     const cloud = section("Chmura tagów");
     expect(within(cloud).getByRole("link", { name: /^Wojna/ })).toHaveAttribute(
       "href",
-      "/tags/wojna",
+      "/tagi/wojna",
     );
-    expect(within(cloud).getByRole("link", { name: /^Las/ })).toHaveAttribute("href", "/tags/las");
+    expect(within(cloud).getByRole("link", { name: /^Las/ })).toHaveAttribute("href", "/tagi/las");
     expect(within(cloud).getByText("2")).toBeVisible();
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -188,11 +188,11 @@ describe("HomePage", () => {
     expect(within(featured).getByText("Wybór redakcji")).toBeVisible();
     expect(within(featured).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
     expect(
-      within(featured).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
-    ).toHaveAttribute("href", "/typescripts/1?fragment=5");
+      within(featured).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
+    ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(within(featured).getByRole("link", { name: "Epidemia" })).toHaveAttribute(
       "href",
-      "/tags/epidemia",
+      "/tagi/epidemia",
     );
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -207,7 +207,7 @@ describe("HomePage", () => {
       within(section("Wybrany fragment")).getByRole("link", {
         name: "Wszystkie fragmenty „Wertepy” (24)",
       }),
-    ).toHaveAttribute("href", "/search?tab=fragments&work=7");
+    ).toHaveAttribute("href", "/szukaj?tab=fragments&work=7");
     expect(await axeViolations(container)).toEqual([]);
   });
 

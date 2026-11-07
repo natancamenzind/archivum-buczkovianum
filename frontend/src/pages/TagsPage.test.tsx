@@ -44,7 +44,7 @@ describe("TagsPage", () => {
   it("US-RA-20 AC1: 'Tagi' in the main navigation opens the list and is the active item", async () => {
     mockTags();
     server.use(http.get("*/api/works/", () => HttpResponse.json([])));
-    const { container } = renderRoute("/works");
+    const { container } = renderRoute("/utwory");
 
     const nav = screen.getByRole("navigation", { name: "Menu główne" });
     fireEvent.click(within(nav).getByRole("link", { name: "Tagi" }));
@@ -57,7 +57,7 @@ describe("TagsPage", () => {
   it("US-RA-20: the hero shows the label, the title 'Tagi' and the description", async () => {
     mockTags();
 
-    const { container } = renderRoute("/tags");
+    const { container } = renderRoute("/tagi");
 
     const title = screen.getByRole("heading", { level: 1, name: "Tagi" });
     const hero = title.closest<HTMLElement>("[data-slot=page-header]");
@@ -74,7 +74,7 @@ describe("TagsPage", () => {
   it("US-RA-20 AC2: the tag cloud comes first, with its count and description", async () => {
     mockTags();
 
-    const { container } = renderRoute("/tags");
+    const { container } = renderRoute("/tagi");
 
     const index = await screen.findByRole("heading", { level: 2, name: "Wszystkie tagi" });
     const cloud = section("Chmura tagów");
@@ -85,7 +85,7 @@ describe("TagsPage", () => {
     ).toBeVisible();
     expect(within(cloud).getByRole("link", { name: "Wojna 31 wystąpień" })).toHaveAttribute(
       "href",
-      "/tags/wojna",
+      "/tagi/wojna",
     );
     expect(within(cloud).getAllByRole("link")).toHaveLength(7);
     expect(await axeViolations(container)).toEqual([]);
@@ -94,7 +94,7 @@ describe("TagsPage", () => {
   it("US-RA-20 AC2: 'Wszystkie tagi' lists every tag in Polish alphabetical order", async () => {
     mockTags();
 
-    const { container } = renderRoute("/tags");
+    const { container } = renderRoute("/tagi");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie tagi" });
     const index = section("Wszystkie tagi");
@@ -109,7 +109,7 @@ describe("TagsPage", () => {
   it("US-RA-20 AC2: each row shows the occurrence count with the right plural", async () => {
     mockTags();
 
-    const { container } = renderRoute("/tags");
+    const { container } = renderRoute("/tagi");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie tagi" });
     const index = section("Wszystkie tagi");
@@ -122,17 +122,17 @@ describe("TagsPage", () => {
   it("US-RA-20 AC2: each row links to its tag page (R-01)", async () => {
     mockTags();
 
-    const { container } = renderRoute("/tags");
+    const { container } = renderRoute("/tagi");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie tagi" });
     expect(indexRows().map((row) => within(row).getByRole("link").getAttribute("href"))).toEqual([
-      "/tags/dezerter",
-      "/tags/las",
-      "/tags/laka",
-      "/tags/mak",
-      "/tags/sad",
-      "/tags/slad",
-      "/tags/wojna",
+      "/tagi/dezerter",
+      "/tagi/las",
+      "/tagi/laka",
+      "/tagi/mak",
+      "/tagi/sad",
+      "/tagi/slad",
+      "/tagi/wojna",
     ]);
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -140,7 +140,7 @@ describe("TagsPage", () => {
   it("US-RA-20: one column on mobile, two on desktop", async () => {
     mockTags();
 
-    const { container } = renderRoute("/tags");
+    const { container } = renderRoute("/tagi");
 
     await screen.findByRole("heading", { level: 2, name: "Wszystkie tagi" });
     const list = within(section("Wszystkie tagi")).getByRole("list");
@@ -153,7 +153,7 @@ describe("TagsPage", () => {
   it("US-RA-20: without tags in use both sections are hidden (R-02)", async () => {
     mockTags([]);
 
-    const { container } = renderRoute("/tags");
+    const { container } = renderRoute("/tagi");
 
     await waitFor(() => {
       expect(screen.queryByRole("status")).toBeNull();
@@ -166,7 +166,7 @@ describe("TagsPage", () => {
   it("says it is loading, then shows the list", async () => {
     mockTags();
 
-    const { container } = renderRoute("/tags");
+    const { container } = renderRoute("/tagi");
 
     expect(screen.getByRole("status")).toHaveTextContent("Wczytuję tagi…");
     expect(await axeViolations(container)).toEqual([]);
@@ -177,7 +177,7 @@ describe("TagsPage", () => {
   it("says so when the API fails, keeping the title", async () => {
     server.use(http.get(TAGS_URL, () => HttpResponse.json({}, { status: 500 })));
 
-    const { container } = renderRoute("/tags");
+    const { container } = renderRoute("/tagi");
 
     expect(
       await screen.findByText("Nie udało się wczytać tagów. Spróbuj ponownie później."),

@@ -12,6 +12,7 @@ from django.test import Client
 from django.urls import reverse
 from pytest_django.fixtures import Settings
 
+from api.tests.pages import endpoint
 from archive.models import ContentKind, Status, Work
 from archive.tests.factories import (
     ContextualMaterialFactory,
@@ -50,10 +51,10 @@ def work_page_links(client: Client, work: Work) -> list[str]:
     materials = page["materials"]["texts"] + page["materials"]["visuals"]
     chips = [tag for card in fragments + notes for tag in card["tags"]]
     links = [item["url"] for item in fragments + notes + materials]
-    links += [f"/typescripts/{typescript['id']}" for typescript in page["typescripts"]]
-    links += [f"/tags/{tag['slug']}" for tag in page["tags"] + chips]
+    links += [f"/maszynopisy/{typescript['id']}" for typescript in page["typescripts"]]
+    links += [f"/tagi/{tag['slug']}" for tag in page["tags"] + chips]
     if page["main_typescript"] is not None and len(fragments) < page["fragments"]["total"]:
-        links.append(f"/typescripts/{page['main_typescript']}?fragments=all")
+        links.append(f"/maszynopisy/{page['main_typescript']}?fragments=all")
     return links
 
 
@@ -62,7 +63,7 @@ def assert_opens_a_page(client: Client, link: str) -> None:
     `?fragment=` is in the text that page reads."""
     url = urlsplit(link)
     assert client.get(link).status_code == 200, link
-    response = client.get(f"/api{url.path}/")
+    response = client.get(endpoint(url.path))
     assert response.status_code == 200, link
     for fragment in parse_qs(url.query).get("fragment", []):
         text = client.get(reverse("document", args=[response.json()["document"]]))
@@ -87,11 +88,11 @@ class TestDrillDown:
         for link in links:
             assert_opens_a_page(client, link)
         assert {urlsplit(link).path.split("/")[1] for link in links} == {
-            "typescripts",
-            "notes",
-            "tags",
-            "secondary-texts",
-            "materials",
+            "maszynopisy",
+            "zapiski",
+            "tagi",
+            "teksty-sekundarne",
+            "materialy",
         }
         assert any("?fragment=" in link for link in links)
         assert any("?fragments=all" in link for link in links)

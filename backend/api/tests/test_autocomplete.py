@@ -154,8 +154,8 @@ class TestAutocompleteEndpoint:
 
         # Assert
         assert result == [
-            {"type": "work", "title": "Wertepy", "url": "/works/wertepy"},
-            {"type": "tag", "title": "Wertepy (motyw)", "url": "/tags/wertepy-motyw"},
+            {"type": "work", "title": "Wertepy", "url": "/utwory/wertepy"},
+            {"type": "tag", "title": "Wertepy (motyw)", "url": "/tagi/wertepy-motyw"},
         ]
 
     @pytest.mark.parametrize("method", ("post", "put", "patch", "delete"))

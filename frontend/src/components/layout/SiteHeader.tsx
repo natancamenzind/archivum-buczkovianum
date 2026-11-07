@@ -41,7 +41,7 @@ export function SiteHeader() {
         </span>
       </Link>
       <div className="flex items-center md:gap-32">
-        <Link to="/about" className={`text-cousine-nawigacja text-foreground ${LINK_CLASSES}`}>
+        <Link to="/o-archiwum" className={`text-cousine-nawigacja text-foreground ${LINK_CLASSES}`}>
           {copy.layout.about}
         </Link>
         <form
@@ -62,7 +62,7 @@ export function SiteHeader() {
           />
         </form>
         <Link
-          to="/search"
+          to="/szukaj"
           aria-label={copy.search.label}
           // The 48 px touch target reaches into the page margin, so the row fits a 360 px screen.
           // It stops 4 px short of the edge, where the focus outline is drawn.

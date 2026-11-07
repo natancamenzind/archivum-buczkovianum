@@ -143,8 +143,8 @@ class TestTagPageEndpoint:
             document=early_main.document,
             start=0,
             end=8,
-            location="rozdział I",
-            shelfmark="1618.0009",
+            unit_number="1618",
+            scan_number="0009",
         )
         third = FragmentFactory.create(document=late_main.document, start=9, end=15)
         for fragment in (second, first, third, in_note):
@@ -167,18 +167,18 @@ class TestTagPageEndpoint:
         ]
         assert result["fragments"][0] == {
             "id": first.pk,
-            "url": f"/typescripts/{early_main.pk}?fragment={first.pk}",
+            "url": f"/maszynopisy/{early_main.pk}?fragment={first.pk}",
             "source_type": "typescript",
             "work": "Wertepy",
             "number": 1,
-            "location": "rozdział I",
+            "scan_number": "9",
             "quote": "Pierwsza",
             "scan": early_main.document.scan.url,
             "start_page": 1,
             "shelfmark": "ML, sygn. 1618.0009",
             "tags": [{"slug": "dezerter", "title": "Dezerter"}],
         }
-        assert result["fragments"][2]["url"] == f"/notes/{note.pk}?fragment={in_note.pk}"
+        assert result["fragments"][2]["url"] == f"/zapiski/{note.pk}?fragment={in_note.pk}"
         assert result["fragments"][2]["source_type"] == "note"
         assert result["fragments"][2]["work"] == "Wertepy, Czarny potok"
         assert result["fragments"][2]["scan"] == ""

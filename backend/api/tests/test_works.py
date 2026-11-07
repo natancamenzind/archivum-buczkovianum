@@ -166,12 +166,7 @@ class TestWorksEndpoint:
         # Arrange
         settings.MEDIA_ROOT = tmp_path
         work = published_work()
-        # D25: an edition's cover is not a fallback.
-        EditionFactory.create(
-            work=work,
-            cover_image=ContentFile(b"img", name="edition.png"),
-            cover_image_alt="Okładka",
-        )
+        EditionFactory.create(work=work)
 
         # Act
         result = cards(client)

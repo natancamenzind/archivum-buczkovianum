@@ -196,7 +196,7 @@ class TestMaterialPageEndpoint:
         assert result["fragments"]["total"] == 3
         first, second = result["fragments"]["items"]
         assert (first["id"], second["id"]) == (fragments[0].pk, fragments[1].pk)
-        assert first["url"] == f"/typescripts/{typescript.pk}?fragment={fragments[0].pk}"
+        assert first["url"] == f"/maszynopisy/{typescript.pk}?fragment={fragments[0].pk}"
         assert first["work"] == "Wertepy"
         assert first["tags"] == [{"slug": "pamiec", "title": "Pamięć"}]
 

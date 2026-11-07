@@ -15,7 +15,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { SideListItem } from "@/components/SideListItem";
 import { TagList } from "@/components/TagList";
 import { Card } from "@/components/ui/card";
-import { copy, formatCount, fragmentLabel, nouns, previewCount } from "@/copy/pl";
+import { copy, formatCount, fragmentLabel, nouns, previewCount, scanLabel } from "@/copy/pl";
 import { api, fetchDocument } from "@/lib/api";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
@@ -41,9 +41,9 @@ async function fetchTypescript(id: number): Promise<TypescriptData> {
   return data;
 }
 
-/** "Fragment 01 · rozdział I · ML, sygn. 1618.0009", leaving out what is missing (R-02). */
+/** "Fragment 01 · skan 9 · ML, sygn. 1618.0009", leaving out what is missing (R-02). */
 function fragmentTitle(fragment: FragmentRow): string {
-  return [fragmentLabel(fragment.number), fragment.location, fragment.shelfmark]
+  return [fragmentLabel(fragment.number), scanLabel(fragment.scan_number), fragment.shelfmark]
     .filter(Boolean)
     .join(" · ");
 }
@@ -62,7 +62,7 @@ function Context({ typescript }: { typescript: TypescriptData }) {
             description={
               work.fragment_count > 0 ? formatCount(work.fragment_count, nouns.fragment) : undefined
             }
-            to={`/works/${work.slug}`}
+            to={`/utwory/${work.slug}`}
           />
         </div>
       )}
@@ -74,7 +74,7 @@ function Context({ typescript }: { typescript: TypescriptData }) {
               <SideListItem
                 meta={item.shelfmark === "" ? undefined : item.shelfmark}
                 title={item.title}
-                to={`/typescripts/${String(item.id)}`}
+                to={`/maszynopisy/${String(item.id)}`}
                 current={item.id === typescript.id}
               />
             </li>
@@ -116,7 +116,7 @@ function Fragments({ typescript, document }: { typescript: TypescriptData; docum
             <ListRow
               number={fragment.number}
               title={fragmentTitle(fragment)}
-              to={`/typescripts/${String(typescript.id)}?${expanded ? `fragments=${ALL_FRAGMENTS}&` : ""}fragment=${String(fragment.id)}`}
+              to={`/maszynopisy/${String(typescript.id)}?${expanded ? `fragments=${ALL_FRAGMENTS}&` : ""}fragment=${String(fragment.id)}`}
             />
           </li>
         ))}

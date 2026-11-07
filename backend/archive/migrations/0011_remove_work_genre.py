@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-    dependencies = (("archive", "0007_remove_fragment_description"),)
+    dependencies = (("archive", "0010_remove_edition_cover_image"),)
 
     operations = (
         migrations.RemoveField(

@@ -7,9 +7,9 @@ import { server } from "@/test/server";
 
 const NAV_ITEMS = [
   ["Strona główna", "/"],
-  ["Utwory", "/works"],
-  ["Maszynopisy", "/typescripts"],
-  ["Tagi", "/tags"],
+  ["Utwory", "/utwory"],
+  ["Maszynopisy", "/maszynopisy"],
+  ["Tagi", "/tagi"],
 ] as const;
 
 function mainNav(): HTMLElement {
@@ -22,7 +22,7 @@ function currentNavItem(): HTMLElement | null {
 
 describe("SiteLayout", () => {
   beforeEach(() => {
-    // Most cases render /about or /works, which ask the API for their content.
+    // Most cases render /o-archiwum or /utwory, which ask the API for their content.
     server.use(
       http.get("*/api/about/", () => HttpResponse.json({ intro: "", project: "", team: [] })),
       http.get("*/api/works/", () => HttpResponse.json([])),
@@ -30,8 +30,8 @@ describe("SiteLayout", () => {
     );
   });
 
-  it("US-RA-03 AC1: the header links the service name to home and 'O archiwum' to /about", async () => {
-    const { container } = renderRoute("/about");
+  it("US-RA-03 AC1: the header links the service name to home and 'O archiwum' to /o-archiwum", async () => {
+    const { container } = renderRoute("/o-archiwum");
 
     const header = screen.getByRole("banner");
     expect(
@@ -39,12 +39,12 @@ describe("SiteLayout", () => {
     ).toHaveAttribute("href", "/");
     expect(within(header).getByRole("link", { name: "O archiwum" })).toHaveAttribute(
       "href",
-      "/about",
+      "/o-archiwum",
     );
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it.each(["/", "/about", "/works", "/search", "/no-such-page"])(
+  it.each(["/", "/o-archiwum", "/utwory", "/szukaj", "/no-such-page"])(
     "US-RA-14 AC1: on %s the header has the search field",
     async (url) => {
       const { container } = renderRoute(url);
@@ -60,7 +60,7 @@ describe("SiteLayout", () => {
   );
 
   it("US-RA-14 AC1: submitting the header field opens the search page with the query", () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
 
     const header = screen.getByRole("banner");
     const field = within(header).getByRole("combobox", { name: "Szukaj w archiwum" });
@@ -74,7 +74,7 @@ describe("SiteLayout", () => {
   });
 
   it("US-RA-14 AC1: a header search on the search page replaces the query", () => {
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     const header = screen.getByRole("banner");
     fireEvent.change(within(header).getByRole("combobox"), { target: { value: "potok" } });
@@ -85,7 +85,7 @@ describe("SiteLayout", () => {
   });
 
   it("US-RA-14 AC1: a header search for the current query drops unsubmitted edits", () => {
-    renderRoute("/search?q=dezerter");
+    renderRoute("/szukaj?q=dezerter");
 
     const pageField = within(screen.getByRole("search", { name: "Wyszukiwanie" })).getByRole(
       "combobox",
@@ -99,7 +99,7 @@ describe("SiteLayout", () => {
   });
 
   it("US-RA-14 AC1: a blank header search opens the search page without a query", () => {
-    const { router } = renderRoute("/about");
+    const { router } = renderRoute("/o-archiwum");
 
     const header = screen.getByRole("banner");
     fireEvent.change(within(header).getByRole("combobox"), { target: { value: "  " } });
@@ -107,16 +107,16 @@ describe("SiteLayout", () => {
 
     const pageForm = screen.getByRole("search", { name: "Wyszukiwanie" });
     expect(within(pageForm).getByRole("combobox")).toHaveValue("");
-    expect(router.state.location.pathname).toBe("/search");
+    expect(router.state.location.pathname).toBe("/szukaj");
     expect(router.state.location.search).toBe("");
   });
 
   it("US-RA-14 AC1: on mobile the header search is an icon linking to the search page", () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
 
     const header = screen.getByRole("banner");
     const icon = within(header).getByRole("link", { name: "Szukaj w archiwum" });
-    expect(icon).toHaveAttribute("href", "/search");
+    expect(icon).toHaveAttribute("href", "/szukaj");
     expect(icon).toHaveClass("md:hidden");
     // The field is the desktop form; "O archiwum" stays on both (plan, step 29).
     expect(within(header).getByRole("search")).toHaveClass("hidden", "md:flex");
@@ -124,7 +124,7 @@ describe("SiteLayout", () => {
   });
 
   it("US-RA-03 AC1: the main navigation lists Strona główna, Utwory, Maszynopisy, Tagi", async () => {
-    const { container } = renderRoute("/about");
+    const { container } = renderRoute("/o-archiwum");
 
     const links = within(mainNav()).getAllByRole("link");
     expect(links.map((link) => [link.textContent, link.getAttribute("href")])).toEqual(NAV_ITEMS);
@@ -133,12 +133,12 @@ describe("SiteLayout", () => {
 
   it.each([
     ["/", "Strona główna"],
-    ["/works", "Utwory"],
-    ["/works/wertepy", "Utwory"],
-    ["/typescripts", "Maszynopisy"],
-    ["/typescripts/1", "Maszynopisy"],
-    ["/tags", "Tagi"],
-    ["/tags/dezerter", "Tagi"],
+    ["/utwory", "Utwory"],
+    ["/utwory/wertepy", "Utwory"],
+    ["/maszynopisy", "Maszynopisy"],
+    ["/maszynopisy/1", "Maszynopisy"],
+    ["/tagi", "Tagi"],
+    ["/tagi/dezerter", "Tagi"],
   ])("US-RA-03 AC1: on %s the active navigation item is %s", async (url, label) => {
     const { container } = renderRoute(url);
 
@@ -147,7 +147,7 @@ describe("SiteLayout", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it.each(["/about", "/search", "/notes/1", "/secondary-texts/1", "/materials/1"])(
+  it.each(["/o-archiwum", "/szukaj", "/zapiski/1", "/teksty-sekundarne/1", "/materialy/1"])(
     "US-RA-03 AC1: on %s no navigation item is active",
     (url) => {
       renderRoute(url);
@@ -157,7 +157,7 @@ describe("SiteLayout", () => {
   );
 
   it("US-RA-03 AC1: the footer shows the service name, subtitle, navigation and funding note", async () => {
-    const { container } = renderRoute("/about");
+    const { container } = renderRoute("/o-archiwum");
 
     const footer = screen.getByRole("contentinfo");
     expect(within(footer).getByText("Archivum Buczkovianum")).toBeVisible();
@@ -168,7 +168,7 @@ describe("SiteLayout", () => {
   });
 
   it("US-RA-03 AC1: the navigation is a bottom bar on mobile and sits in the footer on desktop", () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
 
     // Mobile first: fixed to the bottom of the viewport; from `md` up, part of the footer row.
     expect(mainNav()).toHaveClass("fixed", "bottom-0", "md:static");
@@ -177,7 +177,7 @@ describe("SiteLayout", () => {
   });
 
   it("ARC-5: a navigation label that wraps on mobile stays centred", () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
 
     // "Strona główna" breaks onto two lines on a narrow bar; the lines centre like the other labels.
     for (const [name] of NAV_ITEMS) {
@@ -186,7 +186,7 @@ describe("SiteLayout", () => {
   });
 
   it("ARC-9: the funding note is right-aligned in the desktop footer", () => {
-    renderRoute("/about");
+    renderRoute("/o-archiwum");
 
     // It closes the footer row, so its lines align to the right edge of the page.
     expect(within(screen.getByRole("contentinfo")).getByText(/finansowani/i)).toHaveClass(
@@ -195,7 +195,7 @@ describe("SiteLayout", () => {
   });
 
   it("R-12: every header control and navigation link shows a focus outline, the active item too", () => {
-    renderRoute("/works");
+    renderRoute("/utwory");
 
     const links = [
       ...within(screen.getByRole("banner")).getAllByRole("link"),

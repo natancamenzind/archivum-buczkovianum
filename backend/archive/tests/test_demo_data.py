@@ -89,6 +89,23 @@ class TestLoadedDemoData:
         ]
         assert Typescript.objects.published().count() == 5
 
+    def test_us_ra_21_wertepy_shows_the_preview_limit_and_one_work_has_no_bibliography(
+        self, demo: str
+    ) -> None:
+        # Arrange
+        works = Work.objects.published().with_year()
+
+        # Act
+        counts = {work.title: work.bibliography.count() for work in works}
+
+        # Assert
+        assert counts == {
+            "Wertepy": 12,
+            "Czarny potok": 2,
+            "Dorycki krużganek": 0,
+            "Pierwsza świetność": 0,
+        }
+
     def test_tags_have_the_occurrences_of_the_design(self, demo: str) -> None:
         # Arrange
         tags = Tag.objects.published().with_occurrences()
@@ -129,7 +146,7 @@ class TestLoadedDemoData:
             "ML, sygn. 1618.0009",
             "ML, sygn. 1618.0019",
         ]
-        assert result.items[0].location == "rozdział I"
+        assert result.items[0].scan_display == "9"
         assert tags == {"1618.0009": {"Dezerter", "Epidemia"}, "1618.0019": {"Dezerter"}}
 
     def test_every_ocr_text_is_its_scans_text_layer(self, demo: str) -> None:

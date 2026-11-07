@@ -24,9 +24,10 @@ Tłumaczenie `docs/user-stories.md`. W razie rozbieżności obowiązuje wersja a
 | Tekst sekundarny | Recenzja, opracowanie, list lub nagranie o utworze. Może być w relacji z wieloma utworami. |
 | Materiał kontekstowy | Dowolne medium + opis. Może być w relacji z wieloma utworami. |
 | Materiał wizualny | Materiał kontekstowy, który jest obrazem: zdjęcie lub skan ilustracyjny. |
+| Bibliografia | Uporządkowana lista pozycji utworu. Pozycja to jedna linia dowolnego tekstu, np. „Autor, Tytuł, Wydawnictwo, miejsce rok, s. strony”. |
 | Powiązanie z utworem | Relacja między utworem a tekstem sekundarnym lub materiałem kontekstowym. Można je otagować. |
 | Tag | Nazwa dla relacji, łącząca fragmenty i zapiski: słowo klucz z Buczkowskiego (np. „dezerter”) albo nasza interpretacja (np. „wielokulturowość”). |
-| Fragment | Otagowany zakres tekstu (OCR lub tekstu litego), z opcjonalną sygnaturą i lokalizacją. |
+| Fragment | Otagowany zakres tekstu (OCR lub tekstu litego), z opcjonalną sygnaturą (jednostka archiwalna i numer skanu). |
 | Wystąpienie | Jeden opublikowany element z danym tagiem: fragment, cały byt albo powiązanie z utworem. |
 | Sygnatura | Instytucja + numer, wyświetlane jako „ML, sygn. 1618”. Fragment ma własny numer („ML, sygn. 1618.0009”), a instytucję dziedziczy po dokumencie. |
 | Byt | Każdy obiekt archiwum, który ma własną stronę: utwór, maszynopis, tag, zapisek, tekst sekundarny, materiał kontekstowy. |
@@ -80,7 +81,7 @@ Każda strona określa, które elementy pokazuje.
 
 **R-10 Karta fragmentu.** Każdy fragment wyświetlamy jako taką kartę:
 
-1. linia lokalizacji: utwór, numer w dokumencie („fragment 01”), opcjonalna lokalizacja („rozdział I”); etykieta z typem źródła („Maszynopis”, „Zapisek”);
+1. linia lokalizacji: utwór, numer w dokumencie („fragment 01”), opcjonalny numer skanu z sygnatury, bez zer wiodących („skan 9” dla 1618.0009); etykieta z typem źródła („Maszynopis”, „Zapisek”);
 2. cytat (tekst fragmentu skrócony do kilku linii); dla źródła OCR miniatura strony skanu, na której fragment się zaczyna;
 3. sygnatura, tagi.
 
@@ -122,7 +123,7 @@ Dokument z tekstem litym wyświetlamy jako tekst, z fragmentami wyróżnionymi j
 Jako RA widzę korpus informacji o utworze; na pierwszy rzut oka tylko kluczowe informacje.
 
 1. Hiro: „Utwór · Leopold Buczkowski · <rok pierwszego wydania>”, tytuł, opis.
-2. Kolumna kontekstu: lista wydań według roku, każde z rokiem, wydawnictwem i miejscem. Najwcześniejsze ma etykietę „pierwsze wydanie”.
+2. Kolumna kontekstu: lista wydań według roku, każde z rokiem, wydawnictwem i miejscem. Najwcześniejsze ma etykietę „pierwsze wydanie”. Pod nimi podgląd bibliografii (US-RA-21).
 3. Kolumna główna, kolejno:
    1. „Fragmenty maszynopisu”: podgląd (R-09) fragmentów głównego maszynopisu jako karty fragmentów (R-10);
    2. „Maszynopisy”: numerowana lista maszynopisów utworu, każdy linkuje do swojej strony;
@@ -138,6 +139,14 @@ Jako RA widzę korpus informacji o utworze; na pierwszy rzut oka tylko kluczowe 
 ### US-RA-06 — Przejście w głąb ze strony utworu
 
 1. Każdy element w kolumnie głównej, kolumnie tagów i bloku materiałów kontekstowych strony utworu linkuje do własnej podstrony, a fragment do swojego miejsca w źródle (R-01).
+
+### US-RA-21 — Bibliografia utworu
+
+1. Strona utworu: pod wydaniami sekcja „Bibliografia” z licznikiem („5 z 12”), pierwsze 5 pozycji jako lista numerowana i link „Cała bibliografia (12)” do strony bibliografii utworu. Utwór bez pozycji nie ma tej sekcji (R-02).
+2. Strona bibliografii pod adresem `/utwory/<slug>/bibliografia`. Hiro jak na stronie „O archiwum”: wiersz typu „Bibliografia utworu · Leopold Buczkowski” i tytuł utworu.
+3. Karta „Bibliografia” z licznikiem i wszystkimi pozycjami jako lista numerowana, w kolejności ustalonej przez redaktorkę.
+4. Kolumna boczna „Bibliografie utworów”: „Bibliografia do utworu „<tytuł>”” dla każdego opublikowanego utworu z co najmniej jedną pozycją, w kolejności pierwszych wydań. Bieżący utwór jest wyróżniony. Każda pozycja prowadzi do bibliografii danego utworu. Na telefonie kolumna jest pod kartą.
+5. Utwór bez pozycji nie ma strony bibliografii (404). Bibliografia szkicu utworu zwraca czytelnikowi 404 (R-06).
 
 ### US-RA-07 — Strona tagu
 
@@ -158,7 +167,7 @@ Jako RA widzę wszystko, co jest powiązane z tagiem.
 2. Kolumna kontekstu: utwór (R-03) z rokiem i liczbą fragmentów; „Maszynopisy utworu”, wszystkie maszynopisy tego samego utworu z sygnaturą i tytułem, z zaznaczonym bieżącym.
 3. Kolumna główna, kolejno:
    1. „Skan maszynopisu”: czytnik (R-11); licznik pokazuje liczbę stron;
-   2. „Fragmenty z maszynopisu”: podgląd (R-09) jego fragmentów jako numerowana lista (numer fragmentu, lokalizacja, sygnatura), w kolejności stron.
+   2. „Fragmenty z maszynopisu”: podgląd (R-09) jego fragmentów jako numerowana lista (numer fragmentu, numer skanu, sygnatura), w kolejności stron.
 4. Kolumna tagów: tagi na maszynopisie i na jego fragmentach.
 5. Materiały kontekstowe (R-08): te powiązane z jego utworem.
 
@@ -276,7 +285,7 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 ### US-WR-03 — Dodawanie utworu
 
 1. Pola: tytuł (wymagany); opis (tekst z bogatym formatowaniem); okładka/grafika do kart utworów.
-2. Wydania dodajemy w tym samym formularzu: wydawnictwo, miejsce, rok, opcjonalna okładka.
+2. Wydania dodajemy w tym samym formularzu: wydawnictwo, miejsce, rok.
 
 ### US-WR-04 — Dodawanie maszynopisu
 
@@ -315,7 +324,7 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 3. Fragmenty mogą na siebie zachodzić, a ten sam tekst może mieć kilka tagów.
 4. Fragment przechowuje zaznaczony tekst. Jeśli tekst źródłowy się zmieni i fragment przestanie pasować, fragment jest oznaczany do sprawdzenia, a nigdy po cichu przesuwany ani usuwany.
 5. Redaktorka nigdy nie wpisuje znaczników ręcznie (TEI ani żadnych innych).
-6. Własny formularz fragmentu ma: lokalizację (np. „rozdział I”), numer sygnatury (np. „1618.0009”; instytucja pochodzi z dokumentu) i pole wyboru „wyróżniony”. Wyróżnione fragmenty są pierwsze w podglądach (R-09) i mogą trafić na stronę główną (US-RA-02).
+6. Własny formularz fragmentu ma: sygnaturę w dwóch polach, numer jednostki archiwalnej (np. „1618”) i numer skanu (np. „0009”; wymaga numeru jednostki; instytucja pochodzi z dokumentu) oraz pole wyboru „wyróżniony”. Wyróżnione fragmenty są pierwsze w podglądach (R-09) i mogą trafić na stronę główną (US-RA-02).
 
 ### US-WR-10 — Tagowanie całych bytów i powiązań z utworem
 
@@ -340,6 +349,11 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 
 1. Instytucja ma skrót (wymagany, unikalny, np. „ML”) i pełną nazwę (np. „Muzeum Literatury”).
 2. Sygnatury zawsze wyświetlamy jako „<skrót>, sygn. <numer>”, składane z dwóch pól, nigdy wpisywane jako jeden tekst.
+
+### US-WR-15 — Bibliografia utworu
+
+1. Pozycje bibliografii dodaje się, edytuje, usuwa i ustawia ich kolejność w formularzu utworu (inline). Każda pozycja to jedna linia tekstu (wymagana).
+2. Kolejność ustala numer: niższe numery są pierwsze.
 
 ---
 
@@ -366,7 +380,6 @@ Na później:
 
 - **Wersja ukraińska.** Osobny serwis, podobny strukturalnie, uproszczony. Oznaczenie „Polski / Українська” w menu i stopce zawsze przekierowuje na jego stronę główną, niezależnie od tego, z której pozycji przechodzimy. Relacje między wersjami językowymi utworu (np. „Czarny potok” pl ↔ ukr) są w serwisie ukraińskim.
 - **Epicykloida.** Powolna animowana grafika w tle strony głównej (brief 5.1). Nie ma jej w Figmie.
-- **Bibliografia utworu** jako osobne pole tekstowe. W v1 bibliografią jest lista tekstów sekundarnych (R-08).
 - **Grafika w nagłówku** strony utworu i strony tagu.
 - **Kolejne strony z tekstem** (np. strona o konferencji).
 - **SEO** (pozycjonowanie w Google). v1 ma tylko tytuł i opis w meta tagach dla każdego adresu.

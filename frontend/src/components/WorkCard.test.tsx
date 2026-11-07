@@ -44,7 +44,7 @@ describe("WorkCard", () => {
   it("US-RA-01 AC3: the whole card is one link to the work page (R-01)", () => {
     renderCard();
 
-    expect(card()).toHaveAttribute("href", "/works/wertepy");
+    expect(card()).toHaveAttribute("href", "/utwory/wertepy");
     expect(card()).toContainElement(screen.getByRole("heading", { name: "Wertepy" }));
     expect(card()).toContainElement(screen.getByText("24 fragmenty"));
   });

@@ -101,12 +101,19 @@ Answered by the project owner on 2026-10-27, for questions raised by merged PRs:
 | D29 | Genre is shown as stored ("powieść"); Figma shows "Powieść". The typescripts hero has no count ("Pięć jednostek…" in Figma). Capitalise the genre on display or in the data? Add a live count to the hero? (#35) | **Shown as stored, no count.** Steps 17, 21 and 23 show the genre the same way as steps 15 and 18. | 17, 21, 23 |
 | D30 | Storage provider (architecture §10). | **Amazon S3.** The code still depends only on the S3 API. | 35 |
 | D31 | Open questions 1–3 and 5 of `user-stories.md` §6. | **The defaults hold**, except question 5: the stories win and Figma is not updated. Question 4 (an example of a tagged relation) stays with the editors. | — |
+| D32 | A work's bibliography: the secondary texts list (R-08), or a list of its own? (ARC-24) | **A list of its own**: `BibliographyEntry` (one line of text, an order) edited inline on the work, shown on the work page and on a new bibliography page (US-RA-21, US-WR-15). Figma has the screens. | ARC-24 |
 
 Answered by the project owner on 2026-11-07, in ARC-19:
 
 | # | Question | Decision | Step |
 |---|----------|----------|------|
 | D32 | How does an editor upload a scan with its OCR text? US-WR-04 asked for a PDF plus a Tesseract `.txt` with the same page count. | **One searchable PDF**, with the OCR text under the page images, wherever a scan has OCR text: typescripts, notes, secondary texts, contextual materials. The text is read from the PDF; the separate OCR file and the page-count check are gone. Architecture §4.4 and US-WR-04 to US-WR-06 are updated. | ARC-19 |
+
+Answered by the project owner on 2026-11-07, in ARC-14:
+
+| # | Question | Decision | Step |
+|---|----------|----------|------|
+| D33 | Page URLs had English segments (`/works`, `/tags`). Which Polish ones, and what happens to the old ones? | **Glossary terms in ASCII:** `/utwory` (and `/utwory/<slug>/bibliografia`), `/maszynopisy`, `/tagi`, `/zapiski`, `/teksty-sekundarne`, `/materialy`, `/o-archiwum`, `/szukaj`. Query string parameters (`q`, `tab`, `work`, `fragment`, …) and `/api/` paths stay English. The old English paths are 404s, with no redirects. Architecture §8 is updated. | ARC-14 |
 
 ## 4. Order and dependencies
 
@@ -302,6 +309,7 @@ These steps do not depend on each other, but they edit the same files. Run them 
 | US-RA-18 | done (15) | | |
 | US-RA-19 | done (18) | | |
 | US-RA-20 | 16 | | |
+| US-RA-21 | ARC-24 | US-WR-15 | ARC-24 |
 
 Rules R-01 to R-12 have no step of their own. Each page step meets them for its page.
 

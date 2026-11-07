@@ -44,7 +44,7 @@ function Cover({ work }: { work: Work }) {
 export function WorkCard({ work }: { work: Work }) {
   return (
     <Link
-      to={`/works/${work.slug}`}
+      to={`/utwory/${work.slug}`}
       className="group block h-full rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <Card

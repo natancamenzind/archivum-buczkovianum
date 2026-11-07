@@ -14,7 +14,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
-from django.db.models import Expression, F, Func, OuterRef, Q, Subquery, Value
+from django.db.models import Exists, Expression, F, Func, OuterRef, Q, Subquery, Value
 from django.utils.text import Truncator
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
@@ -538,7 +538,7 @@ class Tag(Publishable):
                 carrier.update_search_entry()
 
     def get_absolute_url(self) -> str:
-        return f"/tags/{self.slug}"
+        return f"/tagi/{self.slug}"
 
     def indexed_content(self) -> IndexedContent:
         work_ids, decades = search_filters(Work.objects.referred_to_by(self))
@@ -614,6 +614,10 @@ class WorkQuerySet(PublishableQuerySet["Work"]):
             fragments = fragments.filter(tags=tag)
         return self.annotate(fragment_count=count_of(fragments))
 
+    def with_bibliography(self) -> Self:
+        """The works with at least one bibliography entry (US-RA-21 AC4)."""
+        return self.filter(Exists(BibliographyEntry.objects.filter(work=OuterRef("pk"))))
+
     def referred_to_by(self, tag: "Tag") -> Self:
         """The works a tag refers to (US-RA-07 AC5): the tag is on the work, on a published item
         related to it, on a visible fragment of such an item, or on a visible work link."""
@@ -658,7 +662,7 @@ class Work(Publishable, Taggable):
             self.update_related_search_entries(self.related_items())
 
     def get_absolute_url(self) -> str:
-        return f"/works/{self.slug}"
+        return f"/utwory/{self.slug}"
 
     def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
         items = self.related_items()
@@ -666,6 +670,13 @@ class Work(Publishable, Taggable):
             result = super().delete(*args, **kwargs)
             self.update_related_search_entries(items)
         return result
+
+    def bibliography_preview(self) -> "Preview[BibliographyEntry]":
+        """The first entries of the bibliography and their count: "5 z 12" (US-RA-21 AC1)."""
+        entries = self.bibliography.all()
+        return Preview(
+            items=list(entries[: settings.BIBLIOGRAPHY_PREVIEW_LIMIT]), total=entries.count()
+        )
 
     def related_items(self) -> list[Publishable]:
         return [
@@ -705,12 +716,6 @@ class Edition(BaseModel):
     publisher = models.CharField(_("publisher"), max_length=255)
     place = models.CharField(_("place"), max_length=255)
     year = models.PositiveSmallIntegerField(_("year"))
-    cover_image = models.FileField(
-        _("cover image"), upload_to="editions/", blank=True, validators=[IMAGE_EXTENSIONS]
-    )
-    cover_image_alt = models.CharField(
-        _("cover image text alternative"), max_length=255, blank=True
-    )
 
     class Meta:
         ordering = ("year",)
@@ -731,6 +736,35 @@ class Edition(BaseModel):
             result = super().delete(*args, **kwargs)
             self.work.update_search_entries()
         return result
+
+
+class BibliographyEntry(BaseModel):
+    """One line of a work's bibliography (US-WR-15)."""
+
+    work = models.ForeignKey(
+        Work, verbose_name=_("work"), on_delete=models.CASCADE, related_name="bibliography"
+    )
+    text = models.CharField(
+        _("entry"),
+        max_length=1000,
+        help_text=_("One line, e.g. Author, Title, Publisher, place year, p. pages."),
+    )
+    order = models.PositiveSmallIntegerField(
+        _("order"), default=0, help_text=_("Lower numbers are shown first.")
+    )
+
+    class Meta:
+        ordering = ("order", "pk")
+        verbose_name = _("bibliography entry")
+        verbose_name_plural = _("bibliography")
+
+    def __str__(self) -> str:
+        return self.text
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """An entry is one line (US-WR-15 AC1): line breaks become spaces."""
+        self.text = " ".join(self.text.split())
+        super().save(*args, **kwargs)
 
 
 class Typescript(Publishable, Taggable, Archival):
@@ -769,7 +803,7 @@ class Typescript(Publishable, Taggable, Archival):
             super().save(*args, **kwargs)
 
     def get_absolute_url(self) -> str:
-        return f"/typescripts/{self.pk}"
+        return f"/maszynopisy/{self.pk}"
 
     def validate_constraints(self, exclude: Collection[str] | None = None) -> None:
         """Skip "one main typescript per work" here: `save()` unmarks the previous one first."""
@@ -792,7 +826,7 @@ class Note(Publishable, Taggable, MediaContent):
         verbose_name_plural = _("notes")
 
     def get_absolute_url(self) -> str:
-        return f"/notes/{self.pk}"
+        return f"/zapiski/{self.pk}"
 
 
 class SecondaryText(Publishable, Taggable, Archival):
@@ -834,7 +868,7 @@ class SecondaryText(Publishable, Taggable, Archival):
         verbose_name_plural = _("secondary texts")
 
     def get_absolute_url(self) -> str:
-        return f"/secondary-texts/{self.pk}"
+        return f"/teksty-sekundarne/{self.pk}"
 
 
 class ContextualMaterial(Publishable, Taggable, MediaContent):
@@ -852,7 +886,7 @@ class ContextualMaterial(Publishable, Taggable, MediaContent):
         verbose_name_plural = _("contextual materials")
 
     def get_absolute_url(self) -> str:
-        return f"/materials/{self.pk}"
+        return f"/materialy/{self.pk}"
 
 
 class WorkLinkQuerySet[L: "SecondaryTextWorkLink | MaterialWorkLink"](models.QuerySet[L]):
@@ -1115,14 +1149,17 @@ class Fragment(BaseModel, Taggable):
     start = models.PositiveIntegerField(_("start"), editable=False)
     end = models.PositiveIntegerField(_("end"), editable=False)
     quote = models.TextField(_("quote"), editable=False, help_text=_("The selected text."))
-    location = models.CharField(
-        _("location"), max_length=255, blank=True, help_text=_("E.g. rozdział I.")
-    )
-    shelfmark = models.CharField(
-        _("shelfmark number"),
+    unit_number = models.CharField(
+        _("archival unit number"),
         max_length=50,
         blank=True,
-        help_text=_("Number only, e.g. 1618.0009; institution from the document."),
+        help_text=_("The shelfmark before the dot, e.g. 1618; institution from the document."),
+    )
+    scan_number = models.CharField(
+        _("scan number"),
+        max_length=50,
+        blank=True,
+        help_text=_("The shelfmark after the dot, e.g. 0009: the scan in the archival unit."),
     )
     is_featured = models.BooleanField(
         _("featured"),
@@ -1194,12 +1231,26 @@ class Fragment(BaseModel, Taggable):
         return self.document.page_number(self.start)
 
     @property
+    def shelfmark(self) -> str:
+        """The number part of the shelfmark, e.g. "1618.0009"."""
+        return ".".join(part for part in (self.unit_number, self.scan_number) if part)
+
+    @property
     def shelfmark_display(self) -> str:
         owner = self.document.owner
         return format_shelfmark(owner.institution if owner else None, self.shelfmark)
 
+    @property
+    def scan_display(self) -> str:
+        """The scan number without leading zeros, e.g. "9" for "0009"; "" when not set."""
+        return self.scan_number.lstrip("0") or self.scan_number[-1:]
+
     def clean(self) -> None:
         super().clean()
+        if self.scan_number and not self.unit_number:
+            raise ValidationError(
+                {"unit_number": _("A scan number needs an archival unit number.")}
+            )
         # Offsets are set once, by the tagger. Later only re-anchoring moves them.
         if self._state.adding and self.end > len(self.document.text):
             raise ValidationError(_("The fragment goes past the end of the text."))

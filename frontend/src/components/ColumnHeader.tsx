@@ -1,7 +1,8 @@
 interface ColumnHeaderProps {
   label: string;
-  /** "Liczba": the number of items under the header. Rendered only when given. */
-  count?: number;
+  /** "Liczba": the number of items under the header, or "shown of all" ("5 z 12", R-09).
+   * Rendered only when given. */
+  count?: number | string;
   /** The heading level: 2 when no h2 section precedes the column, so heading levels do not skip. */
   level?: 2 | 3;
 }

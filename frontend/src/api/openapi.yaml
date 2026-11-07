@@ -458,6 +458,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/WorkPage'
           description: ''
+  /api/works/{slug}/bibliography/:
+    get:
+      operationId: works_bibliography_retrieve
+      description: |-
+        The work's bibliography page (US-RA-21). A draft work's is shown only to staff (R-06);
+        a work without entries has none.
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - works
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BibliographyPage'
+          description: ''
 components:
   schemas:
     AboutPage:
@@ -480,6 +504,69 @@ components:
       - intro
       - project
       - team
+    BibliographyPage:
+      type: object
+      description: US-RA-21.
+      properties:
+        slug:
+          type: string
+        is_draft:
+          type: boolean
+          description: True only for staff previewing a draft (US-WR-13).
+        title:
+          type: string
+        entries:
+          type: array
+          items:
+            type: string
+          description: Every entry's text, in order.
+        works:
+          type: array
+          items:
+            $ref: '#/components/schemas/BibliographyWork'
+          description: Published works with a bibliography, by first edition.
+      required:
+      - entries
+      - is_draft
+      - slug
+      - title
+      - works
+    BibliographyPreview:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: string
+          description: The first entries' texts, in order.
+        total:
+          type: integer
+          description: The number of all the entries.
+      required:
+      - items
+      - total
+    BibliographyWork:
+      type: object
+      description: A work in the bibliography page's side column, from a queryset
+        with `with_year()`.
+      properties:
+        slug:
+          type: string
+          readOnly: true
+          description: Part of the page address.
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          readOnly: true
+        year:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: The year of the first edition; null without editions.
+      required:
+      - slug
+      - title
+      - year
     ContextualMaterials:
       type: object
       properties:
@@ -577,10 +664,11 @@ components:
           readOnly: true
           description: 1-based scan page the fragment starts on; null for a plain
             text.
-        location:
+        scan_number:
           type: string
           readOnly: true
-          description: E.g. rozdział I.
+          description: The shelfmark after the dot without leading zeros, e.g. "9";
+            may be empty.
         shelfmark:
           type: string
           readOnly: true
@@ -594,8 +682,8 @@ components:
       required:
       - end
       - id
-      - location
       - number
+      - scan_number
       - shelfmark
       - start
       - start_page
@@ -721,10 +809,11 @@ components:
           type: integer
           readOnly: true
           description: 1-based, by position in the text.
-        location:
+        scan_number:
           type: string
           readOnly: true
-          description: E.g. rozdział I.
+          description: The shelfmark after the dot without leading zeros, e.g. "9";
+            may be empty.
         quote:
           type: string
           readOnly: true
@@ -751,10 +840,10 @@ components:
           description: Published tags, by name.
       required:
       - id
-      - location
       - number
       - quote
       - scan
+      - scan_number
       - shelfmark
       - source_type
       - start_page
@@ -803,18 +892,19 @@ components:
           type: integer
           readOnly: true
           description: 1-based, by position in the text.
-        location:
+        scan_number:
           type: string
           readOnly: true
-          description: E.g. rozdział I.
+          description: The shelfmark after the dot without leading zeros, e.g. "9";
+            may be empty.
         shelfmark:
           type: string
           readOnly: true
           description: E.g. "ML, sygn. 1618.0009"; may be empty.
       required:
       - id
-      - location
       - number
+      - scan_number
       - shelfmark
     GroupEnum:
       enum:
@@ -1728,7 +1818,12 @@ components:
           allOf:
           - $ref: '#/components/schemas/ContextualMaterials'
           description: Those linked to the work.
+        bibliography:
+          allOf:
+          - $ref: '#/components/schemas/BibliographyPreview'
+          description: Empty when the work has no entries.
       required:
+      - bibliography
       - description
       - editions
       - fragments
