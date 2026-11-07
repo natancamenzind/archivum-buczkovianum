@@ -172,6 +172,14 @@ class TestEditorPanel:
             "about_project",
         ]
 
+    def test_us_wr_03_ac2_edition_inline_has_no_cover(self, admin_client: Client) -> None:
+        # Act
+        response = admin_client.get(reverse("admin:archive_work_add"))
+
+        # Assert
+        editions, _bibliography = response.context["inline_admin_formsets"]
+        assert list(editions.formset.form.base_fields) == ["work", "publisher", "place", "year"]
+
 
 @pytest.mark.django_db
 class TestRichTextInThePanel:

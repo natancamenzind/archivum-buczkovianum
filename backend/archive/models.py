@@ -717,12 +717,6 @@ class Edition(BaseModel):
     publisher = models.CharField(_("publisher"), max_length=255)
     place = models.CharField(_("place"), max_length=255)
     year = models.PositiveSmallIntegerField(_("year"))
-    cover_image = models.FileField(
-        _("cover image"), upload_to="editions/", blank=True, validators=[IMAGE_EXTENSIONS]
-    )
-    cover_image_alt = models.CharField(
-        _("cover image text alternative"), max_length=255, blank=True
-    )
 
     class Meta:
         ordering = ("year",)

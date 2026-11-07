@@ -281,7 +281,7 @@ Everything happens in Django admin. Every image field requires a text alternativ
 ### US-WR-03 — Add a work
 
 1. Fields: title (required); genre (e.g. "powieść"); description (rich text); cover image for work cards.
-2. Editions are added inline: publisher, place, year, optional cover image.
+2. Editions are added inline: publisher, place, year.
 
 ### US-WR-04 — Add a typescript
 
