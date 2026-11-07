@@ -28,8 +28,8 @@ const TYPESCRIPT: TypescriptData = {
   ],
   fragments: {
     items: [
-      { id: 7, number: 3, location: "rozdział III", shelfmark: "ML, sygn. 1618.0019" },
-      { id: 5, number: 1, location: "rozdział I", shelfmark: "ML, sygn. 1618.0009" },
+      { id: 7, number: 3, scan_number: "19", shelfmark: "ML, sygn. 1618.0019" },
+      { id: 5, number: 1, scan_number: "9", shelfmark: "ML, sygn. 1618.0009" },
     ],
     total: 3,
   },
@@ -76,7 +76,7 @@ const DOCUMENT: Document = {
       end: 8,
       number: 1,
       start_page: 1,
-      location: "rozdział I",
+      scan_number: "9",
       shelfmark: "ML, sygn. 1618.0009",
       tags: [{ slug: "wies", title: "Wieś" }],
     },
@@ -86,7 +86,7 @@ const DOCUMENT: Document = {
       end: 15,
       number: 2,
       start_page: 1,
-      location: "",
+      scan_number: "",
       shelfmark: "",
       tags: [],
     },
@@ -96,7 +96,7 @@ const DOCUMENT: Document = {
       end: 29,
       number: 3,
       start_page: 2,
-      location: "rozdział III",
+      scan_number: "19",
       shelfmark: "ML, sygn. 1618.0019",
       tags: [{ slug: "wojna", title: "Wojna" }],
     },
@@ -109,7 +109,7 @@ const EXTRA_FRAGMENT: Document["fragments"][number] = {
   end: 0,
   number: 4,
   start_page: 1,
-  location: "",
+  scan_number: "",
   shelfmark: "",
   tags: [],
 };
@@ -355,12 +355,23 @@ describe("TypescriptPage", () => {
     fireEvent.click(fragment);
 
     expect(fragment).toHaveAttribute("aria-pressed", "true");
-    const details = screen.getByText("Fragment 01 · rozdział I");
+    const details = screen.getByText("Fragment 01 · skan 9");
     expect(details).toBeVisible();
     expect(details.closest("[aria-live=polite]")).not.toBeNull();
     const scan = card("Skan maszynopisu");
     expect(within(scan).getByRole("link", { name: "Wieś" })).toHaveAttribute("href", "/tags/wies");
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("ARC-7: a clicked fragment shows its scan number, and only its number without one", async () => {
+    mockPage();
+
+    await renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Fragment 01: Pierwsza" }));
+    expect(screen.getByText("Fragment 01 · skan 9")).toBeVisible();
+    fireEvent.click(highlight("Fragment 02: strona"));
+    expect(screen.getByText("Fragment 02")).toBeVisible();
   });
 
   it("R-11 AC2: a highlight works from the keyboard", async () => {
@@ -372,7 +383,7 @@ describe("TypescriptPage", () => {
     fireEvent.keyDown(fragment, { key: "Enter" });
 
     expect(fragment).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText("Fragment 03 · rozdział III")).toBeVisible();
+    expect(screen.getByText("Fragment 03 · skan 19")).toBeVisible();
     fireEvent.keyDown(highlight("Fragment 02: strona"), { key: "Tab" });
     expect(highlight("Fragment 02: strona")).toHaveAttribute("aria-pressed", "false");
     fireEvent.keyDown(highlight("Fragment 02: strona"), { key: " " });
@@ -387,7 +398,7 @@ describe("TypescriptPage", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Fragment 01: Pierwsza" }));
 
-    expect(screen.getByText("Fragment 01 · rozdział I")).toBeVisible();
+    expect(screen.getByText("Fragment 01 · skan 9")).toBeVisible();
     expect(screen.queryByText(/^Fragment 04/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Fragment 02: strona" })).toHaveAttribute(
       "aria-pressed",
@@ -486,8 +497,8 @@ describe("TypescriptPage", () => {
     expect(within(fragments).getByText("2 z 3")).toBeVisible();
     const links = within(fragments).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual([
-      "03Fragment 03 · rozdział III · ML, sygn. 1618.0019",
-      "01Fragment 01 · rozdział I · ML, sygn. 1618.0009",
+      "03Fragment 03 · skan 19 · ML, sygn. 1618.0019",
+      "01Fragment 01 · skan 9 · ML, sygn. 1618.0009",
       "Wszystkie fragmenty (3)",
     ]);
     expect(links[0]).toHaveAttribute("href", "/typescripts/1?fragment=7");
@@ -504,7 +515,7 @@ describe("TypescriptPage", () => {
       within(card("Fragmenty z maszynopisu")).getByRole("link", { name: /Fragment 03/ }),
     );
 
-    expect(await screen.findByText("Fragment 03 · rozdział III")).toBeVisible();
+    expect(await screen.findByText("Fragment 03 · skan 19")).toBeVisible();
     expect(scrollIntoView.mock.contexts[0]).toBe(
       screen.getByRole("button", { name: "Fragment 03: Druga" }),
     );
@@ -522,9 +533,9 @@ describe("TypescriptPage", () => {
     expect(await within(fragments).findByText("3")).toBeVisible();
     const links = within(fragments).getAllByRole("link");
     expect(links.map((link) => link.textContent)).toEqual([
-      "01Fragment 01 · rozdział I · ML, sygn. 1618.0009",
+      "01Fragment 01 · skan 9 · ML, sygn. 1618.0009",
       "02Fragment 02",
-      "03Fragment 03 · rozdział III · ML, sygn. 1618.0019",
+      "03Fragment 03 · skan 19 · ML, sygn. 1618.0019",
     ]);
     expect(links[0]).toHaveFocus();
     // Opening a fragment keeps the list expanded.

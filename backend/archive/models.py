@@ -1114,14 +1114,17 @@ class Fragment(BaseModel, Taggable):
     start = models.PositiveIntegerField(_("start"), editable=False)
     end = models.PositiveIntegerField(_("end"), editable=False)
     quote = models.TextField(_("quote"), editable=False, help_text=_("The selected text."))
-    location = models.CharField(
-        _("location"), max_length=255, blank=True, help_text=_("E.g. rozdział I.")
-    )
-    shelfmark = models.CharField(
-        _("shelfmark number"),
+    unit_number = models.CharField(
+        _("archival unit number"),
         max_length=50,
         blank=True,
-        help_text=_("Number only, e.g. 1618.0009; institution from the document."),
+        help_text=_("The shelfmark before the dot, e.g. 1618; institution from the document."),
+    )
+    scan_number = models.CharField(
+        _("scan number"),
+        max_length=50,
+        blank=True,
+        help_text=_("The shelfmark after the dot, e.g. 0009: the scan in the archival unit."),
     )
     description = models.TextField(_("description"), blank=True)
     is_featured = models.BooleanField(
@@ -1194,12 +1197,26 @@ class Fragment(BaseModel, Taggable):
         return self.document.page_number(self.start)
 
     @property
+    def shelfmark(self) -> str:
+        """The number part of the shelfmark, e.g. "1618.0009"."""
+        return ".".join(part for part in (self.unit_number, self.scan_number) if part)
+
+    @property
     def shelfmark_display(self) -> str:
         owner = self.document.owner
         return format_shelfmark(owner.institution if owner else None, self.shelfmark)
 
+    @property
+    def scan_display(self) -> str:
+        """The scan number without leading zeros, e.g. "9" for "0009"; "" when not set."""
+        return self.scan_number.lstrip("0") or self.scan_number[-1:]
+
     def clean(self) -> None:
         super().clean()
+        if self.scan_number and not self.unit_number:
+            raise ValidationError(
+                {"unit_number": _("A scan number needs an archival unit number.")}
+            )
         # Offsets are set once, by the tagger. Later only re-anchoring moves them.
         if self._state.adding and self.end > len(self.document.text):
             raise ValidationError(_("The fragment goes past the end of the text."))

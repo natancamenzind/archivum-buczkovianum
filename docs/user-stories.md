@@ -24,7 +24,7 @@ Sources: `docs/PROJECT_BRIEF.md` and the Figma file "archiwum-buczkowski-model",
 | Visual material (materiał wizualny) | A contextual material that is an image: a photo or an illustrative scan. |
 | Work link | The relation between a work and a secondary text or contextual material. Can be tagged. |
 | Tag | A motif linking fragments and notes: a Buczkowski keyword or an editorial interpretation. |
-| Fragment | A tagged character range in a text (OCR or plain), with optional shelfmark, location and description. |
+| Fragment | A tagged character range in a text (OCR or plain), with optional shelfmark (archival unit and scan number) and description. |
 | Occurrence (wystąpienie) | One published item carrying a tag: a fragment, a whole entity, or a work link. |
 | Shelfmark (sygnatura) | Institution + number, shown as "ML, sygn. 1618". A fragment has its own number ("ML, sygn. 1618.0009") and takes the institution from its document. |
 
@@ -76,7 +76,7 @@ Each page defines which items it includes.
 
 **R-10 Fragment card.** Every fragment is shown as this card:
 
-1. location line: work, number in its document ("fragment 01"), optional location ("rozdział I"); a chip with the source type ("Maszynopis", "Zapisek");
+1. location line: work, number in its document ("fragment 01"), optional scan number from the shelfmark, without leading zeros ("skan 9" for 1618.0009); a chip with the source type ("Maszynopis", "Zapisek");
 2. quote (the fragment text, cut to a few lines); for an OCR source, a thumbnail of the scan page where the fragment starts;
 3. shelfmark, description, tags.
 
@@ -154,7 +154,7 @@ Shows everything connected to a tag.
 2. Context column: the work (R-03) with year and fragment count; "Maszynopisy utworu", all typescripts of the same work with shelfmark and title, the current one marked.
 3. Main column, in order:
    1. "Skan maszynopisu": the reader (R-11); the counter shows the page count;
-   2. "Fragmenty z maszynopisu": a preview (R-09) of its fragments as a numbered list (fragment number, location, shelfmark), in page order.
+   2. "Fragmenty z maszynopisu": a preview (R-09) of its fragments as a numbered list (fragment number, scan number, shelfmark), in page order.
 4. Tag column: tags on the typescript and on its fragments.
 5. Contextual materials (R-08): those linked to its work.
 
@@ -311,7 +311,7 @@ Everything happens in Django admin. Every image field requires a text alternativ
 3. Fragments may overlap, and the same text can carry several tags.
 4. A fragment stores its selected text. If the underlying text changes so that it no longer matches, the fragment is flagged for review, never silently moved or deleted.
 5. The editor never writes markup (TEI or otherwise).
-6. The fragment's own form has: location (e.g. "rozdział I"), shelfmark number (e.g. "1618.0009"; the institution comes from the document), description, and a "featured" checkbox. Featured fragments come first in previews (R-09) and can appear on the home page (US-RA-02).
+6. The fragment's own form has: the shelfmark as two fields, archival unit number (e.g. "1618") and scan number (e.g. "0009"; requires the unit number; the institution comes from the document), description, and a "featured" checkbox. Featured fragments come first in previews (R-09) and can appear on the home page (US-RA-02).
 
 ### US-WR-10 — Tag whole entities and work links
 

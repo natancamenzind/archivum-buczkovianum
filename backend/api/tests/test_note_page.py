@@ -177,7 +177,11 @@ class TestNotePageEndpoint:
         )
         fragments = [
             FragmentFactory.create(
-                document=typescript.document, start=start, end=start + 5, shelfmark="1618.0009"
+                document=typescript.document,
+                start=start,
+                end=start + 5,
+                unit_number="1618",
+                scan_number="0009",
             )
             for start in (0, 6, 12)
         ]
@@ -200,7 +204,7 @@ class TestNotePageEndpoint:
             "source_type": "typescript",
             "work": "Wertepy",
             "number": 1,
-            "location": "",
+            "scan_number": "9",
             "quote": "Czarn",
             "scan": typescript.document.scan.url,
             "start_page": 1,

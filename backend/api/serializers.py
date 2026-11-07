@@ -215,13 +215,18 @@ class FragmentRowSerializer(serializers.ModelSerializer[Fragment]):
     """
 
     number = serializers.IntegerField(read_only=True, help_text="1-based, by position in the text.")
+    scan_number = serializers.CharField(
+        source="scan_display",
+        read_only=True,
+        help_text='The shelfmark after the dot without leading zeros, e.g. "9"; may be empty.',
+    )
     shelfmark = serializers.SerializerMethodField(
         help_text='E.g. "ML, sygn. 1618.0009"; may be empty.'
     )
 
     class Meta:
         model = Fragment
-        fields = ("id", "number", "location", "shelfmark")
+        fields = ("id", "number", "scan_number", "shelfmark")
         # Output only, so the schema marks every field as present, the blank ones too.
         read_only_fields = fields
 
@@ -323,6 +328,11 @@ class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
     )
     work = serializers.SerializerMethodField(help_text="The source's published works, by year.")
     number = serializers.IntegerField(read_only=True, help_text="1-based, by position in the text.")
+    scan_number = serializers.CharField(
+        source="scan_display",
+        read_only=True,
+        help_text='The shelfmark after the dot without leading zeros, e.g. "9"; may be empty.',
+    )
     scan = serializers.SerializerMethodField(help_text="PDF URL; empty for a plain text.")
     start_page = serializers.IntegerField(
         read_only=True,
@@ -344,7 +354,7 @@ class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
             "source_type",
             "work",
             "number",
-            "location",
+            "scan_number",
             "quote",
             "scan",
             "start_page",
@@ -627,7 +637,7 @@ class DocumentFragmentSerializer(FragmentRowSerializer):
 
     class Meta:
         model = Fragment
-        fields = ("id", "start", "end", "number", "start_page", "location", "shelfmark", "tags")
+        fields = ("id", "start", "end", "number", "start_page", "scan_number", "shelfmark", "tags")
         # Output only, so the schema marks every field as present, the blank ones too.
         read_only_fields = fields
 

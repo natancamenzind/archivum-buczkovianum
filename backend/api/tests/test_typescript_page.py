@@ -137,17 +137,24 @@ class TestTypescriptPageEndpoint:
         assert result["document"] == typescript.document_id
         assert result["page_count"] == 3
 
-    def test_us_ra_08_ac3_the_fragments_preview_with_number_location_and_shelfmark(
+    def test_us_ra_08_ac3_the_fragments_preview_with_number_scan_number_and_shelfmark(
         self, client: Client, settings: Settings
     ) -> None:
         # Arrange
         settings.PREVIEW_LIMIT = 2
         typescript = published_typescript(institution=InstitutionFactory.create())
         document = typescript.document
-        first = FragmentFactory.create(document=document, start=0, end=5, location="rozdział I")
+        first = FragmentFactory.create(
+            document=document, start=0, end=5, unit_number="1618", scan_number="0009"
+        )
         FragmentFactory.create(document=document, start=10, end=15)
         featured = FragmentFactory.create(
-            document=document, start=30, end=35, shelfmark="1618.0019", is_featured=True
+            document=document,
+            start=30,
+            end=35,
+            unit_number="1618",
+            scan_number="0019",
+            is_featured=True,
         )
 
         # Act
@@ -159,10 +166,15 @@ class TestTypescriptPageEndpoint:
                 {
                     "id": featured.pk,
                     "number": 3,
-                    "location": "",
+                    "scan_number": "19",
                     "shelfmark": "ML, sygn. 1618.0019",
                 },
-                {"id": first.pk, "number": 1, "location": "rozdział I", "shelfmark": ""},
+                {
+                    "id": first.pk,
+                    "number": 1,
+                    "scan_number": "9",
+                    "shelfmark": "ML, sygn. 1618.0009",
+                },
             ],
             "total": 3,
         }
@@ -347,7 +359,7 @@ class TestTypescriptPageSchema:
             )
         )
         for name, fields in (
-            ("FragmentRow", ("id", "number", "location", "shelfmark")),
+            ("FragmentRow", ("id", "number", "scan_number", "shelfmark")),
             ("WorkSummary", ("slug", "title", "year", "fragment_count")),
             ("MaterialText", ("url", "author", "title", "publication")),
             ("VisualMaterial", ("url", "title", "shelfmark", "image", "image_alt")),

@@ -122,13 +122,55 @@ class TestShelfmark:
         typescript = TypescriptFactory.create(
             institution=InstitutionFactory.create(abbreviation="ML")
         )
-        fragment = FragmentFactory.create(document=typescript.document, shelfmark="1618.0009")
+        fragment = FragmentFactory.create(
+            document=typescript.document, unit_number="1618", scan_number="0009"
+        )
 
         # Act
         display = fragment.shelfmark_display
 
         # Assert
         assert display == "ML, sygn. 1618.0009"
+
+    def test_arc_7_fragment_shelfmark_without_scan_number_is_the_unit(self) -> None:
+        # Arrange
+        typescript = TypescriptFactory.create(
+            institution=InstitutionFactory.create(abbreviation="ML")
+        )
+        fragment = FragmentFactory.create(document=typescript.document, unit_number="1618")
+
+        # Act
+        display = fragment.shelfmark_display
+
+        # Assert
+        assert display == "ML, sygn. 1618"
+
+    @pytest.mark.parametrize(
+        ("scan_number", "expected"),
+        [("0009", "9"), ("0104", "104"), ("12", "12"), ("0000", "0"), ("", "")],
+    )
+    def test_arc_7_scan_number_is_shown_without_leading_zeros(
+        self, scan_number: str, expected: str
+    ) -> None:
+        # Arrange
+        fragment = FragmentFactory.create(unit_number="1618", scan_number=scan_number)
+
+        # Act
+        display = fragment.scan_display
+
+        # Assert
+        assert display == expected
+
+    def test_arc_7_scan_number_needs_an_archival_unit_number(self) -> None:
+        # Arrange
+        fragment = FragmentFactory.create(scan_number="0009")
+
+        # Act
+        with pytest.raises(ValidationError) as error:
+            fragment.full_clean()
+
+        # Assert
+        assert "unit_number" in error.value.message_dict
 
     def test_us_wr_14_ac1_institution_in_use_cannot_be_deleted(self) -> None:
         # Arrange

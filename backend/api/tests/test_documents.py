@@ -55,7 +55,7 @@ class TestDocumentEndpoint:
         # Arrange
         document = ocr_document(institution=InstitutionFactory.create())
         second = FragmentFactory.create(
-            document=document, start=20, end=25, location="rozdział II", shelfmark="1618.0019"
+            document=document, start=20, end=25, unit_number="1618", scan_number="0019"
         )
         first = FragmentFactory.create(document=document, start=0, end=8)
         wies = TagFactory.create(title="Wieś", slug="wies", status=PUBLISHED)
@@ -73,7 +73,7 @@ class TestDocumentEndpoint:
                 "end": 8,
                 "number": 1,
                 "start_page": 1,
-                "location": "",
+                "scan_number": "",
                 "shelfmark": "",
                 "tags": [],
             },
@@ -83,7 +83,7 @@ class TestDocumentEndpoint:
                 "end": 25,
                 "number": 2,
                 "start_page": 2,
-                "location": "rozdział II",
+                "scan_number": "19",
                 "shelfmark": "ML, sygn. 1618.0019",
                 "tags": [{"slug": "wies", "title": "Wieś"}, {"slug": "wojna", "title": "Wojna"}],
             },
@@ -179,5 +179,5 @@ class TestDocumentSchema:
             ("id", "kind", "text", "page_offsets", "scan", "is_draft", "fragments")
         )
         assert sorted(schemas["DocumentFragment"]["required"]) == sorted(
-            ("id", "start", "end", "number", "start_page", "location", "shelfmark", "tags")
+            ("id", "start", "end", "number", "start_page", "scan_number", "shelfmark", "tags")
         )

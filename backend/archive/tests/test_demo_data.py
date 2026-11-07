@@ -129,7 +129,7 @@ class TestLoadedDemoData:
             "ML, sygn. 1618.0009",
             "ML, sygn. 1618.0019",
         ]
-        assert result.items[0].location == "rozdział I"
+        assert result.items[0].scan_display == "9"
         assert tags == {"1618.0009": {"Dezerter", "Epidemia"}, "1618.0019": {"Dezerter"}}
 
     def test_every_scan_has_as_many_pages_as_its_ocr_text(self, demo: str) -> None:

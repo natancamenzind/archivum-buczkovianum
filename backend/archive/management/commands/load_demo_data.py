@@ -138,19 +138,12 @@ WORKS = [
 # Fragments the design shows: (typescript shelfmark, number in the text) -> fields and tags.
 SHOWN_FRAGMENTS: dict[tuple[str, int], dict[str, Any]] = {
     ("1618", 1): {
-        "location": "rozdział I",
-        "shelfmark": "1618.0009",
         "description": "Grzybniak leczy chorych podczas zimowej epidemii tyfusu w Dolinoszczęsnej.",
         "is_featured": True,
         "tags": ["Dezerter", "Epidemia"],
     },
-    ("1618", 3): {
-        "location": "rozdział III",
-        "shelfmark": "1618.0019",
-        "is_featured": True,
-        "tags": ["Dezerter"],
-    },
-    ("1609", 2): {"shelfmark": "1609.0012", "tags": ["Dezerter"]},
+    ("1618", 3): {"is_featured": True, "tags": ["Dezerter"]},
+    ("1609", 2): {"scan_number": "0012", "tags": ["Dezerter"]},
 }
 
 
@@ -320,7 +313,8 @@ class Command(BaseCommand):
             sentences = spread_sentences(document.text, typescript_data.fragments)
             for number, sentence in enumerate(sentences, start=1):
                 shown = {
-                    "shelfmark": f"{typescript_data.shelfmark}.{number * 5 + 4:04d}",
+                    "unit_number": typescript_data.shelfmark,
+                    "scan_number": f"{number * 5 + 4:04d}",
                     **SHOWN_FRAGMENTS.get((typescript_data.shelfmark, number), {}),
                 }
                 fragment_tags = shown.pop("tags", [])

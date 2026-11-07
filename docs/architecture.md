@@ -133,8 +133,8 @@ OCR upload format: one UTF-8 `.txt` file with a form-feed character (`\f`) betwe
 - `start`, `end`: character offsets into `Document.text`,
 - `quote`: the selected text, copied at creation time,
 - `tags`: many-to-many to `Tag`,
-- `location`: short text, optional (e.g. "rozdział I"),
-- `shelfmark`: optional (e.g. `1618.0009`); the institution comes from the document's owner,
+- `unit_number`: the archival unit, the shelfmark before the dot, optional (e.g. `1618`),
+- `scan_number`: the scan in that unit, the shelfmark after the dot, optional (e.g. `0009`); it requires `unit_number`. The shelfmark is the two joined with a dot (`1618.0009`); the institution comes from the document's owner,
 - `description`: plain text, optional,
 - `is_featured`: bool (R-09, US-RA-02),
 - `needs_review`: bool.
@@ -167,7 +167,7 @@ TEI is not a storage format. A TEI export can be generated from `Document` and `
   - The view shows the text in a plain `<div>`, with existing fragments highlighted.
   - The editor selects text. Vanilla JavaScript computes the offsets and the tag picker POSTs `{start, end, quote, tag_ids}` to a staff-only endpoint.
   - No build step and no framework.
-  - The view lists every fragment, with a link to its admin form, where the editor sets `location`, `shelfmark`, `description` and `is_featured` (US-WR-09 AC6). Fragments with `needs_review` are listed first, so the editor can fix or delete them.
+  - The view lists every fragment, with a link to its admin form, where the editor sets `unit_number`, `scan_number`, `description` and `is_featured` (US-WR-09 AC6). Fragments with `needs_review` are listed first, so the editor can fix or delete them.
 - The tagger is offered only where US-WR-09 allows it: main typescripts, and notes, secondary texts and contextual materials with a `Document`.
 - The tag admin list can be filtered by `kind`.
 - **Draft preview** (US-WR-13): every `Publishable` model defines `get_absolute_url()`, so admin shows "View on site" for drafts too.
