@@ -20,9 +20,9 @@ W kodzie składana z pól instytucja i numer sygnatury, nigdy wpisywana ręcznie
 
 ## Nawigacja główna
 
-Pozycje: Strona główna, Utwory, Maszynopisy, Tagi. Aktywna pozycja wynika z typu strony: strona główna → Strona główna; utwór → Utwory; maszynopis → Maszynopisy; tag → Tagi. Wyszukiwanie, tekst sekundarny i O archiwum nie mają aktywnej pozycji.
+Pozycje: Utwory, Maszynopisy, Tagi. Do strony głównej prowadzi logo „Archivum Buczkovianum” w nagłówku. Aktywna pozycja wynika z typu strony: utwór → Utwory; maszynopis → Maszynopisy; tag → Tagi. Strona główna, wyszukiwanie, tekst sekundarny i O archiwum nie mają aktywnej pozycji.
 
-Desktop: nawigacja w stopce, wyszukiwanie i „O archiwum” w nagłówku. Mobile: nawigacja w dolnym pasku, wyszukiwanie jako ikona w nagłówku.
+Desktop: nawigacja w nagłówku, przed „O archiwum” i wyszukiwaniem; nagłówek jest przyklejony do góry ekranu (sticky) i zostaje widoczny przy przewijaniu. Mobile: nawigacja w dolnym pasku przypiętym do dołu ekranu, wyszukiwanie jako ikona w nagłówku.
 
 ## Liczniki i linki
 

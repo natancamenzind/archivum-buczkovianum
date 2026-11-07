@@ -70,7 +70,6 @@ export const copy = {
     about: "O archiwum",
     navLabel: "Menu główne",
     nav: {
-      home: "Strona główna",
       works: "Utwory",
       typescripts: "Maszynopisy",
       tags: "Tagi",

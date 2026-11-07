@@ -1,6 +1,6 @@
 # Pozycja nawigacji
 
-Poziomy: stopka desktop. Pionowy: dolna nawigacja mobile. Aktywna = sekcja typu bieżącej strony.
+Poziomy: nagłówek desktop. Pionowy: dolna nawigacja mobile. Aktywna = sekcja typu bieżącej strony.
 
 ## Properties
 
@@ -19,7 +19,7 @@ Poziomy: stopka desktop. Pionowy: dolna nawigacja mobile. Aktywna = sekcja typu 
 
 ### Układ=Poziomy, Stan=Aktywna
 
-- box "Układ=Poziomy, Stan=Aktywna" · flex-row · gap var(--space-8) · padding 0px var(--space-16) 0px var(--space-16) · align center · w hug, h 88px · border-top 2px var(--color-border-accent)
+- box "Układ=Poziomy, Stan=Aktywna" · flex-row · gap var(--space-8) · padding 0px var(--space-16) 0px var(--space-16) · align center · w hug, h 88px · border-bottom 2px var(--color-border-accent)
   - **Ikona/dom** · w 16px, h 16px
   - text "Etykieta" · .text-cousine-nawigacja · color var(--color-text-accent) · “Strona główna”
 
