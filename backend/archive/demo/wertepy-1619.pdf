@@ -1,54 +1,131 @@
-%PDF-1.4
+%PDF-1.3
+%âãÏÓ
 1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
+<<
+/Producer (pypdf)
+>>
 endobj
 2 0 obj
-<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R] /Count 3 >>
+<<
+/Type /Pages
+/Count 3
+/Kids [ 4 0 R 6 0 R 8 0 R ]
+>>
 endobj
 3 0 obj
-<< /Length 64 >>
-stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1619 - strona 1 z 3) Tj ET
-endstream
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
 endobj
 4 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 3 0 R /Resources << /Font << /F1 9 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 5 0 R
+>>
 endobj
 5 0 obj
-<< /Length 64 >>
+<<
+/Length 320
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1619 - strona 2 z 3) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Zim przysza do Dolinoszczsnej epidemia i Grzybniak chodzi od chaty do chaty.) Tj T* (W szkole pachniao kred i dymem z elaznego piecyka. Nauczyciel czyta gono,) Tj T* (a dzieci patrzyy na nieg za szyb. Od wschodu dochodzi huk dzia, coraz) Tj T* (bliszy z kadym dniem.) Tj ET
 endstream
 endobj
 6 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 5 0 R /Resources << /Font << /F1 9 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 7 0 R
+>>
 endobj
 7 0 obj
-<< /Length 64 >>
+<<
+/Length 257
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1619 - strona 3 z 3) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (onierze rozpalili ognisko na skraju wsi. Stara kobieta pamitaa jeszcze) Tj T* (poprzedni wojn i nie chciaa o niej mówi. W stodole leao siano z zeszego) Tj T* (lata. Psy szczekay do póna, potem ucichy naraz.) Tj ET
 endstream
 endobj
 8 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 7 0 R /Resources << /Font << /F1 9 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 9 0 R
+>>
 endobj
 9 0 obj
-<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+<<
+/Length 249
+>>
+stream
+BT /F1 11 Tf 14 TL 56 780 Td (Rzeka zamarza tylko przy brzegach. Pisarz gminny zapisywa nazwiska powoli,) Tj T* (litera po literze. Ludzie uciekali w las, zabierajc tylko chleb i sól. Na) Tj T* (Podolu wiosna przychodzi nagle, jednej nocy.) Tj ET
+endstream
 endobj
 xref
 0 10
 0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000127 00000 n 
-0000000241 00000 n 
-0000000367 00000 n 
-0000000481 00000 n 
-0000000607 00000 n 
-0000000721 00000 n 
-0000000847 00000 n 
+0000000015 00000 n 
+0000000054 00000 n 
+0000000125 00000 n 
+0000000174 00000 n 
+0000000577 00000 n 
+0000000948 00000 n 
+0000001351 00000 n 
+0000001659 00000 n 
+0000002062 00000 n 
 trailer
-<< /Size 10 /Root 1 0 R >>
+<<
+/Size 10
+/Root 3 0 R
+/Info 1 0 R
+>>
 startxref
-917
+2362
 %%EOF

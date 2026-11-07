@@ -1,87 +1,227 @@
-%PDF-1.4
+%PDF-1.3
+%âãÏÓ
 1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
+<<
+/Producer (pypdf)
+>>
 endobj
 2 0 obj
-<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R 12 0 R 14 0 R] /Count 6 >>
+<<
+/Type /Pages
+/Count 6
+/Kids [ 4 0 R 6 0 R 8 0 R 10 0 R 12 0 R 14 0 R ]
+>>
 endobj
 3 0 obj
-<< /Length 64 >>
-stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1618 - strona 1 z 6) Tj ET
-endstream
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
 endobj
 4 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 3 0 R /Resources << /Font << /F1 15 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 5 0 R
+>>
 endobj
 5 0 obj
-<< /Length 64 >>
+<<
+/Length 408
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1618 - strona 2 z 6) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Zim przysza do Dolinoszczsnej epidemia tyfusu i Grzybniak chodzi od chaty do) Tj T* (chaty z torb zió. Nikt nie pyta, skd zna te zioa ani kto go tego nauczy.) Tj T* (Za stodo ukrywa si dezerter, który od tygodnia nie odezwa si ani sowem.) Tj T* (Wiatr szed od lasu i niós zapach mokrej kory. Na rozstajach sta krzy) Tj T* (obwizany wyblak wstk.) Tj ET
 endstream
 endobj
 6 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 5 0 R /Resources << /Font << /F1 15 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 7 0 R
+>>
 endobj
 7 0 obj
-<< /Length 64 >>
+<<
+/Length 318
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1618 - strona 3 z 6) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Matka liczya ziarna fasoli, jakby od tego zaleaa pogoda. Kto stuka w okno,) Tj T* (ale nikt nie wsta z awy. Wozy grzzy w bocie a po osie. W szkole pachniao) Tj T* (kred i dymem z elaznego piecyka. Nauczyciel czyta gono, a dzieci patrzyy) Tj T* (na nieg za szyb.) Tj ET
 endstream
 endobj
 8 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 7 0 R /Resources << /Font << /F1 15 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 9 0 R
+>>
 endobj
 9 0 obj
-<< /Length 64 >>
+<<
+/Length 327
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1618 - strona 4 z 6) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Od wschodu dochodzi huk dzia, coraz bliszy z kadym dniem. onierze) Tj T* (rozpalili ognisko na skraju wsi. Stara kobieta pamitaa jeszcze poprzedni) Tj T* (wojn i nie chciaa o niej mówi. W stodole leao siano z zeszego lata. Psy) Tj T* (szczekay do póna, potem ucichy naraz.) Tj ET
 endstream
 endobj
 10 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 9 0 R /Resources << /Font << /F1 15 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 11 0 R
+>>
 endobj
 11 0 obj
-<< /Length 64 >>
+<<
+/Length 304
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1618 - strona 5 z 6) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Rzeka zamarza tylko przy brzegach. Pisarz gminny zapisywa nazwiska powoli,) Tj T* (litera po literze. Ludzie uciekali w las, zabierajc tylko chleb i sól. Na) Tj T* (Podolu wiosna przychodzi nagle, jednej nocy. Dzwon w cerkwi bi dugo, cho nikt) Tj T* (nie umar.) Tj ET
 endstream
 endobj
 12 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 11 0 R /Resources << /Font << /F1 15 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 13 0 R
+>>
 endobj
 13 0 obj
-<< /Length 64 >>
+<<
+/Length 311
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1618 - strona 6 z 6) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Pami tych dni wracaa do niego latami, zawsze w tej samej kolejnoci. Ojciec) Tj T* (naprawia uprz przy lampie naftowej. Midzy wierzbami przemkn kto obcy.) Tj T* (Gorczka nie spadaa trzeci dzie. Lekarz przyjecha dopiero wtedy, gdy byo ju) Tj T* (po wszystkim.) Tj ET
 endstream
 endobj
 14 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 13 0 R /Resources << /Font << /F1 15 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 15 0 R
+>>
 endobj
 15 0 obj
-<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+<<
+/Length 308
+>>
+stream
+BT /F1 11 Tf 14 TL 56 780 Td (Za wsi zaczynay si wertepy i bezdroa a po horyzont. lady na niegu) Tj T* (prowadziy prosto do lasu. Wieczorem kobiety pieway przy kdzieli. Kto spali) Tj T* (most, eby nikt nie móg przej na drug stron. Listy przychodziy rzadko i) Tj T* (zawsze otwarte.) Tj ET
+endstream
 endobj
 xref
 0 16
 0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000148 00000 n 
-0000000262 00000 n 
-0000000389 00000 n 
-0000000503 00000 n 
-0000000630 00000 n 
-0000000744 00000 n 
-0000000871 00000 n 
-0000000985 00000 n 
-0000001113 00000 n 
-0000001228 00000 n 
-0000001357 00000 n 
-0000001472 00000 n 
-0000001601 00000 n 
+0000000015 00000 n 
+0000000054 00000 n 
+0000000146 00000 n 
+0000000195 00000 n 
+0000000598 00000 n 
+0000001057 00000 n 
+0000001460 00000 n 
+0000001829 00000 n 
+0000002232 00000 n 
+0000002610 00000 n 
+0000003015 00000 n 
+0000003371 00000 n 
+0000003776 00000 n 
+0000004139 00000 n 
+0000004544 00000 n 
 trailer
-<< /Size 16 /Root 1 0 R >>
+<<
+/Size 16
+/Root 3 0 R
+/Info 1 0 R
+>>
 startxref
-1672
+4904
 %%EOF

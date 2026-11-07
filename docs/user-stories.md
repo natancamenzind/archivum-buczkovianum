@@ -276,20 +276,20 @@ Everything happens in Django admin. Every image field requires a text alternativ
 
 ### US-WR-04 — Add a typescript
 
-1. Fields: work (required, must exist); title (required, e.g. "Pierwsza wersja"); optional description; shelfmark; scan file (required); OCR file (required).
-2. The OCR file must have as many pages as the scan. Otherwise the save is rejected with a message giving both page counts.
+1. Fields: work (required, must exist); title (required, e.g. "Pierwsza wersja"); optional description; shelfmark; scan (required): one searchable PDF, as the OCR program saves it, with the OCR text under the page images. The text is read from it; there is no separate OCR file.
+2. A scan without OCR text is rejected with a message saying how to save it as a searchable PDF.
 3. A "main typescript" checkbox. Only one per work: marking a new one unmarks the previous one.
 4. Saving updates the search index.
 
 ### US-WR-05 — Add a note
 
 1. Fields: title (required, e.g. "Notes 18 · karta 4"); optional description; shelfmark; content.
-2. Content is one of: image; document; external audio/video link; OCR text (scan + OCR file, checked as in US-WR-04 AC2); plain text (e.g. a letter transcription).
+2. Content is one of: image; document; external audio/video link; OCR text (a searchable PDF scan, checked as in US-WR-04 AC2); plain text (e.g. a letter transcription).
 3. Linked to one or more works.
 
 ### US-WR-06 — Add a secondary text
 
-1. Fields: title (required); kind (e.g. letter, review, study, recording); shelfmark; text as OCR (scan + OCR file) or plain text. Optional: description; author; source (publisher, place, year, pages, as one line of text); date, sender and recipient (for letters).
+1. Fields: title (required); kind (e.g. letter, review, study, recording); shelfmark; text as OCR (a searchable PDF scan) or plain text. Optional: description; author; source (publisher, place, year, pages, as one line of text); date, sender and recipient (for letters).
 2. Linked to one or more works. Each work link can be tagged (US-WR-10).
 
 ### US-WR-07 — Add a contextual material

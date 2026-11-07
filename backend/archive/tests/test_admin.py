@@ -67,7 +67,7 @@ class TestEditorPanel:
         assert "viewsitelink" in response.content.decode()
 
     @pytest.mark.parametrize(("ocr", "text_editable"), [(True, False), (False, True)])
-    def test_ocr_text_is_changed_only_by_uploading_a_new_ocr_file(
+    def test_ocr_text_is_changed_only_by_uploading_a_new_scan(
         self, admin_client: Client, ocr: bool, text_editable: bool
     ) -> None:
         # Arrange
