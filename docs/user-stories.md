@@ -72,13 +72,13 @@ Each page defines which items it includes.
 
 - A section header shows a count: "3", or "2 z 24" when the section is a preview.
 - A preview shows the first `PREVIEW_LIMIT` items (one setting, default 2): featured fragments first, then text order. It ends with a link naming its target and count, e.g. "Wszystkie fragmenty (24)".
-- The fragment previews' "all" link opens no new page. On the typescript page it expands the list in place, in page order. On the work page it opens the main typescript's page with that list expanded.
+- The fragment previews' "all" link opens no new page. On the typescript page it expands the list in place, in page order. On the work page it opens the main typescript's page with that list expanded. This link is set as a section title, underlined, with the arrow on the underline.
 - Counts use Polish plural forms: 1 fragment, 2–4 fragmenty, 5+ fragmentów.
 
 **R-10 Fragment card.** Every fragment is shown as this card:
 
 1. location line: work, number in its document ("fragment 01"), optional scan number from the shelfmark, without leading zeros ("skan 9" for 1618.0009); a chip with the source type ("Maszynopis", "Zapisek");
-2. quote (the fragment text, cut to a few lines); for an OCR source, a thumbnail of the scan page where the fragment starts;
+2. quote (the first seven words of the fragment text, then "(…)"; a shorter text whole); for an OCR source, a thumbnail of the scan page where the fragment starts;
 3. shelfmark, tags.
 
 Clicking the card opens the source document scrolled to the fragment.

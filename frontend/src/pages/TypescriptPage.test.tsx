@@ -523,6 +523,18 @@ describe("TypescriptPage", () => {
     );
   });
 
+  it("ARC-31: 'Wszystkie fragmenty (3)' is set as a section title", async () => {
+    mockPage();
+
+    await renderPage();
+
+    expect(
+      within(card("Fragmenty z maszynopisu")).getByRole("link", {
+        name: "Wszystkie fragmenty (3)",
+      }),
+    ).toHaveClass("text-lora-tytul-sekcji", "text-foreground");
+  });
+
   it("D20: 'Wszystkie fragmenty (3)' expands the list in place, in page order", async () => {
     mockPage();
 
