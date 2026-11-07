@@ -185,6 +185,15 @@ describe("SiteLayout", () => {
     }
   });
 
+  it("ARC-9: the funding note is right-aligned in the desktop footer", () => {
+    renderRoute("/about");
+
+    // It closes the footer row, so its lines align to the right edge of the page.
+    expect(within(screen.getByRole("contentinfo")).getByText(/finansowani/i)).toHaveClass(
+      "md:text-right",
+    );
+  });
+
   it("R-12: every header control and navigation link shows a focus outline, the active item too", () => {
     renderRoute("/works");
 

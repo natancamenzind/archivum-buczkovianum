@@ -16,7 +16,7 @@ export function SiteFooter() {
         </p>
       </div>
       <MainNav />
-      <p className="pb-24 text-cousine-metadane text-muted-foreground md:self-center md:pb-0">
+      <p className="pb-24 text-cousine-metadane text-muted-foreground md:self-center md:pb-0 md:text-right">
         {copy.layout.fundingNote}
       </p>
     </footer>
