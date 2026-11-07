@@ -1,3 +1,6 @@
+import html
+import re
+
 import pytest
 from django.contrib import admin
 from django.contrib.auth.models import User
@@ -106,6 +109,30 @@ class TestTaggerAdmin:
         # Assert
         assert response.context["fragments"][0] == flagged
         assert response.context["fragments"][1] == fine
+
+    @pytest.mark.parametrize("fragments", [[], [(7, 12)], [(0, 6), (7, 20)]])
+    def test_us_wr_09_ac2_tagger_shows_the_text_exactly_as_stored(
+        self, admin_client: Client, fragments: list[tuple[int, int]]
+    ) -> None:
+        # Arrange: the script counts a selection's offsets over the shown text, so the template
+        # must add nothing to it, not even its own indentation.
+        typescript = TypescriptFactory.create(is_main=True)
+        document = typescript.document
+        assert document is not None
+        document.text = "Czarny potok.\nPłynie przez las.\n"
+        document.save()
+        for start, end in fragments:
+            FragmentFactory.create(document=document, start=start, end=end)
+        url = reverse("admin:archive_document_tagger", args=[document.pk])
+
+        # Act
+        response = admin_client.get(url)
+
+        # Assert
+        content = response.content.decode()
+        shown = re.search(r'<div id="tagger-text"[^>]*>(.*?)</div>', content, re.DOTALL)
+        assert shown is not None
+        assert html.unescape(re.sub(r"<[^>]+>", "", shown.group(1))) == document.text
 
     def test_us_wr_09_ac6_fragment_form_has_metadata_fields(
         self, rf: RequestFactory, admin_user: User

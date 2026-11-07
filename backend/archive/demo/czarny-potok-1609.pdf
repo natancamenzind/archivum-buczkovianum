@@ -1,76 +1,195 @@
-%PDF-1.4
+%PDF-1.3
+%âãÏÓ
 1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
+<<
+/Producer (pypdf)
+>>
 endobj
 2 0 obj
-<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R 12 0 R] /Count 5 >>
+<<
+/Type /Pages
+/Count 5
+/Kids [ 4 0 R 6 0 R 8 0 R 10 0 R 12 0 R ]
+>>
 endobj
 3 0 obj
-<< /Length 64 >>
-stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1609 - strona 1 z 5) Tj ET
-endstream
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
 endobj
 4 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 3 0 R /Resources << /Font << /F1 13 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 5 0 R
+>>
 endobj
 5 0 obj
-<< /Length 64 >>
+<<
+/Length 261
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1609 - strona 2 z 5) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Nad czarnym potokiem stay olchy pochylone ku wodzie. Dezerter przeszed noc) Tj T* (przez czarny potok i zgubi lad w olszynach. W stodole leao siano z zeszego) Tj T* (lata. Psy szczekay do póna, potem ucichy naraz.) Tj ET
 endstream
 endobj
 6 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 5 0 R /Resources << /Font << /F1 13 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 7 0 R
+>>
 endobj
 7 0 obj
-<< /Length 64 >>
+<<
+/Length 249
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1609 - strona 3 z 5) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Rzeka zamarza tylko przy brzegach. Pisarz gminny zapisywa nazwiska powoli,) Tj T* (litera po literze. Ludzie uciekali w las, zabierajc tylko chleb i sól. Na) Tj T* (Podolu wiosna przychodzi nagle, jednej nocy.) Tj ET
 endstream
 endobj
 8 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 7 0 R /Resources << /Font << /F1 13 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 9 0 R
+>>
 endobj
 9 0 obj
-<< /Length 64 >>
+<<
+/Length 255
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1609 - strona 4 z 5) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Dzwon w cerkwi bi dugo, cho nikt nie umar. Pami tych dni wracaa do niego) Tj T* (latami, zawsze w tej samej kolejnoci. Ojciec naprawia uprz przy lampie) Tj T* (naftowej. Midzy wierzbami przemkn kto obcy.) Tj ET
 endstream
 endobj
 10 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 9 0 R /Resources << /Font << /F1 13 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 11 0 R
+>>
 endobj
 11 0 obj
-<< /Length 64 >>
+<<
+/Length 247
+>>
 stream
-BT /F1 18 Tf 72 720 Td (Maszynopis ML 1609 - strona 5 z 5) Tj ET
+BT /F1 11 Tf 14 TL 56 780 Td (Gorczka nie spadaa trzeci dzie. Lekarz przyjecha dopiero wtedy, gdy byo ju) Tj T* (po wszystkim. Za wsi zaczynay si wertepy i bezdroa a po horyzont. lady na) Tj T* (niegu prowadziy prosto do lasu.) Tj ET
 endstream
 endobj
 12 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 11 0 R /Resources << /Font << /F1 13 0 R >> >> >>
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+/Encoding <<
+/Type /Encoding
+/BaseEncoding /WinAnsiEncoding
+/Differences [ 1 /aogonek /cacute /eogonek /lslash /nacute /sacute /zacute /zdotaccent /Aogonek /Cacute /Eogonek /Lslash /Nacute /Sacute /Zacute /Zdotaccent ]
+>>
+>>
+>>
+>>
+/MediaBox [ 0.0 0.0 595 842 ]
+/Parent 2 0 R
+/Contents 13 0 R
+>>
 endobj
 13 0 obj
-<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+<<
+/Length 246
+>>
+stream
+BT /F1 11 Tf 14 TL 56 780 Td (Wieczorem kobiety pieway przy kdzieli. Kto spali most, eby nikt nie móg) Tj T* (przej na drug stron. Listy przychodziy rzadko i zawsze otwarte. Kiedy) Tj T* (pisa, nie podnosi gowy znad papieru.) Tj ET
+endstream
 endobj
 xref
 0 14
 0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000141 00000 n 
-0000000255 00000 n 
-0000000382 00000 n 
-0000000496 00000 n 
-0000000623 00000 n 
-0000000737 00000 n 
-0000000864 00000 n 
-0000000978 00000 n 
-0000001106 00000 n 
-0000001221 00000 n 
-0000001350 00000 n 
+0000000015 00000 n 
+0000000054 00000 n 
+0000000139 00000 n 
+0000000188 00000 n 
+0000000591 00000 n 
+0000000903 00000 n 
+0000001306 00000 n 
+0000001606 00000 n 
+0000002009 00000 n 
+0000002315 00000 n 
+0000002720 00000 n 
+0000003019 00000 n 
+0000003424 00000 n 
 trailer
-<< /Size 14 /Root 1 0 R >>
+<<
+/Size 14
+/Root 3 0 R
+/Info 1 0 R
+>>
 startxref
-1421
+3722
 %%EOF

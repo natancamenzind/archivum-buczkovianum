@@ -275,7 +275,7 @@ class DocumentAdmin(admin.ModelAdmin[Document]):
     def get_readonly_fields(
         self, request: HttpRequest, obj: Document | None = None
     ) -> tuple[str, ...]:
-        """An OCR text changes only with a new OCR file, which also sets its page boundaries."""
+        """An OCR text changes only with a new scan, whose text layer also sets its pages."""
         if obj is not None and obj.kind == Document.Kind.OCR:
             return ("text",)
         return ()

@@ -46,7 +46,7 @@ Answered by the project owner on 2026-10-26. Each one lands in the step named in
 | # | Question | Decision | Step |
 |---|----------|----------|------|
 | D1 | Re-anchoring. Architecture §4.4 moves a fragment when its quote occurs once in the new text. US-WR-09 AC4 says "never silently moved". | **Move and flag.** If the quote occurs exactly once in the new text, move the fragment there and set `needs_review`. Otherwise only set `needs_review`. A moved fragment is never silent, so the story holds. Update architecture §4.4. | 4 |
-| D2 | New dependencies. | **Approved.** Backend: `pypdf` (PDF page count). Frontend: the architecture §2 stack, plus `openapi-fetch`, Vitest, Testing Library, MSW, `vitest-axe`, ESLint, `typescript-eslint`, Prettier, `@fontsource/lora`, `@fontsource/cousine`, and the Radix packages shadcn/ui pulls in. Each PR still names the ones it adds. | 1, 6 |
+| D2 | New dependencies. | **Approved.** Backend: `pypdf` (PDF page count; since ARC-19 also the scan's OCR text layer). Frontend: the architecture §2 stack, plus `openapi-fetch`, Vitest, Testing Library, MSW, `vitest-axe`, ESLint, `typescript-eslint`, Prettier, `@fontsource/lora`, `@fontsource/cousine`, and the Radix packages shadcn/ui pulls in. Each PR still names the ones it adds. | 1, 6 |
 | D3 | `django-prose-editor` has no type stubs. | **One mypy override** (`ignore_missing_imports` for that module) in `pyproject.toml`, with a comment saying why. | 10 |
 | D4 | When the main typescript changes, the old one keeps its fragments. Are they public? | **Yes, they stay visible.** A fragment is visible when its owner is published, as in architecture §4.4. The tagger still offers only the main typescript (US-WR-09 AC1). | 2 |
 | D5 | R-08 shows author and source for contextual materials, but US-WR-07 gives them no such fields. | **No new fields.** A contextual material shows its title only (R-02: empty parts are not rendered). | 21 |
@@ -101,6 +101,12 @@ Answered by the project owner on 2026-10-27, for questions raised by merged PRs:
 | D29 | Genre is shown as stored ("powieść"); Figma shows "Powieść". The typescripts hero has no count ("Pięć jednostek…" in Figma). Capitalise the genre on display or in the data? Add a live count to the hero? (#35) | **Shown as stored, no count.** Steps 17, 21 and 23 show the genre the same way as steps 15 and 18. | 17, 21, 23 |
 | D30 | Storage provider (architecture §10). | **Amazon S3.** The code still depends only on the S3 API. | 35 |
 | D31 | Open questions 1–3 and 5 of `user-stories.md` §6. | **The defaults hold**, except question 5: the stories win and Figma is not updated. Question 4 (an example of a tagged relation) stays with the editors. | — |
+
+Answered by the project owner on 2026-11-07, in ARC-19:
+
+| # | Question | Decision | Step |
+|---|----------|----------|------|
+| D32 | How does an editor upload a scan with its OCR text? US-WR-04 asked for a PDF plus a Tesseract `.txt` with the same page count. | **One searchable PDF**, with the OCR text under the page images, wherever a scan has OCR text: typescripts, notes, secondary texts, contextual materials. The text is read from the PDF; the separate OCR file and the page-count check are gone. Architecture §4.4 and US-WR-04 to US-WR-06 are updated. | ARC-19 |
 
 ## 4. Order and dependencies
 

@@ -483,17 +483,17 @@ class TestTypescript:
 
 @pytest.mark.django_db
 class TestDocument:
-    def test_set_ocr_text_splits_pages_on_form_feed(self) -> None:
+    def test_set_ocr_pages_joins_pages_and_records_where_each_starts(self) -> None:
         # Arrange
         document = DocumentFactory.build(kind=Document.Kind.OCR)
 
         # Act
-        document.set_ocr_text("one\ntwo\n\fthree\n\f")
+        document.set_ocr_pages(["one\ntwo\n", "", "three\n"])
 
         # Assert
         assert document.text == "one\ntwo\nthree\n"
-        assert document.page_offsets == [0, 8]
-        assert document.page_count == 2
+        assert document.page_offsets == [0, 8, 8]
+        assert document.page_count == 3
 
     @pytest.mark.parametrize(("offset", "page"), [(0, 1), (7, 1), (8, 2), (13, 2)])
     def test_page_number_of_an_offset(self, offset: int, page: int) -> None:
@@ -587,10 +587,10 @@ class TestDocument:
         # Assert
         assert "text" in error.value.message_dict
 
-    def test_new_ocr_file_may_change_the_text(self) -> None:
+    def test_new_scan_may_change_the_text(self) -> None:
         # Arrange
         document = Document.objects.get(pk=DocumentFactory.create(ocr=True).pk)
-        document.set_ocr_text("Strona 1\fStrona 2")
+        document.set_ocr_pages(["Strona 1", "Strona 2"])
 
         # Act
         document.clean()

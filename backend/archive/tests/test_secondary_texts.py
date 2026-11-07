@@ -17,13 +17,13 @@ from archive.tests.factories import (
     TagFactory,
     WorkFactory,
 )
-from archive.tests.files import ocr_file, scan_file
+from archive.tests.files import scan_file
 from archive.tests.test_uploads import form_errors, found
 from search.models import EntityType
 
 ADD_URL = reverse("admin:archive_secondarytext_add")
-BOTH_TEXTS = "Wgraj skan z plikiem OCR albo wpisz tekst lity, nie jedno i drugie."
-NO_TEXT = "Wgraj skan z plikiem OCR albo wpisz tekst lity."
+BOTH_TEXTS = "Wgraj skan albo wpisz tekst lity, nie jedno i drugie."
+NO_TEXT = "Wgraj skan albo wpisz tekst lity."
 
 
 def change_url(secondary_text: SecondaryText) -> str:
@@ -123,14 +123,12 @@ class TestSecondaryTextForm:
         assert not letter.document.scan
         assert letter.document.page_offsets == []
 
-    def test_us_wr_06_ac1_adds_a_secondary_text_with_scan_and_ocr_file(
+    def test_us_wr_06_ac1_adds_a_secondary_text_with_a_searchable_scan(
         self, admin_client: Client
     ) -> None:
         # Arrange
         work = WorkFactory.create()
-        data = form_data(
-            {"work": work.pk}, scan=scan_file(2), ocr_file=ocr_file("Recenzja. ", "Koniec.")
-        )
+        data = form_data({"work": work.pk}, scan=scan_file("Recenzja.", "Koniec."))
 
         # Act
         response = admin_client.post(ADD_URL, data)
@@ -140,7 +138,7 @@ class TestSecondaryTextForm:
         review = SecondaryText.objects.get()
         assert review.document is not None
         assert review.document.kind == Document.Kind.OCR
-        assert review.document.text == "Recenzja. Koniec."
+        assert review.document.text == "Recenzja.\nKoniec.\n"
         assert review.document.page_count == 2
 
     def test_us_wr_06_ac1_requires_a_text_on_create(self, admin_client: Client) -> None:
@@ -167,14 +165,12 @@ class TestSecondaryTextForm:
         assert set(form_errors(response)) == {"title", "kind"}
         assert not Document.objects.exists()
 
-    @pytest.mark.parametrize("uploaded", ["scan", "ocr_file"])
-    def test_us_wr_06_ac1_rejects_files_and_plain_text_together(
-        self, admin_client: Client, uploaded: str
+    def test_us_wr_06_ac1_rejects_a_scan_and_plain_text_together(
+        self, admin_client: Client
     ) -> None:
         # Arrange
         work = WorkFactory.create()
-        files = {"scan": scan_file(1), "ocr_file": ocr_file("Recenzja.")}
-        data = form_data({"work": work.pk}, plain_text="Recenzja.", **{uploaded: files[uploaded]})
+        data = form_data({"work": work.pk}, plain_text="Recenzja.", scan=scan_file("Recenzja."))
 
         # Act
         response = admin_client.post(ADD_URL, data)
@@ -276,12 +272,10 @@ class TestSecondaryTextForm:
         fragment.refresh_from_db()
         assert (fragment.start, fragment.needs_review) == (0, False)
 
-    def test_us_wr_06_ac1_ocr_files_replace_the_plain_text(self, admin_client: Client) -> None:
+    def test_us_wr_06_ac1_a_scan_replaces_the_plain_text(self, admin_client: Client) -> None:
         # Arrange: the textarea posts the stored plain text back unchanged
         secondary_text = SecondaryTextWorkLinkFactory.create().secondary_text
-        data = secondary_text_data(
-            secondary_text, scan=scan_file(1), ocr_file=ocr_file("Czarny potok.")
-        )
+        data = secondary_text_data(secondary_text, scan=scan_file("Czarny potok."))
 
         # Act
         response = admin_client.post(change_url(secondary_text), data)
@@ -291,7 +285,7 @@ class TestSecondaryTextForm:
         stored = Document.objects.get()
         assert (stored.kind, stored.text, stored.page_offsets) == (
             Document.Kind.OCR,
-            "Czarny potok.",
+            "Czarny potok.\n",
             [0],
         )
         assert stored.scan
@@ -309,7 +303,7 @@ class TestSecondaryTextForm:
         content = response.content.decode()
         assert 'name="document"' not in content
         assert 'name="scan"' in content
-        assert 'name="ocr_file"' in content
+        assert 'name="ocr_file"' not in content
         assert "Czarny potok płynie przez las.</textarea>" in content
 
     def test_us_wr_06_ac1_change_form_shows_the_current_scan_and_page_count(

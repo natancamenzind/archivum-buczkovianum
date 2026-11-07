@@ -280,20 +280,20 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 
 ### US-WR-04 — Dodawanie maszynopisu
 
-1. Pola: utwór (wymagany, musi już istnieć); tytuł (wymagany, np. „Pierwsza wersja”); opcjonalny opis; sygnatura; plik źródłowy ze skanem (wymagany); plik OCR (wymagany).
-2. Plik OCR musi mieć tyle stron co skan. W przeciwnym razie zapis jest odrzucany z komunikatem podającym obie liczby stron.
+1. Pola: utwór (wymagany, musi już istnieć); tytuł (wymagany, np. „Pierwsza wersja”); opcjonalny opis; sygnatura; skan (wymagany): jeden przeszukiwalny PDF, taki jak zapisuje go program do OCR, z tekstem OCR pod obrazami stron. Tekst jest odczytywany z tego pliku; nie ma osobnego pliku OCR.
+2. Skan bez tekstu OCR jest odrzucany z komunikatem, jak zapisać go jako przeszukiwalny PDF.
 3. Pole wyboru „główny maszynopis”. Tylko jeden na utwór: zaznaczenie nowego odznacza poprzedni.
 4. Zapis aktualizuje indeks wyszukiwarki.
 
 ### US-WR-05 — Dodawanie zapisku
 
 1. Pola: tytuł (wymagany, np. „Notes 18 · karta 4”); opcjonalny opis; sygnatura; treść.
-2. Treść to jedno z: obrazek; dokument; zewnętrzny link audio/wideo; tekst OCR (skan + plik OCR, sprawdzany jak w US-WR-04 AC2); tekst lity (np. transkrypcja listu).
+2. Treść to jedno z: obrazek; dokument; zewnętrzny link audio/wideo; tekst OCR (skan w przeszukiwalnym PDF, sprawdzany jak w US-WR-04 AC2); tekst lity (np. transkrypcja listu).
 3. Może być w relacji z jednym lub wieloma utworami.
 
 ### US-WR-06 — Dodawanie tekstu sekundarnego
 
-1. Pola: tytuł (wymagany); rodzaj (np. list, recenzja, opracowanie, nagranie); sygnatura; tekst w wersji OCR (skan + plik OCR) albo tekst lity. Opcjonalnie: opis; autor; źródło (wydawnictwo, miejsce, rok, strony, jako jedna linia tekstu); data, nadawca i adresat (dla listów).
+1. Pola: tytuł (wymagany); rodzaj (np. list, recenzja, opracowanie, nagranie); sygnatura; tekst w wersji OCR (skan w przeszukiwalnym PDF) albo tekst lity. Opcjonalnie: opis; autor; źródło (wydawnictwo, miejsce, rok, strony, jako jedna linia tekstu); data, nadawca i adresat (dla listów).
 2. Może być w relacji z jednym lub wieloma utworami. Każde powiązanie z utworem można otagować (US-WR-10).
 
 ### US-WR-07 — Dodawanie materiału kontekstowego

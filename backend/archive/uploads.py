@@ -1,83 +1,70 @@
-"""Uploading the text of an archival item: a scan and its OCR file (architecture section 4.4).
+"""Uploading the text of an archival item: a scan with an OCR text layer (architecture section 4.4).
 
-The functions here check the files and load them into a `Document` without saving it.
+The functions here read the scan and load it into a `Document` without saving it.
 `archive.forms.TextUploadForm` puts them on an item's admin form.
 """
+
+import re
 
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.utils.translation import gettext_lazy as _
-from django.utils.translation import ngettext
 from pypdf import PdfReader
 from pypdf.errors import PyPdfError
 
 from archive.models import Document
 
+TRAILING_SPACE = re.compile(r"[ \t]+$", re.MULTILINE)
+# A word the OCR program split with a soft hyphen at the end of a line, and the space after it.
+SOFT_HYPHENATED = re.compile(r"\xad\n(\S*)[ \t]*\n?")
 
-def pdf_page_count(scan: "File[bytes]") -> int:
-    """The number of pages of a PDF file. Raise a `ValidationError` if it cannot be read."""
+
+def page_text(raw: str) -> str:
+    """The text of one scan page, as the archive stores it.
+
+    Trailing spaces are dropped, and a word split with a soft hyphen at a line end is joined
+    on the first line, so search finds it. A page with text ends with a line break, so its
+    last word never runs into the next page's first.
+    """
+    text, joined = TRAILING_SPACE.sub("", raw), 1
+    # A word split over three lines is joined in two passes.
+    while joined:
+        text, joined = SOFT_HYPHENATED.subn(r"\1\n", text)
+    text = text.strip("\n")
+    return f"{text}\n" if text.strip() else ""
+
+
+def read_scan_pages(scan: "File[bytes]") -> list[str]:
+    """The text of each page of a PDF's text layer (`page_text()`).
+
+    Raise a `ValidationError` if the PDF cannot be read or has no text on any page.
+    """
     try:
-        return len(PdfReader(scan).pages)
+        pages = [page_text(page.extract_text()) for page in PdfReader(scan).pages]
     except (PyPdfError, ValueError, KeyError, TypeError) as error:
         raise ValidationError(_("The scan is not a readable PDF file."), code="invalid") from error
     finally:
         scan.seek(0)
-
-
-def read_ocr_file(ocr_file: "File[bytes]") -> str:
-    """The text of an OCR file. Raise a `ValidationError` if it is not UTF-8."""
-    try:
-        return bytes(ocr_file.read()).decode("utf-8-sig")
-    except UnicodeDecodeError as error:
+    if not any(pages):
         raise ValidationError(
-            _("The OCR file is not UTF-8 text. Save it as UTF-8 and upload it again."),
-            code="invalid",
-        ) from error
-    finally:
-        ocr_file.seek(0)
+            _(
+                "The scan has no OCR text. Save it from the OCR program as a searchable PDF, "
+                "with the text under the page images, and upload it again."
+            ),
+            code="no_text",
+        )
+    return pages
 
 
-def load_ocr_upload(
-    document: Document | None, scan: "File[bytes]", ocr_file: "File[bytes]"
-) -> Document:
-    """Check a scan and its OCR file, and load them into `document` or a new OCR document.
+def load_ocr_upload(document: Document | None, scan: "File[bytes]") -> Document:
+    """Read a scan's text layer, and load both into `document` or a new OCR document.
 
-    The OCR file must have as many pages as the scan (US-WR-04 AC2). Errors are keyed by
-    `scan` and `ocr_file`, and leave `document` unchanged. Nothing is saved: saving the
+    Errors (`read_scan_pages()`) leave `document` unchanged. Nothing is saved: saving the
     document re-anchors its fragments and re-indexes its owner (`Document.save()`).
     """
-    errors: dict[str, ValidationError] = {}
-    scan_pages = raw = None
-    try:
-        scan_pages = pdf_page_count(scan)
-    except ValidationError as error:
-        errors["scan"] = error
-    try:
-        raw = read_ocr_file(ocr_file)
-    except ValidationError as error:
-        errors["ocr_file"] = error
-    if errors:
-        raise ValidationError(errors)
-    assert scan_pages is not None and raw is not None
-    loaded = Document(kind=Document.Kind.OCR)
-    loaded.set_ocr_text(raw)
-    if loaded.page_count != scan_pages:
-        raise ValidationError(
-            {
-                "ocr_file": ValidationError(
-                    ngettext(
-                        "The scan has %(scan)d page, the OCR file has %(ocr)d.",
-                        "The scan has %(scan)d pages, the OCR file has %(ocr)d.",
-                        scan_pages,
-                    ),
-                    code="page_count",
-                    params={"scan": scan_pages, "ocr": loaded.page_count},
-                )
-            }
-        )
+    pages = read_scan_pages(scan)
     document = document or Document()
     document.kind = Document.Kind.OCR
     document.scan = scan
-    document.text = loaded.text
-    document.page_offsets = loaded.page_offsets
+    document.set_ocr_pages(pages)
     return document
