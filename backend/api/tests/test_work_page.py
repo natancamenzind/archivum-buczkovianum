@@ -88,7 +88,7 @@ class TestWorkPageEndpoint:
         # Act
         result = page(client, work)
 
-        # Assert: the earliest comes first; the page labels it "pierwsze wydanie".
+        # Assert: the earliest comes first.
         assert result["editions"] == [
             {"year": 1947, "publisher": "Gebethner i Wolff", "place": "Warszawa"},
             {"year": 1973, "publisher": "Wydawnictwo Literackie", "place": "Kraków"},

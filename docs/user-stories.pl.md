@@ -123,7 +123,7 @@ Dokument z tekstem litym wyświetlamy jako tekst, z fragmentami wyróżnionymi j
 Jako RA widzę korpus informacji o utworze; na pierwszy rzut oka tylko kluczowe informacje.
 
 1. Hiro: „Utwór · Leopold Buczkowski · <rok pierwszego wydania>”, tytuł, opis.
-2. Kolumna kontekstu: lista wydań według roku, każde z rokiem, wydawnictwem i miejscem. Najwcześniejsze ma etykietę „pierwsze wydanie”. Pod nimi podgląd bibliografii (US-RA-21).
+2. Kolumna kontekstu: lista wydań według roku, każde z rokiem, wydawnictwem i miejscem. Pod nimi podgląd bibliografii (US-RA-21).
 3. Kolumna główna, kolejno:
    1. „Maszynopisy”: numerowana lista maszynopisów utworu, każdy linkuje do swojej strony. Główny maszynopis ma adnotację „maszynopis, który służy za podstawę prezentowanych fragmentów”;
    2. „Fragmenty maszynopisu”: podgląd (R-09) fragmentów głównego maszynopisu jako karty fragmentów (R-10);

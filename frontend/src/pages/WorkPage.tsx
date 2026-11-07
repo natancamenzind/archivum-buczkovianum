@@ -48,9 +48,7 @@ function Editions({ editions, level }: { editions: WorkData["editions"]; level: 
             <SideListItem
               meta={String(edition.year)}
               title={edition.publisher}
-              description={[edition.place, index === 0 && copy.work.firstEdition]
-                .filter(Boolean)
-                .join(" · ")}
+              description={edition.place}
             />
           </li>
         ))}
