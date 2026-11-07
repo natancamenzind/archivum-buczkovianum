@@ -78,7 +78,7 @@ Each page defines which items it includes.
 
 1. location line: work, number in its document ("fragment 01"), optional location ("rozdział I"); a chip with the source type ("Maszynopis", "Zapisek");
 2. quote (the fragment text, cut to a few lines); for an OCR source, a thumbnail of the scan page where the fragment starts;
-3. shelfmark, description, tags.
+3. shelfmark, tags. The fragment's description is not shown.
 
 Clicking the card opens the source document scrolled to the fragment.
 

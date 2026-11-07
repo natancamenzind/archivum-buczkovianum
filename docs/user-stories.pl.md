@@ -82,7 +82,7 @@ Każda strona określa, które elementy pokazuje.
 
 1. linia lokalizacji: utwór, numer w dokumencie („fragment 01”), opcjonalna lokalizacja („rozdział I”); etykieta z typem źródła („Maszynopis”, „Zapisek”);
 2. cytat (tekst fragmentu skrócony do kilku linii); dla źródła OCR miniatura strony skanu, na której fragment się zaczyna;
-3. sygnatura, opis, tagi.
+3. sygnatura, tagi. Opisu fragmentu nie wyświetlamy.
 
 Kliknięcie karty otwiera dokument źródłowy przewinięty do fragmentu.
 

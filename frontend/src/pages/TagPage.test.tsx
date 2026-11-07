@@ -231,6 +231,10 @@ describe("TagPage", () => {
     expect(within(first).getByText("Maszynopis")).toBeVisible();
     expect(within(first).getByRole("img", { name: "Skan · strona 3" })).toBeVisible();
     expect(within(first).getByText("ML, sygn. 1618.0009")).toBeVisible();
+    // ARC-8: the card leaves out the fragment's description.
+    expect(
+      within(first).queryByText("Fragment oznaczony tagiem „Dezerter”."),
+    ).not.toBeInTheDocument();
     expect(
       within(second).getByRole("link", { name: "Czarny potok · Fragment 02" }),
     ).toHaveAttribute("href", "/notes/3?fragment=9");

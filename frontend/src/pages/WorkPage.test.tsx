@@ -231,7 +231,7 @@ describe("WorkPage", () => {
     if (first === undefined || second === undefined) {
       throw new Error("Expected two fragment cards.");
     }
-    // R-10: location line with the source type, quote, scan page, shelfmark, description, tags.
+    // R-10: location line with the source type, quote, scan page, shelfmark, tags.
     expect(
       within(first).getByRole("link", { name: "Wertepy · Fragment 01 · rozdział I" }),
     ).toHaveAttribute("href", "/typescripts/1?fragment=5");
@@ -239,9 +239,10 @@ describe("WorkPage", () => {
     expect(within(first).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
     expect(within(first).getByRole("img", { name: "Skan · strona 3" })).toBeVisible();
     expect(within(first).getByText("ML, sygn. 1618.0009")).toBeVisible();
+    // ARC-8: the card leaves out the fragment's description.
     expect(
-      within(first).getByText("Grzybniak leczy chorych podczas epidemii tyfusu."),
-    ).toBeVisible();
+      within(first).queryByText("Grzybniak leczy chorych podczas epidemii tyfusu."),
+    ).not.toBeInTheDocument();
     expect(within(first).getByRole("link", { name: "Epidemia" })).toHaveAttribute(
       "href",
       "/tags/epidemia",
@@ -249,7 +250,7 @@ describe("WorkPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("R-10: a fragment without scan, location, shelfmark, description or tags shows none of them", async () => {
+  it("R-10: a fragment without scan, location, shelfmark or tags shows none of them", async () => {
     mockPage();
 
     const { container } = await renderPage();
