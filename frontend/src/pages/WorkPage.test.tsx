@@ -25,7 +25,6 @@ const FRAGMENT: Fragment = {
   scan: "/media/scans/wertepy.pdf",
   start_page: 3,
   shelfmark: "ML, sygn. 1618.0009",
-  description: "Grzybniak leczy chorych podczas epidemii tyfusu.",
   tags: [{ slug: "epidemia", title: "Epidemia" }],
 };
 
@@ -53,7 +52,6 @@ const WORK: WorkData = {
         scan: "",
         start_page: null,
         shelfmark: "",
-        description: "",
         tags: [],
       },
     ],
@@ -239,10 +237,6 @@ describe("WorkPage", () => {
     expect(within(first).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
     expect(within(first).getByRole("img", { name: "Skan · strona 3" })).toBeVisible();
     expect(within(first).getByText("ML, sygn. 1618.0009")).toBeVisible();
-    // ARC-8: the card leaves out the fragment's description.
-    expect(
-      within(first).queryByText("Grzybniak leczy chorych podczas epidemii tyfusu."),
-    ).not.toBeInTheDocument();
     expect(within(first).getByRole("link", { name: "Epidemia" })).toHaveAttribute(
       "href",
       "/tags/epidemia",

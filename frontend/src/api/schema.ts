@@ -416,7 +416,6 @@ export interface components {
             readonly start_page: number | null;
             /** @description E.g. "ML, sygn. 1618.0009"; may be empty. */
             readonly shelfmark: string;
-            readonly description: string;
             /** @description Published tags, by name. */
             readonly tags: components["schemas"]["TagChip"][];
         };

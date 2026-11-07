@@ -141,7 +141,6 @@ SHOWN_FRAGMENTS: dict[tuple[str, int], dict[str, Any]] = {
     ("1618", 1): {
         "location": "rozdział I",
         "shelfmark": "1618.0009",
-        "description": "Grzybniak leczy chorych podczas zimowej epidemii tyfusu w Dolinoszczęsnej.",
         "is_featured": True,
         "tags": ["Dezerter", "Epidemia"],
     },

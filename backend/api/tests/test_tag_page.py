@@ -145,7 +145,6 @@ class TestTagPageEndpoint:
             end=8,
             location="rozdział I",
             shelfmark="1618.0009",
-            description="Dezerter w stodole.",
         )
         third = FragmentFactory.create(document=late_main.document, start=9, end=15)
         for fragment in (second, first, third, in_note):
@@ -177,7 +176,6 @@ class TestTagPageEndpoint:
             "scan": early_main.document.scan.url,
             "start_page": 1,
             "shelfmark": "ML, sygn. 1618.0009",
-            "description": "Dezerter w stodole.",
             "tags": [{"slug": "dezerter", "title": "Dezerter"}],
         }
         assert result["fragments"][2]["url"] == f"/notes/{note.pk}?fragment={in_note.pk}"

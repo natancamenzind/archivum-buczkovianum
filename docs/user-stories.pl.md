@@ -26,7 +26,7 @@ Tłumaczenie `docs/user-stories.md`. W razie rozbieżności obowiązuje wersja a
 | Materiał wizualny | Materiał kontekstowy, który jest obrazem: zdjęcie lub skan ilustracyjny. |
 | Powiązanie z utworem | Relacja między utworem a tekstem sekundarnym lub materiałem kontekstowym. Można je otagować. |
 | Tag | Nazwa dla relacji, łącząca fragmenty i zapiski: słowo klucz z Buczkowskiego (np. „dezerter”) albo nasza interpretacja (np. „wielokulturowość”). |
-| Fragment | Otagowany zakres tekstu (OCR lub tekstu litego), z opcjonalną sygnaturą, lokalizacją i opisem. |
+| Fragment | Otagowany zakres tekstu (OCR lub tekstu litego), z opcjonalną sygnaturą i lokalizacją. |
 | Wystąpienie | Jeden opublikowany element z danym tagiem: fragment, cały byt albo powiązanie z utworem. |
 | Sygnatura | Instytucja + numer, wyświetlane jako „ML, sygn. 1618”. Fragment ma własny numer („ML, sygn. 1618.0009”), a instytucję dziedziczy po dokumencie. |
 | Byt | Każdy obiekt archiwum, który ma własną stronę: utwór, maszynopis, tag, zapisek, tekst sekundarny, materiał kontekstowy. |
@@ -82,7 +82,7 @@ Każda strona określa, które elementy pokazuje.
 
 1. linia lokalizacji: utwór, numer w dokumencie („fragment 01”), opcjonalna lokalizacja („rozdział I”); etykieta z typem źródła („Maszynopis”, „Zapisek”);
 2. cytat (tekst fragmentu skrócony do kilku linii); dla źródła OCR miniatura strony skanu, na której fragment się zaczyna;
-3. sygnatura, tagi. Opisu fragmentu nie wyświetlamy.
+3. sygnatura, tagi.
 
 Kliknięcie karty otwiera dokument źródłowy przewinięty do fragmentu.
 
@@ -232,7 +232,7 @@ Na telefonie wszystkie trzy listy mają jedną kolumnę z tych samych komponent�
 
 Jako RA znajduję utwory, tagi, fragmenty i zapiski, wpisując frazę.
 
-1. Wszystko jest indeksowane: wszystkie opublikowane byty i widoczne fragmenty — tytuły, opisy, nazwy i opisy tagów, cytaty i opisy fragmentów, teksty OCR i teksty lite.
+1. Wszystko jest indeksowane: wszystkie opublikowane byty i widoczne fragmenty — tytuły, opisy, nazwy i opisy tagów, cytaty fragmentów, teksty OCR i teksty lite.
 2. Nagłówek pokazuje zapytanie i łączną liczbę wyników („7 wyników we wszystkich kategoriach”).
 3. Zakładka „Wszystko” grupuje wyniki według typu, każda grupa z licznikiem, w tej kolejności: Utwory, Tagi, Fragmenty, Zapiski, Maszynopisy, Teksty sekundarne, Materiały kontekstowe.
 4. W grupie wyniki są sortowane według trafności (więcej wzmianek = wyżej) albo, jeśli czytelnik wybierze, według tytułu.
@@ -315,7 +315,7 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 3. Fragmenty mogą na siebie zachodzić, a ten sam tekst może mieć kilka tagów.
 4. Fragment przechowuje zaznaczony tekst. Jeśli tekst źródłowy się zmieni i fragment przestanie pasować, fragment jest oznaczany do sprawdzenia, a nigdy po cichu przesuwany ani usuwany.
 5. Redaktorka nigdy nie wpisuje znaczników ręcznie (TEI ani żadnych innych).
-6. Własny formularz fragmentu ma: lokalizację (np. „rozdział I”), numer sygnatury (np. „1618.0009”; instytucja pochodzi z dokumentu), opis i pole wyboru „wyróżniony”. Wyróżnione fragmenty są pierwsze w podglądach (R-09) i mogą trafić na stronę główną (US-RA-02).
+6. Własny formularz fragmentu ma: lokalizację (np. „rozdział I”), numer sygnatury (np. „1618.0009”; instytucja pochodzi z dokumentu) i pole wyboru „wyróżniony”. Wyróżnione fragmenty są pierwsze w podglądach (R-09) i mogą trafić na stronę główną (US-RA-02).
 
 ### US-WR-10 — Tagowanie całych bytów i powiązań z utworem
 

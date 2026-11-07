@@ -1125,7 +1125,6 @@ class Fragment(BaseModel, Taggable):
         blank=True,
         help_text=_("Number only, e.g. 1618.0009; institution from the document."),
     )
-    description = models.TextField(_("description"), blank=True)
     is_featured = models.BooleanField(
         _("featured"),
         default=False,
@@ -1182,7 +1181,7 @@ class Fragment(BaseModel, Taggable):
             IndexedContent(
                 title=str(self),
                 url=f"{owner.url}?fragment={self.pk}",
-                texts=[(self.quote, Weight.QUOTE), (self.description, Weight.DESCRIPTION)],
+                texts=[(self.quote, Weight.QUOTE)],
                 tags=self.published_tag_names(),
                 work_ids=owner.work_ids,
                 decades=owner.decades,

@@ -205,7 +205,6 @@ class TestNotePageEndpoint:
             "scan": typescript.document.scan.url,
             "start_page": 1,
             "shelfmark": "ML, sygn. 1618.0009",
-            "description": "",
             "tags": [{"slug": "pamiec", "title": "Pamięć"}],
         }
 

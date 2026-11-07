@@ -257,11 +257,6 @@ def note_with_text(title: str, text: str) -> None:
     )
 
 
-def fragment_with_description(description: str) -> None:
-    typescript = TypescriptFactory.create(status=PUBLISHED, document__text="Szedł przez las.")
-    FragmentFactory.create(document=typescript.document, start=0, end=5, description=description)
-
-
 @pytest.mark.django_db
 class TestIndexedTexts:
     """US-RA-15 AC1, read through `search()`: each kind of indexed text finds its entity."""
@@ -287,11 +282,6 @@ class TestIndexedTexts:
                 ),
                 ("tag", "Rzemiosło"),
                 id="tag description",
-            ),
-            pytest.param(
-                lambda: fragment_with_description("Zegarmistrz w lesie."),
-                ("fragment", "Szedł"),
-                id="fragment description",
             ),
             pytest.param(
                 lambda: TypescriptFactory.create(

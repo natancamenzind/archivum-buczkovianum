@@ -65,7 +65,6 @@ const RESULTS: Results = {
       scan: "",
       start_page: null,
       shelfmark: "ML, sygn. 1618.0009",
-      description: "",
       tags: [{ slug: "dezerter", title: "Dezerter" }],
     },
   ],
