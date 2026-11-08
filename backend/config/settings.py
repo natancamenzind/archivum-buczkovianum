@@ -55,12 +55,14 @@ for name in REQUIRED_ENV if DEBUG else PRODUCTION_REQUIRED_ENV:
     if not os.environ.get(name):
         raise ImproperlyConfigured(f"Missing required environment variable: {name}")
 
-# Errors and traces go to Sentry only when SENTRY_DSN is set; without it the SDK sends nothing.
-# Render sets RENDER_GIT_COMMIT, so each deploy is a release.
+# Errors and traces go to Sentry only from a deployment: SENTRY_DSN set and DEBUG off. Local
+# development never sends, even with a DSN in .env. Render sets RENDER_GIT_COMMIT, so each
+# deploy is a release.
 SENTRY_TRACES_SAMPLE_RATE = 0.2
 sentry_sdk.init(
-    dsn=os.environ.get("SENTRY_DSN"),
-    environment=os.environ.get("SENTRY_ENVIRONMENT", "development" if DEBUG else "production"),
+    # "", not None: with None the SDK falls back to reading SENTRY_DSN itself.
+    dsn="" if DEBUG else os.environ.get("SENTRY_DSN"),
+    environment=os.environ.get("SENTRY_ENVIRONMENT", "production"),
     release=os.environ.get("SENTRY_RELEASE") or os.environ.get("RENDER_GIT_COMMIT"),
     traces_sampler=sentry_traces_sampler,
 )

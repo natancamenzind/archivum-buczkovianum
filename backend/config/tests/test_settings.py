@@ -19,6 +19,11 @@ def reload_settings(monkeypatch: pytest.MonkeyPatch) -> Iterator[ModuleType]:
     importlib.reload(settings_module)
 
 
+# The .invalid TLD never resolves, so nothing can reach a real Sentry.
+SENTRY_DSN = "https://key@sentry.invalid/1"
+
+
+@pytest.mark.usefixtures("production_env")
 def test_sentry_is_off_without_a_dsn(
     monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType
 ) -> None:
@@ -29,10 +34,22 @@ def test_sentry_is_off_without_a_dsn(
     assert sentry_sdk.get_client().transport is None
 
 
+def test_sentry_is_off_in_debug_even_with_a_dsn(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType
+) -> None:
+    monkeypatch.setenv("DEBUG", "true")
+    monkeypatch.setenv("SENTRY_DSN", SENTRY_DSN)
+
+    importlib.reload(reload_settings)
+
+    assert sentry_sdk.get_client().transport is None
+
+
+@pytest.mark.usefixtures("production_env")
 def test_sentry_reports_to_the_dsn_from_env(
     monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType
 ) -> None:
-    monkeypatch.setenv("SENTRY_DSN", "https://key@o1.ingest.sentry.io/1")
+    monkeypatch.setenv("SENTRY_DSN", SENTRY_DSN)
     monkeypatch.setenv("SENTRY_ENVIRONMENT", "test")
     monkeypatch.setenv("RENDER_GIT_COMMIT", "abc123")
 
@@ -40,7 +57,7 @@ def test_sentry_reports_to_the_dsn_from_env(
 
     client = sentry_sdk.get_client()
     assert client.transport is not None
-    assert client.options["dsn"] == "https://key@o1.ingest.sentry.io/1"
+    assert client.options["dsn"] == SENTRY_DSN
     assert client.options["environment"] == "test"
     assert client.options["release"] == "abc123"
 
