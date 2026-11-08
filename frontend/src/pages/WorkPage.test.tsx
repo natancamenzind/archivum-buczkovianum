@@ -518,6 +518,15 @@ describe("WorkPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("ARC-54: the contextual materials block has no caption under its heading", async () => {
+    mockPage();
+
+    await renderPage();
+
+    expect(screen.getByRole("heading", { level: 2, name: "Materiały kontekstowe" })).toBeVisible();
+    expect(screen.queryByText(/Opracowania i materiały wizualne/)).not.toBeInTheDocument();
+  });
+
   it("US-RA-06 AC1: every item in the main column, tag column and contextual materials links to a page", async () => {
     mockPage();
 

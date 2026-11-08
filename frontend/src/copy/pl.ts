@@ -284,7 +284,6 @@ export const copy = {
   /** The contextual materials block (R-08). */
   materials: {
     title: "Materiały kontekstowe",
-    description: "Opracowania i materiały wizualne związane z utworem",
     texts: "Teksty sekundarne",
     visuals: "Materiały wizualne",
   },
