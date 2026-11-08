@@ -28,6 +28,15 @@ describe("SectionHeader", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("ARC-40: keeps the counter on one line next to a long title", () => {
+    render(<SectionHeader title="Fragmenty maszynopisu" count="2 z 24" />);
+
+    // jsdom has no layout, so assert the classes: the counter never wraps or shrinks,
+    // the title takes the squeeze and wraps instead.
+    expect(screen.getByText("2 z 24")).toHaveClass("whitespace-nowrap", "shrink-0");
+    expect(screen.getByRole("heading", { level: 2 })).toHaveClass("min-w-0");
+  });
+
   it.each([
     ["counter", { count: "2 z 24" }, "2 z 24"],
     ["description", { description: "Wybór redakcji" }, "Wybór redakcji"],
