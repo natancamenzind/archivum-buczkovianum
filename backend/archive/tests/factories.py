@@ -63,7 +63,6 @@ class BibliographyEntryFactory(DjangoModelFactory[BibliographyEntry]):
 
     work = SubFactory(WorkFactory)
     text = Sequence(lambda n: f"Autor {n}, Tytuł {n}, Czytelnik, Warszawa 1960, s. {n}")
-    order = Sequence(lambda n: n)
 
 
 class DocumentFactory(DjangoModelFactory[Document]):

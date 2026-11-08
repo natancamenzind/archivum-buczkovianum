@@ -374,8 +374,8 @@ class TestWorkPageEndpoint:
     ) -> None:
         # Arrange
         work = published_work()
-        for number in range(12, 0, -1):
-            BibliographyEntryFactory.create(work=work, text=f"Pozycja {number}", order=number)
+        for number in range(22, 10, -1):
+            BibliographyEntryFactory.create(work=work, text=f"Pozycja {number}")
         BibliographyEntryFactory.create(text="Inny utwór")
 
         # Act
@@ -383,7 +383,7 @@ class TestWorkPageEndpoint:
 
         # Assert
         assert result["bibliography"] == {
-            "items": [f"Pozycja {number}" for number in range(1, 6)],
+            "items": [f"Pozycja {number}" for number in range(11, 16)],
             "total": 12,
         }
 

@@ -24,7 +24,7 @@ Tłumaczenie `docs/user-stories.md`. W razie rozbieżności obowiązuje wersja a
 | Tekst sekundarny | Recenzja, opracowanie, list lub nagranie o utworze. Może być w relacji z wieloma utworami. |
 | Materiał kontekstowy | Dowolne medium + opis. Może być w relacji z wieloma utworami. |
 | Materiał wizualny | Materiał kontekstowy, który jest obrazem: zdjęcie lub skan ilustracyjny. |
-| Bibliografia | Uporządkowana lista pozycji utworu. Pozycja to jedna linia dowolnego tekstu, np. „Autor, Tytuł, Wydawnictwo, miejsce rok, s. strony”. |
+| Bibliografia | Alfabetyczna lista pozycji utworu. Pozycja to jedna linia dowolnego tekstu, np. „Autor, Tytuł, Wydawnictwo, miejsce rok, s. strony”. |
 | Powiązanie z utworem | Relacja między utworem a tekstem sekundarnym lub materiałem kontekstowym. Można je otagować. |
 | Tag | Nazwa dla relacji, łącząca fragmenty i zapiski: słowo klucz z Buczkowskiego (np. „dezerter”) albo nasza interpretacja (np. „wielokulturowość”). |
 | Fragment | Otagowany zakres tekstu (OCR lub tekstu litego), z sygnaturą wynikającą z dokumentu i numeru skanu. |
@@ -144,7 +144,7 @@ Jako RA widzę korpus informacji o utworze; na pierwszy rzut oka tylko kluczowe 
 
 1. Strona utworu: pod wydaniami sekcja „Bibliografia” z licznikiem („5 z 12”), pierwsze 5 pozycji jako lista numerowana i link „Cała bibliografia (12)” do strony bibliografii utworu. Utwór bez pozycji nie ma tej sekcji (R-02).
 2. Strona bibliografii pod adresem `/utwory/<slug>/bibliografia`. Hiro jak na stronie „O archiwum”: wiersz typu „Bibliografia utworu · Leopold Buczkowski” i tytuł utworu.
-3. Karta „Bibliografia” z licznikiem i wszystkimi pozycjami jako lista numerowana, w kolejności ustalonej przez redaktorkę.
+3. Karta „Bibliografia” z licznikiem i wszystkimi pozycjami jako lista numerowana, w kolejności alfabetycznej (US-WR-15 AC2).
 4. Kolumna boczna „Bibliografie utworów”: „Bibliografia do utworu „<tytuł>”” dla każdego opublikowanego utworu z co najmniej jedną pozycją, w kolejności pierwszych wydań. Bieżący utwór jest wyróżniony. Każda pozycja prowadzi do bibliografii danego utworu. Na telefonie kolumna jest pod kartą.
 5. Utwór bez pozycji nie ma strony bibliografii (404). Bibliografia szkicu utworu zwraca czytelnikowi 404 (R-06).
 
@@ -352,8 +352,8 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 
 ### US-WR-15 — Bibliografia utworu
 
-1. Pozycje bibliografii dodaje się, edytuje, usuwa i ustawia ich kolejność w formularzu utworu (inline). Każda pozycja to jedna linia tekstu (wymagana).
-2. Kolejność ustala numer: niższe numery są pierwsze.
+1. Pozycje bibliografii dodaje się, edytuje i usuwa w formularzu utworu (inline). Każda pozycja to jedna linia tekstu (wymagana).
+2. Pozycje są układane automatycznie w polskiej kolejności alfabetycznej, czyli według nazwiska autora, od którego zaczyna się pozycja. Redaktorka nie ustala kolejności.
 
 ---
 

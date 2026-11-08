@@ -316,8 +316,8 @@ class Command(BaseCommand):
         )
         for publisher, place, year in data.editions:
             saved(Edition(work=work, publisher=publisher, place=place, year=year))
-        for order, text in enumerate(data.bibliography, start=1):
-            saved(BibliographyEntry(work=work, text=text, order=order))
+        for text in data.bibliography:
+            saved(BibliographyEntry(work=work, text=text))
         for typescript_data in data.typescripts:
             document = ocr_document(typescript_data.scan)
             saved(

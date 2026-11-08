@@ -128,7 +128,7 @@ class EditionInline(admin.TabularInline[Edition, Work]):
 class BibliographyEntryInline(admin.TabularInline[BibliographyEntry, Work]):
     model = BibliographyEntry
     extra = 0
-    fields = ("text", "order")
+    fields = ("text",)
 
 
 @admin.register(Work)

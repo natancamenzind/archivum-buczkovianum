@@ -22,7 +22,7 @@ Sources: `docs/PROJECT_BRIEF.md` and the Figma file "archiwum-buczkowski-model",
 | Secondary text (tekst sekundarny) | A review, study, letter or recording about a work. Relates to one or more works. |
 | Contextual material (materiał kontekstowy) | Any medium plus a description. Relates to one or more works. |
 | Visual material (materiał wizualny) | A contextual material that is an image: a photo or an illustrative scan. |
-| Bibliography (bibliografia) | A work's ordered list of entries. An entry is one line of free text, e.g. "Autor, Tytuł, Wydawnictwo, miejsce rok, s. strony". |
+| Bibliography (bibliografia) | A work's alphabetical list of entries. An entry is one line of free text, e.g. "Autor, Tytuł, Wydawnictwo, miejsce rok, s. strony". |
 | Work link | The relation between a work and a secondary text or contextual material. Can be tagged. |
 | Tag | A motif linking fragments and notes: a Buczkowski keyword or an editorial interpretation. |
 | Fragment | A tagged character range in a text (OCR or plain), with a shelfmark derived from its document and scan page. |
@@ -140,7 +140,7 @@ Shows what we know about a work, key information first.
 
 1. Work page: below the editions, the section "Bibliografia" with a count ("5 z 12"), the first 5 entries as a numbered list, and the link "Cała bibliografia (12)" to the work's bibliography page. A work without entries has no section (R-02).
 2. The bibliography page, at `/utwory/<slug>/bibliografia`. Hero, as on the About page: the type line "Bibliografia utworu · Leopold Buczkowski" and the work's title.
-3. A card "Bibliografia" with the count and every entry, as a numbered list in the order the editor set.
+3. A card "Bibliografia" with the count and every entry, as a numbered list in alphabetical order (US-WR-15 AC2).
 4. Side column "Bibliografie utworów": "Bibliografia do utworu „<title>”" for every published work with at least one entry, by first edition. The current work is highlighted. Each links to that work's bibliography page. On mobile the column is below the card.
 5. A work without entries has no bibliography page (404). A draft work's bibliography is a 404 for readers (R-06).
 
@@ -348,8 +348,8 @@ Everything happens in Django admin. Every image field requires a text alternativ
 
 ### US-WR-15 — Work bibliography
 
-1. Bibliography entries are added, edited, deleted and reordered inline on the work's form. Each entry is one line of text (required).
-2. The order is set with a number: lower numbers come first.
+1. Bibliography entries are added, edited and deleted inline on the work's form. Each entry is one line of text (required).
+2. Entries are sorted automatically in Polish alphabetical order, so by the author's surname each entry starts with. Editors do not set the order.
 
 ---
 

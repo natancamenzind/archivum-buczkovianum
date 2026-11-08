@@ -21,7 +21,7 @@ def work_with_bibliography(
     if year is not None:
         EditionFactory.create(work=work, year=year)
     for number in range(1, entries + 1):
-        BibliographyEntryFactory.create(work=work, text=f"{work.title} {number}", order=number)
+        BibliographyEntryFactory.create(work=work, text=f"{work.title} {number}")
     return work
 
 
@@ -52,23 +52,23 @@ class TestBibliographyPageEndpoint:
             False,
         )
 
-    def test_us_ra_21_ac3_every_entry_in_the_order_the_editor_set(self, client: Client) -> None:
+    def test_us_ra_21_ac3_every_entry_in_alphabetical_order(self, client: Client) -> None:
         # Arrange
         work = WorkFactory.create(status=PUBLISHED)
-        for text, order in (("Trzecia", 3), ("Pierwsza", 1), ("Druga", 2)):
-            BibliographyEntryFactory.create(work=work, text=text, order=order)
-        for number in range(4, 13):
-            BibliographyEntryFactory.create(work=work, text=f"Pozycja {number}", order=number)
+        for text in ("Zarycki, Bibliografia", "Łempicki, Szkic", "Abramowicz, Biblio"):
+            BibliographyEntryFactory.create(work=work, text=text)
+        for number in range(10, 19):
+            BibliographyEntryFactory.create(work=work, text=f"Kowalski {number}")
 
         # Act
         result = page(client, work)
 
         # Assert
         assert result["entries"] == [
-            "Pierwsza",
-            "Druga",
-            "Trzecia",
-            *(f"Pozycja {number}" for number in range(4, 13)),
+            "Abramowicz, Biblio",
+            *(f"Kowalski {number}" for number in range(10, 19)),
+            "Łempicki, Szkic",
+            "Zarycki, Bibliografia",
         ]
 
     def test_us_ra_21_ac4_published_works_with_a_bibliography_by_first_edition(

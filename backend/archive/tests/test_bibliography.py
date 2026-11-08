@@ -6,7 +6,7 @@ import pytest
 from django.test import Client
 from django.urls import reverse
 
-from archive.models import BibliographyEntry, Status, Work
+from archive.models import Status, Work
 from archive.tests.factories import BibliographyEntryFactory, WorkFactory
 
 
@@ -43,8 +43,8 @@ class TestBibliographyInThePanel:
         work = WorkFactory.create(status=Status.PUBLISHED)
         data = form_data(
             work,
-            {"text": "Jan Błoński, Wertepy, Twórczość, Warszawa 1948, s. 3", "order": 1},
-            {"text": "Jerzy Kwiatkowski, Klucze do wyobraźni, PIW, Warszawa 1964", "order": 2},
+            {"text": "Jan Błoński, Wertepy, Twórczość, Warszawa 1948, s. 3"},
+            {"text": "Jerzy Kwiatkowski, Klucze do wyobraźni, PIW, Warszawa 1964"},
         )
 
         # Act
@@ -60,12 +60,12 @@ class TestBibliographyInThePanel:
     def test_us_wr_15_ac1_edits_and_deletes_entries(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
-        kept = BibliographyEntryFactory.create(work=work, text="Stary opis", order=1)
-        removed = BibliographyEntryFactory.create(work=work, order=2)
+        kept = BibliographyEntryFactory.create(work=work, text="Stary opis")
+        removed = BibliographyEntryFactory.create(work=work)
         data = form_data(
             work,
-            {"id": kept.pk, "work": work.pk, "text": "Nowy opis", "order": 1},
-            {"id": removed.pk, "work": work.pk, "text": removed.text, "order": 2, "DELETE": "on"},
+            {"id": kept.pk, "work": work.pk, "text": "Nowy opis"},
+            {"id": removed.pk, "work": work.pk, "text": removed.text, "DELETE": "on"},
         )
 
         # Act
@@ -78,18 +78,20 @@ class TestBibliographyInThePanel:
     def test_us_wr_15_ac1_an_entry_needs_its_text(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
+        entry = BibliographyEntryFactory.create(work=work, text="Stary opis")
+        data = form_data(work, {"id": entry.pk, "work": work.pk, "text": ""})
 
         # Act
-        response = admin_client.post(change_url(work), form_data(work, {"text": "", "order": 1}))
+        response = admin_client.post(change_url(work), data)
 
         # Assert
         assert response.status_code == 200
-        assert not BibliographyEntry.objects.exists()
+        assert texts(work) == ["Stary opis"]
 
     def test_us_wr_15_ac1_an_entry_is_one_line(self, admin_client: Client) -> None:
         # Arrange
         work = WorkFactory.create()
-        data = form_data(work, {"text": "Pierwsza linia\r\ndruga linia", "order": 1})
+        data = form_data(work, {"text": "Pierwsza linia\r\ndruga linia"})
 
         # Act
         response = admin_client.post(change_url(work), data)
@@ -98,30 +100,44 @@ class TestBibliographyInThePanel:
         assert response.status_code == 302
         assert texts(work) == ["Pierwsza linia druga linia"]
 
-    def test_us_wr_15_ac2_lower_numbers_come_first(self, admin_client: Client) -> None:
+    def test_us_wr_15_ac2_entries_are_in_polish_alphabetical_order(self) -> None:
         # Arrange
         work = WorkFactory.create()
-        data = form_data(
-            work,
-            {"text": "Trzecia", "order": 30},
-            {"text": "Pierwsza", "order": 10},
-            {"text": "Druga", "order": 20},
-        )
-
-        # Act
-        admin_client.post(change_url(work), data)
-
-        # Assert
-        assert texts(work) == ["Pierwsza", "Druga", "Trzecia"]
-
-    def test_us_wr_15_ac2_equal_numbers_keep_the_order_they_were_added_in(self) -> None:
-        # Arrange
-        work = WorkFactory.create()
-        for text in ("Pierwsza", "Druga", "Trzecia"):
-            BibliographyEntryFactory.create(work=work, text=text, order=0)
+        for text in ("Żukrowski", "Zarycki", "Łempicki", "Lisowski", "Śliwiński", "Sandauer"):
+            BibliographyEntryFactory.create(work=work, text=text)
+        BibliographyEntryFactory.create(work=work, text="abramowicz")
+        BibliographyEntryFactory.create(work=work, text="Błoński")
 
         # Act
         result = texts(work)
 
         # Assert
-        assert result == ["Pierwsza", "Druga", "Trzecia"]
+        assert result == [
+            "abramowicz",
+            "Błoński",
+            "Lisowski",
+            "Łempicki",
+            "Sandauer",
+            "Śliwiński",
+            "Zarycki",
+            "Żukrowski",
+        ]
+
+    def test_us_wr_15_ac2_equal_entries_keep_the_order_they_were_added_in(self) -> None:
+        # Arrange
+        work = WorkFactory.create()
+        first, second = (BibliographyEntryFactory.create(work=work, text="Błoński") for _ in "ab")
+
+        # Act
+        result = list(work.bibliography.all())
+
+        # Assert
+        assert result == [first, second]
+
+    def test_us_wr_15_ac2_editors_do_not_set_the_order(self, admin_client: Client) -> None:
+        # Act
+        response = admin_client.get(reverse("admin:archive_work_add"))
+
+        # Assert
+        _editions, bibliography = response.context["inline_admin_formsets"]
+        assert list(bibliography.formset.form.base_fields) == ["text"]
