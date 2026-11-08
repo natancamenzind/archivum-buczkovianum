@@ -8,7 +8,7 @@ interface ArrowLinkProps {
   label: string;
   to: string;
   onClick?: MouseEventHandler<HTMLAnchorElement>;
-  /** Set like a fragment's shelfmark, always underlined, with the arrow on the underline (ARC-31, ARC-46). */
+  /** Set like a fragment's quote, always underlined, with the arrow on the underline (ARC-31, ARC-53). */
   prominent?: boolean;
 }
 
@@ -23,7 +23,7 @@ export function ArrowLink({ label, to, onClick, prominent = false }: ArrowLinkPr
         to={to}
         onClick={onClick}
         preventScrollReset
-        className="group flex w-fit items-end gap-12 text-lora-tytul-elementu text-foreground hover:text-accent-foreground-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        className="group flex w-fit items-end gap-12 text-lora-tekst text-foreground hover:text-accent-foreground-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         <span className="border-b-2 border-current pb-4">{label}</span>
         <ArrowRightIcon className="size-24 translate-y-1/2 transition-transform duration-150 ease-out group-hover:translate-x-4 group-focus-visible:translate-x-4 motion-reduce:transition-none" />
