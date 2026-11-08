@@ -523,7 +523,7 @@ describe("TypescriptPage", () => {
     );
   });
 
-  it("ARC-31: 'Wszystkie fragmenty (3)' is set as a section title", async () => {
+  it("ARC-46: 'Wszystkie fragmenty (3)' is set like a fragment's shelfmark", async () => {
     mockPage();
 
     await renderPage();
@@ -532,7 +532,7 @@ describe("TypescriptPage", () => {
       within(card("Fragmenty z maszynopisu")).getByRole("link", {
         name: "Wszystkie fragmenty (3)",
       }),
-    ).toHaveClass("text-lora-tytul-sekcji", "text-foreground");
+    ).toHaveClass("text-lora-tytul-elementu", "text-foreground");
   });
 
   it("D20: 'Wszystkie fragmenty (3)' expands the list in place, in page order", async () => {
