@@ -171,17 +171,24 @@ class NoteAdmin(MediaContentAdmin[Note]):
     form = NoteForm
 
 
-class SecondaryTextWorkLinkInline(admin.TabularInline[SecondaryTextWorkLink, SecondaryText]):
-    model = SecondaryTextWorkLink
+class WorkLinkInline[
+    L: SecondaryTextWorkLink | MaterialWorkLink,
+    I: SecondaryText | ContextualMaterial,
+](admin.TabularInline[L, I]):
     extra = 0
     min_num = 1
     autocomplete_fields = ("work", "tags")
 
     def get_formset(
-        self, request: HttpRequest, obj: SecondaryText | None = None, **kwargs: Any
-    ) -> type[BaseInlineFormSet[SecondaryTextWorkLink, SecondaryText, Any]]:
-        """Require at least one work, also when every link is deleted (US-WR-06 AC2)."""
+        self, request: HttpRequest, obj: I | None = None, **kwargs: Any
+    ) -> type[BaseInlineFormSet[L, I, Any]]:
+        """Require at least one work, also when every link is deleted (US-WR-06 AC2, US-WR-07
+        AC3)."""
         return super().get_formset(request, obj, validate_min=True, **kwargs)
+
+
+class SecondaryTextWorkLinkInline(WorkLinkInline[SecondaryTextWorkLink, SecondaryText]):
+    model = SecondaryTextWorkLink
 
 
 class SecondaryTextAdminForm(SecondaryTextForm):
@@ -207,17 +214,8 @@ class SecondaryTextAdmin(TextUploadAdmin[SecondaryText]):
         super().save_model(request, obj, form, change)
 
 
-class MaterialWorkLinkInline(admin.TabularInline[MaterialWorkLink, ContextualMaterial]):
+class MaterialWorkLinkInline(WorkLinkInline[MaterialWorkLink, ContextualMaterial]):
     model = MaterialWorkLink
-    extra = 0
-    min_num = 1
-    autocomplete_fields = ("work", "tags")
-
-    def get_formset(
-        self, request: HttpRequest, obj: ContextualMaterial | None = None, **kwargs: Any
-    ) -> type[BaseInlineFormSet[MaterialWorkLink, ContextualMaterial, Any]]:
-        """A material is linked to one or more works (US-WR-07 AC3)."""
-        return super().get_formset(request, obj, validate_min=True, **kwargs)
 
 
 class ContextualMaterialForm(MediaContentForm[ContextualMaterial]):

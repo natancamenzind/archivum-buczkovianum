@@ -1,7 +1,6 @@
 import re
 from collections import defaultdict
 from operator import attrgetter
-from typing import Any
 
 from django.db.models import Prefetch, Q
 from django.http import Http404
@@ -49,6 +48,7 @@ from api.serializers import (
     WorkPageSerializer,
 )
 from archive.models import (
+    ITEM_MODELS,
     Archival,
     ContentKind,
     ContextualMaterial,
@@ -67,7 +67,6 @@ from archive.models import (
     Typescript,
     Work,
     preview,
-    published_q,
 )
 from search.models import EntityType
 from search.query import (
@@ -109,16 +108,7 @@ def home(request: Request) -> Response:
     """The home page (US-RA-01): introduction and portrait, the counts, the work cards, a random
     featured fragment (US-RA-02) and the tag cloud."""
     cards = list(Work.objects.published().with_year().with_fragment_count())
-    owners = [f"document__{owner}__institution" for owner in Document.owner_accessors()]
-    fragment = (
-        Fragment.objects.visible()
-        .filter(is_featured=True)
-        .with_number()
-        .select_related(*owners)
-        .prefetch_related(Prefetch("tags", Tag.objects.published()))
-        .order_by("?")
-        .first()
-    )
+    fragment = Fragment.objects.visible().filter(is_featured=True).for_cards().order_by("?").first()
     sources = source_works([fragment] if fragment else [], cards)
     featured = (
         FeaturedFragment(fragment, featured_work(sources.get(fragment.document_id, [])))
@@ -240,14 +230,7 @@ def search_results(request: Request) -> Response:
     hits = {group.entity_type: group.hits for group in results.groups}
 
     fragment_ids = [hit.entry.entity_id for hit in hits.get(EntityType.FRAGMENT, [])]
-    owners = Document.owner_accessors()
-    by_pk = (
-        Fragment.objects.visible()
-        .with_number()
-        .select_related(*(f"document__{owner}__institution" for owner in owners))
-        .prefetch_related(Prefetch("tags", Tag.objects.published()))
-        .in_bulk(fragment_ids)
-    )
+    by_pk = Fragment.objects.visible().for_cards().in_bulk(fragment_ids)
     fragments = [by_pk[pk] for pk in fragment_ids if pk in by_pk]
     works = list(Work.objects.published().with_year())
     works_by_pk = {work.pk: work for work in works}
@@ -298,19 +281,14 @@ def contextual_materials(
     )
 
 
-def viewable[S: PublishableQuerySet[Any]](request: Request, queryset: S) -> S:
-    """What an entity page may show (R-06): published entities, and drafts for staff, who
-    preview them (US-WR-13). Lists, previews and related items never take drafts."""
-    return queryset if request.user.is_staff else queryset.published()
-
-
 @extend_schema(responses=TypescriptPageSerializer)
 @api_view(["GET"])
 def typescript(request: Request, pk: int) -> Response:
     """The typescript page (US-RA-08). A draft typescript is shown only to staff (R-06); a draft
     work leaves out the work, its contextual materials and nothing else."""
     current = get_object_or_404(
-        viewable(request, Typescript.objects.select_related("institution", "document")), pk=pk
+        Typescript.objects.select_related("institution", "document").viewable_by(request.user),
+        pk=pk,
     )
     work = (
         Work.objects.published()
@@ -329,12 +307,7 @@ def typescript(request: Request, pk: int) -> Response:
             key=shelfmark_order,
         ),
         fragments=Fragment.objects.filter(document=current.document).with_number().preview(),
-        tags=list(
-            Tag.objects.published()
-            .filter(Q(typescripts=current) | Q(fragments__document=current.document))
-            .distinct()
-            .order_by("title")
-        ),
+        tags=list(current.carried_tags()),
         materials=contextual_materials(
             SecondaryText.objects.filter(works=work),
             ContextualMaterial.objects.filter(works=work),
@@ -351,17 +324,12 @@ def typescript(request: Request, pk: int) -> Response:
 def work(request: Request, slug: str) -> Response:
     """The work page (US-RA-04). A draft work is shown only to staff (R-06)."""
     current = get_object_or_404(
-        viewable(request, Work.objects.with_year().prefetch_related("editions")), slug=slug
+        Work.objects.with_year().prefetch_related("editions").viewable_by(request.user), slug=slug
     )
     typescripts = Typescript.objects.published().filter(work=current)
     main = typescripts.filter(is_main=True).first()
-    published_tags = Prefetch("tags", Tag.objects.published())
     fragments = (
-        Fragment.objects.filter(document__typescript=main)
-        .select_related("document__typescript__institution")
-        .prefetch_related(published_tags)
-        .with_number()
-        .preview()
+        Fragment.objects.filter(document__typescript=main).for_cards().preview()
         if main
         else Preview[Fragment](items=[], total=0)
     )
@@ -374,7 +342,7 @@ def work(request: Request, slug: str) -> Response:
             Note.objects.published()
             .filter(works=current)
             .select_related("institution")
-            .prefetch_related(published_tags)
+            .prefetch_related(Prefetch("tags", Tag.objects.published()))
         ),
         tags=list(Tag.objects.published().referring_to(current).distinct().order_by("title")),
         materials=contextual_materials(
@@ -391,7 +359,9 @@ def work(request: Request, slug: str) -> Response:
 def work_bibliography(request: Request, slug: str) -> Response:
     """The work's bibliography page (US-RA-21). A draft work's is shown only to staff (R-06);
     a work without entries has none."""
-    current = get_object_or_404(viewable(request, Work.objects.with_bibliography()), slug=slug)
+    current = get_object_or_404(
+        Work.objects.with_bibliography().viewable_by(request.user), slug=slug
+    )
     page = BibliographyPage(
         work=current,
         entries=list(current.bibliography.all()),
@@ -402,34 +372,19 @@ def work_bibliography(request: Request, slug: str) -> Response:
 
 def related_fragments(item: Note | SecondaryText | ContextualMaterial) -> Preview[Fragment]:
     """The preview of an item's related fragments (US-RA-10 AC3), loaded for fragment cards."""
-    return preview(
-        Fragment.objects.sharing_tags_with(item)
-        .select_related("document__typescript__institution")
-        .prefetch_related(Prefetch("tags", Tag.objects.published()))
-        .with_number()
-    )
+    return preview(Fragment.objects.sharing_tags_with(item).for_cards())
 
 
 @extend_schema(responses=SecondaryTextPageSerializer)
 @api_view(["GET"])
 def secondary_text(request: Request, pk: int) -> Response:
     """The secondary text page (US-RA-10). A draft secondary text is shown only to staff (R-06)."""
-    current = get_object_or_404(viewable(request, SecondaryText.objects.all()), pk=pk)
-    published_tags = Tag.objects.published()
-    links = SecondaryTextWorkLink.objects.filter(published_q("work__"), secondary_text=current)
+    current = get_object_or_404(SecondaryText.objects.viewable_by(request.user), pk=pk)
     page = SecondaryTextPage(
         secondary_text=current,
         works=list(current.related_works().with_fragment_count()),
         fragments=related_fragments(current),
-        tags=list(
-            published_tags.filter(
-                Q(secondarytexts=current)
-                | Q(fragments__document=current.document_id)
-                | Q(pk__in=links.values("tags"))
-            )
-            .distinct()
-            .order_by("title")
-        ),
+        tags=list(current.carried_tags(with_work_links=True)),
     )
     return Response(SecondaryTextPageSerializer(page).data)
 
@@ -439,18 +394,13 @@ def secondary_text(request: Request, pk: int) -> Response:
 def note(request: Request, pk: int) -> Response:
     """The note page (US-RA-11). A draft note is shown only to staff (R-06)."""
     current = get_object_or_404(
-        viewable(request, Note.objects.select_related("institution")), pk=pk
+        Note.objects.select_related("institution").viewable_by(request.user), pk=pk
     )
-    published_tags = Tag.objects.published()
     page = NotePage(
         note=current,
         works=list(current.related_works().with_fragment_count()),
         fragments=related_fragments(current),
-        tags=list(
-            published_tags.filter(Q(notes=current) | Q(fragments__document__note=current))
-            .distinct()
-            .order_by("title")
-        ),
+        tags=list(current.carried_tags()),
     )
     return Response(NotePageSerializer(page).data)
 
@@ -460,30 +410,15 @@ def note(request: Request, pk: int) -> Response:
 def material(request: Request, pk: int) -> Response:
     """The contextual material page (US-RA-12). A draft material is shown only to staff (R-06)."""
     current = get_object_or_404(
-        viewable(request, ContextualMaterial.objects.select_related("institution")), pk=pk
+        ContextualMaterial.objects.select_related("institution").viewable_by(request.user), pk=pk
     )
-    published_tags = Tag.objects.published()
-    links = MaterialWorkLink.objects.filter(published_q("work__"), material=current)
     page = MaterialPage(
         material=current,
         works=list(current.related_works().with_fragment_count()),
         fragments=related_fragments(current),
-        tags=list(
-            published_tags.filter(
-                Q(contextualmaterials=current)
-                | Q(fragments__document__contextualmaterial=current)
-                | Q(pk__in=links.values("tags"))
-            )
-            .distinct()
-            .order_by("title")
-        ),
+        tags=list(current.carried_tags(with_work_links=True)),
     )
     return Response(MaterialPageSerializer(page).data)
-
-
-# The kinds of item a fragment's text belongs to, in the order the tag page lists their
-# fragments within a work.
-SOURCES = (Typescript, Note, SecondaryText, ContextualMaterial)
 
 
 def source_works(fragments: list[Fragment], works: list[Work]) -> dict[int, list[Work]]:
@@ -513,7 +448,7 @@ def source_works(fragments: list[Fragment], works: list[Work]) -> dict[int, list
 @api_view(["GET"])
 def tag(request: Request, slug: str) -> Response:
     """The tag page (US-RA-07). A draft tag is shown only to staff (R-06)."""
-    current = get_object_or_404(viewable(request, Tag.objects.with_occurrences()), slug=slug)
+    current = get_object_or_404(Tag.objects.with_occurrences().viewable_by(request.user), slug=slug)
     works = list(
         Work.objects.published()
         .referred_to_by(current)
@@ -521,22 +456,14 @@ def tag(request: Request, slug: str) -> Response:
         .with_fragment_count(current)
         .distinct()
     )
-    published_tags = Prefetch("tags", Tag.objects.published())
-    owners = [f"document__{owner}__institution" for owner in Document.owner_accessors()]
-    fragments = list(
-        Fragment.objects.visible()
-        .filter(tags=current)
-        .select_related("document", *owners)
-        .prefetch_related(published_tags)
-        .with_number()
-    )
+    fragments = list(Fragment.objects.visible().filter(tags=current).for_cards())
     sources = source_works(fragments, works)
     position = {work.pk: index for index, work in enumerate(works)}
 
     def by_work_then_text(fragment: Fragment) -> tuple[int, int, int, int, int, int]:
         first = sources.get(fragment.document_id)
         work = position[first[0].pk] if first else len(position)
-        kind = SOURCES.index(type(fragment.document.owner))
+        kind = ITEM_MODELS.index(type(fragment.document.owner))
         return (work, kind, fragment.document_id, fragment.start, fragment.end, fragment.pk)
 
     carrying = Q(tags=current) | Q(document__fragments__tags=current)
@@ -549,7 +476,7 @@ def tag(request: Request, slug: str) -> Response:
             .filter(carrying)
             .distinct()
             .select_related("institution")
-            .prefetch_related(published_tags)
+            .prefetch_related(Prefetch("tags", Tag.objects.published()))
         ),
         related=list(Tag.objects.published().filter(related=current).order_by("title")),
         materials=contextual_materials(
@@ -572,8 +499,9 @@ def document(request: Request, pk: int) -> Response:
     published tags. The text of a draft is shown only to staff; of no item, it is not found
     (R-06)."""
     fragments = Fragment.objects.with_number().order_by("start", "end", "pk")
+    owners = (f"{owner}__institution" for owner in Document.owner_accessors())
     text = get_object_or_404(
-        Document.objects.prefetch_related(
+        Document.objects.select_related(*owners).prefetch_related(
             Prefetch(
                 "fragments",
                 fragments.prefetch_related(Prefetch("tags", Tag.objects.published())),
@@ -582,7 +510,7 @@ def document(request: Request, pk: int) -> Response:
         pk=pk,
     )
     owner = text.owner
-    if not isinstance(owner, Publishable) or (owner.is_draft and not request.user.is_staff):
+    if not isinstance(owner, Publishable) or not owner.is_viewable_by(request.user):
         raise Http404
     context = {"owner": owner}
     return Response(DocumentSerializer(text, context=context).data)

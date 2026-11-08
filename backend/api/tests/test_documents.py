@@ -153,13 +153,13 @@ class TestDocumentEndpoint:
             fragment.tags.add(TagFactory.create(status=PUBLISHED))
 
         add_fragment()
-        with django_assert_num_queries(5):
+        with django_assert_num_queries(3):
             payload(client, document)
         for _ in range(5):
             add_fragment()
 
         # Act & Assert
-        with django_assert_num_queries(5):
+        with django_assert_num_queries(3):
             result = payload(client, document)
 
         assert len(result["fragments"]) == 6
