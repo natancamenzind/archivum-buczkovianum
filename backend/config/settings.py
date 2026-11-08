@@ -173,6 +173,9 @@ AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL") or None
 # The bucket is private: uploads get no public ACL and every media URL is presigned.
 AWS_DEFAULT_ACL = None
 AWS_QUERYSTRING_AUTH = True
+# An upload never takes an existing file's key, like on the local filesystem. Otherwise a scan
+# replaced by one with the same name overwrites it and is then deleted as the replaced scan.
+AWS_S3_FILE_OVERWRITE = False
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3.S3Storage"
