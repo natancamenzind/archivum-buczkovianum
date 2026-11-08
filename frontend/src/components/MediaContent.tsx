@@ -49,6 +49,9 @@ export function ExternalMedia({ link }: { link: string }) {
       src={player}
       title={copy.content.player}
       allow="encrypted-media; fullscreen; picture-in-picture"
+      // The site's own policy (Django's `same-origin`) sends no referrer to another origin, and
+      // YouTube refuses to play an embed it cannot attribute to a site (error 153, ARC-62).
+      referrerPolicy="strict-origin-when-cross-origin"
       className="aspect-video w-full rounded-md"
     />
   );
