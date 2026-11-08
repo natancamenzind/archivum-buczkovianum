@@ -3,9 +3,12 @@ import { describe, expect, it } from "vitest";
 
 import { Hypocycloid } from "@/components/Hypocycloid";
 
-/** The points of a path made of one move and straight lines. */
+/** The points a path made of one move and cubic Béziers goes through: where each part ends. */
 function points(d: string): [number, number][] {
-  return [...d.matchAll(/[ML] (-?[\d.]+) (-?[\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
+  return [...d.matchAll(/(?:M|C(?: -?[\d.]+ -?[\d.]+){2}) (-?[\d.]+) (-?[\d.]+)/g)].map((m) => [
+    Number(m[1]),
+    Number(m[2]),
+  ]);
 }
 
 /** The value an animation with `values` and `keyTimes` has at `time`, a fraction of its duration. */
@@ -75,6 +78,16 @@ describe("Hypocycloid", () => {
       const cusps = ring.filter((rad, i) => rad > at(i - 1) && rad >= at(i + 1));
       expect(cusps).toHaveLength(10);
       for (const cusp of cusps) expect(cusp).toBeCloseTo(fixed, 1);
+    }
+  });
+
+  it("ARC-55: the line is drawn with curves, not straight lines, so Safari dashes it in one piece", () => {
+    const { container } = render(<Hypocycloid tone="inverse" placement="hero" />);
+
+    for (const line of container.querySelectorAll("[data-slot=hypocycloid-line]")) {
+      const commands = (line.getAttribute("d") ?? "").match(/[A-Za-z]/g) ?? [];
+      expect(commands[0]).toBe("M");
+      expect(new Set(commands.slice(1))).toEqual(new Set(["C"]));
     }
   });
 
