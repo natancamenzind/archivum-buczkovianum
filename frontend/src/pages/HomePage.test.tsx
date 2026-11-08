@@ -183,7 +183,7 @@ describe("HomePage", () => {
     expect(within(featured).getByText("Wybór redakcji")).toBeVisible();
     expect(within(featured).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
     expect(
-      within(featured).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
+      within(featured).getByRole("link", { name: "Wertepy · fragment 01 · skan 9" }),
     ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(within(featured).getByRole("link", { name: "Epidemia" })).toHaveAttribute(
       "href",
