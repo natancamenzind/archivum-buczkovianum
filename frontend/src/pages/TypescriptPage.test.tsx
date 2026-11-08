@@ -979,7 +979,20 @@ describe("TypescriptPage", () => {
       within(card("Fragmenty z maszynopisu")).getByRole("link", {
         name: "Wszystkie fragmenty (3)",
       }),
-    ).toHaveClass("text-lora-tekst", "text-foreground");
+    ).toHaveClass("text-lora-tekst");
+  });
+
+  it("ARC-65: 'Wszystkie fragmenty (3)' is coloured and centred like the other arrow links", async () => {
+    mockPage();
+
+    await renderPage();
+
+    const link = within(card("Fragmenty z maszynopisu")).getByRole("link", {
+      name: "Wszystkie fragmenty (3)",
+    });
+    expect(link).toHaveClass("text-accent-foreground", "items-center", "hover:underline");
+    expect(link).not.toHaveClass("text-foreground", "items-end");
+    expect(link.querySelector("svg")).not.toHaveClass("translate-y-1/2");
   });
 
   it("D20: 'Wszystkie fragmenty (3)' expands the list in place, in page order", async () => {
