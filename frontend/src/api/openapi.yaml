@@ -1354,6 +1354,9 @@ components:
         document:
           type: integer
           description: 'The text for the reader: /api/documents/<id>/.'
+        external_url:
+          type: string
+          description: A recording of the text, an audio or video link; may be empty.
         works:
           type: array
           items:
@@ -1371,6 +1374,7 @@ components:
       required:
       - description
       - document
+      - external_url
       - fragments
       - header_image
       - header_image_alt

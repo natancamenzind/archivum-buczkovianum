@@ -180,8 +180,9 @@ Jako RA widzę wszystko, co jest powiązane z tagiem.
 1. Hiro: linia typu z rodzajem tekstu, a dla listu z nadawcą i datą („List · Leopold Buczkowski · 1.10.1947”); tytuł; opis.
 2. Kolumna kontekstu: „Powiązane utwory” (R-03).
 3. Kolumna główna, kolejno:
-   1. pełny tekst w czytniku (R-11) albo jako tekst lity, bez nagłówka;
-   2. „Powiązane fragmenty”: podgląd (R-09) fragmentów maszynopisu, które mają co najmniej jeden wspólny tag z tym tekstem lub jego fragmentami, jako karty fragmentów (R-10). Bez linku „wszystkie”.
+   1. nagranie, jeśli jest, jak zewnętrzny link audio/wideo w US-RA-11 AC3 (ARC-50);
+   2. pełny tekst w czytniku (R-11) albo jako tekst lity, bez nagłówka;
+   3. „Powiązane fragmenty”: podgląd (R-09) fragmentów maszynopisu, które mają co najmniej jeden wspólny tag z tym tekstem lub jego fragmentami, jako karty fragmentów (R-10). Bez linku „wszystkie”.
 4. Kolumna tagów: „Powiązane tagi”, czyli tagi na tekście, jego fragmentach i jego powiązaniach z utworami.
 
 ### US-RA-11 — Strona zapisku
@@ -302,7 +303,7 @@ Wszystko dzieje się w panelu administracyjnym (Django admin). Każde pole z obr
 
 ### US-WR-06 — Dodawanie tekstu sekundarnego
 
-1. Pola: tytuł (wymagany); rodzaj (np. list, recenzja, opracowanie, nagranie); sygnatura; tekst w wersji OCR (skan w przeszukiwalnym PDF) albo tekst lity. Opcjonalnie: opis; autor; źródło (wydawnictwo, miejsce, rok, strony, jako jedna linia tekstu); data, nadawca i adresat (dla listów).
+1. Pola: tytuł (wymagany); rodzaj (np. list, recenzja, opracowanie, nagranie); sygnatura; tekst w wersji OCR (skan w przeszukiwalnym PDF) albo tekst lity. Opcjonalnie: opis; autor; źródło (wydawnictwo, miejsce, rok, strony, jako jedna linia tekstu); data, nadawca i adresat (dla listów); zewnętrzny link audio/wideo do nagrania tekstu (ARC-50).
 2. Może być w relacji z jednym lub wieloma utworami. Każde powiązanie z utworem można otagować (US-WR-10).
 
 ### US-WR-07 — Dodawanie materiału kontekstowego

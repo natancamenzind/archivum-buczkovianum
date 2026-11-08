@@ -11,7 +11,7 @@ type Content = components["schemas"]["MediaContent"];
 const LINK_CLASSES =
   "w-fit text-cousine-metadane text-accent-foreground underline underline-offset-3 hover:text-accent-foreground-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
-/** The player address of a YouTube or Vimeo link; null for any other provider. */
+/** The player address of a YouTube, Vimeo, archive.org or SoundCloud link; null for any other. */
 function embedUrl(link: string): string | null {
   let url: URL;
   try {
@@ -31,8 +31,33 @@ function embedUrl(link: string): string | null {
   } else if (host === "vimeo.com") {
     const video = /^\/(\d+)$/.exec(url.pathname)?.[1];
     return video === undefined ? null : `https://player.vimeo.com/video/${video}`;
+  } else if (host === "archive.org") {
+    const item = /^\/(?:details|embed)\/([\w.-]+)/.exec(url.pathname)?.[1];
+    return item === undefined ? null : `https://archive.org/embed/${item}`;
+  } else if (host === "soundcloud.com") {
+    const track = /^\/[\w-]+\/(?:sets\/)?[\w-]+\/?$/.exec(url.pathname)?.[0];
+    return track === undefined
+      ? null
+      : `https://w.soundcloud.com/player/?visual=true&url=${encodeURIComponent(`https://soundcloud.com${track}`)}`;
   }
   return id != null && /^[\w-]+$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}` : null;
+}
+
+/** An audio or video link: the provider's player if it is a known provider, otherwise a link. */
+export function ExternalMedia({ link }: { link: string }) {
+  const player = embedUrl(link);
+  return player === null ? (
+    <a href={link} className={LINK_CLASSES}>
+      {copy.content.link}
+    </a>
+  ) : (
+    <iframe
+      src={player}
+      title={copy.content.player}
+      allow="encrypted-media; fullscreen; picture-in-picture"
+      className="aspect-video w-full rounded-md"
+    />
+  );
 }
 
 function isPdf(file: string): boolean {
@@ -74,8 +99,8 @@ function PdfPages({ file }: { file: string }) {
 
 /**
  * The content of a note or contextual material, by its kind (US-RA-11 AC3): an image inline; a
- * PDF inline, another file as a download; a YouTube or Vimeo link as an embedded player, another
- * link as a link; a text in the reader (R-11), under "Transkrypcja".
+ * PDF inline, another file as a download; an audio or video link as `ExternalMedia`; a text in
+ * the reader (R-11), under "Transkrypcja".
  */
 export function MediaContent({ content }: { content: Content }) {
   if (content.document !== null) {
@@ -86,7 +111,6 @@ export function MediaContent({ content }: { content: Content }) {
       </Card>
     );
   }
-  const player = content.kind === "external_media" ? embedUrl(content.external_url) : null;
   return (
     <Card>
       {content.kind === "image" && (
@@ -94,19 +118,7 @@ export function MediaContent({ content }: { content: Content }) {
       )}
       {content.kind === "document" &&
         (isPdf(content.file) ? <PdfPages file={content.file} /> : <Download file={content.file} />)}
-      {content.kind === "external_media" &&
-        (player === null ? (
-          <a href={content.external_url} className={LINK_CLASSES}>
-            {copy.content.link}
-          </a>
-        ) : (
-          <iframe
-            src={player}
-            title={copy.content.player}
-            allow="encrypted-media; fullscreen; picture-in-picture"
-            className="aspect-video w-full rounded-md"
-          />
-        ))}
+      {content.kind === "external_media" && <ExternalMedia link={content.external_url} />}
     </Card>
   );
 }

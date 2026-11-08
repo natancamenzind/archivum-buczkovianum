@@ -205,6 +205,7 @@ class SecondaryTextAdmin(TextUploadAdmin[SecondaryText]):
     autocomplete_fields = ("institution", "tags")
     form = SecondaryTextAdminForm
     inlines = (SecondaryTextWorkLinkInline,)
+    formfield_overrides = MediaContentAdmin.formfield_overrides
 
     def save_model(
         self, request: HttpRequest, obj: SecondaryText, form: SecondaryTextAdminForm, change: bool

@@ -176,8 +176,9 @@ Shows everything connected to a tag.
 1. Hero: a type line with the kind and, for a letter, sender and date ("List · Leopold Buczkowski · 1.10.1947"); title; description.
 2. Context column: "Powiązane utwory" (R-03).
 3. Main column, in order:
-   1. the full text in the reader (R-11), or as plain text, with no heading;
-   2. "Powiązane fragmenty": a preview (R-09) of typescript fragments that share at least one tag with this text or its fragments, as fragment cards (R-10). No "all" link.
+   1. the recording, if there is one, shown like an external audio/video link in US-RA-11 AC3 (ARC-50);
+   2. the full text in the reader (R-11), or as plain text, with no heading;
+   3. "Powiązane fragmenty": a preview (R-09) of typescript fragments that share at least one tag with this text or its fragments, as fragment cards (R-10). No "all" link.
 4. Tag column: "Powiązane tagi", tags on the text, its fragments and its work links.
 
 ### US-RA-11 — Note page
@@ -298,7 +299,7 @@ Everything happens in Django admin. Every image field requires a text alternativ
 
 ### US-WR-06 — Add a secondary text
 
-1. Fields: title (required); kind (e.g. letter, review, study, recording); shelfmark; text as OCR (a searchable PDF scan) or plain text. Optional: description; author; source (publisher, place, year, pages, as one line of text); date, sender and recipient (for letters).
+1. Fields: title (required); kind (e.g. letter, review, study, recording); shelfmark; text as OCR (a searchable PDF scan) or plain text. Optional: description; author; source (publisher, place, year, pages, as one line of text); date, sender and recipient (for letters); an external audio/video link to a recording of the text (ARC-50).
 2. Linked to one or more works. Each work link can be tagged (US-WR-10).
 
 ### US-WR-07 — Add a contextual material
