@@ -10,6 +10,9 @@ RUN npm ci
 # tailwind-tokens.ts reads the design tokens from outside frontend/.
 COPY design/tokens/tokens.css /app/design/tokens/tokens.css
 COPY frontend/ ./
+# Vite bakes these into the bundle. Render passes the service's environment as build arguments.
+ARG VITE_SENTRY_DSN
+ARG VITE_SENTRY_ENVIRONMENT
 RUN npm run build
 
 # --- App -----------------------------------------------------------------------------------------

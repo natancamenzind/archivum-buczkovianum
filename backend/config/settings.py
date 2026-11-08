@@ -1,10 +1,13 @@
 """Django settings. All configuration comes from environment variables."""
 
 import os
+from collections.abc import Mapping
 from pathlib import Path
+from typing import Any
 
 import dj_database_url
 import django_stubs_ext
+import sentry_sdk
 from django.core.exceptions import ImproperlyConfigured
 
 # Makes Django generics such as `ModelAdmin[Work]` subscriptable at runtime, for mypy.
@@ -28,6 +31,14 @@ def https_origins(hosts: list[str]) -> list[str]:
     ]
 
 
+def sentry_traces_sampler(context: Mapping[str, Any]) -> float:
+    """The share of requests Sentry traces. Render's health checks hit /healthz every few
+    seconds and would use up the trace quota, so they are never traced."""
+    if context.get("wsgi_environ", {}).get("PATH_INFO") == "/healthz":
+        return 0.0
+    return SENTRY_TRACES_SAMPLE_RATE
+
+
 DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 # With DEBUG=True media falls back to the local filesystem, so only these are needed.
@@ -43,6 +54,16 @@ PRODUCTION_REQUIRED_ENV = (
 for name in REQUIRED_ENV if DEBUG else PRODUCTION_REQUIRED_ENV:
     if not os.environ.get(name):
         raise ImproperlyConfigured(f"Missing required environment variable: {name}")
+
+# Errors and traces go to Sentry only when SENTRY_DSN is set; without it the SDK sends nothing.
+# Render sets RENDER_GIT_COMMIT, so each deploy is a release.
+SENTRY_TRACES_SAMPLE_RATE = 0.2
+sentry_sdk.init(
+    dsn=os.environ.get("SENTRY_DSN"),
+    environment=os.environ.get("SENTRY_ENVIRONMENT", "development" if DEBUG else "production"),
+    release=os.environ.get("SENTRY_RELEASE") or os.environ.get("RENDER_GIT_COMMIT"),
+    traces_sampler=sentry_traces_sampler,
+)
 
 SECRET_KEY = os.environ["SECRET_KEY"]
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS")

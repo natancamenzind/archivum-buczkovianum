@@ -4,6 +4,7 @@ from pathlib import Path
 from types import ModuleType
 
 import pytest
+import sentry_sdk
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import storages
 from pytest_django.fixtures import Settings
@@ -16,6 +17,39 @@ def reload_settings(monkeypatch: pytest.MonkeyPatch) -> Iterator[ModuleType]:
     yield settings_module
     monkeypatch.undo()
     importlib.reload(settings_module)
+
+
+def test_sentry_is_off_without_a_dsn(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType
+) -> None:
+    monkeypatch.delenv("SENTRY_DSN", raising=False)
+
+    importlib.reload(reload_settings)
+
+    assert sentry_sdk.get_client().transport is None
+
+
+def test_sentry_reports_to_the_dsn_from_env(
+    monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType
+) -> None:
+    monkeypatch.setenv("SENTRY_DSN", "https://key@o1.ingest.sentry.io/1")
+    monkeypatch.setenv("SENTRY_ENVIRONMENT", "test")
+    monkeypatch.setenv("RENDER_GIT_COMMIT", "abc123")
+
+    importlib.reload(reload_settings)
+
+    client = sentry_sdk.get_client()
+    assert client.transport is not None
+    assert client.options["dsn"] == "https://key@o1.ingest.sentry.io/1"
+    assert client.options["environment"] == "test"
+    assert client.options["release"] == "abc123"
+
+
+@pytest.mark.parametrize(("path", "rate"), [("/healthz", 0.0), ("/api/works", 0.2)])
+def test_sentry_never_traces_health_checks(path: str, rate: float) -> None:
+    context = {"wsgi_environ": {"PATH_INFO": path}}
+
+    assert settings_module.sentry_traces_sampler(context) == rate
 
 
 def test_s3_region_and_endpoint_come_from_env(
