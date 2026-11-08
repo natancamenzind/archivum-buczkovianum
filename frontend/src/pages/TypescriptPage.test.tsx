@@ -716,14 +716,19 @@ describe("TypescriptPage", () => {
     expect(screen.getByText("Brak trafień")).toBeVisible();
   });
 
-  it("R-11 AC3: ?q= matches whole words only, not the start of a longer one", async () => {
+  it("ARC-59: ?q= finds every form of a word from its start, not the middle of a word", async () => {
     mockPage();
 
     const { container } = await renderPage("/maszynopisy/1?q=tekst");
 
-    await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    const match = await screen.findByText("tekstu", { selector: "mark[aria-current]" });
+    expect(scrollIntoView.mock.contexts[0]).toBe(match);
+    expect(screen.getByText("1 z 2")).toBeVisible();
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Szukaj w maszynopisie" }), {
+      target: { value: "ekstu" },
+    });
     expect(container.querySelector("mark[data-search-match]")).toBeNull();
-    expect(scrollIntoView).not.toHaveBeenCalled();
   });
 
   it("R-11 AC3: a ?q= of regular expression characters is matched literally", async () => {

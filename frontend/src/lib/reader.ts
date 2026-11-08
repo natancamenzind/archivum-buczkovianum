@@ -33,16 +33,21 @@ export function pageOf(offsets: number[], offset: number): number {
 }
 
 /**
- * Every case-insensitive occurrence of `term` as a whole word in `text`, in order (R-11 AC3).
- * The term is matched literally, not as a regular expression.
+ * Every case-insensitive occurrence of `term` in `text`, in order (R-11 AC5). Each word of the
+ * term matches from the start of a word and covers the rest of it, so the start of a word finds
+ * all its forms: "wertep" finds "Wertepy" and "wertepami" (ARC-59), as the archive search does
+ * (ARC-45). The words may be separated by any whitespace, line breaks included. The term is
+ * matched literally, not as a regular expression.
  */
 export function findMatches(text: string, term: string): Match[] {
-  const trimmed = term.trim();
-  if (trimmed === "") {
+  const words = term.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) {
     return [];
   }
-  const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const pattern = new RegExp(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`, "giu");
+  const escaped = words
+    .map((word) => `${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[\\p{L}\\p{N}]*`)
+    .join("\\s+");
+  const pattern = new RegExp(`(?<![\\p{L}\\p{N}])${escaped}`, "giu");
   return Array.from(text.matchAll(pattern), (found) => ({
     start: found.index,
     end: found.index + found[0].length,
