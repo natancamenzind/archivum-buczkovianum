@@ -197,7 +197,7 @@ Not in Figma; uses the secondary text page layout.
    1. the content, by type:
       - image: shown inline;
       - document: inline if PDF, otherwise a download;
-      - external audio/video link: an embedded player if the provider allows it, otherwise a link;
+      - external audio/video link: a YouTube or Vimeo video in the provider's player, any other link in the archive's own audio player; a recording that does not play shows a message and a link to it (ARC-58);
       - OCR or plain text: the reader (R-11);
    2. "Powiązane fragmenty", as in US-RA-10 AC3.
 4. Tag column: tags on the note and its fragments.

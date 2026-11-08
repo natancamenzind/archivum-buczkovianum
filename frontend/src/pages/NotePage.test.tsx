@@ -259,23 +259,7 @@ describe("NotePage", () => {
       "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
     ],
     ["https://vimeo.com/76979871", "https://player.vimeo.com/video/76979871"],
-    [
-      "https://archive.org/details/buczkowski-wywiad-1975",
-      "https://archive.org/embed/buczkowski-wywiad-1975",
-    ],
-    [
-      "https://archive.org/details/buczkowski-wywiad-1975/strona-a.mp3",
-      "https://archive.org/embed/buczkowski-wywiad-1975",
-    ],
-    [
-      "https://soundcloud.com/polskie-radio/buczkowski",
-      "https://w.soundcloud.com/player/?visual=true&url=https%3A%2F%2Fsoundcloud.com%2Fpolskie-radio%2Fbuczkowski",
-    ],
-    [
-      "https://soundcloud.com/polskie-radio/sets/archiwum",
-      "https://w.soundcloud.com/player/?visual=true&url=https%3A%2F%2Fsoundcloud.com%2Fpolskie-radio%2Fsets%2Farchiwum",
-    ],
-  ])("US-RA-11 AC3: a link to %s is an embedded player", async (link, player) => {
+  ])("US-RA-11 AC3: a video link to %s is the provider's player", async (link, player) => {
     mockContent({ kind: "external_media", external_url: link });
 
     const { container } = await renderPage();
@@ -286,17 +270,19 @@ describe("NotePage", () => {
   });
 
   it.each([
+    "https://archive.org/download/buczkowski-wywiad-1975/strona-a.mp3",
     "https://example.com/nagranie",
     "https://www.youtube.com/channel/abc",
     "https://vimeo.com/channels/staffpicks",
-    "https://archive.org/search?query=buczkowski",
-    "https://soundcloud.com/polskie-radio",
-  ])("US-RA-11 AC3: a link to %s, which cannot be embedded, is a link", async (link) => {
+    "https://archive.org/details/buczkowski-wywiad-1975",
+    "https://soundcloud.com/polskie-radio/buczkowski",
+  ])("ARC-58: a link to %s, not a video, plays in the archive's own audio player", async (link) => {
     mockContent({ kind: "external_media", external_url: link });
 
     const { container } = await renderPage();
 
-    expect(screen.getByRole("link", { name: "Otwórz nagranie" })).toHaveAttribute("href", link);
+    const player = screen.getByRole("group", { name: "Odtwarzacz nagrania" });
+    expect(player.querySelector("audio")).toHaveAttribute("src", link);
     expect(screen.queryByTitle("Odtwarzacz nagrania")).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });

@@ -268,10 +268,10 @@ describe("SecondaryTextPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("US-RA-10 AC3: a recording on archive.org is an embedded player above the text", async () => {
+  it("US-RA-10 AC3: a recording on archive.org is an audio player above the text", async () => {
     mockPage({
       kind: "recording",
-      external_url: "https://archive.org/details/buczkowski-wywiad-1975",
+      external_url: "https://archive.org/download/buczkowski-wywiad-1975/strona-a.mp3",
     });
 
     const { container } = await renderPage();
@@ -282,18 +282,22 @@ describe("SecondaryTextPage", () => {
     if (recording === undefined || text === undefined) {
       throw new Error("The main column has no recording and text cards.");
     }
-    expect(within(recording).getByTitle("Odtwarzacz nagrania")).toHaveAttribute(
-      "src",
-      "https://archive.org/embed/buczkowski-wywiad-1975",
-    );
+    expect(
+      within(recording).getByRole("group", { name: "Odtwarzacz nagrania" }).querySelector("audio"),
+    ).toHaveAttribute("src", "https://archive.org/download/buczkowski-wywiad-1975/strona-a.mp3");
     expect(await within(text).findByText(/Drogi Panie,/)).toBeVisible();
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("US-RA-10 AC3: a recording that cannot be embedded is a link", async () => {
+  it("ARC-58: a recording that does not play is a link", async () => {
     mockPage({ kind: "recording", external_url: "https://example.com/wywiad.mp3" });
 
     const { container } = await renderPage();
+    const audio = screen.getByRole("group", { name: "Odtwarzacz nagrania" }).querySelector("audio");
+    if (audio === null) {
+      throw new Error("The player has no audio element.");
+    }
+    fireEvent(audio, new Event("error"));
 
     expect(screen.getByRole("link", { name: "Otwórz nagranie" })).toHaveAttribute(
       "href",
@@ -309,6 +313,7 @@ describe("SecondaryTextPage", () => {
     await renderPage();
 
     expect(screen.queryByTitle("Odtwarzacz nagrania")).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Odtwarzacz nagrania" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Otwórz nagranie" })).not.toBeInTheDocument();
   });
 

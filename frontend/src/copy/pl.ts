@@ -66,6 +66,17 @@ export function scanLabel(scanNumber: string): string {
   return scanNumber === "" ? "" : `skan ${scanNumber}`;
 }
 
+/** A length of time read aloud: "1 godz. 2 min 15 s", "2 min 15 s", "15 s". */
+function spokenTime(seconds: number): string {
+  const whole = Math.floor(seconds);
+  const hours = Math.floor(whole / 3600);
+  const minutes = Math.floor((whole % 3600) / 60);
+  const parts = [`${String(whole % 60)} s`];
+  if (hours > 0 || minutes > 0) parts.unshift(`${String(minutes)} min`);
+  if (hours > 0) parts.unshift(`${String(hours)} godz.`);
+  return parts.join(" ");
+}
+
 export const copy = {
   siteName: "Archivum Buczkovianum",
   /** Header, main navigation and footer (R-07). */
@@ -237,6 +248,17 @@ export const copy = {
     download: "Pobierz plik",
     player: "Odtwarzacz nagrania",
     link: "Otwórz nagranie",
+  },
+  /** The audio player of a recording link (ARC-58, design/components/odtwarzacz-audio.md). */
+  audio: {
+    play: "Odtwórz",
+    pause: "Wstrzymaj",
+    progress: "Postęp nagrania",
+    /** The slider's spoken position: "2 min 15 s z 12 min 34 s". */
+    position: (seconds: number, duration: number) =>
+      `${spokenTime(seconds)} z ${spokenTime(duration)}`,
+    unknownTime: "--:--",
+    error: "Nie udało się wczytać nagrania.",
   },
   /** The tag page (US-RA-07). */
   tag: {
