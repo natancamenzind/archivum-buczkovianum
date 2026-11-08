@@ -38,6 +38,7 @@ const LETTER: SecondaryTextData = {
   sender: "Leopold Buczkowski",
   letter_date: "1947-10-01",
   document: 20,
+  external_url: "",
   works: [
     { slug: "wertepy", title: "Wertepy", year: 1947, fragment_count: 24 },
     { slug: "czarny-potok", title: "Czarny potok", year: null, fragment_count: 0 },
@@ -250,6 +251,50 @@ describe("SecondaryTextPage", () => {
     expect(within(readerCard()).queryByRole("heading")).not.toBeInTheDocument();
     expect(screen.queryByText("Transkrypcja")).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-10 AC3: a recording on archive.org is an embedded player above the text", async () => {
+    mockPage({
+      kind: "recording",
+      external_url: "https://archive.org/details/buczkowski-wywiad-1975",
+    });
+
+    const { container } = await renderPage();
+
+    const [recording, text] = screen
+      .getByRole("main")
+      .querySelectorAll<HTMLElement>("[data-slot=card]");
+    if (recording === undefined || text === undefined) {
+      throw new Error("The main column has no recording and text cards.");
+    }
+    expect(within(recording).getByTitle("Odtwarzacz nagrania")).toHaveAttribute(
+      "src",
+      "https://archive.org/embed/buczkowski-wywiad-1975",
+    );
+    expect(await within(text).findByText(/Drogi Panie,/)).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("US-RA-10 AC3: a recording that cannot be embedded is a link", async () => {
+    mockPage({ kind: "recording", external_url: "https://example.com/wywiad.mp3" });
+
+    const { container } = await renderPage();
+
+    expect(screen.getByRole("link", { name: "Otwórz nagranie" })).toHaveAttribute(
+      "href",
+      "https://example.com/wywiad.mp3",
+    );
+    expect(screen.queryByTitle("Odtwarzacz nagrania")).not.toBeInTheDocument();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("R-02: a text without a recording has no player or link to one", async () => {
+    mockPage();
+
+    await renderPage();
+
+    expect(screen.queryByTitle("Odtwarzacz nagrania")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Otwórz nagranie" })).not.toBeInTheDocument();
   });
 
   it("US-RA-10 AC3: opened with ?fragment=, the reader scrolls to the fragment", async () => {

@@ -75,6 +75,31 @@ class TestSecondaryTextPageEndpoint:
         # Assert
         assert (result["kind"], result["sender"], result["letter_date"]) == ("review", "", None)
 
+    def test_us_ra_10_ac3_returns_the_recording_link(self, client: Client) -> None:
+        # Arrange
+        recording = published_text(
+            kind=SecondaryText.Kind.RECORDING,
+            external_url="https://archive.org/details/buczkowski-wywiad",
+        )
+
+        # Act
+        result = page(client, recording)
+
+        # Assert
+        assert result["external_url"] == "https://archive.org/details/buczkowski-wywiad"
+
+    def test_us_ra_10_ac3_a_text_without_a_recording_has_an_empty_link(
+        self, client: Client
+    ) -> None:
+        # Arrange
+        review = published_text()
+
+        # Act
+        result = page(client, review)
+
+        # Assert
+        assert result["external_url"] == ""
+
     def test_us_ra_10_ac2_related_works_by_first_edition(self, client: Client) -> None:
         # Arrange
         text = published_text()
@@ -259,6 +284,7 @@ class TestSecondaryTextPageSchema:
                 "sender",
                 "letter_date",
                 "document",
+                "external_url",
                 "works",
                 "fragments",
                 "tags",

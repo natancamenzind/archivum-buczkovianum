@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 
 import type { components } from "@/api/schema";
 import { EntityLayout } from "@/components/EntityLayout";
+import { ExternalMedia } from "@/components/MediaContent";
 import { PageHeader } from "@/components/PageHeader";
 import { DocumentReader } from "@/components/Reader";
 import { RelatedFragments, RelatedTags, RelatedWorks } from "@/components/Related";
@@ -47,8 +48,9 @@ function typeLine(text: SecondaryTextData): string {
 
 /**
  * The secondary text page (US-RA-10) in the entity layout (R-05): the related works in the
- * context column; the text in the reader and the related fragments in the main column; the tags
- * of the text, its fragments and its work links. Empty blocks are not rendered (R-02).
+ * context column; the recording, the text in the reader and the related fragments in the main
+ * column; the tags of the text, its fragments and its work links. Empty blocks are not rendered
+ * (R-02).
  */
 export function SecondaryTextPage() {
   const id = Number(useParams().id);
@@ -100,6 +102,11 @@ export function SecondaryTextPage() {
       }
       main={
         <>
+          {secondaryText.external_url !== "" && (
+            <Card>
+              <ExternalMedia link={secondaryText.external_url} />
+            </Card>
+          )}
           <Card>
             <DocumentReader id={secondaryText.document} />
           </Card>

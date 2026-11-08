@@ -546,6 +546,11 @@ class SecondaryTextPageSerializer(serializers.Serializer[SecondaryTextPage]):
         source="secondary_text.document_id",
         help_text="The text for the reader: /api/documents/<id>/.",
     )
+    external_url = serializers.CharField(
+        source="secondary_text.external_url",
+        allow_blank=True,
+        help_text="A recording of the text, an audio or video link; may be empty.",
+    )
     works = WorkSummarySerializer(many=True, help_text="Related works, by first edition (R-03).")
     fragments = FragmentCardPreviewSerializer(
         help_text="Typescript fragments sharing a tag with the text or its fragments."

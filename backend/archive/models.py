@@ -927,6 +927,11 @@ class SecondaryText(Described, Taggable, Archival):
     recipient = models.CharField(
         _("recipient"), max_length=255, blank=True, help_text=_("For letters.")
     )
+    external_url = models.URLField(
+        _("external audio or video link"),
+        blank=True,
+        help_text=_("A recording of the text, e.g. on archive.org."),
+    )
     works = models.ManyToManyField(
         Work,
         verbose_name=_("works"),

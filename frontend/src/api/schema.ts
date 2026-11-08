@@ -688,6 +688,8 @@ export interface components {
             letter_date: string | null;
             /** @description The text for the reader: /api/documents/<id>/. */
             document: number;
+            /** @description A recording of the text, an audio or video link; may be empty. */
+            external_url: string;
             /** @description Related works, by first edition (R-03). */
             works: components["schemas"]["WorkSummary"][];
             /** @description Typescript fragments sharing a tag with the text or its fragments. */

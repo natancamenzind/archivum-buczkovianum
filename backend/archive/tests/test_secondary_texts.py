@@ -43,6 +43,7 @@ def form_data(*work_links: dict[str, Any], **fields: Any) -> dict[str, Any]:
         "letter_date": "",
         "sender": "",
         "recipient": "",
+        "external_url": "",
         "plain_text": "",
         "work_links-TOTAL_FORMS": len(work_links),
         "work_links-INITIAL_FORMS": sum("id" in link for link in work_links),
@@ -289,6 +290,42 @@ class TestSecondaryTextForm:
             [0],
         )
         assert stored.scan
+
+    def test_us_wr_06_ac1_adds_a_recording_link_next_to_the_text(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        data = form_data(
+            {"work": WorkFactory.create().pk},
+            kind=SecondaryText.Kind.RECORDING,
+            external_url="archive.org/details/buczkowski-wywiad",
+            plain_text="Transkrypcja wywiadu.",
+        )
+
+        # Act
+        response = admin_client.post(ADD_URL, data)
+
+        # Assert
+        assert response.status_code == 302
+        recording = SecondaryText.objects.get()
+        assert recording.external_url == "https://archive.org/details/buczkowski-wywiad"
+        assert recording.document is not None
+        assert recording.document.text == "Transkrypcja wywiadu."
+
+    def test_us_wr_06_ac1_rejects_a_recording_link_that_is_not_a_url(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange
+        data = form_data(
+            {"work": WorkFactory.create().pk}, external_url="nagranie", plain_text="Tekst."
+        )
+
+        # Act
+        response = admin_client.post(ADD_URL, data)
+
+        # Assert
+        assert "external_url" in form_errors(response)
+        assert not SecondaryText.objects.exists()
 
     def test_us_wr_06_ac1_form_shows_the_text_and_no_document_lookup(
         self, admin_client: Client
