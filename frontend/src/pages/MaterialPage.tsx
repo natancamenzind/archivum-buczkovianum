@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 
 import type { components } from "@/api/schema";
 import { EntityLayout } from "@/components/EntityLayout";
+import { LoadStatus } from "@/components/LoadStatus";
 import { MediaContent } from "@/components/MediaContent";
 import { PageHeader } from "@/components/PageHeader";
 import { RelatedFragments, RelatedTags, RelatedWorks } from "@/components/Related";
@@ -49,10 +50,13 @@ export function MaterialPage() {
   }
   if (material === undefined) {
     return (
-      <main className="p-page-mobile md:p-page">
-        <p className="text-cousine-metadane text-muted-foreground" role="status">
-          {page.isPending ? copy.material.loading : copy.material.error}
-        </p>
+      <main className="flex flex-1 flex-col">
+        <LoadStatus
+          pending={page.isPending}
+          loading={copy.material.loading}
+          error={copy.material.error}
+          className="p-page-mobile md:p-page"
+        />
       </main>
     );
   }

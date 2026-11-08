@@ -8,6 +8,7 @@ import { ColumnHeader } from "@/components/ColumnHeader";
 import { ContextualMaterials } from "@/components/ContextualMaterials";
 import { EntityLayout } from "@/components/EntityLayout";
 import { ListRow } from "@/components/ListRow";
+import { LoadStatus } from "@/components/LoadStatus";
 import { PageHeader } from "@/components/PageHeader";
 import { Reader } from "@/components/Reader";
 import { RichText } from "@/components/RichText";
@@ -167,10 +168,13 @@ export function TypescriptPage() {
   }
   if (typescript === undefined) {
     return (
-      <main className="p-page-mobile md:p-page">
-        <p className="text-cousine-metadane text-muted-foreground" role="status">
-          {page.isPending ? copy.typescript.loading : copy.typescript.error}
-        </p>
+      <main className="flex flex-1 flex-col">
+        <LoadStatus
+          pending={page.isPending}
+          loading={copy.typescript.loading}
+          error={copy.typescript.error}
+          className="p-page-mobile md:p-page"
+        />
       </main>
     );
   }

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { components } from "@/api/schema";
 import { ColumnHeader } from "@/components/ColumnHeader";
+import { LoadStatus } from "@/components/LoadStatus";
 import { PageHeader } from "@/components/PageHeader";
 import { RichText } from "@/components/RichText";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -67,28 +68,33 @@ export function AboutPage() {
   const team = about.data?.team ?? [];
 
   return (
-    <main className="flex flex-col">
+    <main className="flex flex-1 flex-col">
       <PageHeader
         label={copy.siteName}
         title={copy.about.title}
         description={hasText(intro) ? <RichText html={intro} /> : undefined}
       />
-      <div className="px-page-mobile py-24 md:px-page md:pt-48 md:pb-64">
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-32">
-          {(about.isPending || about.isError) && (
-            <p className="text-cousine-metadane text-muted-foreground" role="status">
-              {about.isPending ? copy.about.loading : copy.about.error}
-            </p>
-          )}
-          {hasText(project) && (
-            <Card>
-              <SectionHeader title={copy.about.project} />
-              <RichText html={project} className="text-lora-tekst text-foreground" />
-            </Card>
-          )}
-          {team.length > 0 && <Team groups={team} />}
+      {/* Only before the first data: a failed background refetch keeps the page it has. */}
+      {about.data === undefined ? (
+        <LoadStatus
+          pending={about.isPending}
+          loading={copy.about.loading}
+          error={copy.about.error}
+          className="px-page-mobile py-24 md:px-page md:pt-48 md:pb-64"
+        />
+      ) : (
+        <div className="px-page-mobile py-24 md:px-page md:pt-48 md:pb-64">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-32">
+            {hasText(project) && (
+              <Card>
+                <SectionHeader title={copy.about.project} />
+                <RichText html={project} className="text-lora-tekst text-foreground" />
+              </Card>
+            )}
+            {team.length > 0 && <Team groups={team} />}
+          </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }

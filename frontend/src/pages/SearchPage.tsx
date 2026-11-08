@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import type { components } from "@/api/schema";
 import { ColumnHeader } from "@/components/ColumnHeader";
 import { FragmentCard } from "@/components/FragmentCard";
+import { Hypocycloid } from "@/components/Hypocycloid";
 import { SearchField } from "@/components/SearchField";
 import { FilterPanel, SearchFilters } from "@/components/SearchFilters";
 import { type ItemGroup, ItemResult, TagResult, WorkResult } from "@/components/SearchResult";
@@ -150,6 +151,8 @@ function SearchResults({ state }: { state: SearchState }) {
   });
   const loading = results.isPending || results.isPlaceholderData;
   const data = loading ? undefined : results.data;
+  // Results that failed leave the space below free for the hypocycloid (ARC-63).
+  const failed = !loading && data === undefined;
   const facets = results.data?.facets;
   const [panelOpen, setPanelOpen] = useState(false);
 
@@ -170,7 +173,10 @@ function SearchResults({ state }: { state: SearchState }) {
   return (
     <>
       <SearchTabs state={state} counts={data?.facets.tabs} />
-      <div className={cn("flex gap-48", RESULTS_PADDING)}>
+      <div
+        className={cn("flex gap-48", RESULTS_PADDING, failed && "relative flex-1 overflow-hidden")}
+      >
+        {failed && <Hypocycloid tone="page" placement="notFound" />}
         {facets !== undefined && (
           <aside
             aria-labelledby={FILTERS_ID}
@@ -185,7 +191,7 @@ function SearchResults({ state }: { state: SearchState }) {
         )}
         <section
           aria-labelledby="search-results-title"
-          className="flex min-w-0 grow flex-col gap-24"
+          className={cn("flex min-w-0 grow flex-col gap-24", failed && "relative")}
         >
           <div className="flex flex-col gap-16 md:flex-row md:items-end md:justify-between">
             <div className="flex flex-col gap-4">
@@ -301,7 +307,7 @@ export function SearchPage() {
   const searching = state.query !== "" || isBrowsing(params);
 
   return (
-    <main className="flex flex-col">
+    <main className="flex flex-1 flex-col">
       <h1 id={TITLE_ID} className="sr-only">
         {copy.search.title}
       </h1>

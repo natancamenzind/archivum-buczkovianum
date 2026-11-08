@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 
 import type { components } from "@/api/schema";
 import { EntityLayout } from "@/components/EntityLayout";
+import { LoadStatus } from "@/components/LoadStatus";
 import { ExternalMedia } from "@/components/MediaContent";
 import { PageHeader } from "@/components/PageHeader";
 import { DocumentReader } from "@/components/Reader";
@@ -66,10 +67,13 @@ export function SecondaryTextPage() {
   }
   if (secondaryText === undefined) {
     return (
-      <main className="p-page-mobile md:p-page">
-        <p className="text-cousine-metadane text-muted-foreground" role="status">
-          {page.isPending ? copy.secondaryText.loading : copy.secondaryText.error}
-        </p>
+      <main className="flex flex-1 flex-col">
+        <LoadStatus
+          pending={page.isPending}
+          loading={copy.secondaryText.loading}
+          error={copy.secondaryText.error}
+          className="p-page-mobile md:p-page"
+        />
       </main>
     );
   }
