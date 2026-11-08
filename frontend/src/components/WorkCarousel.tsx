@@ -5,18 +5,21 @@ import { type Work, WorkCard } from "@/components/WorkCard";
 import { copy } from "@/copy/pl";
 import { cn } from "@/lib/utils";
 
+// Each arrow hangs past the row into the section card's padding (ARC-51). Touch screens
+// have no hover to show the arrows, and swipe the row instead.
 const ARROW = cn(
-  "flex size-48 items-center justify-center rounded-sm border border-accent-border bg-card text-accent-icon",
-  "transition-colors duration-150 ease-out enabled:hover:bg-accent motion-reduce:transition-none",
+  "absolute top-1/2 z-10 flex size-48 -translate-y-1/2 items-center justify-center rounded-sm border border-accent-border bg-card text-accent-icon",
+  "opacity-0 group-hover/carousel:opacity-100 group-focus-within/carousel:opacity-100 pointer-coarse:hidden",
+  "transition-[opacity,background-color] duration-150 ease-out hover:bg-accent motion-reduce:transition-none",
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-  "disabled:border-border disabled:text-muted-foreground",
 );
 
 /**
  * "Karuzela utworów" in design/screens/strona-glowna.md (ARC-20): one row of work cards that
  * scrolls sideways, with 1.5 cards in view on a phone and 4.5 on a desktop, so the cut-off card
- * shows there are more. The arrows below scroll by the whole cards in view; each is disabled at
- * its end of the row, and both are hidden when every card fits. The list's padding, taken back
+ * shows there are more. While the pointer is over the row, or focus is in it, an arrow on each
+ * side at half the cards' height scrolls by the whole cards in view; each shows only while the row
+ * can scroll its way (ARC-51). The list's padding, taken back
  * by negative margins, keeps the hover lift and the focus ring inside the scroll area; at the
  * bottom it reaches the section card's edge, so the hover shadow is not cut short.
  */
@@ -57,7 +60,8 @@ export function WorkCarousel({ works }: { works: Work[] }) {
   };
 
   return (
-    <div className="flex flex-col gap-16">
+    // The wrapper takes the list's margins, so it spans exactly the cards and the arrows centre on them.
+    <div className="group/carousel relative">
       <ul
         ref={listRef}
         data-slot="work-carousel"
@@ -77,32 +81,29 @@ export function WorkCarousel({ works }: { works: Work[] }) {
           </li>
         ))}
       </ul>
-      {!(edges.start && edges.end) && (
-        // Relative, so the arrows paint over the list's bottom padding, kept for the hover shadow.
-        <div className="relative flex justify-end gap-8">
-          <button
-            type="button"
-            className={ARROW}
-            aria-label={copy.workCarousel.previous}
-            disabled={edges.start}
-            onClick={() => {
-              scroll(-1);
-            }}
-          >
-            <ChevronLeftIcon className="size-16" />
-          </button>
-          <button
-            type="button"
-            className={ARROW}
-            aria-label={copy.workCarousel.next}
-            disabled={edges.end}
-            onClick={() => {
-              scroll(1);
-            }}
-          >
-            <ChevronRightIcon className="size-16" />
-          </button>
-        </div>
+      {!edges.start && (
+        <button
+          type="button"
+          className={cn(ARROW, "-left-16 md:-left-24")}
+          aria-label={copy.workCarousel.previous}
+          onClick={() => {
+            scroll(-1);
+          }}
+        >
+          <ChevronLeftIcon className="size-16" />
+        </button>
+      )}
+      {!edges.end && (
+        <button
+          type="button"
+          className={cn(ARROW, "-right-16 md:-right-24")}
+          aria-label={copy.workCarousel.next}
+          onClick={() => {
+            scroll(1);
+          }}
+        >
+          <ChevronRightIcon className="size-16" />
+        </button>
       )}
     </div>
   );
