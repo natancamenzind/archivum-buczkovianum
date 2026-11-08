@@ -290,7 +290,13 @@ const ReaderPage = memo(function ReaderPage({
           <div className="flex flex-col gap-24">
             {page.paragraphs.map((paragraph, index) => (
               <div key={paragraph.start} className="flex flex-col gap-12">
-                <p className="text-lora-tekst whitespace-pre-wrap text-foreground">
+                {/* ARC-67: next to a scan the transcript is set smaller. */}
+                <p
+                  className={cn(
+                    hasScans ? "text-lora-tekst-maly" : "text-lora-tekst",
+                    "whitespace-pre-wrap text-foreground",
+                  )}
+                >
                   {paragraph.segments.map(renderSegment)}
                 </p>
                 {notesUnder(index).map((fragment) => (

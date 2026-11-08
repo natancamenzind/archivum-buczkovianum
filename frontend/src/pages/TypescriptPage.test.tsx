@@ -327,6 +327,29 @@ describe("TypescriptPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("ARC-67: the transcript next to a scan is set two sizes smaller than body text", async () => {
+    mockPage();
+
+    await renderPage();
+
+    const scan = card("Skan maszynopisu");
+    await within(scan).findByText("Transkrypcja · strona 1 z 2");
+    const text = scan.querySelector("p.whitespace-pre-wrap");
+    expect(text).toHaveClass("text-lora-tekst-maly");
+    expect(text).not.toHaveClass("text-lora-tekst");
+  });
+
+  it("ARC-67: a plain text without scans keeps the body text size", async () => {
+    mockPage({}, { kind: "plain", page_offsets: [] });
+
+    await renderPage();
+
+    await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    const text = document.querySelector("p.whitespace-pre-wrap");
+    expect(text).toHaveClass("text-lora-tekst");
+    expect(text).not.toHaveClass("text-lora-tekst-maly");
+  });
+
   it("US-RA-09 AC1: a long typescript is read whole, and only the scan pages in view are drawn", async () => {
     mockLongTypescript();
 
