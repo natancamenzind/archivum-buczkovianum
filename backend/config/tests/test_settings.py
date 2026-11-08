@@ -269,3 +269,20 @@ def test_us_ops_01_ac3_ac4_guards_are_off_without_env(
     assert not settings.BASIC_AUTH_USER
     assert not settings.BASIC_AUTH_PASSWORD
     assert settings.ROBOTS_NOINDEX is False
+
+
+@pytest.mark.usefixtures("production_env")
+def test_arc_47_a_reuploaded_scan_never_reuses_the_replaced_scans_key(
+    settings: Settings, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The scan form deletes the replaced scan by name after saving the new one: on a shared
+    # key that would delete the new scan.
+    settings.AWS_STORAGE_BUCKET_NAME = PRODUCTION_ENV["AWS_STORAGE_BUCKET_NAME"]
+    settings.STORAGES = {
+        **settings.STORAGES,
+        "default": {"BACKEND": "storages.backends.s3.S3Storage"},
+    }
+    storage = storages["default"]
+    monkeypatch.setattr(storage, "exists", lambda name: name == "scans/out.pdf")
+
+    assert storage.get_available_name("scans/out.pdf") != "scans/out.pdf"

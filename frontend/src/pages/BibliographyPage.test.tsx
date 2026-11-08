@@ -91,7 +91,7 @@ describe("BibliographyPage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("US-RA-21 AC4: 'Bibliografie utworów' links every work's bibliography, the current one highlighted", async () => {
+  it("US-RA-21 AC4: 'Bibliografie utworów' links every work's bibliography, the current one highlighted, without the year", async () => {
     mockPage();
 
     const { container } = await renderPage();
@@ -100,8 +100,8 @@ describe("BibliographyPage", () => {
     expect(within(works).getByText("3")).toBeVisible();
     const links = within(works).getAllByRole("link");
     expect(links.map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
-      ["1932Bibliografia do utworu „Czarny potok”", "/utwory/czarny-potok/bibliografia"],
-      ["1947Bibliografia do utworu „Wertepy”", "/utwory/wertepy/bibliografia"],
+      ["Bibliografia do utworu „Czarny potok”", "/utwory/czarny-potok/bibliografia"],
+      ["Bibliografia do utworu „Wertepy”", "/utwory/wertepy/bibliografia"],
       ["Bibliografia do utworu „Bez wydań”", "/utwory/bez-wydan/bibliografia"],
     ]);
     expect(links.map((link) => link.getAttribute("aria-current"))).toEqual([null, "page", null]);
