@@ -81,7 +81,6 @@ export function BibliographyPage() {
               {bibliography.works.map((work) => (
                 <li key={work.slug}>
                   <SideListItem
-                    meta={work.year?.toString()}
                     title={copy.bibliography.workBibliography(work.title)}
                     to={`/utwory/${work.slug}/bibliografia`}
                     current={work.slug === bibliography.slug}
