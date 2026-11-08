@@ -11,12 +11,27 @@ describe("pageOf", () => {
 });
 
 describe("findMatches", () => {
-  it("finds every whole word, in any case, and nothing for a blank term", () => {
-    expect(findMatches("Las, las i laski.", "las")).toEqual([
+  it("finds every word in any case, and nothing for a blank term", () => {
+    expect(findMatches("Las, las i przelaski.", "las")).toEqual([
       { start: 0, end: 3 },
       { start: 5, end: 8 },
     ]);
     expect(findMatches("Las", "  ")).toEqual([]);
+  });
+
+  it("ARC-59: finds every form of a word from its start, covering the whole word", () => {
+    const text = "Wertepy, wertepami i przewertepy.";
+
+    expect(findMatches(text, "wertep").map((match) => text.slice(match.start, match.end))).toEqual([
+      "Wertepy",
+      "wertepami",
+    ]);
+  });
+
+  it("ARC-59: finds each word of a phrase from its start, across a line break", () => {
+    const text = "Druga strona\ntekstu.";
+
+    expect(findMatches(text, "str  tek")).toEqual([{ start: 6, end: 19 }]);
   });
 });
 
