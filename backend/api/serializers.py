@@ -24,17 +24,29 @@ from archive.models import (
     Work,
     format_shelfmark,
     fragment_shelfmark,
+    fragment_url,
 )
-from search.models import EntityType, SearchEntry
+from search.models import MAX_DECADE, MAX_ID, EntityType, SearchEntry
 from search.query import Hit, Sort, Tab
 
 
-class ImageUrlField(serializers.CharField):
-    """The URL of an image; empty without one."""
+class FileUrlField(serializers.CharField):
+    """The URL of a stored file; empty without one."""
 
     def get_attribute(self, instance: Any) -> str:
-        image = cast(FieldFile, super().get_attribute(instance))
-        return image.url if image else ""
+        file = cast(FieldFile, super().get_attribute(instance))
+        return file.url if file else ""
+
+
+class YearField(serializers.IntegerField):
+    """The year of a work's first edition, from `WorkQuerySet.with_year()`."""
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(
+            allow_null=True,
+            help_text="The year of the first edition; null without editions.",
+            **kwargs,
+        )
 
 
 @dataclass(frozen=True)
@@ -77,12 +89,8 @@ class WorkCardSerializer(serializers.ModelSerializer[Work]):
     """The work card (US-RA-01 AC3), from a queryset with `with_year()` and
     `with_fragment_count()`."""
 
-    year = serializers.IntegerField(
-        read_only=True,
-        allow_null=True,
-        help_text="The year of the first edition; null without editions.",
-    )
-    cover_image = serializers.SerializerMethodField(help_text="Empty when the work has no cover.")
+    year = YearField(read_only=True)
+    cover_image = FileUrlField(read_only=True, help_text="Empty when the work has no cover.")
     fragment_count = serializers.IntegerField(
         read_only=True, help_text="Visible fragments of the main typescript (D19); 0 without one."
     )
@@ -99,9 +107,6 @@ class WorkCardSerializer(serializers.ModelSerializer[Work]):
         )
         # Output only, so the schema marks every field as present, the blank ones too.
         read_only_fields = fields
-
-    def get_cover_image(self, work: Work) -> str:
-        return work.cover_image.url if work.cover_image else ""
 
 
 class TagCountSerializer(serializers.ModelSerializer[Tag]):
@@ -139,11 +144,7 @@ class TypescriptGroupSerializer(serializers.Serializer[TypescriptGroup]):
 
     slug = serializers.CharField(source="work.slug")
     title = serializers.CharField(source="work.title")
-    year = serializers.IntegerField(
-        source="work.year",
-        allow_null=True,
-        help_text="The year of the first edition; null without editions.",
-    )
+    year = YearField(source="work.year")
     typescripts = TypescriptRowSerializer(many=True, help_text="By shelfmark, as numbers.")
 
 
@@ -200,16 +201,13 @@ class VisualMaterialSerializer(serializers.ModelSerializer[ContextualMaterial]):
     shelfmark = serializers.CharField(
         source="shelfmark_display", read_only=True, help_text='E.g. "ML, sygn. 1700"; may be empty.'
     )
-    image = serializers.SerializerMethodField(help_text="Empty when the material has no image.")
+    image = FileUrlField(read_only=True, help_text="Empty when the material has no image.")
 
     class Meta:
         model = ContextualMaterial
         fields = ("url", "title", "shelfmark", "image", "image_alt")
         # Output only, so the schema marks every field as present, the blank ones too.
         read_only_fields = fields
-
-    def get_image(self, material: ContextualMaterial) -> str:
-        return material.image.url if material.image else ""
 
 
 class ContextualMaterialsSerializer(serializers.Serializer[ContextualMaterials]):
@@ -259,11 +257,7 @@ class WorkSummarySerializer(serializers.ModelSerializer[Work]):
     """A work in a context column (R-03), from a queryset with `with_year()` and
     `with_fragment_count()`."""
 
-    year = serializers.IntegerField(
-        read_only=True,
-        allow_null=True,
-        help_text="The year of the first edition; null without editions.",
-    )
+    year = YearField(read_only=True)
     fragment_count = serializers.IntegerField(
         read_only=True, help_text="Visible fragments of the main typescript (D19); 0 without one."
     )
@@ -296,7 +290,7 @@ class TypescriptPageSerializer(serializers.Serializer[TypescriptPage]):
     description = serializers.CharField(
         source="typescript.description", allow_blank=True, help_text="HTML."
     )
-    header_image = ImageUrlField(
+    header_image = FileUrlField(
         source="typescript.header_image",
         help_text="Shown behind the title; empty when there is none.",
     )
@@ -360,7 +354,9 @@ class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
         read_only=True,
         help_text='The scan page the fragment starts on, e.g. "19"; empty for a plain text.',
     )
-    scan = serializers.SerializerMethodField(help_text="PDF URL; empty for a plain text.")
+    scan = FileUrlField(
+        source="document.scan", read_only=True, help_text="PDF URL; empty for a plain text."
+    )
     start_page = serializers.IntegerField(
         read_only=True,
         allow_null=True,
@@ -399,7 +395,7 @@ class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
     def get_url(self, fragment: Fragment) -> str:
         owner = self.owner(fragment)
         assert isinstance(owner, Publishable)
-        return f"{owner.get_absolute_url()}?fragment={fragment.pk}"
+        return fragment_url(owner.get_absolute_url(), fragment.pk)
 
     def get_work(self, fragment: Fragment) -> str:
         works: dict[int, list[Work]] | None = self.context.get("works")
@@ -409,9 +405,6 @@ class FragmentCardSerializer(serializers.ModelSerializer[Fragment]):
             else works.get(fragment.document_id, [])
         )
         return ", ".join(work.title for work in related)
-
-    def get_scan(self, fragment: Fragment) -> str:
-        return fragment.document.scan.url if fragment.document.scan else ""
 
 
 class FragmentCardPreviewSerializer(serializers.Serializer[Preview[Fragment]]):
@@ -426,7 +419,7 @@ class NoteCardSerializer(serializers.ModelSerializer[Note]):
     shelfmark = serializers.CharField(
         source="shelfmark_display", read_only=True, help_text='E.g. "ML, sygn. 1678"; may be empty.'
     )
-    image = serializers.SerializerMethodField(help_text="Empty when the note is not an image.")
+    image = FileUrlField(read_only=True, help_text="Empty when the note is not an image.")
     tags = TagChipSerializer(many=True, read_only=True, help_text="Published tags, by name.")
 
     class Meta:
@@ -434,9 +427,6 @@ class NoteCardSerializer(serializers.ModelSerializer[Note]):
         fields = ("url", "title", "shelfmark", "image", "image_alt", "tags")
         # Output only, so the schema marks every field as present, the blank ones too.
         read_only_fields = fields
-
-    def get_image(self, note: Note) -> str:
-        return note.image.url if note.image else ""
 
 
 @dataclass(frozen=True)
@@ -463,15 +453,11 @@ class WorkPageSerializer(serializers.Serializer[WorkPage]):
     description = serializers.CharField(
         source="work.description", allow_blank=True, help_text="HTML."
     )
-    header_image = ImageUrlField(
+    header_image = FileUrlField(
         source="work.header_image", help_text="Shown behind the title; empty when there is none."
     )
     header_image_alt = serializers.CharField(source="work.header_image_alt", allow_blank=True)
-    year = serializers.IntegerField(
-        source="work.year",
-        allow_null=True,
-        help_text="The year of the first edition; null without editions.",
-    )
+    year = YearField(source="work.year")
     editions = EditionSerializer(source="work.editions", many=True, help_text="By year.")
     main_typescript = serializers.IntegerField(
         allow_null=True,
@@ -490,11 +476,7 @@ class WorkPageSerializer(serializers.Serializer[WorkPage]):
 class BibliographyWorkSerializer(serializers.ModelSerializer[Work]):
     """A work in the bibliography page's side column, from a queryset with `with_year()`."""
 
-    year = serializers.IntegerField(
-        read_only=True,
-        allow_null=True,
-        help_text="The year of the first edition; null without editions.",
-    )
+    year = YearField(read_only=True)
 
     class Meta:
         model = Work
@@ -546,7 +528,7 @@ class SecondaryTextPageSerializer(serializers.Serializer[SecondaryTextPage]):
     description = serializers.CharField(
         source="secondary_text.description", allow_blank=True, help_text="HTML."
     )
-    header_image = ImageUrlField(
+    header_image = FileUrlField(
         source="secondary_text.header_image",
         help_text="Shown behind the title; empty when there is none.",
     )
@@ -578,9 +560,9 @@ class MediaContentSerializer(serializers.Serializer[Note | ContextualMaterial]):
     is filled."""
 
     kind = serializers.ChoiceField(source="content_kind", choices=ContentKind.choices)
-    image = serializers.SerializerMethodField(help_text="Empty unless the kind is `image`.")
+    image = FileUrlField(read_only=True, help_text="Empty unless the kind is `image`.")
     image_alt = serializers.CharField(allow_blank=True)
-    file = serializers.SerializerMethodField(help_text="Empty unless the kind is `document`.")
+    file = FileUrlField(read_only=True, help_text="Empty unless the kind is `document`.")
     external_url = serializers.CharField(
         allow_blank=True, help_text="An audio or video link; empty unless `external_media`."
     )
@@ -589,12 +571,6 @@ class MediaContentSerializer(serializers.Serializer[Note | ContextualMaterial]):
         allow_null=True,
         help_text="The text for the reader, /api/documents/<id>/; null unless a text kind.",
     )
-
-    def get_image(self, item: Note | ContextualMaterial) -> str:
-        return item.image.url if item.image else ""
-
-    def get_file(self, item: Note | ContextualMaterial) -> str:
-        return item.file.url if item.file else ""
 
 
 @dataclass(frozen=True)
@@ -613,7 +589,7 @@ class NotePageSerializer(serializers.Serializer[NotePage]):
         source="note.is_draft", help_text="True only for staff previewing a draft (US-WR-13)."
     )
     title = serializers.CharField(source="note.title")
-    header_image = ImageUrlField(
+    header_image = FileUrlField(
         source="note.header_image", help_text="Shown behind the title; empty when there is none."
     )
     header_image_alt = serializers.CharField(source="note.header_image_alt", allow_blank=True)
@@ -648,7 +624,7 @@ class MaterialPageSerializer(serializers.Serializer[MaterialPage]):
     description = serializers.CharField(
         source="material.description", allow_blank=True, help_text="HTML."
     )
-    header_image = ImageUrlField(
+    header_image = FileUrlField(
         source="material.header_image",
         help_text="Shown behind the title; empty when there is none.",
     )
@@ -688,7 +664,7 @@ class TagPageSerializer(serializers.Serializer[TagPage]):
     description = serializers.CharField(
         source="tag.description", allow_blank=True, help_text="HTML."
     )
-    header_image = ImageUrlField(
+    header_image = FileUrlField(
         source="tag.header_image", help_text="Shown behind the title; empty when there is none."
     )
     header_image_alt = serializers.CharField(source="tag.header_image_alt", allow_blank=True)
@@ -734,7 +710,7 @@ class DocumentFragmentSerializer(FragmentRowSerializer):
 class DocumentSerializer(serializers.ModelSerializer[Document]):
     """The text of an item for the reader (R-11, architecture section 4.4)."""
 
-    scan = serializers.SerializerMethodField(help_text="PDF URL; empty for a plain text.")
+    scan = FileUrlField(read_only=True, help_text="PDF URL; empty for a plain text.")
     is_draft = serializers.BooleanField(
         source="owner.is_draft",
         read_only=True,
@@ -747,9 +723,6 @@ class DocumentSerializer(serializers.ModelSerializer[Document]):
         fields = ("id", "kind", "text", "page_offsets", "scan", "is_draft", "fragments")
         # Output only, so the schema marks every field as present, the blank ones too.
         read_only_fields = fields
-
-    def get_scan(self, document: Document) -> str:
-        return document.scan.url if document.scan else ""
 
 
 @dataclass(frozen=True)
@@ -816,11 +789,7 @@ class WorkResultSerializer(serializers.Serializer[Found[Work]]):
 
     url = serializers.CharField(source="hit.entry.url")
     title = serializers.CharField(source="item.title")
-    year = serializers.IntegerField(
-        source="item.year",
-        allow_null=True,
-        help_text="The year of the first edition; null without editions.",
-    )
+    year = YearField(source="item.year")
     fragments = serializers.SerializerMethodField(
         help_text="The work's fragments that match the query."
     )
@@ -874,14 +843,13 @@ class SearchParamsSerializer(serializers.Serializer[None]):
         default="", allow_blank=True, help_text="Web search syntax: quoted phrases, or, -word."
     )
     tab = serializers.ChoiceField(Tab.choices, default=Tab.ALL)
-    # The index stores work ids as PostgreSQL integers and decades as smallints.
     work = serializers.ListField(
-        child=serializers.IntegerField(min_value=1, max_value=2**31 - 1),
+        child=serializers.IntegerField(min_value=1, max_value=MAX_ID),
         default=list,
         help_text="Ids of published works.",
     )
     decade = serializers.ListField(
-        child=serializers.IntegerField(min_value=0, max_value=32767),
+        child=serializers.IntegerField(min_value=0, max_value=MAX_DECADE),
         default=list,
         help_text="Decades of first editions, e.g. 1940 for 1940 to 1949.",
     )
@@ -995,7 +963,9 @@ class HomePageSerializer(serializers.Serializer[HomePage]):
     """US-RA-01. `intro` is rich text: HTML, sanitized when an editor saves it."""
 
     intro = serializers.CharField(source="settings.intro_text", allow_blank=True, help_text="HTML.")
-    portrait = serializers.SerializerMethodField(help_text="Empty when there is no portrait.")
+    portrait = FileUrlField(
+        source="settings.portrait", read_only=True, help_text="Empty when there is no portrait."
+    )
     portrait_alt = serializers.CharField(source="settings.portrait_alt", allow_blank=True)
     statistics = HomeStatisticsSerializer()
     works = WorkCardSerializer(many=True, help_text="By first edition.")
@@ -1005,6 +975,3 @@ class HomePageSerializer(serializers.Serializer[HomePage]):
     tags = TagCountSerializer(
         many=True, help_text="The tag cloud: tags in use, the most frequent first."
     )
-
-    def get_portrait(self, page: HomePage) -> str:
-        return page.settings.portrait.url if page.settings.portrait else ""

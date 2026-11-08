@@ -27,15 +27,9 @@ class HighlightSegment:
 
 def highlight_segments(text: str, fragments: list[Fragment]) -> list[HighlightSegment]:
     """Split `text` at every fragment boundary so overlaps render correctly (architecture §4.4)."""
-    boundaries = {0, len(text)}
-    for fragment in fragments:
-        boundaries.add(fragment.start)
-        boundaries.add(fragment.end)
-    points = sorted(boundaries)
+    points = sorted({0, len(text), *(f.start for f in fragments), *(f.end for f in fragments)})
     segments: list[HighlightSegment] = []
     for start, end in itertools.pairwise(points):
-        if start == end:
-            continue
         covering = tuple(
             fragment.pk for fragment in fragments if fragment.start <= start and fragment.end >= end
         )

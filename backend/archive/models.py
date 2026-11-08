@@ -7,14 +7,14 @@ in field definitions, database constraints, `clean()` and `save()`. There are no
 from bisect import bisect_right
 from collections.abc import Callable, Collection, Sequence
 from dataclasses import dataclass
-from typing import Any, ClassVar, Self, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Self, cast
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
-from django.db.models import Exists, Expression, F, Func, OuterRef, Q, Subquery, Value
+from django.db.models import Exists, Expression, F, Func, OuterRef, Prefetch, Q, Subquery, Value
 from django.db.models.fields.files import FieldFile
 from django.utils.text import Truncator
 from django.utils.translation import gettext_lazy as _
@@ -24,6 +24,9 @@ from django_stubs_ext import StrOrPromise
 
 from archive.images import to_webp, validate_image
 from search.models import EntityType, IndexedContent, SearchEntry, Weight, html_to_text
+
+if TYPE_CHECKING:
+    from django.contrib.auth.models import AnonymousUser, User
 
 IMAGE_EXTENSIONS = FileExtensionValidator(["jpg", "jpeg", "png", "webp"])
 PDF_EXTENSION = FileExtensionValidator(["pdf"])
@@ -63,6 +66,11 @@ def fragment_shelfmark(unit: str, page: int | None) -> str:
     """The number part of a fragment's shelfmark, e.g. "1618.19" (ARC-11): its owner's, a dot and
     the scan page; no page for a plain text, and nothing without the owner's."""
     return f"{unit}.{page}" if unit and page else unit
+
+
+def fragment_url(owner_url: str, fragment_id: int) -> str:
+    """The page of a fragment's source, scrolled to the fragment (R-11)."""
+    return f"{owner_url}?fragment={fragment_id}"
 
 
 def format_shelfmark(institution: "Institution | None", number: str) -> str:
@@ -153,9 +161,13 @@ class Preview[M: models.Model]:
     total: int
 
 
-def preview[M: models.Model](queryset: "models.QuerySet[M]") -> Preview[M]:
-    """The first `PREVIEW_LIMIT` items of an ordered queryset (architecture section 4.5)."""
-    return Preview(items=list(queryset[: settings.PREVIEW_LIMIT]), total=queryset.count())
+def preview[M: models.Model](
+    queryset: "models.QuerySet[M]", limit: int | None = None
+) -> Preview[M]:
+    """The first `limit` items of an ordered queryset, `PREVIEW_LIMIT` by default (architecture
+    section 4.5)."""
+    limit = settings.PREVIEW_LIMIT if limit is None else limit
+    return Preview(items=list(queryset[:limit]), total=queryset.count())
 
 
 def published_q(prefix: str = "") -> Q:
@@ -169,6 +181,11 @@ def published_q(prefix: str = "") -> Q:
 class PublishableQuerySet[M: "Publishable"](models.QuerySet[M]):
     def published(self) -> Self:
         return self.filter(published_q())
+
+    def viewable_by(self, user: "User | AnonymousUser") -> Self:
+        """What an entity page may show (R-06): published entities, and drafts for staff, who
+        preview them (US-WR-13). Lists, previews and related items never take drafts."""
+        return self if user.is_staff else self.published()
 
 
 class Publishable(BaseModel):
@@ -220,6 +237,10 @@ class Publishable(BaseModel):
     @property
     def is_draft(self) -> bool:
         return self.status == Status.DRAFT
+
+    def is_viewable_by(self, user: "User | AnonymousUser") -> bool:
+        """Whether `user` may see this entity's page (`PublishableQuerySet.viewable_by()`)."""
+        return not self.is_draft or user.is_staff
 
     @property
     def description_text(self) -> str:
@@ -277,7 +298,8 @@ class Archival(models.Model):
     """An item held by an institution under a shelfmark, optionally with a text (`Document`)."""
 
     document_required = False
-    # The reverse name from `Work` to this kind of item.
+    # The field linking this kind of item to its works, and its reverse name from `Work`.
+    work_field: ClassVar[str] = "works"
     works_lookup: ClassVar[str]
     _indexed_document_id: int | None = None
 
@@ -310,19 +332,19 @@ class Archival(models.Model):
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         """Delete the text the item no longer holds, which has no meaning on its own."""
-        dropped = self._indexed_document_id
-        if dropped not in (None, self.document_id):
+        dropped = self.dropped_document_id
+        if dropped is not None:
             self.refuse_dropping_text(dropped)
         with transaction.atomic():
             super().save(*args, **kwargs)
-            if dropped not in (None, self.document_id):
+            if dropped is not None:
                 for document in Document.objects.filter(pk=dropped):
                     document.delete()
 
     def clean(self) -> None:
         super().clean()
-        dropped = self._indexed_document_id
-        if dropped not in (None, self.document_id):
+        dropped = self.dropped_document_id
+        if dropped is not None:
             self.refuse_dropping_text(dropped)
         if self.document is None:
             if self.document_required:
@@ -344,6 +366,12 @@ class Archival(models.Model):
             if document is not None:
                 document.delete()
         return result
+
+    @property
+    def dropped_document_id(self) -> int | None:
+        """The stored text the item no longer holds, if it was given another one or none."""
+        dropped = self._indexed_document_id
+        return dropped if dropped not in (None, self.document_id) else None
 
     def refuse_dropping_text(self, document_id: int) -> None:
         """Refuse to drop a text that still has tagged fragments (US-WR-09 AC4)."""
@@ -374,6 +402,21 @@ class Archival(models.Model):
         """The published works this item relates to, by first edition (R-03)."""
         return Work.objects.published().filter(**{self.works_lookup: self}).with_year()
 
+    def carried_tags(self, *, with_work_links: bool = False) -> "TagQuerySet":
+        """The published tags on this item and on the fragments of its text, by name (R-06);
+        with `with_work_links`, also those on its links to published works."""
+        assert isinstance(self, Taggable)
+        fragments = (
+            Fragment.objects.filter(document_id=self.document_id)
+            if self.document_id
+            else Fragment.objects.none()
+        )
+        carried = Q(pk__in=self.tags.values("pk")) | Q(pk__in=fragments.values("tags"))
+        if with_work_links and isinstance(self, SecondaryText | ContextualMaterial):
+            links = self.work_links.filter(published_q("work__"))
+            carried |= Q(pk__in=links.values("tags"))
+        return Tag.objects.published().filter(carried).order_by("title")
+
     def indexed_content(self) -> IndexedContent:
         """Title, description and the whole text of a typescript, note, secondary text or
         contextual material."""
@@ -401,9 +444,9 @@ class Archival(models.Model):
         `owner` is the item's own entry, or None for a draft. The fragments of a text the item
         no longer has leave the index: that text has no owner now.
         """
-        if self._indexed_document_id not in (None, self.document_id):
+        if self.dropped_document_id is not None:
             SearchEntry.remove_fragments(
-                Fragment.objects.filter(document_id=self._indexed_document_id)
+                Fragment.objects.filter(document_id=self.dropped_document_id)
             )
         self._indexed_document_id = self.document_id
         if self.document is None:
@@ -412,8 +455,9 @@ class Archival(models.Model):
         if owner is None:
             SearchEntry.remove_fragments(fragments)
             return
-        for fragment in fragments:
-            fragment.write_search_entry(owner)
+        # One query for every fragment's tags, not one per fragment.
+        for fragment in fragments.prefetch_related(Prefetch("tags", Tag.objects.published())):
+            fragment.write_search_entry(owner, [tag.title for tag in fragment.tags.all()])
 
     @classmethod
     def from_db(
@@ -504,12 +548,8 @@ class TagQuerySet(PublishableQuerySet["Tag"]):
         carriers: list[models.QuerySet[Any]] = [
             Fragment.objects.visible(),
             Work.objects.published(),
-            Typescript.objects.published(),
-            Note.objects.published(),
-            SecondaryText.objects.published(),
-            ContextualMaterial.objects.published(),
-            SecondaryTextWorkLink.objects.visible(),
-            MaterialWorkLink.objects.visible(),
+            *(item.objects.published() for item in ITEM_MODELS),
+            *(link.objects.visible() for link in LINK_MODELS),
         ]
         occurrences: Expression = Value(0)
         for carrier in carriers:
@@ -529,20 +569,14 @@ class TagQuerySet(PublishableQuerySet["Tag"]):
         `WorkQuerySet.referred_to_by()`: on the work, on a published item related to it, on a
         visible fragment of such an item, or on a visible work link."""
         referring = Q(works=work)
-        items: list[PublishableQuerySet[Any]] = [
-            Typescript.objects.published().filter(work=work),
-            Note.objects.published().filter(works=work),
-            SecondaryText.objects.published().filter(works=work),
-            ContextualMaterial.objects.published().filter(works=work),
-        ]
-        for related in items:
+        for item in ITEM_MODELS:
+            related: PublishableQuerySet[Any] = item.objects.published().filter(
+                **{item.work_field: work}
+            )
             fragments = Fragment.objects.filter(document__in=related.values("document"))
             referring |= Q(pk__in=related.values("tags")) | Q(pk__in=fragments.values("tags"))
-        for links in (
-            SecondaryTextWorkLink.objects.visible(),
-            MaterialWorkLink.objects.visible(),
-        ):
-            referring |= Q(pk__in=links.filter(work=work).values("tags"))
+        for link in LINK_MODELS:
+            referring |= Q(pk__in=link.objects.visible().filter(work=work).values("tags"))
         return self.filter(referring)
 
 
@@ -580,16 +614,9 @@ class Tag(Described):
         published (D18)."""
         with transaction.atomic():
             super().save(*args, **kwargs)
-            carriers: list[Publishable | Fragment] = [
-                *Work.objects.filter(tags=self),
-                *Typescript.objects.filter(tags=self),
-                *Note.objects.filter(tags=self),
-                *SecondaryText.objects.filter(tags=self),
-                *ContextualMaterial.objects.filter(tags=self),
-                *Fragment.objects.filter(tags=self),
-            ]
-            for carrier in carriers:
-                carrier.update_search_entry()
+            for model in (Work, *ITEM_MODELS, Fragment):
+                for carrier in model.objects.filter(tags=self):
+                    carrier.update_search_entry()
 
     def get_absolute_url(self) -> str:
         return f"/tagi/{self.slug}"
@@ -676,15 +703,13 @@ class WorkQuerySet(PublishableQuerySet["Work"]):
         """The works a tag refers to (US-RA-07 AC5): the tag is on the work, on a published item
         related to it, on a visible fragment of such an item, or on a visible work link."""
         carrying = Q(tags=tag) | Q(document__fragments__tags=tag)
-        return self.filter(
-            Q(tags=tag)
-            | Q(pk__in=Typescript.objects.published().filter(carrying).values("work"))
-            | Q(pk__in=Note.objects.published().filter(carrying).values("works"))
-            | Q(pk__in=SecondaryText.objects.published().filter(carrying).values("works"))
-            | Q(pk__in=ContextualMaterial.objects.published().filter(carrying).values("works"))
-            | Q(pk__in=SecondaryTextWorkLink.objects.visible().filter(tags=tag).values("work"))
-            | Q(pk__in=MaterialWorkLink.objects.visible().filter(tags=tag).values("work"))
-        )
+        referred = Q(tags=tag)
+        for item in ITEM_MODELS:
+            items = item.objects.published().filter(carrying)
+            referred |= Q(pk__in=items.values(item.work_field))
+        for link in LINK_MODELS:
+            referred |= Q(pk__in=link.objects.visible().filter(tags=tag).values("work"))
+        return self.filter(referred)
 
 
 class Work(Described, Taggable):
@@ -727,18 +752,10 @@ class Work(Described, Taggable):
 
     def bibliography_preview(self) -> "Preview[BibliographyEntry]":
         """The first entries of the bibliography and their count: "5 z 12" (US-RA-21 AC1)."""
-        entries = self.bibliography.all()
-        return Preview(
-            items=list(entries[: settings.BIBLIOGRAPHY_PREVIEW_LIMIT]), total=entries.count()
-        )
+        return preview(self.bibliography.all(), settings.BIBLIOGRAPHY_PREVIEW_LIMIT)
 
     def related_items(self) -> list[Publishable]:
-        return [
-            *self.typescripts.all(),
-            *self.notes.all(),
-            *self.secondary_texts.all(),
-            *self.materials.all(),
-        ]
+        return [item for model in ITEM_MODELS for item in getattr(self, model.works_lookup).all()]
 
     def update_search_entries(self) -> None:
         """Index the work and what relates to it again, e.g. after its year changed."""
@@ -823,6 +840,7 @@ class BibliographyEntry(BaseModel):
 
 class Typescript(Described, Taggable, Archival):
     document_required = True
+    work_field = "work"
     works_lookup = "typescripts"
     search_type = EntityType.TYPESCRIPT
 
@@ -943,6 +961,10 @@ class ContextualMaterial(Described, Taggable, MediaContent):
         return f"/materialy/{self.pk}"
 
 
+# Every kind of archival item, in the order the tag page lists their fragments within a work.
+ITEM_MODELS = (Typescript, Note, SecondaryText, ContextualMaterial)
+
+
 class WorkLinkQuerySet[L: "SecondaryTextWorkLink | MaterialWorkLink"](models.QuerySet[L]):
     def visible(self) -> Self:
         """Links whose work and linked item are both published."""
@@ -1003,6 +1025,10 @@ class MaterialWorkLink(BaseModel, Taggable):
 
     def __str__(self) -> str:
         return f"{self.material} ↔ {self.work}"
+
+
+# The links of items to works, which carry their own tags (US-RA-05).
+LINK_MODELS = (SecondaryTextWorkLink, MaterialWorkLink)
 
 
 # --- Texts and fragments (architecture section 4.4) -------------------------------------
@@ -1161,6 +1187,17 @@ class FragmentQuerySet(models.QuerySet["Fragment"]):
         )
         return self.annotate(number=count_of(earlier) + 1)
 
+    def for_cards(self) -> Self:
+        """Load what a fragment card shows (R-10): its number, its source with the source's
+        institution, and its published tags."""
+        return (
+            self.with_number()
+            .select_related(
+                *(f"document__{owner}__institution" for owner in Document.owner_accessors())
+            )
+            .prefetch_related(Prefetch("tags", Tag.objects.published()))
+        )
+
     def preview(self) -> Preview["Fragment"]:
         """Featured fragments first, then text order (R-09).
 
@@ -1176,14 +1213,7 @@ class FragmentQuerySet(models.QuerySet["Fragment"]):
 
         Callers pass a published item, or a draft only for staff previewing it (US-WR-13): a
         draft's tags must not reach the public (R-06)."""
-        own = (
-            Fragment.objects.filter(document_id=item.document_id)
-            if item.document_id
-            else Fragment.objects.none()
-        )
-        tags = Tag.objects.published().filter(
-            Q(pk__in=item.tags.values("pk")) | Q(pk__in=own.values("tags"))
-        )
+        tags = item.carried_tags().order_by()
         return (
             self.filter(published_q("document__typescript__"))
             .filter(pk__in=Fragment.objects.filter(tags__in=tags).values("pk"))
@@ -1247,20 +1277,22 @@ class Fragment(BaseModel, Taggable):
         """Index the fragment while it is visible: its document's owner is published."""
         owner = self.document.owner
         if isinstance(owner, Publishable) and owner.status == Status.PUBLISHED:
-            self.write_search_entry(owner.indexed_content())
+            self.write_search_entry(owner.indexed_content(), self.published_tag_names())
         else:
             SearchEntry.remove(EntityType.FRAGMENT, self.pk)
 
-    def write_search_entry(self, owner: IndexedContent) -> None:
-        """Index the fragment under its owner: a link into the owner's page, and its filters."""
+    def write_search_entry(self, owner: IndexedContent, tags: list[str]) -> None:
+        """Index the fragment under its owner: a link into the owner's page, and its filters.
+
+        `tags` are the names of the published tags it carries."""
         SearchEntry.write(
             EntityType.FRAGMENT,
             self.pk,
             IndexedContent(
                 title=str(self),
-                url=f"{owner.url}?fragment={self.pk}",
+                url=fragment_url(owner.url, self.pk),
                 texts=[(self.quote, Weight.QUOTE)],
-                tags=self.published_tag_names(),
+                tags=tags,
                 work_ids=owner.work_ids,
                 decades=owner.decades,
                 has_scan=owner.has_scan,

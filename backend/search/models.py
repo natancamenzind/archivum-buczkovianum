@@ -19,6 +19,10 @@ from django.db import models
 from django.db.models import Value
 from django.utils.translation import gettext_lazy as _
 
+# The largest work id and decade the index stores: PostgreSQL integer and smallint.
+MAX_ID = 2**31 - 1
+MAX_DECADE = 32767
+
 
 class EntityType(models.TextChoices):
     """Kinds of indexed entities, in the order of the groups of results (US-RA-15 AC3)."""

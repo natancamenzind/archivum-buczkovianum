@@ -123,26 +123,19 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
         Saving a replaced text re-anchors its fragments and re-indexes the item. The replaced
         scan is deleted only after the transaction commits.
         """
-        if self.uploaded_document is None:
-            return
-        self.uploaded_document.save()
+        if self.uploaded_document is not None:
+            self.uploaded_document.save()
         if self.replaced_scan:
             storage = Document.scan.field.storage
             transaction.on_commit(partial(storage.delete, self.replaced_scan))
 
     def save(self, commit: bool = True) -> M:
-        """Save the uploaded document first, since the item refers to it.
+        """Save the uploaded document first (`save_document()`), since the item refers to it.
 
-        Saving a replaced text re-anchors its fragments and re-indexes the item. The admin
-        saves the form and the item in one transaction, so a failure undoes both. The replaced
-        scan is deleted only after that transaction commits.
+        The admin saves the form and the item in one transaction, so a failure undoes both.
         """
         with transaction.atomic():
-            if self.uploaded_document is not None:
-                self.uploaded_document.save()
-            if self.replaced_scan:
-                storage = Document.scan.field.storage
-                transaction.on_commit(partial(storage.delete, self.replaced_scan))
+            self.save_document()
             return super().save(commit)
 
 

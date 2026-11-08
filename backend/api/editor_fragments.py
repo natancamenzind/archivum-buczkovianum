@@ -56,24 +56,19 @@ class EditorFragmentSerializer(serializers.ModelSerializer[Fragment]):
         return fields
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        document = attrs.get("document") or getattr(self.instance, "document", None)
-        if document is None:
+        """Check a new fragment's selection. An update changes only the tags: the view has
+        already checked that its text can be tagged."""
+        if self.instance is not None:
             return attrs
+        document, start, end = attrs["document"], attrs["start"], attrs["end"]
         if not document.offers_tagger():
             raise serializers.ValidationError({"document": "This text cannot be tagged."})
-        start = attrs.get("start", getattr(self.instance, "start", None))
-        end = attrs.get("end", getattr(self.instance, "end", None))
-        quote = attrs.get("quote")
-        if start is not None and end is not None and quote is not None:
-            text_len = len(document.text)
-            if start < 0 or end < 0 or start >= end or end > text_len:
-                raise serializers.ValidationError(
-                    {"end": "The selection must lie within the document text."}
-                )
-            if document.text[start:end] != quote:
-                raise serializers.ValidationError(
-                    {"quote": "The quote must match the selected text."}
-                )
+        if not start < end <= len(document.text):
+            raise serializers.ValidationError(
+                {"end": "The selection must lie within the document text."}
+            )
+        if document.text[start:end] != attrs["quote"]:
+            raise serializers.ValidationError({"quote": "The quote must match the selected text."})
         return attrs
 
     def create(self, validated_data: dict[str, Any]) -> Fragment:

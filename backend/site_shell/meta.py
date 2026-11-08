@@ -22,6 +22,7 @@ from archive.models import (
     Typescript,
     Work,
 )
+from search.models import MAX_DECADE, MAX_ID
 
 SITE_NAME = "Archivum Buczkovianum"
 DESCRIPTION = (
@@ -29,9 +30,6 @@ DESCRIPTION = (
     "i materiały kontekstowe."
 )
 DESCRIPTION_LENGTH = 160
-# The largest id and decade the database stores: PostgreSQL integer and smallint.
-MAX_ID = 2**31 - 1
-MAX_DECADE = 32767
 
 
 @dataclass(frozen=True)
@@ -131,8 +129,7 @@ def entity_meta(request: HttpRequest, kind: str, key: str) -> PageMeta | None:
     entities, field = ENTITIES[kind]
     if not (is_id(key, MAX_ID) if field == "pk" else slug_re.match(key)):
         return None
-    queryset = entities() if request.user.is_staff else entities().published()
-    entity = queryset.filter(**{field: key}).first()
+    entity = entities().viewable_by(request.user).filter(**{field: key}).first()
     if entity is None:
         return None
     description = " ".join(entity.description_text.split())
@@ -146,8 +143,7 @@ def bibliography_meta(request: HttpRequest, slug: str) -> PageMeta | None:
     """A work's bibliography page (US-RA-21): only a work with entries has one."""
     if not slug_re.match(slug):
         return None
-    works = Work.objects.with_bibliography()
-    work = (works if request.user.is_staff else works.published()).filter(slug=slug).first()
+    work = Work.objects.with_bibliography().viewable_by(request.user).filter(slug=slug).first()
     if work is None:
         return None
     name = f"Bibliografia utworu „{work.title}”"
