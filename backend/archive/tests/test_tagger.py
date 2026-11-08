@@ -8,7 +8,7 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 from archive.models import ContentKind, Fragment
-from archive.tagger import highlight_segments
+from archive.tagger import highlight_segments, tagger_pages
 from archive.tests.factories import (
     DocumentFactory,
     FragmentFactory,
@@ -17,6 +17,12 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
+
+
+def shown_text(content: str) -> str:
+    """The text the tagger shows: its pages' text, without page numbers or highlight markup."""
+    pages = re.findall(r'<div class="tagger-page-text"[^>]*>(.*?)</div>', content, re.DOTALL)
+    return "".join(html.unescape(re.sub(r"<[^>]+>", "", page)) for page in pages)
 
 
 @pytest.mark.django_db
@@ -130,10 +136,75 @@ class TestTaggerAdmin:
         response = admin_client.get(url)
 
         # Assert
+        assert shown_text(response.content.decode()) == document.text
+
+    def test_arc_61_tagger_splits_the_text_into_the_readers_pages(
+        self, admin_client: Client
+    ) -> None:
+        # Arrange: a fragment runs from the first scan page onto the second.
+        document = DocumentFactory.create(
+            ocr=True, text="Czarny potok.\nPłynie przez las.\n", page_offsets=[0, 14, 32]
+        )
+        TypescriptFactory.create(document=document, is_main=True)
+        FragmentFactory.create(document=document, start=7, end=20)
+        url = reverse("admin:archive_document_tagger", args=[document.pk])
+
+        # Act
+        response = admin_client.get(url)
+
+        # Assert
         content = response.content.decode()
-        shown = re.search(r'<div id="tagger-text"[^>]*>(.*?)</div>', content, re.DOTALL)
-        assert shown is not None
-        assert html.unescape(re.sub(r"<[^>]+>", "", shown.group(1))) == document.text
+        pages = re.findall(
+            r'<section class="tagger-page" id="tagger-page-(\d+)">.*?'
+            r'<div class="tagger-page-text" data-start="(\d+)">(.*?)</div>',
+            content,
+            re.DOTALL,
+        )
+        assert [(number, start) for number, start, _ in pages] == [
+            ("1", "0"),
+            ("2", "14"),
+            ("3", "32"),
+        ]
+        assert [html.unescape(re.sub(r"<[^>]+>", "", text)) for _, _, text in pages] == [
+            "Czarny potok.\n",
+            "Płynie przez las.\n",
+            "",
+        ]
+        assert shown_text(content) == document.text
+        assert "Strona 2" in content
+
+    def test_arc_61_tagger_offers_to_go_to_a_page(self, admin_client: Client) -> None:
+        # Arrange
+        document = DocumentFactory.create(ocr=True, text="a" * 30, page_offsets=[0, 10, 20])
+        TypescriptFactory.create(document=document, is_main=True)
+        url = reverse("admin:archive_document_tagger", args=[document.pk])
+
+        # Act
+        response = admin_client.get(url)
+
+        # Assert
+        content = response.content.decode()
+        assert 'id="tagger-go-to-page"' in content
+        assert 'min="1" max="3"' in content
+        assert "z 3 stron" in content
+
+    def test_arc_61_plain_text_has_no_pages(self, admin_client: Client) -> None:
+        # Arrange
+        note = NoteFactory.create(
+            content_kind=ContentKind.PLAIN_TEXT,
+            external_url="",
+            document=DocumentFactory.create(text="Czarny potok."),
+        )
+        url = reverse("admin:archive_document_tagger", args=[note.document_id])
+
+        # Act
+        response = admin_client.get(url)
+
+        # Assert
+        content = response.content.decode()
+        assert shown_text(content) == "Czarny potok."
+        assert "tagger-go-to-page" not in content
+        assert "tagger-page-number" not in content
 
     def test_us_wr_09_ac6_fragment_form_has_metadata_fields(
         self, rf: RequestFactory, admin_user: User
@@ -200,3 +271,20 @@ class TestHighlightSegments:
         shared = [segment for segment in segments if len(segment.fragment_ids) == 2]
         assert shared
         assert shared[0].text == "potok"
+
+    def test_arc_61_a_fragment_across_pages_is_highlighted_on_each(self) -> None:
+        # Arrange
+        document = DocumentFactory.create(
+            ocr=True, text="Czarny potok.\nPłynie przez las.\n", page_offsets=[0, 14]
+        )
+        fragment = FragmentFactory.create(document=document, start=7, end=20)
+
+        # Act
+        pages = tagger_pages(document, [fragment])
+
+        # Assert
+        highlighted = [
+            [segment.text for segment in page.segments if segment.fragment_ids] for page in pages
+        ]
+        assert highlighted == [["potok.\n"], ["Płynie"]]
+        assert [page.start for page in pages] == [0, 14]

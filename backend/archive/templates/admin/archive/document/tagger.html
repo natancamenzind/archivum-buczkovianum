@@ -16,8 +16,25 @@
     <div class="tagger-layout">
       <section class="tagger-text-panel">
         <h2>{% translate "Text" %}</h2>
-        {# One line: tagger.js counts offsets over this text, so whitespace here would shift them. #}
-        <div id="tagger-text" class="tagger-text" tabindex="0">{% for segment in segments %}{% if segment.fragment_ids %}<span class="tagger-fragment" data-fragment-ids="{{ segment.fragment_ids|join:',' }}">{{ segment.text }}</span>{% else %}{{ segment.text }}{% endif %}{% endfor %}</div>
+        {% if document.page_count %}
+          <form id="tagger-go-to-page" class="tagger-go-to-page">
+            <label for="tagger-page-number">{% translate "Go to page" %}</label>
+            <input id="tagger-page-number" type="number" min="1" max="{{ document.page_count }}" required>
+            <span>{% blocktranslate count pages=document.page_count %}of {{ pages }} page{% plural %}of {{ pages }} pages{% endblocktranslate %}</span>
+            <button type="submit" class="button">{% translate "Go" %}</button>
+          </form>
+        {% endif %}
+        <div id="tagger-text" class="tagger-text" tabindex="0">
+          {% for page in pages %}
+            <section class="tagger-page"{% if page.number %} id="tagger-page-{{ page.number }}"{% endif %}>
+              {% if page.number %}
+                <h3 class="tagger-page-number">{% blocktranslate with number=page.number %}Page {{ number }}{% endblocktranslate %}</h3>
+              {% endif %}
+              {# One line: tagger.js counts offsets over this text, so whitespace here would shift them. #}
+              <div class="tagger-page-text" data-start="{{ page.start }}">{% for segment in page.segments %}{% if segment.fragment_ids %}<span class="tagger-fragment" data-fragment-ids="{{ segment.fragment_ids|join:',' }}">{{ segment.text }}</span>{% else %}{{ segment.text }}{% endif %}{% endfor %}</div>
+            </section>
+          {% endfor %}
+        </div>
         <form id="tagger-create" class="tagger-form">
           <p>
             <label for="tagger-selection">{% translate "Selection" %}</label>

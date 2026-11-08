@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Archivum Buczkovianum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-08 11:54+0100\n"
+"POT-Creation-Date: 2026-11-08 14:27+0100\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -456,6 +456,24 @@ msgstr "Zaznacz tekst, wybierz tagi i dodaj fragment."
 
 msgid "Text"
 msgstr "Tekst"
+
+msgid "Go to page"
+msgstr "Przejdź do strony"
+
+#, python-format
+msgid "of %(pages)s page"
+msgid_plural "of %(pages)s pages"
+msgstr[0] "z %(pages)s strony"
+msgstr[1] "z %(pages)s stron"
+msgstr[2] "z %(pages)s stron"
+msgstr[3] "z %(pages)s stron"
+
+msgid "Go"
+msgstr "Przejdź"
+
+#, python-format
+msgid "Page %(number)s"
+msgstr "Strona %(number)s"
 
 msgid "Selection"
 msgstr "Zaznaczenie"

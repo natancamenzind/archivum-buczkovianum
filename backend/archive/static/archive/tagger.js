@@ -1,21 +1,48 @@
+// The document offset of a range boundary. Each page's text carries its first offset, so page
+// numbers and the markup between pages never count. A boundary outside the pages' text, as on a
+// page number, falls on the start of the next page's text, or on the end of the last one.
+function documentOffset(container, node, offset) {
+  const element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+  const pageText = element.closest(".tagger-page-text");
+  if (pageText) {
+    const before = document.createRange();
+    before.selectNodeContents(pageText);
+    before.setEnd(node, offset);
+    return Number(pageText.dataset.start) + before.toString().length;
+  }
+  const boundary = document.createRange();
+  boundary.setStart(node, offset);
+  const pageTexts = Array.from(container.querySelectorAll(".tagger-page-text"));
+  const next = pageTexts.find((candidate) => boundary.comparePoint(candidate, 0) >= 0);
+  if (next) {
+    return Number(next.dataset.start);
+  }
+  const last = pageTexts[pageTexts.length - 1];
+  return Number(last.dataset.start) + last.textContent.length;
+}
+
 function selectionOffsets(container) {
   const selection = window.getSelection();
   if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
     return null;
   }
   const range = selection.getRangeAt(0);
-  if (!container.contains(range.commonAncestorContainer)) {
+  if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) {
     return null;
   }
-  const before = document.createRange();
-  before.selectNodeContents(container);
-  before.setEnd(range.startContainer, range.startOffset);
-  const start = before.toString().length;
-  const quote = range.toString();
-  if (!quote) {
+  const start = documentOffset(container, range.startContainer, range.startOffset);
+  const end = documentOffset(container, range.endContainer, range.endOffset);
+  // A selection across pages also holds page numbers and the markup between pages: keep only
+  // the pages' text, which the API checks against the stored text.
+  const contents = range.cloneContents();
+  const pageTexts = contents.querySelectorAll(".tagger-page-text");
+  const quote = pageTexts.length
+    ? Array.from(pageTexts, (pageText) => pageText.textContent).join("")
+    : contents.textContent;
+  if (!quote || end <= start) {
     return null;
   }
-  return { start, end: start + quote.length, quote };
+  return { start, end, quote };
 }
 
 function csrfToken() {
@@ -60,6 +87,18 @@ function initTagger(root) {
 
   textEl.addEventListener("mouseup", showSelection);
   textEl.addEventListener("keyup", showSelection);
+
+  const goToPage = root.querySelector("#tagger-go-to-page");
+  if (goToPage) {
+    goToPage.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const number = goToPage.querySelector("#tagger-page-number").value;
+      const page = root.querySelector(`#tagger-page-${number}`);
+      if (page) {
+        textEl.scrollTop = page.offsetTop;
+      }
+    });
+  }
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
