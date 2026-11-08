@@ -18,10 +18,10 @@ import { createBrowserRouter, RouterProvider } from "react-router";
 import { createQueryClient } from "@/lib/query-client";
 import { routes } from "@/routes";
 
-// Errors and traces go to Sentry only when the build had VITE_SENTRY_DSN; without it the SDK
-// sends nothing.
+// Errors and traces go to Sentry only from a production build made with VITE_SENTRY_DSN. The dev
+// server (`make dev`) never sends, even with a DSN in .env.
 Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN,
+  dsn: import.meta.env.PROD ? import.meta.env.VITE_SENTRY_DSN : undefined,
   environment: import.meta.env.VITE_SENTRY_ENVIRONMENT ?? import.meta.env.MODE,
   integrations: [Sentry.browserTracingIntegration()],
   tracesSampleRate: 0.2,
