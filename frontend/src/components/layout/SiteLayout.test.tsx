@@ -182,6 +182,19 @@ describe("SiteLayout", () => {
     expect(screen.getByRole("contentinfo").parentElement).toHaveClass("pb-64", "lg:pb-0");
   });
 
+  it("ARC-42: from `md` up the header is 88 px tall, accent strip included", () => {
+    renderRoute("/utwory");
+
+    // 64 + 24 px: the design has no 88 px token. The height holds the borders (border-box), and
+    // no padding adds to it, so the navigation fills the row and the underline meets the bottom.
+    const header = screen.getByRole("banner");
+    expect(header).toHaveClass("h-64", "md:h-[calc(var(--space-64)+var(--space-24))]");
+    expect(header.className).not.toMatch(/\bpy-/);
+    expect(
+      within(header).getByRole("link", { name: /^Archivum Buczkovianum/ }).className,
+    ).not.toMatch(/\bpy-/);
+  });
+
   it("ARC-22: in the header the active item is underlined; in the bottom bar, overlined", () => {
     renderRoute("/utwory");
 
