@@ -5,6 +5,7 @@ every tab and filter value over the same query. `autocomplete()` suggests works 
 the reader types (US-RA-17).
 """
 
+import re
 from dataclasses import dataclass, replace
 
 from django.conf import settings
@@ -26,6 +27,9 @@ AUTOCOMPLETE_LIMIT = 8
 # A database with the "C" collation changes the case of ASCII letters only, so "ś" would not
 # match "Śmierć". ICU's root locale lowercases every letter and ships with PostgreSQL.
 CASE_FOLDING_COLLATION = "und-x-icu"
+# Tokens of a tsquery as PostgreSQL writes it out: 'lexemes' (a quote inside is doubled), phrase
+# distances (<->, <2>) and single-character operators.
+TSQUERY_TOKEN = re.compile(r"'(?:[^']|'')*'|<-?\d*>|\S")
 
 
 class Tab(models.TextChoices):
@@ -116,8 +120,8 @@ def search(
     filters = filters or Filters()
     query = None
     matching = SearchEntry.objects.all()
-    if _has_lexemes(text):
-        query = SearchQuery(text, search_type="websearch", config=settings.SEARCH_TS_CONFIG)
+    if tsquery := _prefix_tsquery(text):
+        query = ParsedQuery(tsquery)
         matching = matching.filter(vector=query)
 
     in_tab = matching.filter(entity_type__in=TAB_TYPES[tab])
@@ -143,18 +147,34 @@ def work_fragment_count(work_id: int) -> int:
     return _filtered(in_tab, Filters(work_ids=(work_id,))).count()
 
 
-def _has_lexemes(text: str) -> bool:
-    """Whether `text` has a word to search for. Operators alone ("-") and stopwords have none,
-    and PostgreSQL would match nothing with them. PostgreSQL's `polish` has no stopwords."""
+class ParsedQuery(SearchQuery):
+    """A tsquery from its text form. Its lexemes are already normalised, so they are read as they
+    are, not run through a configuration again."""
+
+    template = "%(expressions)s::tsquery"
+
+
+def _prefix_tsquery(text: str) -> str:
+    """`text` as `websearch_to_tsquery` reads it, with every plain word also matching longer
+    words (ARC-45): "wert" finds "wertepy". Words in a quoted phrase and excluded words stay
+    whole. Empty when `text` has no word to search for: operators alone ("-") and stopwords
+    have none, and PostgreSQL would match nothing with them. PostgreSQL's `polish` has no
+    stopwords."""
     if not text.strip():
-        return False
+        return ""
     with connection.cursor() as cursor:
         cursor.execute(
-            "SELECT numnode(websearch_to_tsquery(%s::regconfig, %s))",
+            "SELECT websearch_to_tsquery(%s::regconfig, %s)::text",
             [settings.SEARCH_TS_CONFIG, text],
         )
         row = cursor.fetchone()
-    return bool(row and row[0])
+    tokens = TSQUERY_TOKEN.findall(row[0] if row else "")
+    for i, token in enumerate(tokens):
+        neighbours = (tokens[i - 1] if i else "", tokens[i + 1] if i + 1 < len(tokens) else "")
+        in_phrase = any(n.startswith("<") for n in neighbours)
+        if token.startswith("'") and not in_phrase and neighbours[0] != "!":
+            tokens[i] = f"{token}:*"
+    return " ".join(tokens)
 
 
 def _filtered(entries: QuerySet[SearchEntry], filters: Filters) -> QuerySet[SearchEntry]:

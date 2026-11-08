@@ -133,6 +133,32 @@ class TestResults:
         # Assert
         assert titles(results) == [("work", "Czarny potok")]
 
+    def test_arc_45_the_start_of_a_word_finds_every_form_of_it(self) -> None:
+        # Arrange
+        WorkFactory.create(status=PUBLISHED, title="Wertepy")
+        TypescriptFactory.create(
+            status=PUBLISHED, title="Szkic", document__text="Szli przez wertepami."
+        )
+
+        # Act
+        results = search("Wert")
+
+        # Assert
+        assert titles(results) == [("work", "Wertepy"), ("typescript", "Szkic")]
+        assert results.groups[1].hits[0].snippet == "Szli przez <mark>wertepami</mark>."
+
+    def test_arc_45_quoted_phrases_and_excluded_words_stay_whole_words(self) -> None:
+        # Arrange
+        WorkFactory.create(status=PUBLISHED, title="Czarny potok")
+
+        # Act
+        phrase = search('"czarny pot"')
+        excluding = search("czarny -pot")
+
+        # Assert
+        assert titles(phrase) == []
+        assert titles(excluding) == [("work", "Czarny potok")]
+
     def test_us_ra_15_ac4_more_occurrences_rank_higher(self) -> None:
         # Arrange
         ContextualMaterialFactory.create(status=PUBLISHED, title="Zdjęcie 1", description="Las.")
