@@ -224,6 +224,7 @@ Bulk QuerySet operations (`update()`, `bulk_create()`, `bulk_update()`, `delete(
 **Query**
 
 - `websearch_to_tsquery` + `ts_rank` for relevance. Exact phrases in quotes work through `websearch_to_tsquery`.
+- Every plain word of the query also matches as a prefix, so the start of a word finds all its forms: "Wert" finds "Wertepy" (ARC-45). The query parsed by `websearch_to_tsquery` gets `:*` on each lexeme outside a phrase and not excluded with `-`; words in quotes and excluded words stay whole.
 - `ts_headline` for highlighted snippets.
 - The tab (US-RA-16) is a `WHERE entity_type IN (...)` clause. Filters are `work_ids && ...`, `decades && ...`, `has_scan` and `has_text`.
 - Facet counts (per tab and per filter value) are `GROUP BY` queries over the same filtered set, in the same request.
