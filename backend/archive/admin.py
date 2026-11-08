@@ -34,7 +34,7 @@ from archive.models import (
     Typescript,
     Work,
 )
-from archive.tagger import highlight_segments, tagger_fragments
+from archive.tagger import tagger_fragments, tagger_pages
 
 # Bulk deletes skip each object's `delete()` and its side effects (architecture section 6).
 admin.site.disable_action("delete_selected")
@@ -265,7 +265,7 @@ class DocumentAdmin(admin.ModelAdmin[Document]):
             "document": document,
             "owner": document.owner,
             "fragments": fragments,
-            "segments": highlight_segments(document.text, fragments),
+            "pages": tagger_pages(document, fragments),
             "tags": Tag.objects.order_by("title"),
             "opts": self.model._meta,
         }
