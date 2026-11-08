@@ -201,7 +201,7 @@ Nie ma jej w Figmie; używa układu strony tekstu sekundarnego.
    1. treść, zależnie od typu:
       - obrazek: wyświetlony na stronie;
       - dokument: wyświetlony na stronie, jeśli to PDF, w przeciwnym razie do pobrania;
-      - zewnętrzny link audio/wideo: osadzony odtwarzacz, jeśli dostawca na to pozwala, w przeciwnym razie link;
+      - zewnętrzny link audio/wideo: film z YouTube lub Vimeo w odtwarzaczu dostawcy, każdy inny link we własnym odtwarzaczu audio archiwum; nagranie, którego nie da się odtworzyć, pokazuje komunikat i link do niego (ARC-58);
       - tekst OCR lub tekst lity: czytnik (R-11);
    2. „Powiązane fragmenty”, jak w US-RA-10 AC3.
 4. Kolumna tagów: tagi na zapisku i jego fragmentach.

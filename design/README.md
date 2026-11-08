@@ -55,6 +55,7 @@ Generated from the Figma file "archiwum buczkowski model" (page "po korekcie") b
 - [Wynik wyszukiwania / Tag](components/wynik-wyszukiwania-tag.md)
 - [Karta utworu](components/karta-utworu.md)
 - [Wynik wyszukiwania / Szkielet](components/wynik-wyszukiwania-szkielet.md)
+- [Odtwarzacz audio](components/odtwarzacz-audio.md)
 
 ## Screens
 

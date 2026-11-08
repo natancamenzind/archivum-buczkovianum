@@ -1,4 +1,5 @@
 import type { components } from "@/api/schema";
+import { AudioPlayer } from "@/components/AudioPlayer";
 import { DocumentReader } from "@/components/Reader";
 import { ScanPage } from "@/components/ScanPage";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -11,7 +12,7 @@ type Content = components["schemas"]["MediaContent"];
 const LINK_CLASSES =
   "w-fit text-cousine-metadane text-accent-foreground underline underline-offset-3 hover:text-accent-foreground-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
-/** The player address of a YouTube, Vimeo, archive.org or SoundCloud link; null for any other. */
+/** The player address of a YouTube or Vimeo link; null for any other. */
 function embedUrl(link: string): string | null {
   let url: URL;
   try {
@@ -31,25 +32,18 @@ function embedUrl(link: string): string | null {
   } else if (host === "vimeo.com") {
     const video = /^\/(\d+)$/.exec(url.pathname)?.[1];
     return video === undefined ? null : `https://player.vimeo.com/video/${video}`;
-  } else if (host === "archive.org") {
-    const item = /^\/(?:details|embed)\/([\w.-]+)/.exec(url.pathname)?.[1];
-    return item === undefined ? null : `https://archive.org/embed/${item}`;
-  } else if (host === "soundcloud.com") {
-    const track = /^\/[\w-]+\/(?:sets\/)?[\w-]+\/?$/.exec(url.pathname)?.[0];
-    return track === undefined
-      ? null
-      : `https://w.soundcloud.com/player/?visual=true&url=${encodeURIComponent(`https://soundcloud.com${track}`)}`;
   }
   return id != null && /^[\w-]+$/.test(id) ? `https://www.youtube-nocookie.com/embed/${id}` : null;
 }
 
-/** An audio or video link: the provider's player if it is a known provider, otherwise a link. */
+/**
+ * An audio or video link: a YouTube or Vimeo video in the provider's player, anything else in
+ * our own audio player (ARC-58), which falls back to a link when the address does not play.
+ */
 export function ExternalMedia({ link }: { link: string }) {
   const player = embedUrl(link);
   return player === null ? (
-    <a href={link} className={LINK_CLASSES}>
-      {copy.content.link}
-    </a>
+    <AudioPlayer key={link} src={link} />
   ) : (
     <iframe
       src={player}

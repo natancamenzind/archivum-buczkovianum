@@ -177,3 +177,18 @@ export function NoteIcon(props: IconProps) {
     />
   );
 }
+
+/** design/assets/icons/odtworz.svg */
+export function PlayIcon(props: IconProps) {
+  return <Icon {...props} paths={["M4 2L13.3333 8L4 14V2Z"]} />;
+}
+
+/** design/assets/icons/pauza.svg */
+export function PauseIcon(props: IconProps) {
+  return <Icon {...props} paths={["M5.333 3V13", "M10.667 3V13"]} />;
+}
+
+/** design/assets/icons/ladowanie.svg */
+export function LoadingIcon(props: IconProps) {
+  return <Icon {...props} paths={["M8 1.333A6.667 6.667 0 1 1 1.333 8"]} />;
+}
