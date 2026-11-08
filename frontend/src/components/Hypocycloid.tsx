@@ -43,11 +43,43 @@ const KEY_EVERY = 2;
 const ORBIT = 360 * TURNS;
 const SPIN = (-ORBIT * R) / r;
 
+/**
+ * How many curves draw one round of the line, twelve to an arc (ARC-55). Safari breaks the dash
+ * of a path made of hundreds of straight lines into scattered pieces, so the line is drawn with
+ * cubic Béziers instead, which it dashes in one piece; a cusp falls on every twelfth curve's end.
+ */
+const CURVES = 120;
+
+/** The hypocycloid at R = 10 and its direction, at angle `t`. */
+const K = (R - r) / r;
+const at = (t: number): [number, number] => [
+  (R - r) * Math.cos(t) + r * Math.cos(K * t),
+  (R - r) * Math.sin(t) - r * Math.sin(K * t),
+];
+const heading = (t: number): [number, number] => [
+  -(R - r) * (Math.sin(t) + Math.sin(K * t)),
+  (R - r) * (Math.cos(t) - Math.cos(K * t)),
+];
+
 /** The hypocycloid at R = 10, sampled at steady steps of the angle. */
-const UNIT_POINTS = Array.from({ length: SAMPLES + 1 }, (_, i): [number, number] => {
-  const t = (2 * Math.PI * TURNS * i) / SAMPLES;
-  const k = (R - r) / r;
-  return [(R - r) * Math.cos(t) + r * Math.cos(k * t), (R - r) * Math.sin(t) - r * Math.sin(k * t)];
+const UNIT_POINTS = Array.from({ length: SAMPLES + 1 }, (_, i) =>
+  at((2 * Math.PI * TURNS * i) / SAMPLES),
+);
+
+/**
+ * One round of the line as cubic Béziers, each [control 1, control 2, end]: every curve meets
+ * the hypocycloid at both ends and leaves and reaches them in its direction.
+ */
+const UNIT_CURVES = Array.from({ length: CURVES }, (_, i): [number, number][] => {
+  const step = (2 * Math.PI * TURNS) / CURVES;
+  const [t0, t1] = [i * step, (i + 1) * step];
+  const [[x0, y0], [x1, y1]] = [at(t0), at(t1)];
+  const [[dx0, dy0], [dx1, dy1]] = [heading(t0), heading(t1)];
+  return [
+    [x0 + (dx0 * step) / 3, y0 + (dy0 * step) / 3],
+    [x1 - (dx1 * step) / 3, y1 - (dy1 * step) / 3],
+    [x1, y1],
+  ];
 });
 
 /**
@@ -82,14 +114,14 @@ const DRAWING = (() => {
  */
 const paths = new Map<number, string>();
 function linePath(radius: number): string {
-  const scale = radius / R;
+  const point = ([x, y]: [number, number]) =>
+    `${((x * radius) / R).toFixed(2)} ${((y * radius) / R).toFixed(2)}`;
   const d =
     paths.get(radius) ??
-    [...UNIT_POINTS, ...UNIT_POINTS.slice(1)]
-      .map(
-        ([x, y], i) => `${i === 0 ? "M" : "L"} ${(x * scale).toFixed(2)} ${(y * scale).toFixed(2)}`,
-      )
-      .join(" ");
+    [
+      `M ${point(at(0))}`,
+      ...[...UNIT_CURVES, ...UNIT_CURVES].map((curve) => `C ${curve.map(point).join(" ")}`),
+    ].join(" ");
   paths.set(radius, d);
   return d;
 }
