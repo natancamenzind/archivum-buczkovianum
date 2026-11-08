@@ -30,12 +30,13 @@ export function SiteHeader() {
   }
 
   return (
-    // From `lg` the logo's padding sets the row's height, and the navigation stretches to fill it,
-    // so the active item's underline meets the bottom border. The gap keeps the service name off
-    // "O archiwum" on mobile, where the row is nearly full: at 390 px the logo's tighter gap leaves
-    // room for it, and on narrower screens the service name wraps.
-    <header className="z-10 flex h-64 items-center justify-between gap-16 border-t-3 border-b border-t-primary border-b-border bg-background px-page-mobile md:h-auto md:px-page md:py-32 lg:sticky lg:top-0 lg:items-stretch lg:py-0">
-      <Link to="/" className={`flex items-center gap-8 md:gap-12 lg:py-32 ${LINK_CLASSES}`}>
+    // From `md` the row is 88 px tall, borders included (64 + 24: the design has no 88 px token).
+    // From `lg` the navigation stretches to fill it, so the active item's underline meets the
+    // bottom border. The gap keeps the service name off "O archiwum" on mobile, where the row is
+    // nearly full: at 390 px the logo's tighter gap leaves room for it, and on narrower screens the
+    // service name wraps.
+    <header className="z-10 flex h-64 items-center justify-between gap-16 border-t-3 border-b border-t-primary border-b-border bg-background px-page-mobile md:h-[calc(var(--space-64)+var(--space-24))] md:px-page lg:sticky lg:top-0 lg:items-stretch">
+      <Link to="/" className={`flex items-center gap-8 md:gap-12 ${LINK_CLASSES}`}>
         <BookIcon className="size-24 text-accent-icon" />
         <span className="text-lora-tekst text-foreground md:text-lora-tytul-elementu">
           {copy.siteName}
