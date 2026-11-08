@@ -84,7 +84,7 @@ Every image field has a companion `<field>_alt` text field. `clean()` rejects an
 | `Institution` | `abbreviation` (unique), `name` | — |
 | `Work` | `slug`, `cover_image` | — |
 | `Edition` | `publisher`, `place`, `year` | → Work (inline in admin) |
-| `BibliographyEntry` | `text` (one line), `order` | → Work (inline in admin) |
+| `BibliographyEntry` | `text` (one line) | → Work (inline in admin) |
 | `Typescript` | `is_main` (one per work); `Archival` | → Work, → Document |
 | `Note` | `content_kind`, `image`, `file`, `external_url`; `Archival` | `works`: many-to-many to Work; → Document (optional) |
 | `SecondaryText` | `kind`, `author`, `source`, `letter_date`, `sender`, `recipient`; `Archival` | ↔ Works via `SecondaryTextWorkLink`; → Document |
@@ -93,7 +93,7 @@ Every image field has a companion `<field>_alt` text field. `clean()` rejects an
 | `SiteSettings` | `intro_text`, `portrait`, `about_intro`, `about_project` | singleton |
 | `TeamMember` | `name`, `role`, `bio`, `group` (`leadership` \| `team` \| `site`), `order` | — |
 
-`Institution`, `Edition`, `BibliographyEntry`, `SiteSettings` and `TeamMember` are not `Publishable`. A work's bibliography is ordered by `order`, then by creation. It is not in the search index.
+`Institution`, `Edition`, `BibliographyEntry`, `SiteSettings` and `TeamMember` are not `Publishable`. A work's bibliography is in Polish alphabetical order of `text` (ICU collation `pl-x-icu`), so by the author's surname each entry starts with, then by creation. It is not in the search index.
 
 `content_kind` is one of `image`, `document`, `external_media`, `ocr_text`, `plain_text`. The two text kinds require a `Document`.
 
@@ -164,7 +164,7 @@ TEI is not a storage format. A TEI export can be generated from `Document` and `
 
 `PREVIEW_LIMIT` (default 2) is a single setting. A preview query orders fragments by `is_featured` descending, then by position in the text, and takes the first `PREVIEW_LIMIT`. The total count is returned with the preview, so the API serves "2 z 24" and the "all" link in one response.
 
-The work page's bibliography preview (US-RA-21) is the exception: it shows the first `BIBLIOGRAPHY_PREVIEW_LIMIT` (5) entries, in their order.
+The work page's bibliography preview (US-RA-21) is the exception: it shows the first `BIBLIOGRAPHY_PREVIEW_LIMIT` (5) entries, in alphabetical order.
 
 ## 5. Editor panel
 

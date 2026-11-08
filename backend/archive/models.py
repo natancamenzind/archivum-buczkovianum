@@ -16,6 +16,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
 from django.db.models import Exists, Expression, F, Func, OuterRef, Prefetch, Q, Subquery, Value
 from django.db.models.fields.files import FieldFile
+from django.db.models.functions import Collate
 from django.utils.text import Truncator
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
@@ -30,6 +31,8 @@ if TYPE_CHECKING:
 
 IMAGE_EXTENSIONS = FileExtensionValidator(["jpg", "jpeg", "png", "webp"])
 PDF_EXTENSION = FileExtensionValidator(["pdf"])
+# Polish alphabetical order: "Ł" after "L", "Ż" last, case ignored. ICU ships with PostgreSQL.
+POLISH_COLLATION = "pl-x-icu"
 
 # The rich text editor's toolbar (architecture section 5). The same list is the allowlist that
 # sanitizes the HTML on the server. Headings start at h3: the page title and section titles above
@@ -820,12 +823,10 @@ class BibliographyEntry(BaseModel):
         max_length=1000,
         help_text=_("One line, e.g. Author, Title, Publisher, place year, p. pages."),
     )
-    order = models.PositiveSmallIntegerField(
-        _("order"), default=0, help_text=_("Lower numbers are shown first.")
-    )
 
     class Meta:
-        ordering = ("order", "pk")
+        # Alphabetical, i.e. by the author's surname each entry starts with (US-WR-15 AC2).
+        ordering = (Collate("text", POLISH_COLLATION), "pk")
         verbose_name = _("bibliography entry")
         verbose_name_plural = _("bibliography")
 
