@@ -2,7 +2,6 @@ import type { ComponentType } from "react";
 import { Link } from "react-router";
 
 import type { components } from "@/api/schema";
-import { ArrowLink } from "@/components/ArrowLink";
 import {
   ArrowUpRightIcon,
   BookIcon,
@@ -104,21 +103,25 @@ export function ItemResult({ item, group }: { item: ItemResultData; group: ItemG
 }
 
 /**
- * "Wynik wyszukiwania / Tag" in design/components/: the name, the snippet of its description,
- * the occurrences and a link to the tag.
+ * "Wynik wyszukiwania / Tag" in design/components/: the name, which links to the tag (ARC-44),
+ * the snippet of its description and the occurrences.
  */
 export function TagResult({ tag }: { tag: TagResultData }) {
   return (
     <article className="flex flex-col gap-8 border-b border-border py-16">
       <p className="text-cousine-etykieta text-muted-foreground">{copy.searchResults.types.tags}</p>
-      <h3 className="text-lora-tytul-elementu text-accent-foreground">{tag.title}</h3>
+      <h3 className="text-lora-tytul-elementu text-accent-foreground">
+        <Link
+          to={tag.url}
+          className="underline-offset-3 hover:text-accent-foreground-hover hover:underline focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          {tag.title}
+        </Link>
+      </h3>
       {tag.snippet !== "" && <Snippet html={tag.snippet} />}
-      <div className="flex items-center gap-16">
-        <p className="text-cousine-metadane-male text-muted-foreground">
-          {formatCount(tag.occurrences, nouns.occurrence)}
-        </p>
-        <ArrowLink label={copy.searchResults.openTag} to={tag.url} />
-      </div>
+      <p className="text-cousine-metadane-male text-muted-foreground">
+        {formatCount(tag.occurrences, nouns.occurrence)}
+      </p>
     </article>
   );
 }

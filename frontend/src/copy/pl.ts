@@ -335,7 +335,6 @@ export const copy = {
       secondary_texts: "Tekst sekundarny",
       materials: "Materiał kontekstowy",
     },
-    openTag: "Otwórz tag",
     noResults: (query: string) => (query === "" ? "Brak wyników" : `Brak wyników dla „${query}”`),
     noResultsHint:
       "Sprawdź pisownię albo skróć frazę. Wyszukiwanie obejmuje tytuły, opisy, transkrypcje i tagi.",

@@ -373,7 +373,18 @@ describe("SearchPage", () => {
     const tag = within(group("Tagi"));
     expect(tag.getByText("Tag")).toBeVisible();
     expect(tag.getByText("4 wystąpienia")).toBeVisible();
-    expect(tag.getByRole("link", { name: "Otwórz tag" })).toHaveAttribute("href", "/tagi/dezerter");
+    expect(tag.getByRole("link")).toHaveAttribute("href", "/tagi/dezerter");
+  });
+
+  it('ARC-44: the tag\'s name is the link to the tag, with no separate "Otwórz tag"', async () => {
+    mockSearch();
+
+    renderRoute("/szukaj?q=dezerter");
+
+    await screen.findByText("8 wyników we wszystkich kategoriach");
+    const tag = within(group("Tagi"));
+    expect(tag.getByRole("link", { name: "Dezerter" })).toHaveAttribute("href", "/tagi/dezerter");
+    expect(tag.queryByText("Otwórz tag")).not.toBeInTheDocument();
   });
 
   it("US-RA-15 AC6: a text match shows a highlighted snippet and opens at the match", async () => {
