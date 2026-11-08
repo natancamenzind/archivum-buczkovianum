@@ -30,8 +30,13 @@ const TONES = {
   page: "stroke-accent-border fill-accent-border",
 };
 
-/** One drawing of the line takes this long; the roller then fades out. */
+/** The pen goes once round the curve in this long, again and again. */
 const DURATION = "40s";
+/**
+ * How much of the curve shows at once (ARC-52): when the pen starts the ninth of the ten arcs,
+ * the first arc starts to fade at the pen's pace, so eight arcs stay drawn.
+ */
+const TRAIL = 0.8;
 /** Every how many samples the drawing animation gets a key time. */
 const KEY_EVERY = 2;
 /** The rolling circle's centre goes round this far; its pen arm turns back R / r as far. */
@@ -46,9 +51,13 @@ const UNIT_POINTS = Array.from({ length: SAMPLES + 1 }, (_, i): [number, number]
 });
 
 /**
- * How much of the line is drawn over time. The pen moves at a steady angle, not a steady speed
- * (it slows into each cusp), so the drawn length follows the angle through key times, not a
+ * Where the pen is along the line over one round. The pen moves at a steady angle, not a steady
+ * speed (it slows into each cusp), so its place follows the angle through key times, not a
  * straight line. The fractions do not depend on the radius.
+ *
+ * The path goes round the curve twice and shows one dash, TRAIL long, ending at the pen. The first
+ * round grows the dash from the path's start; each round after it runs along the second lap, so the
+ * dash's tail wraps back over the first. The gap is long enough that no other dash shows.
  */
 const DRAWING = (() => {
   let sum = 0;
@@ -57,31 +66,40 @@ const DRAWING = (() => {
     return (sum += Math.hypot(x - px, y - py));
   });
   const keys = lengths.filter((_, i) => i % KEY_EVERY === 0);
+  const offsets = (lap: number) =>
+    keys.map((length) => (TRAIL - lap - length / sum).toFixed(5)).join(";");
   return {
     keyTimes: keys.map((_, i) => ((i * KEY_EVERY) / SAMPLES).toFixed(4)).join(";"),
-    values: keys.map((length) => (1 - length / sum).toFixed(5)).join(";"),
+    first: offsets(0),
+    next: offsets(1),
+    dashArray: `${String(TRAIL)} ${String(2 + TRAIL)}`,
   };
 })();
 
-/** The line as a path around (0, 0), its cusps on a circle of `radius`; built once per radius. */
+/**
+ * The line as a path around (0, 0), its cusps on a circle of `radius`, twice round; built once per
+ * radius.
+ */
 const paths = new Map<number, string>();
 function linePath(radius: number): string {
   const scale = radius / R;
   const d =
     paths.get(radius) ??
-    UNIT_POINTS.map(
-      ([x, y], i) => `${i === 0 ? "M" : "L"} ${(x * scale).toFixed(2)} ${(y * scale).toFixed(2)}`,
-    ).join(" ");
+    [...UNIT_POINTS, ...UNIT_POINTS.slice(1)]
+      .map(
+        ([x, y], i) => `${i === 0 ? "M" : "L"} ${(x * scale).toFixed(2)} ${(y * scale).toFixed(2)}`,
+      )
+      .join(" ");
   paths.set(radius, d);
   return d;
 }
 
 /**
- * The curve with its fixed circle and, while it draws, the rolling circle and its pen. The roller
- * is two nested turns: its centre goes round the fixed circle three times, and the pen arm turns
- * back 10/3 as fast in that frame, so the pen stays on the line. The line and the roller run on
- * the same SVG clock, so they stay in step. With reduced motion the finished curve shows at once,
- * without the roller.
+ * The curve with its fixed circle, the rolling circle and its pen. The roller is two nested turns:
+ * its centre goes round the fixed circle three times, and the pen arm turns back 10/3 as fast in
+ * that frame, so the pen stays on the line. Each round ends where it began, so the roller simply
+ * repeats. The line and the roller run on the same SVG clock, so they stay in step. With reduced
+ * motion the whole curve shows at once, without the roller.
  */
 function Figure({ spot, className }: { spot: Spot; className: string }) {
   const rolling = (r * spot.radius) / R;
@@ -98,26 +116,27 @@ function Figure({ spot, className }: { spot: Spot; className: string }) {
           className="motion-reduce:[stroke-dasharray:none]"
           d={linePath(spot.radius)}
           fill="none"
-          pathLength={1}
-          strokeDasharray={1}
+          pathLength={2}
+          strokeDasharray={DRAWING.dashArray}
+          strokeDashoffset={TRAIL}
         >
           <animate
             attributeName="stroke-dashoffset"
-            values={DRAWING.values}
+            values={DRAWING.first}
             keyTimes={DRAWING.keyTimes}
             dur={DURATION}
             fill="freeze"
           />
+          <animate
+            attributeName="stroke-dashoffset"
+            values={DRAWING.next}
+            keyTimes={DRAWING.keyTimes}
+            begin={DURATION}
+            dur={DURATION}
+            repeatCount="indefinite"
+          />
         </path>
         <g className="motion-reduce:hidden" strokeOpacity={0.48}>
-          <animate
-            attributeName="opacity"
-            from="1"
-            to="0"
-            begin={DURATION}
-            dur="0.6s"
-            fill="freeze"
-          />
           <g>
             <animateTransform
               attributeName="transform"
@@ -125,7 +144,7 @@ function Figure({ spot, className }: { spot: Spot; className: string }) {
               from="0"
               to={String(ORBIT)}
               dur={DURATION}
-              fill="freeze"
+              repeatCount="indefinite"
             />
             <g>
               <animateTransform
@@ -134,7 +153,7 @@ function Figure({ spot, className }: { spot: Spot; className: string }) {
                 from={`0 ${String(centre)} 0`}
                 to={`${String(SPIN)} ${String(centre)} 0`}
                 dur={DURATION}
-                fill="freeze"
+                repeatCount="indefinite"
               />
               <circle data-slot="hypocycloid-centre" cx={centre} r={rolling} fill="none" />
               <line x1={centre} x2={centre + rolling} />
@@ -148,7 +167,8 @@ function Figure({ spot, className }: { spot: Spot; className: string }) {
 }
 
 /**
- * ARC-32: a hypocycloid, R : r = 10 : 3, that draws itself slowly once and then stays. It fills
+ * ARC-32: a hypocycloid, R : r = 10 : 3, that draws itself slowly round and round, eight of its
+ * ten arcs showing behind the pen once the first round is nearly done (ARC-52). It fills
  * its `relative overflow-hidden` parent, behind the content, and is decoration only.
  */
 export function Hypocycloid({
