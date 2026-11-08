@@ -244,7 +244,7 @@ describe("WorkPage", () => {
     }
     // R-10: location line with the source type, quote, scan page, shelfmark, tags.
     expect(
-      within(first).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
+      within(first).getByRole("link", { name: "Wertepy · fragment 01 · skan 9" }),
     ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(within(first).getByText("Maszynopis")).toBeVisible();
     expect(within(first).getByText("Grzybniak chodził od chałupy do chałupy.")).toBeVisible();
@@ -254,6 +254,20 @@ describe("WorkPage", () => {
       "href",
       "/tagi/epidemia",
     );
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("R-10, ARC-43: the location line writes the fragment number in lowercase", async () => {
+    mockPage();
+
+    const { container } = await renderPage();
+
+    const first = within(card("Fragmenty maszynopisu")).getAllByRole("article")[0];
+    if (first === undefined) {
+      throw new Error("Expected a fragment card.");
+    }
+    expect(within(first).getByText("Wertepy · fragment 01 · skan 9")).toBeVisible();
+    expect(within(first).queryByText(/Fragment 01/)).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -267,7 +281,7 @@ describe("WorkPage", () => {
       throw new Error("Expected a second fragment card.");
     }
     expect(within(second).getAllByRole("link")).toHaveLength(1);
-    expect(within(second).getByRole("link")).toHaveAccessibleName("Wertepy · Fragment 03");
+    expect(within(second).getByRole("link")).toHaveAccessibleName("Wertepy · fragment 03");
     expect(within(second).queryByRole("img")).not.toBeInTheDocument();
     expect(second.querySelectorAll("p")).toHaveLength(0);
     expect(await axeViolations(container)).toEqual([]);

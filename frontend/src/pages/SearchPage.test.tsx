@@ -344,7 +344,7 @@ describe("SearchPage", () => {
 
     await screen.findByText("8 wyników we wszystkich kategoriach");
     const card = within(group("Fragmenty"));
-    expect(card.getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" })).toHaveAttribute(
+    expect(card.getByRole("link", { name: "Wertepy · fragment 01 · skan 9" })).toHaveAttribute(
       "href",
       "/maszynopisy/1?fragment=7",
     );

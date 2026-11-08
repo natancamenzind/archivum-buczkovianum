@@ -340,7 +340,7 @@ describe("NotePage", () => {
     expect(within(fragments).getByText("2 z 5")).toBeVisible();
     expect(within(fragments).getAllByRole("article")).toHaveLength(2);
     expect(
-      within(fragments).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
+      within(fragments).getByRole("link", { name: "Wertepy · fragment 01 · skan 9" }),
     ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(within(fragments).queryByText(/Wszystkie/)).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);

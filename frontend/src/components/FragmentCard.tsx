@@ -5,7 +5,7 @@ import type { components } from "@/api/schema";
 import { NoteIcon } from "@/components/icons";
 import { ScanPage } from "@/components/ScanPage";
 import { TagList } from "@/components/TagList";
-import { copy, fragmentLabel, scanLabel } from "@/copy/pl";
+import { copy, fragmentInLocation, scanLabel } from "@/copy/pl";
 import { usePdf } from "@/lib/pdf";
 
 type Fragment = components["schemas"]["FragmentCard"];
@@ -93,7 +93,11 @@ function excerpt(quote: string): string {
  * fragment.
  */
 export function FragmentCard({ fragment }: { fragment: Fragment }) {
-  const location = [fragment.work, fragmentLabel(fragment.number), scanLabel(fragment.scan_number)]
+  const location = [
+    fragment.work,
+    fragmentInLocation(fragment.number),
+    scanLabel(fragment.scan_number),
+  ]
     .filter(Boolean)
     .join(" · ");
   return (
