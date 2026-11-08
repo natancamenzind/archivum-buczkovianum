@@ -367,7 +367,7 @@ describe("WorkPage", () => {
     const link = within(card("Fragmenty maszynopisu")).getByRole("link", {
       name: "Wszystkie fragmenty (24)",
     });
-    expect(link).toHaveClass("text-lora-tekst", "text-foreground");
+    expect(link).toHaveClass("text-lora-tekst", "text-accent-foreground");
     expect(link).not.toHaveClass("text-lora-tytul-elementu");
     expect(screen.getByRole("link", { name: /Cała bibliografia/ })).not.toHaveClass(
       "text-lora-tekst",
