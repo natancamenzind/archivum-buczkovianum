@@ -176,6 +176,9 @@ AWS_QUERYSTRING_AUTH = True
 # An upload never takes an existing file's key, like on the local filesystem. Otherwise a scan
 # replaced by one with the same name overwrites it and is then deleted as the replaced scan.
 AWS_S3_FILE_OVERWRITE = False
+# A stored file the app reads, such as a scan the browser uploaded, goes to disk above this
+# size: the server has too little memory for a book-length scan (ARC-64).
+AWS_S3_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3.S3Storage"

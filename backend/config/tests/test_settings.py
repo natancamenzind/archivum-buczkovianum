@@ -83,6 +83,12 @@ def test_s3_region_and_endpoint_come_from_env(
     assert settings.AWS_S3_ENDPOINT_URL == "https://s3.example.com"
 
 
+def test_arc_64_a_large_file_read_from_s3_goes_to_disk(reload_settings: ModuleType) -> None:
+    settings = importlib.reload(reload_settings)
+
+    assert 0 < settings.AWS_S3_MAX_MEMORY_SIZE <= 10 * 1024 * 1024
+
+
 def test_empty_s3_endpoint_falls_back_to_default(
     monkeypatch: pytest.MonkeyPatch, reload_settings: ModuleType
 ) -> None:

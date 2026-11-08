@@ -4,19 +4,23 @@ from collections.abc import Sequence
 from typing import Any, ClassVar
 
 from django.contrib import admin
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.files import File
 from django.db import models
 from django.db.models import QuerySet
 from django.forms import BaseInlineFormSet, ModelForm
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.html import format_html
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_POST
 
 from archive.forms import MediaContentForm, SecondaryTextForm, TextUploadForm
 from archive.models import (
+    PDF_EXTENSION,
     BibliographyEntry,
     ContextualMaterial,
     Document,
@@ -35,6 +39,7 @@ from archive.models import (
     Work,
 )
 from archive.tagger import tagger_fragments, tagger_pages
+from archive.uploads import direct_upload_enabled, presigned_scan_upload
 
 # Bulk deletes skip each object's `delete()` and its side effects (architecture section 6).
 admin.site.disable_action("delete_selected")
@@ -248,6 +253,11 @@ class DocumentAdmin(admin.ModelAdmin[Document]):
                 self.admin_site.admin_view(self.tagger_view),
                 name="archive_document_tagger",
             ),
+            path(
+                "scan-upload/",
+                self.admin_site.admin_view(require_POST(self.scan_upload_view)),
+                name="archive_document_scan_upload",
+            ),
             *super().get_urls(),
         ]
 
@@ -270,6 +280,20 @@ class DocumentAdmin(admin.ModelAdmin[Document]):
             "opts": self.model._meta,
         }
         return TemplateResponse(request, "admin/archive/document/tagger.html", context)
+
+    def scan_upload_view(self, request: HttpRequest) -> HttpResponse:
+        """Sign the upload of the scan named `filename` from the browser straight to S3
+        (`archive.uploads.presigned_scan_upload()`, ARC-64)."""
+        if not direct_upload_enabled():
+            raise Http404
+        if not self.has_add_permission(request):
+            raise PermissionDenied
+        filename = request.POST.get("filename", "")
+        try:
+            PDF_EXTENSION(File(None, filename))
+        except ValidationError as error:
+            return JsonResponse({"error": " ".join(error.messages)}, status=400)
+        return JsonResponse(presigned_scan_upload(filename))
 
     def get_model_perms(self, request: HttpRequest) -> dict[str, bool]:
         """Hide documents from the admin menu: an item's form uploads its text (US-WR-04).
