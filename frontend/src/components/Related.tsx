@@ -6,16 +6,28 @@ import { SideListItem } from "@/components/SideListItem";
 import { TagList } from "@/components/TagList";
 import { Card } from "@/components/ui/card";
 import { previewCount } from "@/copy/pl";
+import { cn } from "@/lib/utils";
 
 type WorkSummary = components["schemas"]["WorkSummary"];
 type FragmentPreview = components["schemas"]["FragmentCardPreview"];
 type Tag = components["schemas"]["TagChip"];
 
-/** An item page's related works for the context column, with their first-edition year. */
-export function RelatedWorks({ label, works }: { label: string; works: WorkSummary[] }) {
+/**
+ * An item page's related works for the context column, with their first-edition year. Above a
+ * reader (ARC-57) the column is a block in a row under the hero, headed at level 2.
+ */
+export function RelatedWorks({
+  label,
+  works,
+  aboveReader = false,
+}: {
+  label: string;
+  works: WorkSummary[];
+  aboveReader?: boolean;
+}) {
   return (
-    <div className="flex flex-col gap-8">
-      <ColumnHeader label={label} count={works.length} />
+    <div className={cn("flex flex-col gap-8", aboveReader && "lg:w-3xs")}>
+      <ColumnHeader label={label} count={works.length} level={aboveReader ? 2 : 3} />
       <ul>
         {works.map((work) => (
           <li key={work.slug}>

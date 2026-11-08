@@ -2,7 +2,7 @@
 
 ## Tryb
 
-Makiety pokazują wyłącznie tryb czytelnika. Jedynym miejscem wprowadzania danych jest wyszukiwarka: pole, zakładki kategorii, filtry i sortowanie.
+Makiety pokazują wyłącznie tryb czytelnika. Dane wprowadza się tylko w wyszukiwarce (pole, zakładki kategorii, filtry i sortowanie) i w pasku czytnika (pole strony i szukanie w dokumencie).
 
 Nie ma list lektur, zakładek, przesyłania plików ani statusów redakcyjnych. Panel redakcyjny to osobny projekt.
 
@@ -36,7 +36,7 @@ Układ chmury: największe tagi w środkowym rzędzie, mniejsze wokół; każdy 
 
 ## Siatka
 
-Desktop 1440 px, margines 64 px, treść 1312 px. Podstrony: kolumna kontekstu 240 px, treść, kolumna tagów 240 px, odstęp 32 px.
+Desktop 1440 px, margines 64 px, treść 1312 px. Podstrony: kolumna kontekstu 240 px, treść, kolumna tagów 240 px, odstęp 32 px. Strony z czytnikiem (maszynopis, zapisek, tekst sekundarny, materiał kontekstowy z tekstem) nie mają kolumny kontekstu: kontekst stoi w rzędzie pod nagłówkiem strony, czytnik zajmuje całą szerokość treści, a pod nim są treść i kolumna tagów.
 
 Mobile 390 px, margines 16 px, jedna kolumna w kolejności: treść główna, kontekst, tagi, materiały kontekstowe.
 

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { components } from "@/api/schema";
 import { scrollIntoViewport, scrollOutOfViewport } from "@/test/intersection";
+import { setViewport } from "@/test/media";
 import { axeViolations, renderRoute } from "@/test/render";
 import { server } from "@/test/server";
 
@@ -166,7 +167,7 @@ function card(name: string): HTMLElement {
 
 /** The block a column header heads: the header's parent. */
 function column(name: string): HTMLElement {
-  const heading = screen.getByRole("heading", { level: 3, name });
+  const heading = screen.getByRole("heading", { name });
   const element = heading.parentElement?.parentElement;
   if (element == null) {
     throw new Error(`'${name}' heads no block.`);
@@ -176,6 +177,43 @@ function column(name: string): HTMLElement {
 
 function highlight(text: string): HTMLElement {
   return screen.getByRole("button", { name: text });
+}
+
+/** Scrolls to the end of the reader until every page has loaded (ARC-57 AC6). */
+function loadAllPages(reader: HTMLElement) {
+  for (
+    let loading = reader.querySelector("[data-loading-page]");
+    loading !== null;
+    loading = reader.querySelector("[data-loading-page]")
+  ) {
+    scrollIntoViewport(loading);
+  }
+}
+
+/** The text of each paragraph the reader shows. */
+function paragraphs(reader: HTMLElement): (string | null)[] {
+  return Array.from(reader.querySelectorAll("p.whitespace-pre-wrap"), (p) => p.textContent);
+}
+
+/** The tag notes of the fragments (ARC-57 AC2). */
+function notes(reader: HTMLElement): HTMLElement[] {
+  return Array.from(reader.querySelectorAll<HTMLElement>("[data-note]"));
+}
+
+function firstNote(): HTMLElement {
+  const [note] = notes(card("Skan maszynopisu"));
+  if (note === undefined) {
+    throw new Error("The reader has no note.");
+  }
+  return note;
+}
+
+function pageElement(number: number): HTMLElement {
+  const element = document.querySelector<HTMLElement>(`[data-page="${String(number)}"]`);
+  if (element === null) {
+    throw new Error(`Page ${String(number)} is not in the reader.`);
+  }
+  return element;
 }
 
 describe("TypescriptPage", () => {
@@ -277,16 +315,15 @@ describe("TypescriptPage", () => {
     const scan = card("Skan maszynopisu");
     expect(within(scan).getByText("2 strony")).toBeVisible();
     expect(await within(scan).findByText("Skan · strona 1 z 2")).toBeVisible();
+    // ARC-57 AC8: the text is "Transkrypcja".
+    expect(within(scan).getByText("Transkrypcja · strona 1 z 2")).toBeVisible();
+    loadAllPages(scan);
     expect(within(scan).getByText("Skan · strona 2 z 2")).toBeVisible();
     // Before pdf.js draws it, a page keeps A4 proportions, so the reader does not jump.
     for (const page of within(scan).getAllByRole("img", { name: /Skan · strona/ })) {
       expect(page).toHaveStyle({ aspectRatio: "210 / 297" });
     }
-    const paragraphs = Array.from(scan.querySelectorAll("p.whitespace-pre-wrap"));
-    expect(paragraphs.map((p) => p.textContent)).toEqual([
-      "Pierwsza strona tekstu. ",
-      "Druga strona tekstu.",
-    ]);
+    expect(paragraphs(scan)).toEqual(["Pierwsza strona tekstu. ", "Druga strona tekstu."]);
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -296,14 +333,13 @@ describe("TypescriptPage", () => {
     const { container } = await renderPage();
 
     const scan = card("Skan maszynopisu");
-    expect(await within(scan).findByText("Skan · strona 40 z 40")).toBeVisible();
-    const paragraphs = Array.from(scan.querySelectorAll("p.whitespace-pre-wrap"));
-    expect(paragraphs.map((p) => p.textContent)).toEqual(LONG_PAGES);
-    // A fragment far into the text is highlighted on its own page and can be opened.
+    await within(scan).findByText("Skan · strona 1 z 40");
+    loadAllPages(scan);
+    expect(within(scan).getByText("Skan · strona 40 z 40")).toBeVisible();
+    expect(paragraphs(scan)).toEqual(LONG_PAGES);
+    // A fragment far into the text is highlighted on its own page.
     const fragment = within(scan).getByRole("button", { name: "Fragment 04: Strona" });
-    expect(paragraphs[37]).toContainElement(fragment);
-    fireEvent.click(fragment);
-    expect(within(scan).getByText("Fragment 04")).toBeVisible();
+    expect(scan.querySelector('[data-page="38"]')).toContainElement(fragment);
     expect(within(scan).getAllByRole("img", { name: /Skan · strona/ })).toHaveLength(40);
     expect(scan.querySelectorAll("canvas")).toHaveLength(0);
 
@@ -331,65 +367,208 @@ describe("TypescriptPage", () => {
     const fragment = await screen.findByRole("button", { name: "Fragment 04: Strona" });
     expect(fragment).toHaveAttribute("aria-pressed", "true");
     expect(scrollIntoView.mock.contexts[0]).toBe(fragment);
+    // The pages before it are there; the next one waits to be scrolled to.
+    expect(screen.getByText("Skan · strona 37 z 40")).toBeVisible();
+    expect(screen.getByText("Wczytywanie strony 39 z 40…")).toBeVisible();
   });
 
-  it("R-11 AC1: on mobile a Skan / Transkrypcja toggle switches the view", async () => {
+  it("ARC-57 AC6: scrolling to the end of the last page loads only the next page, under a skeleton", async () => {
+    mockLongTypescript();
+
+    const { container } = await renderPage();
+
+    const scan = card("Skan maszynopisu");
+    const loading = await within(scan).findByText("Wczytywanie strony 2 z 40…");
+    expect(loading).toHaveAttribute("role", "status");
+    expect(scan.querySelectorAll("[data-page]")).toHaveLength(1);
+    expect(await axeViolations(container)).toEqual([]);
+
+    scrollIntoViewport(loading.parentElement ?? loading);
+
+    expect(within(scan).getByText("Skan · strona 2 z 40")).toBeVisible();
+    expect(scan.querySelectorAll("[data-page]")).toHaveLength(2);
+    expect(within(scan).getByText("Wczytywanie strony 3 z 40…")).toBeVisible();
+  });
+
+  it("ARC-57 AC6: a one-page text loads nothing more", async () => {
+    mockPage({}, { page_offsets: [0] });
+
+    await renderPage();
+
+    await screen.findByText("Skan · strona 1 z 1");
+    expect(screen.queryByText(/Wczytywanie strony/)).not.toBeInTheDocument();
+    // One page needs no page field.
+    expect(screen.queryByRole("textbox", { name: "Numer strony" })).not.toBeInTheDocument();
+  });
+
+  it("ARC-57 AC1: on desktop the view switch shows scan and text, text only or scan only", async () => {
+    mockPage();
+
+    const { container, router } = await renderPage();
+
+    const views = await screen.findByRole("radiogroup", { name: "Widok" });
+    const radios = within(views).getAllByRole("radio");
+    expect(radios.map((radio) => radio.textContent)).toEqual([
+      "Skan i transkrypcja",
+      "Transkrypcja",
+      "Skan",
+    ]);
+    expect(radios[0]).toHaveAttribute("aria-checked", "true");
+    const scan = card("Skan maszynopisu");
+    expect(within(scan).getByRole("img", { name: "Skan · strona 1 z 2" })).toBeVisible();
+    expect(paragraphs(scan)).toEqual(["Pierwsza strona tekstu. "]);
+    expect(await axeViolations(container)).toEqual([]);
+
+    fireEvent.click(within(views).getByRole("radio", { name: "Transkrypcja" }));
+    expect(within(scan).queryByRole("img", { name: /Skan · strona/ })).not.toBeInTheDocument();
+    expect(paragraphs(scan)).toEqual(["Pierwsza strona tekstu. "]);
+    expect(router.state.location.search).toBe("?widok=transkrypcja");
+
+    fireEvent.click(within(views).getByRole("radio", { name: "Skan" }));
+    expect(within(scan).getByRole("img", { name: "Skan · strona 1 z 2" })).toBeVisible();
+    expect(paragraphs(scan)).toEqual([]);
+    expect(router.state.location.search).toBe("?widok=skan");
+    // AC2: the tags are there in every view.
+    expect(within(scan).getByRole("link", { name: "Wieś" })).toBeVisible();
+  });
+
+  it("ARC-57 AC1: the view switch is a radio group the arrow keys move through", async () => {
     mockPage();
 
     await renderPage();
 
-    const toggle = await screen.findByRole("group", { name: "Widok" });
-    const scan = within(toggle).getByRole("button", { name: "Skan" });
-    const text = within(toggle).getByRole("button", { name: "Transkrypcja" });
-    expect(scan).toHaveAttribute("aria-pressed", "true");
-    fireEvent.click(text);
-    expect(text).toHaveAttribute("aria-pressed", "true");
-    expect(scan).toHaveAttribute("aria-pressed", "false");
+    const views = await screen.findByRole("radiogroup", { name: "Widok" });
+    const both = within(views).getByRole("radio", { name: "Skan i transkrypcja" });
+    expect(both).toHaveAttribute("tabindex", "0");
+    expect(within(views).getByRole("radio", { name: "Skan" })).toHaveAttribute("tabindex", "-1");
+    fireEvent.keyDown(both, { key: "ArrowRight" });
+    const text = within(views).getByRole("radio", { name: "Transkrypcja" });
+    expect(text).toHaveAttribute("aria-checked", "true");
+    expect(text).toHaveFocus();
+    fireEvent.keyDown(text, { key: "ArrowLeft" });
+    fireEvent.keyDown(both, { key: "ArrowLeft" });
+    expect(within(views).getByRole("radio", { name: "Skan" })).toHaveFocus();
+    fireEvent.keyDown(views, { key: "a" });
+    expect(within(views).getByRole("radio", { name: "Skan" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
   });
 
-  it("R-11 AC2: fragments are highlighted; clicking one shows its tags, each linking to its tag page", async () => {
+  it("ARC-57 AC1: the view comes from ?widok=, or else the one chosen last", async () => {
+    mockPage();
+
+    const first = await renderPage("/maszynopisy/1?widok=skan");
+    expect(await screen.findByRole("radio", { name: "Skan" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    fireEvent.click(screen.getByRole("radio", { name: "Transkrypcja" }));
+    first.unmount();
+
+    await renderPage();
+    expect(await screen.findByRole("radio", { name: "Transkrypcja" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+  });
+
+  it("R-11 AC1: on mobile a Skan / Transkrypcja toggle switches the view", async () => {
+    setViewport("mobile");
+    mockPage();
+
+    const { container } = await renderPage();
+
+    const toggle = await screen.findByRole("group", { name: "Widok" });
+    expect(screen.queryByRole("radiogroup")).not.toBeInTheDocument();
+    const scan = within(toggle).getByRole("button", { name: "Skan" });
+    const text = within(toggle).getByRole("button", { name: "Transkrypcja" });
+    expect(text).toHaveAttribute("aria-pressed", "true");
+    expect(screen.queryByRole("img", { name: /Skan · strona/ })).not.toBeInTheDocument();
+    fireEvent.click(scan);
+    expect(scan).toHaveAttribute("aria-pressed", "true");
+    expect(text).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("img", { name: "Skan · strona 1 z 2" })).toBeVisible();
+    // Under the scan, the tags of the page's fragments.
+    expect(notes(card("Skan maszynopisu"))[0]).toHaveTextContent(/^Wieś$/);
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("ARC-57 AC2: each fragment's tags stand in a note on the margin, without its number", async () => {
     mockPage();
 
     const { container } = await renderPage();
 
     const fragment = await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
-    expect(highlight("Fragment 02: strona")).toHaveAttribute("aria-pressed", "false");
-    fireEvent.click(fragment);
-
-    expect(fragment).toHaveAttribute("aria-pressed", "true");
-    const details = screen.getByText("Fragment 01 · skan 9");
-    expect(details).toBeVisible();
-    expect(details.closest("[aria-live=polite]")).not.toBeNull();
-    const scan = card("Skan maszynopisu");
-    expect(within(scan).getByRole("link", { name: "Wieś" })).toHaveAttribute("href", "/tagi/wies");
+    const note = notes(card("Skan maszynopisu"));
+    // Fragment 02 has no tags, so it has no note; fragment 03 is on page 2.
+    expect(note).toHaveLength(1);
+    expect(note[0]).toHaveTextContent(/^Wieś$/);
+    expect(within(firstNote()).getByRole("link", { name: "Wieś" })).toHaveAttribute(
+      "href",
+      "/tagi/wies",
+    );
+    // A screen reader reads a fragment's tags as its description.
+    expect(fragment).toHaveAccessibleDescription("Wieś");
+    expect(highlight("Fragment 02: strona")).not.toHaveAttribute("aria-describedby");
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("ARC-7: a clicked fragment shows its scan number, and only its number without one", async () => {
+  it("ARC-57 AC2: hovering or focusing a fragment highlights its note", async () => {
     mockPage();
 
     await renderPage();
 
-    fireEvent.click(await screen.findByRole("button", { name: "Fragment 01: Pierwsza" }));
-    expect(screen.getByText("Fragment 01 · skan 9")).toBeVisible();
-    fireEvent.click(highlight("Fragment 02: strona"));
-    expect(screen.getByText("Fragment 02")).toBeVisible();
+    const fragment = await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    const note = firstNote();
+    expect(note).not.toHaveClass("border-accent-border");
+    fireEvent.mouseEnter(fragment);
+    expect(note).toHaveClass("border-accent-border");
+    fireEvent.mouseLeave(fragment);
+    expect(note).not.toHaveClass("border-accent-border");
+    fireEvent.focus(fragment);
+    expect(note).toHaveClass("border-accent-border");
+    fireEvent.blur(fragment);
+    expect(note).not.toHaveClass("border-accent-border");
   });
 
-  it("R-11 AC2: a highlight works from the keyboard", async () => {
+  it("ARC-57 AC2: hovering or focusing a note highlights its fragment", async () => {
     mockPage();
 
     await renderPage();
 
-    const fragment = await screen.findByRole("button", { name: "Fragment 03: Druga" });
-    fireEvent.keyDown(fragment, { key: "Enter" });
+    const fragment = await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    const note = firstNote();
+    fireEvent.mouseEnter(note);
+    expect(fragment).toHaveAttribute("data-active");
+    expect(highlight("Fragment 02: strona")).not.toHaveAttribute("data-active");
+    fireEvent.mouseLeave(note);
+    expect(fragment).not.toHaveAttribute("data-active");
+    const tag = within(note).getByRole("link", { name: "Wieś" });
+    fireEvent.focus(tag);
+    expect(fragment).toHaveAttribute("data-active");
+    // Focus moving within the note keeps the highlight; leaving the note ends it.
+    fireEvent.blur(tag, { relatedTarget: note });
+    expect(fragment).toHaveAttribute("data-active");
+    fireEvent.blur(tag, { relatedTarget: document.body });
+    expect(fragment).not.toHaveAttribute("data-active");
+  });
 
+  it("ARC-57 AC2: a fragment clicked or pressed stays highlighted", async () => {
+    mockPage();
+
+    await renderPage();
+
+    const fragment = await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    expect(fragment).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(fragment);
     expect(fragment).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText("Fragment 03 · skan 19")).toBeVisible();
+    expect(notes(card("Skan maszynopisu"))[0]).toHaveClass("border-accent-border");
     fireEvent.keyDown(highlight("Fragment 02: strona"), { key: "Tab" });
     expect(highlight("Fragment 02: strona")).toHaveAttribute("aria-pressed", "false");
     fireEvent.keyDown(highlight("Fragment 02: strona"), { key: " " });
     expect(highlight("Fragment 02: strona")).toHaveAttribute("aria-pressed", "true");
+    expect(fragment).toHaveAttribute("aria-pressed", "false");
   });
 
   it("R-11 AC2: of fragments with the same start, a click selects the inner one", async () => {
@@ -400,12 +579,75 @@ describe("TypescriptPage", () => {
 
     fireEvent.click(await screen.findByRole("button", { name: "Fragment 01: Pierwsza" }));
 
-    expect(screen.getByText("Fragment 01 · skan 9")).toBeVisible();
-    expect(screen.queryByText(/^Fragment 04/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Fragment 01: Pierwsza" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     expect(screen.getByRole("button", { name: "Fragment 02: strona" })).toHaveAttribute(
       "aria-pressed",
       "false",
     );
+  });
+
+  it("ARC-57 AC2: notes are stacked in the margin in the order their fragments start", async () => {
+    const second = {
+      ...EXTRA_FRAGMENT,
+      id: 11,
+      start: 16,
+      end: 22,
+      tags: [{ slug: "pamiec", title: "Pamięć" }],
+    };
+    mockPage({}, { fragments: [second, ...DOCUMENT.fragments] });
+
+    await renderPage();
+
+    await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    const note = notes(card("Skan maszynopisu"));
+    expect(note.map((element) => element.textContent)).toEqual(["Wieś", "Pamięć"]);
+    // jsdom lays nothing out: every fragment starts at the top, so each note moves below the last.
+    const wrappers = note.map((element) => element.parentElement);
+    expect(wrappers[0]).toHaveStyle({ top: "0px" });
+    expect(wrappers[1]).toHaveStyle({ top: "12px" });
+  });
+
+  it("ARC-57 AC2: on mobile a note stands under the paragraph its fragment starts in", async () => {
+    setViewport("mobile");
+    const text = "Pierwszy akapit.\n\nDrugi akapit, z fragmentem.";
+    mockPage(
+      {},
+      {
+        text,
+        page_offsets: [0],
+        fragments: [
+          {
+            ...EXTRA_FRAGMENT,
+            id: 5,
+            start: 18,
+            end: 23,
+            tags: [{ slug: "wies", title: "Wieś" }],
+          },
+        ],
+      },
+    );
+
+    await renderPage();
+
+    const fragment = await screen.findByRole("button", { name: "Fragment 04: Drugi" });
+    const scan = card("Skan maszynopisu");
+    expect(paragraphs(scan)).toEqual(["Pierwszy akapit.", "Drugi akapit, z fragmentem."]);
+    const note = notes(scan)[0];
+    expect(fragment.closest("p")?.nextElementSibling).toBe(note);
+  });
+
+  it("ARC-57 AC2: a text without fragments has no margin", async () => {
+    mockPage({}, { fragments: [] });
+
+    await renderPage();
+
+    const scan = card("Skan maszynopisu");
+    await within(scan).findByText("Skan · strona 1 z 2");
+    expect(scan.querySelector("[data-for]")).toBeNull();
+    expect(notes(scan)).toHaveLength(0);
   });
 
   it("R-11: a fragment reaching past the end of the text is highlighted up to the end", async () => {
@@ -413,6 +655,8 @@ describe("TypescriptPage", () => {
     mockPage({}, { fragments: [...DOCUMENT.fragments, past] });
 
     await renderPage();
+    await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    loadAllPages(card("Skan maszynopisu"));
 
     expect(await screen.findByRole("button", { name: "Fragment 04: stu." })).toHaveTextContent(
       /^stu\.$/,
@@ -420,6 +664,7 @@ describe("TypescriptPage", () => {
   });
 
   it("R-11 AC3: opened with ?fragment=, the reader shows the text, scrolls to the fragment and selects it", async () => {
+    localStorage.setItem("reader-view", "skan");
     mockPage();
 
     await renderPage("/maszynopisy/1?fragment=7");
@@ -428,26 +673,25 @@ describe("TypescriptPage", () => {
     expect(fragment).toHaveAttribute("aria-pressed", "true");
     expect(scrollIntoView).toHaveBeenCalledOnce();
     expect(scrollIntoView.mock.contexts[0]).toBe(fragment);
-    expect(screen.getByRole("button", { name: "Transkrypcja" })).toHaveAttribute(
-      "aria-pressed",
+    // A reader last set to the scan alone shows the text too.
+    expect(screen.getByRole("radio", { name: "Skan i transkrypcja" })).toHaveAttribute(
+      "aria-checked",
       "true",
     );
   });
 
-  it("R-11 AC3: opened from a search result with ?q=, the reader shows the text, highlights the first match and scrolls to it", async () => {
+  it("R-11 AC3: opened from a search result with ?q=, the reader fills the search, highlights every match and scrolls to the first", async () => {
     mockPage();
 
     const { container } = await renderPage("/maszynopisy/1?q=Tekstu");
 
-    const match = await screen.findByText("tekstu", { selector: "mark" });
-    expect(container.querySelectorAll("mark[data-search-match]")).toHaveLength(1);
+    const match = await screen.findByText("tekstu", { selector: "mark[aria-current]" });
     expect(match.textContent).toBe(TEXT.slice(16, 22));
     expect(scrollIntoView).toHaveBeenCalledOnce();
     expect(scrollIntoView.mock.contexts[0]).toBe(match);
-    expect(screen.getByRole("button", { name: "Transkrypcja" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    // ARC-57 AC5: the search field holds the term and counts the matches.
+    expect(screen.getByRole("searchbox", { name: "Szukaj w maszynopisie" })).toHaveValue("Tekstu");
+    expect(screen.getByText("1 z 2")).toBeVisible();
     expect(await axeViolations(container)).toEqual([]);
   });
 
@@ -469,6 +713,7 @@ describe("TypescriptPage", () => {
 
     await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
     expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(screen.getByText("Brak trafień")).toBeVisible();
   });
 
   it("R-11 AC3: ?q= matches whole words only, not the start of a longer one", async () => {
@@ -488,6 +733,204 @@ describe("TypescriptPage", () => {
 
     await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
     expect(container.querySelector("mark[data-search-match]")).toBeNull();
+  });
+
+  it("ARC-57 AC5: the search in the typescript counts the matches and moves between them", async () => {
+    mockPage();
+
+    await renderPage();
+
+    const field = await screen.findByRole("searchbox", { name: "Szukaj w maszynopisie" });
+    fireEvent.change(field, { target: { value: "strona" } });
+    expect(screen.getByText("1 z 2")).toBeVisible();
+    const first = screen.getByText("strona", { selector: "mark[aria-current]" });
+    expect(scrollIntoView.mock.contexts.at(-1)).toBe(first);
+
+    // The second match is on page 2, which loads to show it.
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(screen.getByText("2 z 2")).toBeVisible();
+    const second = screen.getByText("strona", { selector: "mark[aria-current]" });
+    expect(screen.getByText("Skan · strona 2 z 2")).toBeVisible();
+    expect(scrollIntoView.mock.contexts.at(-1)).toBe(second);
+
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(screen.getByText("1 z 2")).toBeVisible();
+    fireEvent.keyDown(field, { key: "Enter", shiftKey: true });
+    expect(screen.getByText("2 z 2")).toBeVisible();
+    fireEvent.keyDown(field, { key: "ArrowUp" });
+    expect(screen.getByText("1 z 2")).toBeVisible();
+    fireEvent.keyDown(field, { key: "ArrowDown" });
+    expect(screen.getByText("2 z 2")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Poprzednie trafienie" }));
+    expect(screen.getByText("1 z 2")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Następne trafienie" }));
+    expect(screen.getByText("2 z 2")).toBeVisible();
+
+    fireEvent.keyDown(field, { key: "Escape" });
+    expect(field).toHaveValue("");
+    expect(screen.queryByText("2 z 2")).not.toBeInTheDocument();
+    expect(document.querySelector("mark[data-search-match]")).toBeNull();
+  });
+
+  it("ARC-57 AC5: the clear button empties the search; with no match there is nowhere to move", async () => {
+    mockPage();
+
+    await renderPage();
+
+    const field = await screen.findByRole("searchbox", { name: "Szukaj w maszynopisie" });
+    fireEvent.change(field, { target: { value: "potok" } });
+    expect(screen.getByText("Brak trafień")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Następne trafienie" })).toBeDisabled();
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(scrollIntoView).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Wyczyść wyszukiwanie" }));
+    expect(field).toHaveValue("");
+  });
+
+  it("ARC-57 AC4: the page field follows the page in view and keeps it in the address", async () => {
+    mockPage();
+
+    const { container, router } = await renderPage();
+
+    const field = await screen.findByRole("textbox", { name: "Numer strony" });
+    expect(field).toHaveValue("1");
+    expect(screen.getByText("z 2")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Poprzednia strona" })).toBeDisabled();
+    loadAllPages(card("Skan maszynopisu"));
+
+    scrollIntoViewport(pageElement(2));
+    expect(field).toHaveValue("2");
+    expect(router.state.location.search).toBe("?strona=2");
+    expect(screen.getByRole("button", { name: "Następna strona" })).toBeDisabled();
+    scrollOutOfViewport(pageElement(2));
+    expect(field).toHaveValue("2");
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("ARC-57 AC4: a page number or an arrow goes to that page", async () => {
+    mockPage();
+
+    const { router } = await renderPage();
+
+    const field = await screen.findByRole("textbox", { name: "Numer strony" });
+    fireEvent.change(field, { target: { value: "2" } });
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(field).toHaveValue("2");
+    expect(router.state.location.search).toBe("?strona=2");
+    expect(scrollIntoView.mock.contexts.at(-1)).toBe(pageElement(2));
+
+    fireEvent.click(screen.getByRole("button", { name: "Poprzednia strona" }));
+    expect(field).toHaveValue("1");
+    expect(scrollIntoView.mock.contexts.at(-1)).toBe(pageElement(1));
+    fireEvent.click(screen.getByRole("button", { name: "Następna strona" }));
+    expect(field).toHaveValue("2");
+
+    // Esc gives up a number being typed; leaving the field does too.
+    fireEvent.change(field, { target: { value: "1" } });
+    fireEvent.keyDown(field, { key: "Escape" });
+    expect(field).toHaveValue("2");
+    fireEvent.change(field, { target: { value: "1" } });
+    fireEvent.blur(field);
+    expect(field).toHaveValue("2");
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(field).toHaveValue("2");
+  });
+
+  it("ARC-57 AC4: a number out of range says which numbers there are", async () => {
+    mockPage();
+
+    const { container } = await renderPage();
+
+    const field = await screen.findByRole("textbox", { name: "Numer strony" });
+    fireEvent.change(field, { target: { value: "5" } });
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(screen.getByRole("alert")).toHaveTextContent("Podaj numer od 1 do 2");
+    expect(field).toHaveAttribute("aria-invalid", "true");
+    expect(field).toHaveAccessibleDescription("Podaj numer od 1 do 2");
+    // The number stays to be corrected, also when the field is left.
+    fireEvent.blur(field);
+    expect(field).toHaveValue("5");
+    expect(await axeViolations(container)).toEqual([]);
+    fireEvent.change(field, { target: { value: "2" } });
+    fireEvent.keyDown(field, { key: "Enter" });
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("ARC-57 AC4: ?strona= opens the reader at that page", async () => {
+    mockLongTypescript();
+
+    await renderPage("/maszynopisy/1?strona=12");
+
+    expect(await screen.findByRole("textbox", { name: "Numer strony" })).toHaveValue("12");
+    expect(scrollIntoView.mock.contexts[0]).toBe(pageElement(12));
+  });
+
+  it("ARC-57 AC3: the zoom opens a scan page on the whole screen, and Esc returns to the page", async () => {
+    mockPage();
+
+    const { router } = await renderPage();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Powiększ skan strony 1" }));
+    const zoom = screen.getByRole("dialog", { name: "Skan · strona 1 z 2" });
+    expect(zoom).toHaveAccessibleDescription(/Esc zamyka$/);
+    expect(within(zoom).getByText("100%")).toBeVisible();
+    fireEvent.click(within(zoom).getByRole("button", { name: "Powiększ" }));
+    expect(within(zoom).getByText("125%")).toBeVisible();
+    fireEvent.click(within(zoom).getByRole("button", { name: "Pomniejsz" }));
+    fireEvent.click(within(zoom).getByRole("button", { name: "Pomniejsz" }));
+    expect(within(zoom).getByText("80%")).toBeVisible();
+    fireEvent.click(within(zoom).getByRole("button", { name: "Dopasuj do okna" }));
+    expect(within(zoom).getByText("100%")).toBeVisible();
+    expect(await axeViolations(zoom)).toEqual([]);
+
+    // The arrows change the page.
+    expect(within(zoom).getByRole("button", { name: "Poprzednia strona" })).toBeDisabled();
+    fireEvent.keyDown(zoom, { key: "ArrowRight" });
+    expect(screen.getByRole("dialog", { name: "Skan · strona 2 z 2" })).toBeVisible();
+    expect(within(zoom).getByRole("button", { name: "Następna strona" })).toBeDisabled();
+    fireEvent.keyDown(zoom, { key: "ArrowRight" });
+    fireEvent.keyDown(zoom, { key: "ArrowLeft" });
+    fireEvent.click(within(zoom).getByRole("button", { name: "Następna strona" }));
+    expect(screen.getByRole("dialog", { name: "Skan · strona 2 z 2" })).toBeVisible();
+
+    fireEvent.keyDown(zoom, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    // The reader is at the page shown last, with the focus on its zoom button.
+    expect(screen.getByRole("button", { name: "Powiększ skan strony 2" })).toHaveFocus();
+    expect(scrollIntoView.mock.contexts.at(-1)).toBe(pageElement(2));
+    expect(router.state.location.search).toBe("?strona=2");
+  });
+
+  it("ARC-57 AC3: a click on the scan opens the zoom too, and its button closes it", async () => {
+    mockPage();
+
+    await renderPage();
+
+    fireEvent.click(await screen.findByRole("img", { name: "Skan · strona 1 z 2" }));
+    const zoom = screen.getByRole("dialog", { name: "Skan · strona 1 z 2" });
+    const view = zoom.querySelector("canvas")?.parentElement;
+    if (view == null) {
+      throw new Error("The zoom has no scan.");
+    }
+    // Dragging moves the page.
+    view.setPointerCapture = vi.fn();
+    fireEvent.pointerDown(view, { clientX: 100, clientY: 100, pointerId: 1 });
+    fireEvent.pointerMove(view, { clientX: 60, clientY: 70 });
+    expect(view.scrollLeft).toBe(40);
+    expect(view.scrollTop).toBe(30);
+    fireEvent.pointerUp(view);
+    fireEvent.pointerMove(view, { clientX: 0, clientY: 0 });
+    expect(view.scrollLeft).toBe(40);
+    // Ctrl with the wheel, as a pinch on a trackpad, zooms.
+    fireEvent.wheel(view, { deltaY: -1, ctrlKey: true });
+    expect(within(zoom).getByText("125%")).toBeVisible();
+    fireEvent.wheel(view, { deltaY: 1, ctrlKey: true });
+    fireEvent.wheel(view, { deltaY: 1 });
+    expect(within(zoom).getByText("100%")).toBeVisible();
+
+    fireEvent.click(within(zoom).getByRole("button", { name: "Zamknij powiększenie" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Powiększ skan strony 1" })).toHaveFocus();
   });
 
   it("US-RA-08 AC3: 'Fragmenty z maszynopisu' previews the fragments as a numbered list", async () => {
@@ -511,16 +954,15 @@ describe("TypescriptPage", () => {
     mockPage();
 
     await renderPage();
-    await screen.findByRole("button", { name: "Fragment 03: Druga" });
+    await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
 
     fireEvent.click(
       within(card("Fragmenty z maszynopisu")).getByRole("link", { name: /Fragment 03/ }),
     );
 
-    expect(await screen.findByText("Fragment 03 · skan 19")).toBeVisible();
-    expect(scrollIntoView.mock.contexts[0]).toBe(
-      screen.getByRole("button", { name: "Fragment 03: Druga" }),
-    );
+    const fragment = await screen.findByRole("button", { name: "Fragment 03: Druga" });
+    expect(fragment).toHaveAttribute("aria-pressed", "true");
+    expect(scrollIntoView.mock.contexts[0]).toBe(fragment);
   });
 
   it("ARC-53: 'Wszystkie fragmenty (3)' is set like a fragment's quote", async () => {
@@ -539,7 +981,7 @@ describe("TypescriptPage", () => {
     mockPage();
 
     await renderPage();
-    await screen.findByRole("button", { name: "Fragment 03: Druga" });
+    await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
 
     fireEvent.click(screen.getByRole("link", { name: "Wszystkie fragmenty (3)" }));
 
@@ -657,8 +1099,8 @@ describe("TypescriptPage", () => {
 
     await screen.findByText("Skan · strona 1 z 2");
     const headings = screen.getAllByRole("heading").map((heading) => heading.textContent);
-    // In the mobile order (R-05): main column, then context.
-    expect(headings).toEqual([TYPESCRIPT.title, "Skan maszynopisu", "Maszynopisy utworu"]);
+    // ARC-57 AC7: the typescripts under the hero, then the reader.
+    expect(headings).toEqual([TYPESCRIPT.title, "Maszynopisy utworu", "Skan maszynopisu"]);
     expect(screen.queryByRole("button", { name: "Fragment 01: Pierwsza" })).not.toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
   });
@@ -669,8 +1111,22 @@ describe("TypescriptPage", () => {
     await renderPage();
 
     await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
+    // ARC-57: no view switch, page field or zoom; the search stays.
+    expect(screen.queryByRole("radiogroup", { name: "Widok" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "Numer strony" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Powiększ skan/ })).not.toBeInTheDocument();
+    expect(screen.queryByText(/strona/, { selector: "p.text-cousine-metadane-male" })).toBeNull();
+    expect(screen.getByRole("searchbox", { name: "Szukaj w maszynopisie" })).toBeVisible();
+  });
+
+  it("R-11: on mobile a plain text has no toggle", async () => {
+    setViewport("mobile");
+    mockPage({}, { kind: "plain", page_offsets: [] });
+
+    await renderPage();
+
+    await screen.findByRole("button", { name: "Fragment 01: Pierwsza" });
     expect(screen.queryByRole("group", { name: "Widok" })).not.toBeInTheDocument();
-    expect(screen.queryByText(/Skan · strona/)).not.toBeInTheDocument();
   });
 
   it("R-11: a scan that cannot be loaded says so", async () => {
@@ -685,8 +1141,8 @@ describe("TypescriptPage", () => {
     // The text, now at full width, is scrolled to the fragment again.
     expect(scrollIntoView).toHaveBeenCalledTimes(2);
     expect(screen.queryByRole("img", { name: /Skan · strona/ })).not.toBeInTheDocument();
-    // On mobile the reader shows the text, without a toggle to the missing scan.
-    expect(screen.queryByRole("group", { name: "Widok" })).not.toBeInTheDocument();
+    // The reader shows the text, without a view switch to the missing scan.
+    expect(screen.queryByRole("radiogroup", { name: "Widok" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Fragment 01: Pierwsza" })).toBeVisible();
   });
 

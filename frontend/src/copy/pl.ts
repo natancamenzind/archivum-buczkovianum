@@ -276,7 +276,38 @@ export const copy = {
     views: "Widok",
     scan: "Skan",
     text: "Transkrypcja",
+    both: "Skan i transkrypcja",
     page: (number: number, count: number) => `Skan · strona ${String(number)} z ${String(count)}`,
+    textPage: (number: number, count: number) =>
+      `Transkrypcja · strona ${String(number)} z ${String(count)}`,
+    /** The skeleton of the next page while it loads (ARC-57). */
+    pageLoading: (number: number, count: number) =>
+      `Wczytywanie strony ${String(number)} z ${String(count)}…`,
+    /** The page field in the reader's bar: "Strona [9] z 137". */
+    pageField: "Strona",
+    pageNumber: "Numer strony",
+    pageOf: (count: number) => `z ${String(count)}`,
+    pageRange: (count: number) => `Podaj numer od 1 do ${String(count)}`,
+    previousPage: "Poprzednia strona",
+    nextPage: "Następna strona",
+    /** The search field in the reader's bar; a typescript's reader names it. */
+    search: "Szukaj w tekście",
+    searchTypescript: "Szukaj w maszynopisie",
+    matches: (current: number, count: number) => `${String(current)} z ${String(count)}`,
+    noMatches: "Brak trafień",
+    previousMatch: "Poprzednie trafienie",
+    nextMatch: "Następne trafienie",
+    clearSearch: "Wyczyść wyszukiwanie",
+    /** The scan zoom (ARC-57). */
+    zoom: (number: number) => `Powiększ skan strony ${String(number)}`,
+    zoomOut: "Pomniejsz",
+    zoomIn: "Powiększ",
+    zoomFit: "Dopasuj",
+    zoomFitLabel: "Dopasuj do okna",
+    zoomClose: "Zamknij powiększenie",
+    zoomScale: (percent: number) => `${String(percent)}%`,
+    zoomHint:
+      "Przeciągnij, aby przesunąć · Ctrl + kółko albo gest powiększa · ← → zmienia stronę · Esc zamyka",
     scanError: "Nie udało się wczytać skanu.",
     loading: "Wczytuję tekst…",
     error: "Nie udało się wczytać tekstu. Spróbuj ponownie później.",

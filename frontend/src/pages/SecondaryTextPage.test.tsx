@@ -123,7 +123,7 @@ function readerCard(): HTMLElement {
 
 /** The block a column header heads: the header's parent. */
 function column(name: string): HTMLElement {
-  const element = screen.getByRole("heading", { level: 3, name }).parentElement?.parentElement;
+  const element = screen.getByRole("heading", { name }).parentElement?.parentElement;
   if (element == null) {
     throw new Error(`'${name}' heads no block.`);
   }
@@ -237,8 +237,23 @@ describe("SecondaryTextPage", () => {
     const { container } = await renderPage();
 
     const text = readerCard();
-    expect(await within(text).findByText("Skan · strona 2 z 2")).toBeVisible();
-    expect(screen.getByRole("group", { name: "Widok" })).toBeVisible();
+    expect(await within(text).findByText("Skan · strona 1 z 2")).toBeVisible();
+    expect(within(text).getByText("Wczytywanie strony 2 z 2…")).toBeVisible();
+    expect(screen.getByRole("radiogroup", { name: "Widok" })).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("ARC-57 AC7: the works are in a row under the hero, then the reader at full width", async () => {
+    mockPage();
+
+    const { container } = await renderPage();
+
+    await within(readerCard()).findByRole("button", { name: "Fragment 01: piszę" });
+    const works = screen.getByRole("heading", { level: 2, name: "Powiązane utwory" });
+    const search = screen.getByRole("searchbox", { name: "Szukaj w tekście" });
+    expect(works.compareDocumentPosition(search)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    // The reader is not in the grid of the main and tag columns.
+    expect(readerCard().closest(".lg\\:grid")).toBeNull();
     expect(await axeViolations(container)).toEqual([]);
   });
 

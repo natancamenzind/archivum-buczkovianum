@@ -51,6 +51,8 @@ Sources: `docs/PROJECT_BRIEF.md` and the Figma file "archiwum-buczkowski-model",
 
 On mobile the order is: main, context, tags, contextual materials.
 
+A page whose content is read in the reader (R-11) has no context column: the context is a row under the hero, then the reader at the full width of the content, then the main and tag columns (ARC-57). On mobile: context, reader, main, tags, contextual materials.
+
 **R-06 Published only.** The public sees only entities with status `published`. Drafts are not listed, not searchable, and their URLs return 404 to anonymous readers. A logged-in editor opening a draft's URL sees the page with a draft banner (US-WR-13). Drafts never appear in lists, previews or search, even for editors.
 
 **R-07 Header, navigation, footer.**
@@ -85,11 +87,15 @@ Clicking the card opens the source document scrolled to the fragment.
 
 **R-11 Reader.** Every OCR document (typescript, note, secondary text, contextual material) uses one reader:
 
-1. Desktop: each scan page next to its OCR text, scrolling continuously. Mobile: a "Skan" / "Transkrypcja" toggle.
-2. Fragments are highlighted. Clicking one shows its tags, each linking to its tag page.
-3. Opened with a fragment reference, it scrolls to that fragment and highlights it. Opened from a search result, it scrolls to the first match.
+1. Desktop: a view switch in the reader's bar, "Skan i transkrypcja" (each scan page next to its OCR text; the default), "Transkrypcja" and "Skan", scrolling continuously. Mobile: a "Skan" / "Transkrypcja" toggle. The view is kept in the address (`?widok=`) and remembered for the next document.
+2. Fragments are highlighted. Each fragment's tags stand in a note in a 200 px right margin, level with the line where the fragment starts, without its number or comment; a note that would overlap the one above moves down. In the "Skan" view a page's notes are stacked from the top of its scan. Tags show in every view. Hovering or focusing a fragment highlights its note, and hovering or focusing a note highlights its fragment. Each tag links to its tag page. On mobile a note stands under the paragraph where its fragment starts. A document without tagged fragments has no margin.
+3. Opened with a fragment reference, it scrolls to that fragment and highlights it. Opened from a search result, it fills the search (point 5) and scrolls to the first match.
+4. The reader's bar has a page field, "Strona [9] z 137" with arrows. The number follows the page in view and is kept in the address (`?strona=`). A number out of range says "Podaj numer od 1 do N".
+5. The reader's bar has a search in the document ("Szukaj w maszynopisie" on a typescript) with a match counter ("1 z 6"). Enter, Shift+Enter and the arrows move between matches; Esc clears the field.
+6. Each scan page has a zoom button (a magnifier with a plus); a click on the scan does the same. The zoom fills the screen with −, + and "Dopasuj"; the scan can be dragged, the arrows change the page, and Esc closes it and returns to the page shown.
+7. Pages load one at a time: when the reader reaches the end of the last page, only the next one loads, under a skeleton saying "Wczytywanie strony N z M…".
 
-A plain-text document is shown as text, with fragments highlighted as in point 2.
+A plain-text document is shown as text, with fragments highlighted as in point 2, and without the view switch, the page field or the zoom.
 
 **R-12 Accessibility.** WCAG 2.1 AA. Every image has a text alternative entered by WR. Animations respect `prefers-reduced-motion`. Every control works from the keyboard and has an accessible name (e.g. the filter panel's close icon is "Zamknij filtry").
 
@@ -160,10 +166,10 @@ Shows everything connected to a tag.
 ### US-RA-08 — Typescript page
 
 1. Hero: "Maszynopis · <shelfmark> · <year of the work>", title, optional description.
-2. Context column: the work (R-03) with year and fragment count; "Maszynopisy utworu", all typescripts of the same work with shelfmark and title, the current one marked.
-3. Main column, in order:
-   1. "Skan maszynopisu": the reader (R-11); the counter shows the page count;
-   2. "Fragmenty z maszynopisu": a preview (R-09) of its fragments as a numbered list (fragment number, scan number, shelfmark), in page order.
+2. Under the hero, in one row (R-05): the work (R-03) with year and fragment count; "Maszynopisy utworu", all typescripts of the same work with shelfmark and title, the current one marked.
+3. In order:
+   1. "Skan maszynopisu": the reader (R-11) at the full width of the content; the counter shows the page count;
+   2. in the main column, "Fragmenty z maszynopisu": a preview (R-09) of its fragments as a numbered list (fragment number, scan number, shelfmark), in page order.
 4. Tag column: tags on the typescript and on its fragments.
 5. Contextual materials (R-08): those linked to its work.
 
