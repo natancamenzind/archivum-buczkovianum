@@ -221,6 +221,21 @@ describe("SiteLayout", () => {
     }
   });
 
+  it("ARC-41: on mobile the header keeps 16 px between the service name and 'O archiwum'", () => {
+    renderRoute("/o-archiwum");
+
+    const header = screen.getByRole("banner");
+    // At 390 px the row has 13 px to spare. The minimum gap needs 3 px more, which the logo's
+    // tighter mobile gap gives. On narrower screens the service name wraps; "O archiwum" never does.
+    expect(header).toHaveClass("gap-16");
+    expect(
+      within(header).getByRole("link", { name: "Archivum Buczkovianum Archiwum literackie" }),
+    ).toHaveClass("gap-8", "md:gap-12");
+    expect(within(header).getByRole("link", { name: "O archiwum" })).toHaveClass(
+      "whitespace-nowrap",
+    );
+  });
+
   it("R-12: every header control and navigation link shows a focus outline, the active item too", () => {
     renderRoute("/utwory");
 

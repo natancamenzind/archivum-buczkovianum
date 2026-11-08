@@ -225,13 +225,13 @@ describe("TagPage", () => {
       throw new Error("Expected two fragment cards.");
     }
     expect(
-      within(first).getByRole("link", { name: "Wertepy · Fragment 01 · skan 9" }),
+      within(first).getByRole("link", { name: "Wertepy · fragment 01 · skan 9" }),
     ).toHaveAttribute("href", "/maszynopisy/1?fragment=5");
     expect(within(first).getByText("Maszynopis")).toBeVisible();
     expect(within(first).getByRole("img", { name: "Skan · strona 3" })).toBeVisible();
     expect(within(first).getByText("ML, sygn. 1618.9")).toBeVisible();
     expect(
-      within(second).getByRole("link", { name: "Czarny potok · Fragment 02" }),
+      within(second).getByRole("link", { name: "Czarny potok · fragment 02" }),
     ).toHaveAttribute("href", "/zapiski/3?fragment=9");
     expect(within(second).getByText("Zapisek")).toBeVisible();
     // Every fragment, not a preview (R-09): no "all" link.

@@ -15,9 +15,11 @@ export function SectionHeader({ title, count, description }: SectionHeaderProps)
   return (
     <div className="flex flex-col gap-8 border-b border-border pb-12">
       <div className="flex items-end justify-between gap-16">
-        <h2 className="text-lora-tytul-sekcji text-foreground">{title}</h2>
+        <h2 className="min-w-0 text-lora-tytul-sekcji text-foreground">{title}</h2>
         {count !== undefined && (
-          <p className="text-cousine-metadane text-muted-foreground">{count}</p>
+          <p className="shrink-0 whitespace-nowrap text-cousine-metadane text-muted-foreground">
+            {count}
+          </p>
         )}
       </div>
       {description !== undefined && (

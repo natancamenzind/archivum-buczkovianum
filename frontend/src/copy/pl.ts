@@ -56,6 +56,11 @@ export function fragmentLabel(number: number): string {
   return `Fragment ${String(number).padStart(2, "0")}`;
 }
 
+/** The same number in the middle of a fragment card's location line: "fragment 01" (R-10). */
+export function fragmentInLocation(number: number): string {
+  return `fragment ${String(number).padStart(2, "0")}`;
+}
+
 /** The scan a fragment comes from, as the API gives it: "skan 9"; "" without one (R-10). */
 export function scanLabel(scanNumber: string): string {
   return scanNumber === "" ? "" : `skan ${scanNumber}`;
