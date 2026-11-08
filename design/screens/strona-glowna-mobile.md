@@ -2,7 +2,7 @@
 
 Viewport: mobile, 390px wide. Preview: `../previews/screens/strona-glowna-mobile.png`
 
-- box "Strona główna (mobile)" · flex-column · gap 0px · 390px × 2186px · bg var(--color-bg-page)
+- box "Strona główna (mobile)" · flex-column · gap 0px · 390px × 2122px · bg var(--color-bg-page)
   - **Nagłówek serwisu [Rozmiar=Mobile]** {Rozmiar=“Mobile”} · flex-row · padding 0px var(--layout-page-margin-mobile) 0px var(--layout-page-margin-mobile) · justify space-between · align center · w fill, h 64px · bg var(--color-bg-page) · border-bottom 1px var(--color-border-subtle)
   - box "Nagłówek strony głównej" · flex-row · gap 0px · padding var(--space-64) var(--layout-page-margin-mobile) var(--space-24) var(--layout-page-margin-mobile) · align end · w fill, h hug · bg linear-gradient(#211e1af0 0%, #211e1ab8 50%, #211e1a33 100%) over image(assets/images/naglowek-strony-glownej-642bf583.*, crop) over var(--color-bg-inverse)
     - box "Wprowadzenie" · flex-column · gap var(--space-16) · w fill, h hug
@@ -21,11 +21,6 @@ Viewport: mobile, 390px wide. Preview: `../previews/screens/strona-glowna-mobile
           - **Karta utworu [Stan=Domyślny]** {Fragmenty=“8 fragmentów”, Autor=“Leopold Buczkowski”, Tytuł=“Pierwsza świetność”, Kategoria i rok=“Powieść · 1966”, Stan=“Domyślny”} · flex-column · gap var(--space-12) · padding var(--space-16) · w 205.33px, h 440px · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
           - **Karta utworu [Stan=Domyślny]** {Fragmenty=“6 fragmentów”, Autor=“Leopold Buczkowski”, Tytuł=“Uroda na czasie”, Kategoria i rok=“Powieść · 1970”, Stan=“Domyślny”} · flex-column · gap var(--space-12) · padding var(--space-16) · w 205.33px, h 440px · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
           - **Karta utworu [Stan=Domyślny]** {Fragmenty=“4 fragmenty”, Autor=“Leopold Buczkowski”, Tytuł=“Oficer na nieszczęście”, Kategoria i rok=“Powieść · 1975”, Stan=“Domyślny”} · flex-column · gap var(--space-12) · padding var(--space-16) · w 205.33px, h 440px · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
-        - box "Strzałki karuzeli" · flex-row · gap var(--space-8) · justify end · w fill, h hug · overflow hidden
-          - box "Strzałka / Wstecz (nieaktywna)" · flex-row · gap 0px · justify center · align center · w 48px, h 48px · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-s) · overflow hidden
-            - **Ikona/wstecz** · w 16px, h 16px
-          - box "Strzałka / Dalej" · flex-row · gap 0px · justify center · align center · w 48px, h 48px · bg var(--color-bg-card) · border 1px var(--color-border-accent) · radius var(--radius-s) · overflow hidden
-            - **Ikona/dalej** · w 16px, h 16px
     - box "Wybrany fragment" · flex-column · gap var(--space-24) · padding var(--layout-card-padding-mobile) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
       - **Nagłówek sekcji** {Pokaż licznik=true, Pokaż opis=true, Opis=“Wybór redakcji”, Licznik=“1 z 62”, Tytuł=“Wybrany fragment”} · flex-column · gap var(--space-8) · padding 0px 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
       - **Fragment / Maszynopis** {Pokaż tagi=true, Opis=“Grzybniak leczy chorych podczas zimowej epidemii tyfusu w Dolinoszczęsnej.”, Sygnatura=“ML, sygn. 1618.0009”, Pozycja=“Wertepy · fragment 01 · rozdział I”} · flex-column · gap var(--space-12) · padding 0px 0px var(--space-24) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)

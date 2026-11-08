@@ -73,6 +73,7 @@ All code is tested. There are no exceptions for small changes.
 - Test what the user sees and does, not component internals.
 - Mock the API at the network level with MSW, never by mocking modules.
 - Helpers live in `frontend/src/test/`: `renderRoute(url)` renders a page through the real routes, and every component test expects `axeViolations(container)` to be empty (R-12).
+- jsdom has no layout: tests run at desktop width. A component whose structure differs by viewport reads it with `useMediaQuery` (`frontend/src/lib/media.ts`); its tests call `setViewport("mobile")` from `frontend/src/test/media.ts`.
 
 ## Types and linting
 

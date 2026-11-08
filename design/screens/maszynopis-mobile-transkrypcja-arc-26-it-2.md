@@ -1,0 +1,51 @@
+# Maszynopis — mobile, Transkrypcja (ARC-26 · it. 2)
+
+Viewport: mobile, 390px wide. Preview: `../previews/screens/maszynopis-mobile-transkrypcja-arc-26-it-2.png`
+
+- box "Maszynopis — mobile, Transkrypcja (ARC-26 · it. 2)" · flex-column · gap 0px · 390px × 2363px · bg var(--color-bg-page)
+  - **Nagłówek serwisu [Rozmiar=Mobile]** {Rozmiar=“Mobile”} · flex-row · padding 0px var(--layout-page-margin-mobile) 0px var(--layout-page-margin-mobile) · justify space-between · align center · w fill, h 64px · bg var(--color-bg-page) · border-bottom 1px var(--color-border-subtle)
+  - **Nagłówek strony [Rozmiar=Mobile]** {Pokaż opis=false, Opis=“Pierwsza powieść Leopolda Buczkowskiego, wydana w 1947 roku. Sceny z codziennego życia podolskiej wsi w dwudziestoleciu międzywojennym.”, Tytuł=“Maszynopis „Wertepów””, Etykieta=“Maszynopis · ML, sygn. 1618 · 1947”, Rozmiar=“Mobile”} · flex-column · gap var(--space-16) · padding var(--space-32) var(--layout-page-margin-mobile) var(--space-24) var(--layout-page-margin-mobile) · w fill, h hug · bg var(--color-bg-inverse) · paper grain (noise, white @4%)
+  - box "Utwór i maszynopisy" · flex-column · gap var(--space-24) · padding var(--space-24) var(--layout-page-margin-mobile) 0px var(--layout-page-margin-mobile) · w fill, h hug
+    - box "Utwór" · flex-column · gap var(--space-8) · w fill, h hug
+      - **Nagłówek kolumny** {Pokaż liczbę=true, Liczba=“1”, Etykieta=“Utwór”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - **Element listy bocznej [Stan=Domyślny]** {Pokaż opis=true, Tytuł=“Wertepy”, Opis=“24 fragmenty”, Rok=“1947”, Stan=“Domyślny”} · flex-column · gap var(--space-4) · padding var(--space-8) 0px var(--space-8) var(--space-12) · w fill, h hug · border-left 1px var(--color-border-subtle)
+    - box "Maszynopisy utworu" · flex-column · gap var(--space-8) · w fill, h hug
+      - **Nagłówek kolumny** {Pokaż liczbę=true, Liczba=“2”, Etykieta=“Maszynopisy utworu”} · flex-row · padding 0px 0px var(--space-8) 0px · justify space-between · align center · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - box "Lista" · flex-column · gap var(--space-8) · w fill, h hug
+        - **Element listy bocznej [Stan=Aktywny]** {Opis=“Gebethner i Wolff, Warszawa”, Tytuł=“Pierwsza wersja”, Pokaż opis=false, Rok=“ML, sygn. 1618”, Stan=“Aktywny”} · flex-column · gap var(--space-4) · padding var(--space-8) 0px var(--space-8) var(--space-12) · w fill, h hug · border-left 2px var(--color-border-accent)
+        - **Element listy bocznej [Stan=Domyślny]** {Pokaż opis=false, Tytuł=“Druga wersja”, Opis=“Gebethner i Wolff, Warszawa”, Rok=“ML, sygn. 1619”, Stan=“Domyślny”} · flex-column · gap var(--space-4) · padding var(--space-8) 0px var(--space-8) var(--space-12) · w fill, h hug · border-left 1px var(--color-border-subtle)
+  - box "Treść" · flex-column · gap var(--space-24) · padding var(--space-24) var(--layout-page-margin-mobile) var(--space-24) var(--layout-page-margin-mobile) · w fill, h hug
+    - box "Czytnik (mobile)" · flex-column · gap var(--space-16) · padding var(--layout-card-padding-mobile) · w fill, h hug · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-m) · shadow var(--shadow-karta)
+      - **Nagłówek sekcji** {Pokaż licznik=true, Pokaż opis=false, Opis=“Wybór redakcji, w kolejności tekstu”, Licznik=“137 stron”, Tytuł=“Skan maszynopisu”} · flex-column · gap var(--space-8) · padding 0px 0px var(--space-12) 0px · w fill, h hug · border-bottom 1px var(--color-border-subtle)
+      - box "Pasek czytnika (przyklejony)" · flex-column · gap var(--space-8) · padding var(--space-12) · w fill, h hug · bg var(--color-bg-subtle) · border 1px var(--color-border-subtle) · radius var(--radius-s)
+        - **Pole strony [Stan=Domyślne]** {Stan=“Domyślne”} · flex-column · gap var(--space-4) · w hug, h hug
+        - **Szukaj w maszynopisie [Stan=Puste]** {Stan=“Puste”} · flex-row · gap var(--space-8) · padding 0px var(--space-4) 0px var(--space-12) · align center · w fill, h 40px · bg var(--color-bg-card) · border 1px var(--color-border-subtle) · radius var(--radius-s)
+      - box "Widok" · flex-row · gap var(--space-8) · w hug, h hug
+        - box "Skan" · flex-row · gap 0px · padding var(--space-4) var(--space-12) var(--space-4) var(--space-12) · w hug, h hug · border 1px var(--color-border-subtle) · radius var(--radius-full)
+          - text "Etykieta" · .text-cousine-metadane · color var(--color-text-primary) · “Skan”
+        - box "Transkrypcja" · flex-row · gap 0px · padding var(--space-4) var(--space-12) var(--space-4) var(--space-12) · w hug, h hug · bg var(--color-bg-accent-subtle) · border 1px var(--color-border-accent) · radius var(--radius-full)
+          - text "Etykieta" · .text-cousine-metadane · color var(--color-text-accent) · “Transkrypcja”
+      - box "Strona 9" · flex-column · gap var(--space-12) · w fill, h hug
+        - text "Opis" · .text-cousine-metadane-male · color var(--color-text-secondary) · “Transkrypcja · strona 9 z 137”
+        - text "Akapit" · w fill, h hug · .text-lora-tekst · color var(--color-text-primary) · “I.”
+        - text "Akapit" · w fill, h hug · .text-lora-tekst · color var(--color-text-primary) · “Po kilku dniach, podobnych do wiosny, przyszła zawieja i nawaliła tyle śniegu, że Dolinoszczęsna jakby się zapadła w rozdół biały i nieogarnięty. Ze śniegu wystawały wysokie jesiony z wronimi miotłami, na tle śnieżnej osypki, ostro, wyraźnie rysowały się długie stodoły, chaty z rudymi zakisami na dymnikach i zalane pomyjami podwórza.”
+        - text "Akapit" · w fill, h hug · .text-lora-tekst · color var(--color-text-primary) · “W mroźne poranki sypały się na śmietniska głodne wróble, sikory i czyżyki, a zwinna kraska, przeszukująca grzebienice, zwisała martwa na zastawionym włosieniu.”
+        - text "Akapit" · w fill, h hug · mixed styles · “Płynęły przeplatane śniegiem i słomą, twarde zimowe dni. W Dolinoszczęsnej wybuchła epidemia tyfusu i grypy. Chore dzieci, dusząc się na piecach, grzały gorączką młode jagnięta i psiaki. Kobiety biegały za pożyczaniem trzasek malinowych na poty.”
+        - **Tagi fragmentu (margines) [Stan=Podświetlony]** {Stan=“Podświetlony”} · flex-row wrap · gap var(--space-8) · padding 0px 0px 0px var(--space-12) · w fill, h hug · border-left 2px var(--color-border-accent)
+        - text "Akapit" · w fill, h hug · .text-lora-tekst · color var(--color-text-primary) · “Grzybniak leczył, dniami i nocami biegał po Zasereciu i Dolinoszczęsnej; przedrzemawszy w domu kilka chwil koło ciepłego pieca, pił śniadanie, zmieniał przemokłe onucki i znowu szedł do chorych.”
+        - text "Akapit" · w fill, h hug · .text-lora-tekst · color var(--color-text-accent) · underline · “Carkówna, wdziawszy trykotowe spodnie i buty z cholewami, stanęła we wrotach przed szkołą; przeżegnawszy się, dusząc w sobie strach, powiedziała do dzieci:”
+        - **Tagi fragmentu (margines) [Stan=Domyślny]** {Stan=“Domyślny”} · flex-row wrap · gap var(--space-8) · padding 0px 0px 0px var(--space-12) · w fill, h hug · border-left 1px var(--color-border-subtle)
+      - box "Strona 10 — wczytywanie" · flex-column · gap var(--space-12) · w fill, h hug · overflow hidden
+        - text "Opis" · .text-cousine-metadane-male · color var(--color-text-secondary) · “Wczytywanie strony 10 z 137…”
+        - box "Szkielet" · flex-row · gap var(--space-24) · justify center · w fill, h hug
+          - box "Tekst (szkielet)" · flex-column · gap var(--space-12) · w fill, h hug
+            - rect "Wiersz" · w fill, h 12px · bg var(--color-bg-subtle) · radius var(--radius-s)
+            - rect "Wiersz" · w fill, h 12px · bg var(--color-bg-subtle) · radius var(--radius-s)
+            - rect "Wiersz" · w fill, h 12px · bg var(--color-bg-subtle) · radius var(--radius-s)
+            - rect "Wiersz" · w fill, h 12px · bg var(--color-bg-subtle) · radius var(--radius-s)
+            - rect "Wiersz" · w fill, h 12px · bg var(--color-bg-subtle) · radius var(--radius-s)
+            - rect "Wiersz" · w fill, h 12px · bg var(--color-bg-subtle) · radius var(--radius-s)
+            - rect "Wiersz" · w fill, h 12px · bg var(--color-bg-subtle) · radius var(--radius-s)
+            - rect "Wiersz" · w fill, h 12px · bg var(--color-bg-subtle) · radius var(--radius-s)
+    - text "Uwaga" · w fill, h hug · .text-cousine-metadane-male · color var(--color-text-secondary) · “Dalej: fragmenty z maszynopisu, tagi maszynopisu, materiały kontekstowe. Widok Skan: tagi fragmentów strony pod skanem, ikona lupy z plusem na pasku skanu, powiększenie na cały ekran z gestem szczypania.”
+  - **Stopka [Rozmiar=Mobile]** {Rozmiar=“Mobile”} · flex-column · gap 0px · w fill, h hug · bg var(--color-bg-page) · border-top 1px var(--color-border-subtle)

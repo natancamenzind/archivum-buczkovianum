@@ -30,7 +30,8 @@ async function fetchNote(id: number): Promise<NoteData> {
 /**
  * The note page (US-RA-11) in the secondary text page's layout (R-05): the related works in the
  * context column; the content by its kind and the related fragments in the main column; the tags
- * of the note and its fragments. Empty blocks are not rendered (R-02).
+ * of the note and its fragments. A text is read in the reader at full width, with the works in a
+ * row under the hero (ARC-57). Empty blocks are not rendered (R-02).
  */
 export function NotePage() {
   const id = Number(useParams().id);
@@ -55,6 +56,7 @@ export function NotePage() {
   }
 
   const { works, fragments, tags } = note;
+  const hasReader = note.content.document !== null;
 
   return (
     <EntityLayout
@@ -71,11 +73,15 @@ export function NotePage() {
         />
       }
       context={
-        works.length > 0 ? <RelatedWorks label={copy.note.works} works={works} /> : undefined
+        works.length > 0 ? (
+          <RelatedWorks label={copy.note.works} works={works} aboveReader={hasReader} />
+        ) : undefined
       }
+      // A text is read in the reader, at full width (ARC-57); other content stays in the column.
+      reader={hasReader ? <MediaContent content={note.content} /> : undefined}
       main={
         <>
-          <MediaContent content={note.content} />
+          {!hasReader && <MediaContent content={note.content} />}
           {fragments.total > 0 && (
             <RelatedFragments title={copy.note.fragments} fragments={fragments} />
           )}

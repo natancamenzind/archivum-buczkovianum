@@ -55,6 +55,8 @@ Tłumaczenie `docs/user-stories.md`. W razie rozbieżności obowiązuje wersja a
 
 Na telefonie kolejność to: kolumna główna, kontekst, tagi, materiały kontekstowe.
 
+Strona, której treść czytamy w czytniku (R-11), nie ma kolumny kontekstu: kontekst stoi w rzędzie pod hiro, pod nim czytnik na całą szerokość treści, a pod czytnikiem kolumna główna i kolumna tagów (ARC-57). Na telefonie: kontekst, czytnik, kolumna główna, tagi, materiały kontekstowe.
+
 **R-06 Tylko opublikowane.** Publicznie widać tylko byty ze statusem `published`. Szkice nie pojawiają się na listach ani w wyszukiwarce, a ich adresy zwracają anonimowym czytelnikom 404. Zalogowana redaktorka, wchodząc na adres szkicu, widzi stronę z banerem szkicu (US-WR-13). Szkice nigdy nie pojawiają się na listach, w podglądach ani w wyszukiwarce, także dla redaktorek.
 
 **R-07 Nagłówek, menu, stopka.**
@@ -89,11 +91,15 @@ Kliknięcie karty otwiera dokument źródłowy przewinięty do fragmentu.
 
 **R-11 Czytnik.** Każdy dokument OCR (maszynopis, zapisek, tekst sekundarny, materiał kontekstowy) czytamy w jednym czytniku:
 
-1. Na komputerze każda strona skanu stoi obok tekstu OCR tej samej strony, a cały dokument przewija się w sposób ciągły. Na telefonie przełącznik „Skan” / „Transkrypcja”.
-2. Fragmenty są wyróżnione w tekście. Kliknięcie fragmentu pokazuje jego tagi; każdy tag linkuje do strony tagu.
-3. Otwarty z odnośnikiem do fragmentu, czytnik przewija do niego i go wyróżnia. Otwarty z wyniku wyszukiwania, przewija do pierwszego trafienia.
+1. Na komputerze przełącznik widoku w pasku czytnika: „Skan i transkrypcja” (każda strona skanu obok tekstu OCR tej samej strony; domyślny), „Transkrypcja” i „Skan”; cały dokument przewija się w sposób ciągły. Na telefonie przełącznik „Skan” / „Transkrypcja”. Widok jest w adresie (`?widok=`) i czytnik pamięta go przy następnym dokumencie.
+2. Fragmenty są wyróżnione w tekście. Tagi każdego fragmentu stoją w notce na prawym marginesie (200 px), na wysokości wiersza, w którym fragment się zaczyna, bez numeru i komentarza; notka, która nachodziłaby na poprzednią, zjeżdża niżej. W widoku „Skan” notki strony stoją jedna pod drugą od góry skanu. Tagi są widoczne we wszystkich widokach. Najechanie albo fokus na fragmencie podświetla jego notkę, a najechanie albo fokus na notce wyróżnia fragment. Każdy tag linkuje do strony tagu. Na telefonie notka stoi pod akapitem, w którym fragment się zaczyna. Dokument bez otagowanych fragmentów nie ma marginesu.
+3. Otwarty z odnośnikiem do fragmentu, czytnik przewija do niego i go wyróżnia. Otwarty z wyniku wyszukiwania, wypełnia pole szukania (punkt 5) i przewija do pierwszego trafienia.
+4. W pasku czytnika jest pole „Strona [9] z 137” ze strzałkami. Numer zmienia się przy przewijaniu i jest w adresie (`?strona=`). Numer spoza zakresu pokazuje komunikat „Podaj numer od 1 do N”.
+5. W pasku czytnika jest szukanie w dokumencie („Szukaj w maszynopisie” na maszynopisie) z licznikiem trafień („1 z 6”). Między trafieniami przechodzą Enter, Shift+Enter i strzałki, a Esc czyści pole.
+6. Każda strona skanu ma przycisk powiększenia (lupa z plusem); klik w skan robi to samo. Powiększenie zajmuje cały ekran, ma przyciski −, + i „Dopasuj”; skan da się przeciągać, strzałki zmieniają stronę, a Esc zamyka okno i wraca do pokazanej strony.
+7. Strony doczytują się po jednej: gdy czytelnik dojeżdża do końca ostatniej strony, doczytuje się tylko następna, a w tym czasie widać szkielet z napisem „Wczytywanie strony N z M…”.
 
-Dokument z tekstem litym wyświetlamy jako tekst, z fragmentami wyróżnionymi jak w punkcie 2.
+Dokument z tekstem litym wyświetlamy jako tekst, z fragmentami wyróżnionymi jak w punkcie 2, bez przełącznika widoku, pola strony i powiększenia.
 
 **R-12 Dostępność.** WCAG 2.1 AA. Każdy obraz ma tekst alternatywny wpisany przez WR. Animacje respektują `prefers-reduced-motion`. Każdą kontrolkę da się obsłużyć z klawiatury i każda ma dostępną nazwę (np. ikona zamykania panelu filtrów to „Zamknij filtry”).
 
@@ -164,10 +170,10 @@ Jako RA widzę wszystko, co jest powiązane z tagiem.
 ### US-RA-08 — Strona maszynopisu
 
 1. Hiro: „Maszynopis · <sygnatura> · <rok utworu>”, tytuł, opcjonalny opis.
-2. Kolumna kontekstu: utwór (R-03) z rokiem i liczbą fragmentów; „Maszynopisy utworu”, wszystkie maszynopisy tego samego utworu z sygnaturą i tytułem, z zaznaczonym bieżącym.
-3. Kolumna główna, kolejno:
-   1. „Skan maszynopisu”: czytnik (R-11); licznik pokazuje liczbę stron;
-   2. „Fragmenty z maszynopisu”: podgląd (R-09) jego fragmentów jako numerowana lista (numer fragmentu, numer skanu, sygnatura), w kolejności stron.
+2. Pod hiro, w jednym rzędzie (R-05): utwór (R-03) z rokiem i liczbą fragmentów; „Maszynopisy utworu”, wszystkie maszynopisy tego samego utworu z sygnaturą i tytułem, z zaznaczonym bieżącym.
+3. Kolejno:
+   1. „Skan maszynopisu”: czytnik (R-11) na całą szerokość treści; licznik pokazuje liczbę stron;
+   2. w kolumnie głównej „Fragmenty z maszynopisu”: podgląd (R-09) jego fragmentów jako numerowana lista (numer fragmentu, numer skanu, sygnatura), w kolejności stron.
 4. Kolumna tagów: tagi na maszynopisie i na jego fragmentach.
 5. Materiały kontekstowe (R-08): te powiązane z jego utworem.
 

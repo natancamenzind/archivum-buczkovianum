@@ -123,6 +123,20 @@ export function SearchIcon(props: IconProps) {
   );
 }
 
+/** design/assets/icons/powieksz.svg: the search magnifier with a plus, for the scan zoom. */
+export function ZoomIcon(props: IconProps) {
+  return (
+    <Icon
+      {...props}
+      paths={[
+        "M12.6667 7.33333C12.6667 10.2789 10.2789 12.6667 7.33333 12.6667C4.38781 12.6667 2 10.2789 2 7.33333C2 4.38781 4.38781 2 7.33333 2C10.2789 2 12.6667 4.38781 12.6667 7.33333Z",
+        "M14 14L11.1333 11.1333",
+        "M7.33337 5.33333V7.33333M7.33337 7.33333V9.33333M7.33337 7.33333H5.33337M7.33337 7.33333H9.33337",
+      ]}
+    />
+  );
+}
+
 /** design/assets/icons/zamknij.svg */
 export function CloseIcon(props: IconProps) {
   return <Icon {...props} paths={["M12 4L4 12", "M4 4L12 12"]} />;

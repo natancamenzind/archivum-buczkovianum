@@ -53,8 +53,8 @@ function Context({ typescript }: { typescript: TypescriptData }) {
   return (
     <>
       {work !== null && (
-        <div className="flex flex-col gap-8">
-          <ColumnHeader label={copy.typescript.work} count={1} />
+        <div className="flex flex-col gap-8 lg:w-3xs">
+          <ColumnHeader label={copy.typescript.work} count={1} level={2} />
           <SideListItem
             meta={work.year === null ? undefined : String(work.year)}
             title={work.title}
@@ -67,10 +67,14 @@ function Context({ typescript }: { typescript: TypescriptData }) {
         </div>
       )}
       <div className="flex flex-col gap-8">
-        <ColumnHeader label={copy.typescript.workTypescripts} count={typescripts.length} />
-        <ul>
+        <ColumnHeader
+          label={copy.typescript.workTypescripts}
+          count={typescripts.length}
+          level={2}
+        />
+        <ul className="flex flex-col lg:flex-row lg:flex-wrap lg:gap-x-32">
           {typescripts.map((item) => (
-            <li key={item.id}>
+            <li key={item.id} className="lg:w-3xs">
               <SideListItem
                 meta={item.shelfmark === "" ? undefined : item.shelfmark}
                 title={item.title}
@@ -139,10 +143,10 @@ function Fragments({ typescript, document }: { typescript: TypescriptData; docum
 }
 
 /**
- * The typescript page (US-RA-08) in the entity layout (R-05): the work and its typescripts in
- * the context column; the reader and the fragment preview in the main column; the tags of the
- * typescript and its fragments; the contextual materials of its work. Empty blocks are not
- * rendered (R-02).
+ * The typescript page (US-RA-08) in the entity layout (R-05): the work and its typescripts in a
+ * row under the hero; the reader at full width (ARC-57); the fragment preview in the main
+ * column; the tags of the typescript and its fragments; the contextual materials of its work.
+ * Empty blocks are not rendered (R-02).
  */
 export function TypescriptPage() {
   const id = Number(useParams().id);
@@ -192,25 +196,23 @@ export function TypescriptPage() {
         />
       }
       context={<Context typescript={typescript} />}
-      main={
-        <>
-          <Card>
-            <SectionHeader
-              title={copy.typescript.scan}
-              count={formatCount(typescript.page_count, nouns.page)}
-            />
-            {text.data === undefined ? (
-              <p className="text-cousine-metadane text-muted-foreground" role="status">
-                {text.isPending ? copy.reader.loading : copy.reader.error}
-              </p>
-            ) : (
-              <Reader document={text.data} />
-            )}
-          </Card>
-          {typescript.fragments.total > 0 && (
-            <Fragments typescript={typescript} document={text.data} />
+      reader={
+        <Card>
+          <SectionHeader
+            title={copy.typescript.scan}
+            count={formatCount(typescript.page_count, nouns.page)}
+          />
+          {text.data === undefined ? (
+            <p className="text-cousine-metadane text-muted-foreground" role="status">
+              {text.isPending ? copy.reader.loading : copy.reader.error}
+            </p>
+          ) : (
+            <Reader document={text.data} searchLabel={copy.reader.searchTypescript} />
           )}
-        </>
+        </Card>
+      }
+      main={
+        typescript.fragments.total > 0 && <Fragments typescript={typescript} document={text.data} />
       }
       tags={
         typescript.tags.length > 0 ? (

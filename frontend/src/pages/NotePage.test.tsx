@@ -317,6 +317,29 @@ describe("NotePage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("ARC-57 AC7: a text note has its works in a row under the hero, then the reader", async () => {
+    mockContent({ kind: "plain_text", document: 20 });
+
+    const { container } = await renderPage();
+
+    await screen.findByRole("button", { name: "Fragment 01: Dezerter" });
+    const works = screen.getByRole("heading", { level: 2, name: "Powiązane utwory" });
+    const text = screen.getByRole("heading", { level: 2, name: "Transkrypcja" });
+    expect(works.compareDocumentPosition(text)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(card("Transkrypcja").closest(".lg\\:grid")).toBeNull();
+    expect(screen.getByRole("searchbox", { name: "Szukaj w tekście" })).toBeVisible();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("ARC-57 AC7: a note that is not a text keeps the context column", async () => {
+    mockContent({ kind: "image", image: "/media/content/card.jpg", image_alt: "Karta" });
+
+    await renderPage();
+
+    const works = screen.getByRole("heading", { level: 3, name: "Powiązane utwory" });
+    expect(works.closest(".lg\\:grid")).not.toBeNull();
+  });
+
   it("US-RA-11 AC3: opened with ?fragment=, the reader scrolls to the fragment", async () => {
     mockContent({ kind: "plain_text", document: 20 });
 

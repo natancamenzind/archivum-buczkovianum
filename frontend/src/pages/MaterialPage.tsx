@@ -31,7 +31,8 @@ async function fetchMaterial(id: number): Promise<MaterialData> {
 /**
  * The contextual material page (US-RA-12) in the secondary text page's layout (R-05): the
  * related works in the context column; the content by its kind and the related fragments in the
- * main column; the tags of the material, its fragments and its work links. Empty blocks are not
+ * main column; the tags of the material, its fragments and its work links. A text is read in the
+ * reader at full width, with the works in a row under the hero (ARC-57). Empty blocks are not
  * rendered (R-02).
  */
 export function MaterialPage() {
@@ -57,6 +58,7 @@ export function MaterialPage() {
   }
 
   const { works, fragments, tags } = material;
+  const hasReader = material.content.document !== null;
 
   return (
     <EntityLayout
@@ -78,11 +80,15 @@ export function MaterialPage() {
         />
       }
       context={
-        works.length > 0 ? <RelatedWorks label={copy.material.works} works={works} /> : undefined
+        works.length > 0 ? (
+          <RelatedWorks label={copy.material.works} works={works} aboveReader={hasReader} />
+        ) : undefined
       }
+      // A text is read in the reader, at full width (ARC-57); other content stays in the column.
+      reader={hasReader ? <MediaContent content={material.content} /> : undefined}
       main={
         <>
-          <MediaContent content={material.content} />
+          {!hasReader && <MediaContent content={material.content} />}
           {fragments.total > 0 && (
             <RelatedFragments title={copy.material.fragments} fragments={fragments} />
           )}
