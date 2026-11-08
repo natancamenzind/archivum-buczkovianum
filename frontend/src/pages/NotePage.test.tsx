@@ -269,6 +269,17 @@ describe("NotePage", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("ARC-62: the video player is sent the site's origin, without which YouTube refuses to play", async () => {
+    mockContent({ kind: "external_media", external_url: "https://youtu.be/dQw4w9WgXcQ" });
+
+    await renderPage();
+
+    expect(screen.getByTitle("Odtwarzacz nagrania")).toHaveAttribute(
+      "referrerpolicy",
+      "strict-origin-when-cross-origin",
+    );
+  });
+
   it.each([
     "https://archive.org/download/buczkowski-wywiad-1975/strona-a.mp3",
     "https://example.com/nagranie",
