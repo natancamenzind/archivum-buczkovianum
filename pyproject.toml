@@ -13,10 +13,10 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "dj-database-url>=2.3",
     "django-stubs-ext>=5.2",
-    "pypdf>=6.21.2",
     "gunicorn>=23",
     "pillow>=11",
     "sentry-sdk[django]>=2.74.0",
+    "pymupdf>=1.28.2,<2",
 ]
 
 [dependency-groups]
@@ -31,6 +31,7 @@ dev = [
     "djangorestframework-stubs[compatible-mypy]>=3.16",
     "pre-commit>=4.0",
     "pytest-xdist>=3.6",
+    "pypdf>=6.21.2",
 ]
 
 [tool.uv]

@@ -1,6 +1,8 @@
 """Uploading a typescript's text: a searchable PDF scan, which carries its OCR text (US-WR-04)."""
 
 import random
+import re
+import time
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -21,7 +23,12 @@ from archive.tests.factories import (
     TypescriptFactory,
     WorkFactory,
 )
-from archive.tests.files import SCAN_WITHOUT_TEXT, scan_file
+from archive.tests.files import (
+    SCAN_WITHOUT_TEXT,
+    scan_file,
+    searchable_pdf,
+    temporary_upload,
+)
 from archive.uploads import load_ocr_upload
 from search.models import EntityType
 from search.query import search
@@ -206,6 +213,43 @@ class TestLoadOcrUpload:
         # Assert
         assert raised.value.messages == [SCAN_WITHOUT_TEXT]
         assert (document.scan.name, document.text, document.page_offsets) == before
+
+    def test_arc_56_reads_a_book_length_scan_in_under_a_second(self) -> None:
+        # Arrange: 200 pages of 30 lines, each word written on its own, as OCR programs do.
+        # pypdf took about 3 s for this here and 30 s on the server's half a CPU.
+        pages = [re.sub(r"((?:\S+ ){9}\S+) ", r"\1\n", page) for page in novel(words=60_000)]
+        scan = scan_file(*pages, word_by_word=True)
+
+        # Act
+        start = time.perf_counter()
+        document = load_ocr_upload(None, scan)
+        elapsed = time.perf_counter() - start
+
+        # Assert
+        assert document.text == "".join(f"{page}\n" for page in pages)
+        assert elapsed < 1
+
+    def test_arc_56_reads_a_large_upload_from_its_temporary_file(self) -> None:
+        # Arrange: Django keeps an upload over 2.5 MB in a temporary file, not in memory.
+        scan = temporary_upload(searchable_pdf("Czarny potok."))
+
+        # Act
+        with scan:
+            document = load_ocr_upload(None, scan)
+
+        # Assert
+        assert document.text == "Czarny potok.\n"
+
+    def test_arc_56_unreadable_temporary_file_is_an_error(self) -> None:
+        # Arrange
+        scan = temporary_upload(b"not a pdf")
+
+        # Act
+        with scan, pytest.raises(ValidationError) as raised:
+            load_ocr_upload(None, scan)
+
+        # Assert
+        assert raised.value.messages == ["Skan nie jest czytelnym plikiem PDF."]
 
     def test_us_wr_04_unreadable_pdf_is_an_error(self) -> None:
         # Arrange
