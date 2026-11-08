@@ -60,11 +60,12 @@ function VisualItem({ item }: { item: VisualMaterial }) {
  * The contextual materials block (R-08, "Materiały kontekstowe" in design/components/): a
  * numbered list of secondary texts and other materials, and a gallery of visual materials.
  * Each page passes the items it includes, and a description of them unless they relate to a
- * work. Empty parts, and an empty block, are not rendered (R-02).
+ * work: a work's materials have no description. Empty parts, and an empty block, are not
+ * rendered (R-02).
  */
 export function ContextualMaterials({
   materials,
-  description = copy.materials.description,
+  description,
 }: {
   materials: Materials;
   description?: string;
