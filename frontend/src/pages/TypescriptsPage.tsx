@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { components } from "@/api/schema";
 import { ListRow } from "@/components/ListRow";
+import { LoadStatus } from "@/components/LoadStatus";
 import { PageHeader } from "@/components/PageHeader";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Card } from "@/components/ui/card";
@@ -51,20 +52,23 @@ export function TypescriptsPage() {
   const groups = typescripts.data;
 
   return (
-    <main className="flex flex-col">
+    <main className="flex flex-1 flex-col">
       <PageHeader
         label={copy.siteName}
         title={copy.typescripts.title}
         description={copy.typescripts.description}
       />
-      <div className="px-page-mobile py-24 md:px-page md:pt-48 md:pb-64">
-        {/* Only before the first data: a failed background refetch keeps the list it has. */}
-        {groups === undefined ? (
-          <p className="text-cousine-metadane text-muted-foreground" role="status">
-            {typescripts.isPending ? copy.typescripts.loading : copy.typescripts.error}
-          </p>
-        ) : (
-          groups.length > 0 && (
+      {/* Only before the first data: a failed background refetch keeps the list it has. */}
+      {groups === undefined ? (
+        <LoadStatus
+          pending={typescripts.isPending}
+          loading={copy.typescripts.loading}
+          error={copy.typescripts.error}
+          className="px-page-mobile py-24 md:px-page md:pt-48 md:pb-64"
+        />
+      ) : (
+        <div className="px-page-mobile py-24 md:px-page md:pt-48 md:pb-64">
+          {groups.length > 0 && (
             <ul className="grid grid-cols-1 gap-24 md:grid-cols-2">
               {groups.map((group) => (
                 <li key={group.slug}>
@@ -72,9 +76,9 @@ export function TypescriptsPage() {
                 </li>
               ))}
             </ul>
-          )
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </main>
   );
 }

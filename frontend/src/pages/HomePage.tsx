@@ -4,6 +4,7 @@ import type { components } from "@/api/schema";
 import { ArrowLink } from "@/components/ArrowLink";
 import { FragmentCard } from "@/components/FragmentCard";
 import { HeroBackdrop } from "@/components/HeroBackdrop";
+import { LoadStatus } from "@/components/LoadStatus";
 import { RichText } from "@/components/RichText";
 import { SectionHeader } from "@/components/SectionHeader";
 import { TagCloud } from "@/components/TagCloud";
@@ -99,42 +100,43 @@ export function HomePage() {
   const data = home.data;
 
   return (
-    <main className="flex flex-col">
+    <main className="flex flex-1 flex-col">
       <Hero home={data} />
-      <div className="flex flex-col gap-32 px-page-mobile py-24 md:px-page md:pt-48 md:pb-64">
-        {/* Only before the first data: a failed background refetch keeps the page it has. */}
-        {data === undefined ? (
-          <p className="text-cousine-metadane text-muted-foreground" role="status">
-            {home.isPending ? copy.home.loading : copy.home.error}
-          </p>
-        ) : (
-          <>
-            {data.works.length > 0 && (
-              <Card>
-                <SectionHeader
-                  title={copy.home.works}
-                  count={String(data.works.length)}
-                  description={copy.home.worksDescription}
-                />
-                <WorkCarousel works={data.works} />
-              </Card>
-            )}
-            {data.featured !== null && (
-              <Featured featured={data.featured} total={data.statistics.fragments} />
-            )}
-            {data.tags.length > 0 && (
-              <Card>
-                <SectionHeader
-                  title={copy.tagCloud.title}
-                  count={String(data.tags.length)}
-                  description={copy.tagCloud.description}
-                />
-                <TagCloud tags={data.tags} />
-              </Card>
-            )}
-          </>
-        )}
-      </div>
+      {/* Only before the first data: a failed background refetch keeps the page it has. */}
+      {data === undefined ? (
+        <LoadStatus
+          pending={home.isPending}
+          loading={copy.home.loading}
+          error={copy.home.error}
+          className="px-page-mobile py-24 md:px-page md:pt-48 md:pb-64"
+        />
+      ) : (
+        <div className="flex flex-col gap-32 px-page-mobile py-24 md:px-page md:pt-48 md:pb-64">
+          {data.works.length > 0 && (
+            <Card>
+              <SectionHeader
+                title={copy.home.works}
+                count={String(data.works.length)}
+                description={copy.home.worksDescription}
+              />
+              <WorkCarousel works={data.works} />
+            </Card>
+          )}
+          {data.featured !== null && (
+            <Featured featured={data.featured} total={data.statistics.fragments} />
+          )}
+          {data.tags.length > 0 && (
+            <Card>
+              <SectionHeader
+                title={copy.tagCloud.title}
+                count={String(data.tags.length)}
+                description={copy.tagCloud.description}
+              />
+              <TagCloud tags={data.tags} />
+            </Card>
+          )}
+        </div>
+      )}
     </main>
   );
 }

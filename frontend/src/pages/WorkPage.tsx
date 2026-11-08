@@ -9,6 +9,7 @@ import { ContextualMaterials } from "@/components/ContextualMaterials";
 import { EntityLayout } from "@/components/EntityLayout";
 import { FragmentCard, NoteCard } from "@/components/FragmentCard";
 import { ListRow } from "@/components/ListRow";
+import { LoadStatus } from "@/components/LoadStatus";
 import { PageHeader } from "@/components/PageHeader";
 import { RichText } from "@/components/RichText";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -120,10 +121,13 @@ export function WorkPage() {
   }
   if (work === undefined) {
     return (
-      <main className="p-page-mobile md:p-page">
-        <p className="text-cousine-metadane text-muted-foreground" role="status">
-          {page.isPending ? copy.work.loading : copy.work.error}
-        </p>
+      <main className="flex flex-1 flex-col">
+        <LoadStatus
+          pending={page.isPending}
+          loading={copy.work.loading}
+          error={copy.work.error}
+          className="p-page-mobile md:p-page"
+        />
       </main>
     );
   }

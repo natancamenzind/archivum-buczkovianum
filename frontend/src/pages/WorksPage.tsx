@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { LoadStatus } from "@/components/LoadStatus";
 import { PageHeader } from "@/components/PageHeader";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Card } from "@/components/ui/card";
@@ -25,20 +26,23 @@ export function WorksPage() {
   const list = works.data;
 
   return (
-    <main className="flex flex-col">
+    <main className="flex flex-1 flex-col">
       <PageHeader
         label={copy.siteName}
         title={copy.works.title}
         description={copy.works.description}
       />
-      <div className="flex flex-col gap-32 px-page-mobile py-24 md:px-page md:pt-48 md:pb-64">
-        {/* Only before the first data: a failed background refetch keeps the list it has. */}
-        {list === undefined ? (
-          <p className="text-cousine-metadane text-muted-foreground" role="status">
-            {works.isPending ? copy.works.loading : copy.works.error}
-          </p>
-        ) : (
-          list.length > 0 && (
+      {/* Only before the first data: a failed background refetch keeps the list it has. */}
+      {list === undefined ? (
+        <LoadStatus
+          pending={works.isPending}
+          loading={copy.works.loading}
+          error={copy.works.error}
+          className="px-page-mobile py-24 md:px-page md:pt-48 md:pb-64"
+        />
+      ) : (
+        <div className="flex flex-col gap-32 px-page-mobile py-24 md:px-page md:pt-48 md:pb-64">
+          {list.length > 0 && (
             <Card>
               <SectionHeader
                 title={copy.works.all}
@@ -53,9 +57,9 @@ export function WorksPage() {
                 ))}
               </ul>
             </Card>
-          )
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </main>
   );
 }

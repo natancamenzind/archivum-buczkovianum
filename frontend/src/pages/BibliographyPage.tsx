@@ -5,6 +5,7 @@ import type { components } from "@/api/schema";
 import { BibliographyList } from "@/components/BibliographyList";
 import { ColumnHeader } from "@/components/ColumnHeader";
 import { DraftBanner } from "@/components/DraftBanner";
+import { LoadStatus } from "@/components/LoadStatus";
 import { PageHeader } from "@/components/PageHeader";
 import { SectionHeader } from "@/components/SectionHeader";
 import { SideListItem } from "@/components/SideListItem";
@@ -48,10 +49,13 @@ export function BibliographyPage() {
   }
   if (bibliography === undefined) {
     return (
-      <main className="p-page-mobile md:p-page">
-        <p className="text-cousine-metadane text-muted-foreground" role="status">
-          {page.isPending ? copy.bibliography.loading : copy.bibliography.error}
-        </p>
+      <main className="flex flex-1 flex-col">
+        <LoadStatus
+          pending={page.isPending}
+          loading={copy.bibliography.loading}
+          error={copy.bibliography.error}
+          className="p-page-mobile md:p-page"
+        />
       </main>
     );
   }
