@@ -250,8 +250,7 @@ describe("SecondaryTextPage", () => {
 
     await within(readerCard()).findByRole("button", { name: "Fragment 01: piszę" });
     const works = screen.getByRole("heading", { level: 2, name: "Powiązane utwory" });
-    const search = screen.getByRole("searchbox", { name: "Szukaj w tekście" });
-    expect(works.compareDocumentPosition(search)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(works.compareDocumentPosition(readerCard())).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     // The reader is not in the grid of the main and tag columns.
     expect(readerCard().closest(".lg\\:grid")).toBeNull();
     expect(await axeViolations(container)).toEqual([]);
@@ -265,6 +264,38 @@ describe("SecondaryTextPage", () => {
     await within(readerCard()).findByRole("button", { name: "Fragment 01: piszę" });
     expect(within(readerCard()).queryByRole("heading")).not.toBeInTheDocument();
     expect(screen.queryByText("Transkrypcja")).not.toBeInTheDocument();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("ARC-66: the text has no search in the document", async () => {
+    mockPage();
+
+    const { container } = await renderPage();
+
+    await within(readerCard()).findByRole("button", { name: "Fragment 01: piszę" });
+    expect(within(readerCard()).queryByRole("search")).not.toBeInTheDocument();
+    expect(screen.queryByRole("searchbox", { name: "Szukaj w tekście" })).not.toBeInTheDocument();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("ARC-66: opened from a search result, the text still marks the first match", async () => {
+    mockPage();
+
+    await renderPage("/teksty-sekundarne/4?q=Dolinoszczęsnej");
+
+    const match = await within(readerCard()).findByText("Dolinoszczęsnej");
+    expect(match.closest("[data-match]")).not.toBeNull();
+    expect(scrollIntoView.mock.contexts[0]).toBe(match.closest("[data-match]"));
+  });
+
+  it("ARC-66: a YouTube recording is a player narrower than the text", async () => {
+    mockPage({ kind: "recording", external_url: "https://youtu.be/dQw4w9WgXcQ" });
+
+    const { container } = await renderPage();
+
+    const player = screen.getByTitle("Odtwarzacz nagrania");
+    expect(player).toHaveAttribute("src", "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ");
+    expect(player).toHaveClass("max-w-2xl");
     expect(await axeViolations(container)).toEqual([]);
   });
 

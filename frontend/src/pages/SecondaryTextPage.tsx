@@ -48,9 +48,9 @@ function typeLine(text: SecondaryTextData): string {
 
 /**
  * The secondary text page (US-RA-10) in the entity layout (R-05): the related works in a row
- * under the hero; the recording and the text in the reader at full width (ARC-57); the related
- * fragments in the main column; the tags of the text, its fragments and its work links. Empty blocks are not rendered
- * (R-02).
+ * under the hero; the recording and the text in the reader at full width (ARC-57), without the
+ * search in the document (ARC-66); the related fragments in the main column; the tags of the
+ * text, its fragments and its work links. Empty blocks are not rendered (R-02).
  */
 export function SecondaryTextPage() {
   const id = Number(useParams().id);
@@ -108,7 +108,7 @@ export function SecondaryTextPage() {
             </Card>
           )}
           <Card>
-            <DocumentReader id={secondaryText.document} />
+            <DocumentReader id={secondaryText.document} hasSearch={false} />
           </Card>
         </>
       }

@@ -95,7 +95,7 @@ Kliknięcie karty otwiera dokument źródłowy przewinięty do fragmentu.
 2. Fragmenty są wyróżnione w tekście. Tagi każdego fragmentu stoją w notce na prawym marginesie (200 px), na wysokości wiersza, w którym fragment się zaczyna, bez numeru i komentarza; notka, która nachodziłaby na poprzednią, zjeżdża niżej. W widoku „Skan” notki strony stoją jedna pod drugą od góry skanu. Tagi są widoczne we wszystkich widokach. Najechanie albo fokus na fragmencie podświetla jego notkę, a najechanie albo fokus na notce wyróżnia fragment. Każdy tag linkuje do strony tagu. Na telefonie notka stoi pod akapitem, w którym fragment się zaczyna. Dokument bez otagowanych fragmentów nie ma marginesu.
 3. Otwarty z odnośnikiem do fragmentu, czytnik przewija do niego i go wyróżnia. Otwarty z wyniku wyszukiwania, wypełnia pole szukania (punkt 5) i przewija do pierwszego trafienia.
 4. W pasku czytnika jest pole „Strona [9] z 137” ze strzałkami. Numer zmienia się przy przewijaniu i jest w adresie (`?strona=`). Numer spoza zakresu pokazuje komunikat „Podaj numer od 1 do N”.
-5. W pasku czytnika jest szukanie w dokumencie („Szukaj w maszynopisie” na maszynopisie) z licznikiem trafień („1 z 6”). Między trafieniami przechodzą Enter, Shift+Enter i strzałki, a Esc czyści pole.
+5. W pasku czytnika jest szukanie w dokumencie („Szukaj w maszynopisie” na maszynopisie; na tekście sekundarnym go nie ma, US-RA-10 AC3) z licznikiem trafień („1 z 6”). Między trafieniami przechodzą Enter, Shift+Enter i strzałki, a Esc czyści pole.
 6. Każda strona skanu ma przycisk powiększenia (lupa z plusem); klik w skan robi to samo. Powiększenie zajmuje cały ekran, ma przyciski −, + i „Dopasuj”; skan da się przeciągać, strzałki zmieniają stronę, a Esc zamyka okno i wraca do pokazanej strony.
 7. Strony doczytują się po jednej: gdy czytelnik dojeżdża do końca ostatniej strony, doczytuje się tylko następna, a w tym czasie widać szkielet z napisem „Wczytywanie strony N z M…”.
 
@@ -187,7 +187,7 @@ Jako RA widzę wszystko, co jest powiązane z tagiem.
 2. Kolumna kontekstu: „Powiązane utwory” (R-03).
 3. Kolumna główna, kolejno:
    1. nagranie, jeśli jest, jak zewnętrzny link audio/wideo w US-RA-11 AC3 (ARC-50);
-   2. pełny tekst w czytniku (R-11) albo jako tekst lity, bez nagłówka;
+   2. pełny tekst w czytniku (R-11) albo jako tekst lity, bez nagłówka i bez szukania w dokumencie (R-11 pkt 5, ARC-66); otwarty z wyniku wyszukiwania nadal przewija do pierwszego trafienia i je wyróżnia;
    3. „Powiązane fragmenty”: podgląd (R-09) fragmentów maszynopisu, które mają co najmniej jeden wspólny tag z tym tekstem lub jego fragmentami, jako karty fragmentów (R-10). Bez linku „wszystkie”.
 4. Kolumna tagów: „Powiązane tagi”, czyli tagi na tekście, jego fragmentach i jego powiązaniach z utworami.
 
@@ -201,7 +201,7 @@ Nie ma jej w Figmie; używa układu strony tekstu sekundarnego.
    1. treść, zależnie od typu:
       - obrazek: wyświetlony na stronie;
       - dokument: wyświetlony na stronie, jeśli to PDF, w przeciwnym razie do pobrania;
-      - zewnętrzny link audio/wideo: film z YouTube lub Vimeo w odtwarzaczu dostawcy, każdy inny link we własnym odtwarzaczu audio archiwum; nagranie, którego nie da się odtworzyć, pokazuje komunikat i link do niego (ARC-58);
+      - zewnętrzny link audio/wideo: film z YouTube lub Vimeo w odtwarzaczu dostawcy, każdy inny link we własnym odtwarzaczu audio archiwum; nagranie, którego nie da się odtworzyć, pokazuje komunikat i link do niego (ARC-58); film ma najwyżej 672 px szerokości (ARC-66);
       - tekst OCR lub tekst lity: czytnik (R-11);
    2. „Powiązane fragmenty”, jak w US-RA-10 AC3.
 4. Kolumna tagów: tagi na zapisku i jego fragmentach.

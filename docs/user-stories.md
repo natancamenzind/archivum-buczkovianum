@@ -91,7 +91,7 @@ Clicking the card opens the source document scrolled to the fragment.
 2. Fragments are highlighted. Each fragment's tags stand in a note in a 200 px right margin, level with the line where the fragment starts, without its number or comment; a note that would overlap the one above moves down. In the "Skan" view a page's notes are stacked from the top of its scan. Tags show in every view. Hovering or focusing a fragment highlights its note, and hovering or focusing a note highlights its fragment. Each tag links to its tag page. On mobile a note stands under the paragraph where its fragment starts. A document without tagged fragments has no margin.
 3. Opened with a fragment reference, it scrolls to that fragment and highlights it. Opened from a search result, it fills the search (point 5) and scrolls to the first match.
 4. The reader's bar has a page field, "Strona [9] z 137" with arrows. The number follows the page in view and is kept in the address (`?strona=`). A number out of range says "Podaj numer od 1 do N".
-5. The reader's bar has a search in the document ("Szukaj w maszynopisie" on a typescript) with a match counter ("1 z 6"). Enter, Shift+Enter and the arrows move between matches; Esc clears the field.
+5. The reader's bar has a search in the document ("Szukaj w maszynopisie" on a typescript; none on a secondary text, US-RA-10 AC3) with a match counter ("1 z 6"). Enter, Shift+Enter and the arrows move between matches; Esc clears the field.
 6. Each scan page has a zoom button (a magnifier with a plus); a click on the scan does the same. The zoom fills the screen with −, + and "Dopasuj"; the scan can be dragged, the arrows change the page, and Esc closes it and returns to the page shown.
 7. Pages load one at a time: when the reader reaches the end of the last page, only the next one loads, under a skeleton saying "Wczytywanie strony N z M…".
 
@@ -183,7 +183,7 @@ Shows everything connected to a tag.
 2. Context column: "Powiązane utwory" (R-03).
 3. Main column, in order:
    1. the recording, if there is one, shown like an external audio/video link in US-RA-11 AC3 (ARC-50);
-   2. the full text in the reader (R-11), or as plain text, with no heading;
+   2. the full text in the reader (R-11), or as plain text, with no heading and no search in the document (R-11 point 5, ARC-66); opened from a search result, it still scrolls to the first match and highlights it;
    3. "Powiązane fragmenty": a preview (R-09) of typescript fragments that share at least one tag with this text or its fragments, as fragment cards (R-10). No "all" link.
 4. Tag column: "Powiązane tagi", tags on the text, its fragments and its work links.
 
@@ -197,7 +197,7 @@ Not in Figma; uses the secondary text page layout.
    1. the content, by type:
       - image: shown inline;
       - document: inline if PDF, otherwise a download;
-      - external audio/video link: a YouTube or Vimeo video in the provider's player, any other link in the archive's own audio player; a recording that does not play shows a message and a link to it (ARC-58);
+      - external audio/video link: a YouTube or Vimeo video in the provider's player, any other link in the archive's own audio player; a recording that does not play shows a message and a link to it (ARC-58); a video is at most 672 px wide (ARC-66);
       - OCR or plain text: the reader (R-11);
    2. "Powiązane fragmenty", as in US-RA-10 AC3.
 4. Tag column: tags on the note and its fragments.

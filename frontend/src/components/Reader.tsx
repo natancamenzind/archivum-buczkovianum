@@ -385,7 +385,8 @@ interface ReaderBodyProps {
   target: number | null;
   /** The search term the URL names (`?q=`), or "". */
   term: string;
-  searchLabel: string;
+  /** The search field's label; null for a reader without one. */
+  searchLabel: string | null;
 }
 
 function ReaderBody({ document, pdf, scanFailed, target, term, searchLabel }: ReaderBodyProps) {
@@ -588,25 +589,31 @@ function ReaderBody({ document, pdf, scanFailed, target, term, searchLabel }: Re
     [pages],
   );
 
+  const hasBar = pageCount > 1 || (hasScans && isDesktop) || searchLabel !== null;
+
   return (
     <div className="flex flex-col gap-24">
-      <div
-        className={cn(
-          "sticky top-0 z-10 flex flex-col gap-8 rounded-sm border border-border bg-muted p-12 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:px-16 lg:py-8",
-          BAR_TOP,
-        )}
-      >
-        {pageCount > 1 && <PageField page={current} count={pageCount} onPage={goToPage} />}
-        {hasScans && isDesktop && <ViewSwitch view={view} onView={chooseView} />}
-        <DocumentSearch
-          label={searchLabel}
-          query={query}
-          current={matchNumber}
-          count={matches.length}
-          onQuery={search}
-          onStep={step}
-        />
-      </div>
+      {hasBar && (
+        <div
+          className={cn(
+            "sticky top-0 z-10 flex flex-col gap-8 rounded-sm border border-border bg-muted p-12 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:px-16 lg:py-8",
+            BAR_TOP,
+          )}
+        >
+          {pageCount > 1 && <PageField page={current} count={pageCount} onPage={goToPage} />}
+          {hasScans && isDesktop && <ViewSwitch view={view} onView={chooseView} />}
+          {searchLabel !== null && (
+            <DocumentSearch
+              label={searchLabel}
+              query={query}
+              current={matchNumber}
+              count={matches.length}
+              onQuery={search}
+              onStep={step}
+            />
+          )}
+        </div>
+      )}
       {hasScans && !isDesktop && <ViewToggle view={view} onView={chooseView} />}
       {scanFailed && (
         <p role="status" className="text-cousine-metadane text-muted-foreground">
@@ -671,13 +678,15 @@ function ReaderBody({ document, pdf, scanFailed, target, term, searchLabel }: Re
  * `?fragment=<id>` scrolls to that fragment and selects it; `?q=<term>`, from a search result,
  * fills the search and scrolls to the first match; `?strona=` and `?widok=` keep the page and
  * the view. A plain text is shown as text only. The text is split as architecture §4.4 says.
+ * A `searchLabel` of null leaves the search out (a secondary text, ARC-66); `?q=` still marks
+ * and scrolls to the first match.
  */
 export function Reader({
   document,
   searchLabel = copy.reader.search,
 }: {
   document: Document;
-  searchLabel?: string;
+  searchLabel?: string | null;
 }) {
   const [params] = useSearchParams();
   const target = Number(params.get("fragment")) || null;
@@ -698,8 +707,11 @@ export function Reader({
   );
 }
 
-/** The reader of the document `id`, with a status line while it loads or when it fails. */
-export function DocumentReader({ id }: { id: number }) {
+/**
+ * The reader of the document `id`, with a status line while it loads or when it fails;
+ * `hasSearch={false}` leaves out the search in the document.
+ */
+export function DocumentReader({ id, hasSearch = true }: { id: number; hasSearch?: boolean }) {
   const text = useQuery({ queryKey: ["document", id], queryFn: () => fetchDocument(id) });
   if (text.data === undefined) {
     return (
@@ -708,5 +720,5 @@ export function DocumentReader({ id }: { id: number }) {
       </p>
     );
   }
-  return <Reader document={text.data} />;
+  return <Reader document={text.data} searchLabel={hasSearch ? undefined : null} />;
 }
