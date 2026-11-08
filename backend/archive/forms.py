@@ -6,6 +6,8 @@ from typing import Any
 from django import forms
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.db import transaction
+from django.http import QueryDict
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from archive.models import (
@@ -17,7 +19,7 @@ from archive.models import (
     Note,
     SecondaryText,
 )
-from archive.uploads import load_ocr_upload
+from archive.uploads import StoredScan, direct_upload_enabled, load_ocr_upload, stored_scan
 
 
 class TypedTextField(forms.CharField):
@@ -38,6 +40,9 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
     empty keeps the text.
 
     `text_kind()` says which kind of text the item gets; here it is always an OCR text.
+
+    With S3 storage, the browser uploads the chosen scan to the bucket itself
+    (`archive/scan_upload.js`) and posts its name in `scan_key` instead of the file (ARC-64).
     """
 
     scan = forms.FileField(
@@ -50,6 +55,9 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
         ),
     )
 
+    # The name of the scan the browser uploaded to storage (`archive.uploads.StoredScan`).
+    scan_key = forms.CharField(required=False, widget=forms.HiddenInput)
+
     # Where the form explains a missing or wrong text better than the model's error does.
     text_fields: tuple[str, ...] = ("scan",)
     # The document loaded from the form, saved with the item.
@@ -57,9 +65,43 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
     # The stored scan the item no longer has, deleted once the save is committed.
     replaced_scan: str = ""
 
+    class Media:
+        js = ("archive/scan_upload.js",)
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        if direct_upload_enabled():
+            self.fields["scan"].widget.attrs.update(
+                {
+                    "data-direct-upload": reverse("admin:archive_document_scan_upload"),
+                    "data-uploading": _("Uploading the scan…"),
+                    "data-uploaded": _("Scan uploaded. Save to read its text."),
+                    "data-failed": _("The scan could not be uploaded. Choose the file again."),
+                }
+            )
+
     def text_kind(self) -> str | None:
         """The kind of text the item holds once saved, or None for no text."""
         return Document.Kind.OCR
+
+    def clean_scan_key(self) -> str:
+        """Take the scan the browser uploaded to storage as the `scan`, unless a file came with
+        the form."""
+        name: str = self.cleaned_data["scan_key"]
+        if not name or self.has_error("scan") or self.cleaned_data.get("scan") is not None:
+            return name
+        try:
+            self.cleaned_data["scan"] = stored_scan(name)
+        except ValidationError as error:
+            self.add_error("scan", error)
+            self.forget_scan_key()
+        return name
+
+    def forget_scan_key(self) -> None:
+        """Send the form back without the uploaded scan's name, so the editor uploads again."""
+        data = self.data.copy() if isinstance(self.data, QueryDict) else dict(self.data)
+        data[self.add_prefix("scan_key")] = ""
+        self.data = data
 
     def clean(self) -> dict[str, Any]:
         super().clean()
@@ -88,6 +130,9 @@ class TextUploadForm[M: Archival](forms.ModelForm[M]):
             self.uploaded_document = load_ocr_upload(document, scan)
         except ValidationError as error:
             self.add_error("scan", error)
+            if isinstance(scan, StoredScan):
+                Document.scan.field.storage.delete(scan.name)
+                self.forget_scan_key()
             return
         self.replaced_scan = replaced_scan
         self.instance.document = self.uploaded_document

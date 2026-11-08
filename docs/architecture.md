@@ -130,6 +130,8 @@ OCR upload format: one searchable PDF, as OCR programs (e.g. ABBYY FineReader) s
 - a PDF with no text on any page is rejected (US-WR-04 AC2); a page without text is kept and has an empty slice of `text`,
 - the pages are joined into `text`, and `page_offsets` gets one entry per PDF page.
 
+With S3 storage, the editor's browser uploads the scan straight to the bucket (ARC-64): the admin signs a POST to its own key `scans/<random hex>/<file name>` that takes only a PDF, the page shows the upload's progress, and the form posts only that key. On save the server copies the scan from the bucket to a temporary file, reads its text layer as above, and keeps it under that key, so it is not uploaded twice. A scan this way crosses the editor's connection once and never passes through the app server's request, whose size and time Render limits. Without S3 (local development), the form posts the file itself. A scan uploaded but never saved stays in the bucket.
+
 The text always comes from the scan, so the two cannot disagree. An OCR text changes only with a new scan. Documents stored before this format keep their text and scan as they are.
 
 **`Fragment`**

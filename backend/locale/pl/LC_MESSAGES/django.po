@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Archivum Buczkovianum\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-08 14:27+0100\n"
+"POT-Creation-Date: 2026-11-08 14:41+0100\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -42,6 +42,15 @@ msgid ""
 msgstr ""
 "Przeszukiwalny PDF, taki jak zapisuje go program do OCR: obrazy stron z "
 "tekstem OCR pod spodem. Tekst jest odczytywany z tego pliku."
+
+msgid "Uploading the scan…"
+msgstr "Wgrywanie skanu…"
+
+msgid "Scan uploaded. Save to read its text."
+msgstr "Skan wgrany. Zapisz, aby odczytać jego tekst."
+
+msgid "The scan could not be uploaded. Choose the file again."
+msgstr "Nie udało się wgrać skanu. Wybierz plik ponownie."
 
 msgid "plain text"
 msgstr "tekst lity"
@@ -495,6 +504,12 @@ msgstr "Usuń"
 
 msgid "No fragments yet."
 msgstr "Nie ma jeszcze fragmentów."
+
+msgid "The uploaded scan is not valid."
+msgstr "Wgrany skan jest nieprawidłowy."
+
+msgid "The scan did not finish uploading. Choose the file again."
+msgstr "Skan nie został wgrany do końca. Wybierz plik ponownie."
 
 msgid "The scan is not a readable PDF file."
 msgstr "Skan nie jest czytelnym plikiem PDF."
