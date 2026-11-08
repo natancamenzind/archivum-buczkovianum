@@ -31,9 +31,11 @@ export function SiteHeader() {
 
   return (
     // From `lg` the logo's padding sets the row's height, and the navigation stretches to fill it,
-    // so the active item's underline meets the bottom border.
-    <header className="z-10 flex h-64 items-center justify-between border-t-3 border-b border-t-primary border-b-border bg-background px-page-mobile md:h-auto md:px-page md:py-32 lg:sticky lg:top-0 lg:items-stretch lg:py-0">
-      <Link to="/" className={`flex items-center gap-12 lg:py-32 ${LINK_CLASSES}`}>
+    // so the active item's underline meets the bottom border. The gap keeps the service name off
+    // "O archiwum" on mobile, where the row is nearly full: at 390 px the logo's tighter gap leaves
+    // room for it, and on narrower screens the service name wraps.
+    <header className="z-10 flex h-64 items-center justify-between gap-16 border-t-3 border-b border-t-primary border-b-border bg-background px-page-mobile md:h-auto md:px-page md:py-32 lg:sticky lg:top-0 lg:items-stretch lg:py-0">
+      <Link to="/" className={`flex items-center gap-8 md:gap-12 lg:py-32 ${LINK_CLASSES}`}>
         <BookIcon className="size-24 text-accent-icon" />
         <span className="text-lora-tekst text-foreground md:text-lora-tytul-elementu">
           {copy.siteName}
@@ -49,7 +51,10 @@ export function SiteHeader() {
       <div className="flex items-center md:gap-32 lg:self-stretch">
         <MainNav />
         <span aria-hidden="true" className="hidden h-24 w-px bg-border lg:block" />
-        <Link to="/o-archiwum" className={`text-cousine-nawigacja text-foreground ${LINK_CLASSES}`}>
+        <Link
+          to="/o-archiwum"
+          className={`text-cousine-nawigacja whitespace-nowrap text-foreground ${LINK_CLASSES}`}
+        >
           {copy.layout.about}
         </Link>
         <form
