@@ -16,6 +16,7 @@ dependencies = [
     "pypdf>=6.21.2",
     "gunicorn>=23",
     "pillow>=11",
+    "sentry-sdk[django]>=2.74.0",
 ]
 
 [dependency-groups]

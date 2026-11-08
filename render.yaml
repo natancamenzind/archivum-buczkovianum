@@ -23,6 +23,16 @@ services:
         generateValue: true
       - key: DEBUG
         value: "False"
+      # Sentry projects studio-ape/buczkovianum-backend and studio-ape/buczkovianum-frontend.
+      # A DSN is not a secret: the frontend one ships in the bundle.
+      - key: SENTRY_DSN
+        value: https://2a4323ac5ca75db4a48d80fde3f5ccd3@o367010.ingest.us.sentry.io/4512394954801153
+      - key: SENTRY_ENVIRONMENT
+        value: test
+      - key: VITE_SENTRY_DSN
+        value: https://699a3b0ff651f8f916b7f77c4dacb3be@o367010.ingest.us.sentry.io/4512394954932224
+      - key: VITE_SENTRY_ENVIRONMENT
+        value: test
       - key: SEARCH_TS_CONFIG
         value: simple
       - key: ROBOTS_NOINDEX
