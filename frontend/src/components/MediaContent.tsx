@@ -39,6 +39,7 @@ function embedUrl(link: string): string | null {
 /**
  * An audio or video link: a YouTube or Vimeo video in the provider's player, anything else in
  * our own audio player (ARC-58), which falls back to a link when the address does not play.
+ * The video is narrower than the text under it (ARC-66).
  */
 export function ExternalMedia({ link }: { link: string }) {
   const player = embedUrl(link);
@@ -52,7 +53,7 @@ export function ExternalMedia({ link }: { link: string }) {
       // The site's own policy (Django's `same-origin`) sends no referrer to another origin, and
       // YouTube refuses to play an embed it cannot attribute to a site (error 153, ARC-62).
       referrerPolicy="strict-origin-when-cross-origin"
-      className="aspect-video w-full rounded-md"
+      className="aspect-video w-full max-w-2xl rounded-md"
     />
   );
 }
