@@ -56,24 +56,43 @@ describe("WorkCarousel", () => {
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
-  it("ARC-20: at the start the previous arrow is disabled and the next one scrolls by the whole cards in view", async () => {
+  it("ARC-51: at the start only the next arrow shows, and it scrolls by the whole cards in view", async () => {
     const { container } = renderCarousel();
     const scrollBy = layOut(screen.getByRole("list"));
 
-    expect(screen.getByRole("button", { name: "Poprzednie utwory" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Poprzednie utwory" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Następne utwory" }));
     // Two 200 px cards fit in 450 px.
     expect(scrollBy).toHaveBeenCalledWith({ left: 400 });
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("ARC-20: at the end the next arrow is disabled and the previous one scrolls back", () => {
+  it("ARC-51: at the end only the previous arrow shows, and it scrolls back", () => {
     renderCarousel();
     const scrollBy = layOut(screen.getByRole("list"), { scrollLeft: 550 });
 
-    expect(screen.getByRole("button", { name: "Następne utwory" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Następne utwory" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Poprzednie utwory" }));
     expect(scrollBy).toHaveBeenCalledWith({ left: -400 });
+  });
+
+  it("ARC-51: the arrows sit on the row's sides at half the cards' height, shown on hover or focus and never on touch screens", () => {
+    renderCarousel();
+    layOut(screen.getByRole("list"), { scrollLeft: 100 });
+
+    const previous = screen.getByRole("button", { name: "Poprzednie utwory" });
+    const next = screen.getByRole("button", { name: "Następne utwory" });
+    for (const arrow of [previous, next]) {
+      expect(arrow).toHaveClass("absolute", "top-1/2", "-translate-y-1/2");
+      expect(arrow).toHaveClass(
+        "opacity-0",
+        "group-hover/carousel:opacity-100",
+        "group-focus-within/carousel:opacity-100",
+        "pointer-coarse:hidden",
+      );
+    }
+    expect(previous).toHaveClass("-left-16");
+    expect(next).toHaveClass("-right-16");
   });
 
   it("ARC-20: a narrow row scrolls by one card, and the arrows follow a window resize", () => {
