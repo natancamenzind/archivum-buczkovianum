@@ -359,16 +359,16 @@ describe("WorkPage", () => {
     ).toBeVisible();
   });
 
-  it("ARC-31: 'Wszystkie fragmenty (24)' is set as a section title, unlike other arrow links", async () => {
+  it("ARC-46: 'Wszystkie fragmenty (24)' is set like a fragment's shelfmark, unlike other arrow links", async () => {
     mockPage({ bibliography: { items: BIBLIOGRAPHY, total: 12 } });
 
     await renderPage();
 
     expect(
       within(card("Fragmenty maszynopisu")).getByRole("link", { name: "Wszystkie fragmenty (24)" }),
-    ).toHaveClass("text-lora-tytul-sekcji", "text-foreground");
+    ).toHaveClass("text-lora-tytul-elementu", "text-foreground");
     expect(screen.getByRole("link", { name: /Cała bibliografia/ })).not.toHaveClass(
-      "text-lora-tytul-sekcji",
+      "text-lora-tytul-elementu",
     );
   });
 
