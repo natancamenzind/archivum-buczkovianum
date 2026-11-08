@@ -125,7 +125,7 @@ All taggable text lives in one model. This gives one tagging mechanism, one tagg
 
 OCR upload format: one searchable PDF, as OCR programs (e.g. ABBYY FineReader) save it: each page is a scan image with the OCR text in a text layer under it. The editor uploads only this file. On upload:
 
-- the text layer of each page is read with `pypdf`,
+- the text layer of each page is read with `PyMuPDF` (MuPDF, AGPL-3.0; ARC-56: pure-Python `pypdf` took half a minute for a book-length scan on the server),
 - each page's text is normalised: trailing spaces are dropped, a word split with a soft hyphen (U+00AD) at a line end is joined on the first line so search finds it, and a page with text ends with a line break,
 - a PDF with no text on any page is rejected (US-WR-04 AC2); a page without text is kept and has an empty slice of `text`,
 - the pages are joined into `text`, and `page_offsets` gets one entry per PDF page.
